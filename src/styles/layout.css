@@ -1,0 +1,108 @@
+/* ============================== Header Externo ============================= */
+.header-externo {
+    padding: 5px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f7f7f2;
+}
+
+.logo {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-start;
+    padding-left: 20px;
+}
+
+.botones {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: flex-end;
+    padding-right: 20px;
+    gap: 12px;
+}
+
+.logo-header {
+    width: 300px;
+    height: auto;
+}
+
+.btn-singup {
+    background-color: #2563EB; 
+    color: white;
+    border: none;
+    padding: 11px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-right: 10px;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-singup:hover {
+    background-color: #1E40AF; 
+}
+
+.btn-login {
+    background-color: white;
+    color: #2563EB; 
+    border: 2px solid #2563EB;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+.btn-login:hover {
+    background-color: #89a4dd; 
+    color: white; 
+}
+
+/* ========================= MENÚ EXTERNO ========================= */
+.menu-exterior {
+    display: flex;
+    gap: 50px; 
+    background-color: #B3C8CF; 
+    padding: 10px 35px;
+    align-items: center;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+.menu-items {
+    display: flex;
+    gap: 35px;
+}
+
+.menu-item {
+    text-decoration: none;
+    color: #111827;
+    padding-bottom: 5px;
+    border-bottom: 3px solid transparent;
+    transition: color 0.3s, border-bottom 0.3s;
+    font-size: 14px;
+}
+
+.menu-item:hover {
+    color: #2563EB; 
+}
+
+.menu-item.active {
+    border-bottom: 3px solid #2563EB;
+    color: #2563EB;
+}
+
+.menu-eslogan {
+    font-size: 0.9rem;
+    color: #1E3A8A; 
+    font-weight: 500;
+    font-style: italic;
+}
+
+/* =================================== FOOTER ================================== */
+.footer {
+    background-color: #89A8B2;
+}
