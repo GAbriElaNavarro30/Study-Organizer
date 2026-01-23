@@ -161,7 +161,6 @@
     font-style: italic;
 }
 
-/* ================= HAMBURGUESA ================= */
 .hamburger {
     display: none;
     flex-direction: column;
@@ -191,8 +190,7 @@
     transform: rotate(-45deg) translate(5px, -5px);
 }
 
-/* ================= MOBILE ================= */
-
+/* ======= responsividad ======= */
 @media (max-width: 768px) {
     .hamburger {
         order: 1;
@@ -243,9 +241,93 @@
         font-size: 14px;
     }
 }
+/* ============================================================================= */
+
 
 
 /* =================================== FOOTER ================================== */
 .footer {
-    background-color: #89A8B2;
+    background-color: #547792;
+    color: #E5EEF1;
+}
+
+.footer-container {
+    display: flex;
+    justify-content: space-between;
+    gap: 40px;
+    padding: 40px 60px;
+    flex-wrap: wrap;
+}
+
+.footer-logo {
+    max-width: 250px;
+}
+
+.footer-logo img {
+    width: 160px;
+    margin-bottom: 10px;
+}
+
+.footer-logo p {
+    font-size: 0.9rem;
+    font-style: italic;
+    color: #ffffff;
+}
+
+.footer-links h4,
+.footer-info h4 {
+    margin-bottom: 10px;
+    font-size: 1rem;
+    color: #FFFFFF;
+}
+
+.footer-links {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.footer-links a {
+    text-decoration: none;
+    color: #C7D2FE;
+    font-size: 0.9rem;
+    transition: color 0.3s;
+}
+
+.footer-links a:hover {
+    color: #FFFFFF;
+}
+
+.footer-info {
+    max-width: 300px;
+    font-size: 0.9rem;
+    color: #C7D2FE;
+}
+
+.footer-bottom {
+    text-align: center;
+    padding: 15px;
+    background-color: #799ca7;
+    font-size: 0.85rem;
+    color: #ffffff;
+}
+
+/* ======= responsividad ======= */
+@media (max-width: 768px) {
+    .footer-container {
+        flex-direction: column;
+        padding: 30px 20px;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .footer-logo,
+    .footer-info {
+        max-width: 100%;
+    }
+
+    .footer-logo img {
+        margin: 0 auto 10px;
+        display: block;
+    }
 }
