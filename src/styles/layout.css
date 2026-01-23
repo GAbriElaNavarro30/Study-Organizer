@@ -224,7 +224,7 @@
 
         flex-direction: column;
         width: 100%;
-        gap: 15px;
+        gap: 12px;
         padding: 15px 0;
         display: none;
         margin-top: -40px !important;
@@ -240,7 +240,7 @@
 
     .menu-item {
         text-align: center;
-        font-size: 16px;
+        font-size: 14px;
     }
 }
 
