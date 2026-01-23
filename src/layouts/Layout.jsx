@@ -6,7 +6,7 @@ export function Layout({ children }) {
     return (
         <>
             <HeaderExt />
-            <MenuExt />
+            {/*<MenuExt />*/}
                 <main>
                     {children}
                 </main>
