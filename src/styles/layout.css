@@ -73,12 +73,12 @@
     }
 }
 
-/* Móviles */
 @media (max-width: 480px) {
     .header-externo {
         flex-direction: column;
         align-items: flex-start;
         gap: 10px;
+        background-color: #1E40AF !important;
     }
 
     .logo {
@@ -99,6 +99,14 @@
     .btn-singup, .btn-login {
         padding: 6px 10px;
         font-size: 13px;
+    }
+
+    .menu-exterior {
+        width: auto;
+    }
+
+    .menu-eslogan {
+        display: none;
     }
 }
 
