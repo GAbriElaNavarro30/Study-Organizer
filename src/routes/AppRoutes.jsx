@@ -1,4 +1,4 @@
-import { BrowserRouter, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 import { Layout } from "../layouts/Layout";
 
 import { Inicio } from "../pages/Inicio";
@@ -7,7 +7,7 @@ import { Contactanos } from "../pages/Contactanos";
 
 export function AppRoutes() {
     return (
-        <BrowserRouter>
+         <HashRouter>
             <Routes>
                 {/* ----------------------- Rutas publicas ------------------------- */}
                 
@@ -17,6 +17,6 @@ export function AppRoutes() {
 
                 {/* ----------------------- Rutas protegidas ------------------------- */}
             </Routes>
-        </BrowserRouter>
+         </HashRouter>
     )
 }
