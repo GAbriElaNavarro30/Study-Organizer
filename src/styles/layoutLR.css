@@ -1,0 +1,79 @@
+/* ============================== Header Externo para el registro =============================== */
+.header-externo-r {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 5px;
+    background-color: #f7f7f2;
+    flex-direction: column;
+}
+
+.logo-r {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding-left: 20px;
+}
+
+.logo-header-r {
+    width: 400px;
+    height: auto;
+}
+
+.menu-eslogan-r {
+    font-size: 0.9rem;
+    color: #1E3A8A;
+    font-weight: 500;
+    font-style: italic;
+    margin-top: 10px;
+    text-align: center;
+}
+
+/* =========== Responsividad =========== */
+@media (max-width: 768px) {
+    .header-externo-r {
+        padding: 10px 15px;
+    }
+
+    .logo-r {
+        padding-left: 10px;
+    }
+
+    .logo-header-r {
+        width: 350px;
+    }
+
+    .menu-eslogan-r {
+        font-size: 0.85rem;
+        color: #1E3A8A;
+        font-weight: 500;
+        font-style: italic;
+        margin-top: 10px;
+        text-align: center;
+    }
+}
+
+@media (max-width: 480px) {
+    .header-externo-r {
+        padding: 8px 10px;
+        gap: 8px;
+    }
+
+    .logo-r {
+        flex: 0 0 auto;
+        padding-left: 5px;
+    }
+
+    .logo-header-r {
+        width: 180px;
+    }
+
+    .menu-eslogan-r {
+        font-size: 0.65rem;
+        color: #1E3A8A;
+        font-weight: 500;
+        font-style: italic;
+        margin-top: 10px;
+        text-align: center;
+    }
+}
