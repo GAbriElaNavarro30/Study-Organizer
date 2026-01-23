@@ -149,7 +149,7 @@
     border-radius: 6px;
     cursor: pointer;
     font-weight: 500;
-    margin: 15px auto 0; 
+    margin: 15px auto 0;
     font-size: 14px;
     margin-bottom: 20px;
 }
@@ -220,6 +220,11 @@
 
     .formulario-registro p {
         font-size: 13px;
+    }
+
+    .campo input[type="date"] {
+        width: 100%;
+        font-size: 0.9rem;
     }
 }
 
