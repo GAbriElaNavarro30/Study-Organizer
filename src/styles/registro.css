@@ -104,6 +104,14 @@
     border-color: #2563eb;
 }
 
+/* FIX input date en móvil */
+.campo input[type="date"] {
+    appearance: none;
+    -webkit-appearance: none;
+    min-height: 42px;
+}
+
+
 /* para ell genero como tipo facebook */
 .opciones-genero {
     display: flex;
