@@ -188,13 +188,13 @@
 
   .titulo-documento,
   .titulo-video {
-    flex-direction: row; /* mantener ícono al lado del título */
+    flex-direction: row; 
     gap: 6px;
   }
 
   .icono-pdf,
   .icono-video {
     font-size: 16px;
-    margin-top: 0;
+    margin-top: -11px;
   }
 }
