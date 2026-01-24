@@ -4,6 +4,7 @@ import { Layout } from "../layouts/Layout";
 import { LayoutLR } from "../layouts/LayoutLR";
 import { LayoutL } from "../layouts/LayoutL";
 import { LayoutO } from "../layouts/LayoutO";
+import { LayoutInterno } from "../layouts/LayoutInterno";
 
 import { Inicio } from "../pages/Inicio";
 import { ManualUsuario } from "../pages/ManualUsuario";
@@ -12,6 +13,7 @@ import { Login } from "../pages/Login";
 import { Registro } from "../pages/Registro";
 import { OlvidarC } from "../pages/OlvidarC";
 import { RecuperarC } from "../pages/RecuperarC";
+import { CrudAdmin } from "../pages/CrudAdmin";
 
 export function AppRoutes() {
     return (
@@ -28,6 +30,8 @@ export function AppRoutes() {
                 <Route path="/recuperar-contrasena" element={<LayoutO><RecuperarC /></LayoutO>}/>
 
                 {/* ----------------------- Rutas protegidas ------------------------- */}
+                <Route path="/crud-administrador" element={<LayoutInterno><CrudAdmin /></LayoutInterno>}/>
+
             </Routes>
          </HashRouter>
     )
