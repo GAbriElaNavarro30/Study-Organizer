@@ -2,6 +2,7 @@ import { HashRouter, Routes, Route, Link } from 'react-router-dom';
 
 import { Layout } from "../layouts/Layout";
 import { LayoutLR } from "../layouts/LayoutLR";
+import { LayoutL } from "../layouts/LayoutL";
 
 import { Inicio } from "../pages/Inicio";
 import { ManualUsuario } from "../pages/ManualUsuario";
@@ -18,8 +19,8 @@ export function AppRoutes() {
                 <Route path="/" element={<Layout><Inicio /></Layout>}/>
                 <Route path="/manual-usuario" element={<Layout><ManualUsuario /></Layout>}/>
                 <Route path="/contactanos" element={<Layout><Contactanos /></Layout>}/>
-                <Route path="/login" element={<LayoutLR><Login /></LayoutLR>}/>
                 <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>}/>
+                <Route path="/login" element={<LayoutL><Login /></LayoutL>}/>
 
                 {/* ----------------------- Rutas protegidas ------------------------- */}
             </Routes>

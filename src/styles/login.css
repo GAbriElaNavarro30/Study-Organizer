@@ -1,0 +1,181 @@
+.contenedor-login {
+    background-color: #f7f7f2;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    padding: 20px;
+    gap: 20px;
+}
+
+.logo-login {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.contenedor-formulario-login {
+    flex: 1;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
+.formulario-login {
+    margin-top: 50px;
+    margin-bottom: 50px;
+    background-color: white;
+    border-radius: 10px;
+    box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
+    padding: 15px;
+    width: 100%;
+    max-width: 430px;
+    position: relative;
+}
+
+.formulario-login h2 {
+    text-align: center;
+    margin-bottom: 20px;
+    font-size: 20px;
+    font-weight: 600;
+    color: rgb(0, 0, 0);
+}
+
+.campo {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 15px;
+}
+
+.campo label {
+    font-size: 0.85rem;
+    margin-bottom: 5px;
+    color: #374151;
+}
+
+.campo input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+}
+
+.campo input:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
+.boton-login {
+    width: 100%;
+    padding: 11px;
+    background-color: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    margin-top: 10px;
+    font-size: 16px;
+}
+
+.boton-login:hover {
+    background-color: #1e40af;
+}
+
+.logotipo-login {
+    padding: 40px;
+    width: 500px;
+}
+
+.link-olvidaste {
+    display: block;
+    margin-top: 20px;
+    text-align: center;
+    font-size: 0.9rem;
+    color: #2563eb;
+    text-decoration: none;
+}
+
+.link-olvidaste:hover {
+    text-decoration: underline;
+}
+
+.separador-login {
+    border: none;
+    border-top: 1px solid #cfcfcf;
+    margin: 18px 0;
+}
+
+.btn-crear-cuenta {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    width: 60%;
+    padding: 10px;
+    margin-top: 10px;
+
+    margin: 10px auto;
+
+    border: 1px solid #2563eb;
+    border-radius: 6px;
+
+    background-color: #f9fafb;
+    color: #2563eb;
+
+    font-size: 0.9rem;
+    font-weight: 500;
+    text-decoration: none;
+    cursor: pointer;
+
+    transition: background-color 0.2s, border-color 0.2s;
+}
+
+.btn-crear-cuenta:hover {
+    background-color: #eef2ff;
+    border-color: #2563eb;
+}
+
+/* ========================== RESPONSIVIDAD ========================== */
+@media (max-width: 920px) {
+    .logotipo-login {
+        width: 350px !important;
+        padding: 20px;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .contenedor-login {
+        flex-direction: column;
+        padding: 15px;
+    }
+
+    .logo-login {
+        margin: 20px 0;
+        flex: none;
+    }
+
+    .logotipo-login {
+        width: 220px !important;
+        padding: 20px;
+    }
+
+    .contenedor-formulario-login {
+        width: 100%;
+        flex: none;
+    }
+
+    .formulario-login {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btn-crear-cuenta {
+        width: 100%;
+    }
+}
+
