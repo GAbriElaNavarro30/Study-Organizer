@@ -41,7 +41,7 @@ export function Login() {
                             Iniciar Sesión
                         </button>
 
-                        <Link to="/recuperar-contrasena" className="link-olvidaste">
+                        <Link to="/olvidar-contrasena" className="link-olvidaste">
                             ¿Olvidaste tu contraseña?
                         </Link>
 

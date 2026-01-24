@@ -9,6 +9,7 @@ import { ManualUsuario } from "../pages/ManualUsuario";
 import { Contactanos } from "../pages/Contactanos";
 import { Login } from "../pages/Login";
 import { Registro } from "../pages/Registro";
+import { OlvidarC } from "../pages/OlvidarC";
 
 export function AppRoutes() {
     return (
@@ -21,6 +22,7 @@ export function AppRoutes() {
                 <Route path="/contactanos" element={<Layout><Contactanos /></Layout>}/>
                 <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>}/>
                 <Route path="/login" element={<LayoutL><Login /></LayoutL>}/>
+                <Route path="/olvidar-contrasena" element={<LayoutL><OlvidarC /></LayoutL>}/>
 
                 {/* ----------------------- Rutas protegidas ------------------------- */}
             </Routes>

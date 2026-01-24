@@ -1,0 +1,200 @@
+.manual-container {
+  margin: 0 auto;
+  padding: 20px;
+  font-family: Arial, sans-serif;
+  gap: 30px;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+  flex-direction: column;
+}
+
+.manual-container h1 {
+  text-align: center;
+  font-size: 1.6rem;
+  width: 60%;
+}
+
+.manual-section {
+  background-color: #f0f4ff; 
+  padding: 20px;
+  border-radius: 12px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+  width: 60%;
+  border: 2px solid #1e40af; 
+}
+
+.manual-section h2 {
+  font-size: 1.2rem;
+  margin-bottom: 15px;
+}
+
+.manual-section p {
+  margin-bottom: 15px;
+  line-height: 1.5;
+  font-size: 14px;
+}
+
+.manual-section a {
+  display: inline-block;
+  padding: 8px 20px;
+  background-color: #2563eb;
+  color: white;
+  border-radius: 8px;
+  text-decoration: none;
+  transition: background-color 0.3s;
+  font-size: 14px;
+}
+
+.manual-section a:hover {
+  background-color: #1e40af;
+}
+
+.titulo-documento {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icono-pdf {
+    font-size: 22px;
+    color: #e11d48;
+    margin-top: -18px;
+}
+
+.video-container {
+  position: relative;
+  width: 100%;
+  padding-bottom: 56.25%; 
+  height: 0;
+}
+
+.video-container iframe {
+  position: absolute;
+  top: 0;
+  left: 0;
+  width: 100%;
+  height: 100%;
+  border-radius: 12px;
+}
+
+.titulo-video {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.icono-video {
+    font-size: 24px;
+    color: #2563eb;
+    margin-top: -18px;
+}
+
+/* ================= RESPONSIVIDAD ================= */
+@media (max-width: 1024px) {
+  .manual-container {
+    width: 90%;
+    padding: 15px;
+  }
+
+  .manual-container h1 {
+    width: 100%;
+    font-size: 1.4rem;
+  }
+
+  .manual-section {
+    width: 100%;
+    padding: 15px;
+  }
+
+  .manual-section h2 {
+    font-size: 1.1rem;
+  }
+
+  .manual-section p {
+    font-size: 13px;
+  }
+
+  .manual-section a {
+    font-size: 13px;
+    padding: 7px 16px;
+  }
+
+  .icono-pdf,
+  .icono-video {
+    font-size: 20px;
+    margin-top: -14px;
+  }
+}
+
+@media (max-width: 768px) {
+  .manual-container {
+    width: 95%;
+    padding: 10px;
+  }
+
+  .manual-container h1 {
+    font-size: 1.3rem;
+  }
+
+  .manual-section h2 {
+    font-size: 1rem;
+  }
+
+  .manual-section p {
+    font-size: 12px;
+  }
+
+  .manual-section a {
+    font-size: 12px;
+    padding: 6px 14px;
+  }
+
+  .icono-pdf,
+  .icono-video {
+    font-size: 18px;
+    margin-top: -12px;
+  }
+}
+
+@media (max-width: 480px) {
+  .manual-container {
+    width: 100%;
+    padding: 8px;
+  }
+
+  .manual-container h1 {
+    font-size: 1.2rem;
+  }
+
+  .manual-section {
+    padding: 12px;
+  }
+
+  .manual-section h2 {
+    font-size: 0.95rem;
+    margin-bottom: 10px;
+  }
+
+  .manual-section p {
+    font-size: 11px;
+    margin-bottom: 12px;
+  }
+
+  .manual-section a {
+    font-size: 11px;
+    padding: 5px 12px;
+  }
+
+  .titulo-documento,
+  .titulo-video {
+    flex-direction: row; /* mantener ícono al lado del título */
+    gap: 6px;
+  }
+
+  .icono-pdf,
+  .icono-video {
+    font-size: 16px;
+    margin-top: 0;
+  }
+}
