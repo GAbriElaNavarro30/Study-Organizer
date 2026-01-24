@@ -111,7 +111,7 @@
     }
 
     .logo-header {
-        width: 250px !important;
+        width: 280px !important;
     }
 
     .eslogan-interno {
@@ -129,8 +129,8 @@
     }
 
     .avatar-usuario {
-        width: 42px !important;
-        height: 42px !important;
+        width: 48px !important;
+        height: 48px !important;
         border-width: 2px;
     }
 }
@@ -151,7 +151,7 @@
     }
 
     .logo-header {
-        width: 230px !important;
+        width: 260px !important;
     }
 
     .eslogan-interno {
@@ -171,8 +171,8 @@
     }
 
     .avatar-usuario {
-        width: 42px !important;
-        height: 42px !important;
+        width: 46px !important;
+        height: 46px !important;
         border-width: 2px;
     }
 
@@ -191,12 +191,12 @@
     }
 
     .logo-header {
-        width: 200px !important;
+        width: 240px !important;
     }
 
     .avatar-usuario {
-        width: 38px;
-        height: 38px;
+        width: 44px !important;
+        height: 44px !important;
         border-width: 2px;
     }
 
