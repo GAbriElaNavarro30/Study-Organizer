@@ -1,8 +1,14 @@
 import "../styles/registro.css";
 import { Link } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
+import { useState } from "react";
+import { IoEye, IoEyeOff } from "react-icons/io5";
+
 
 export function Registro() {
+    const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+
     return (
         <>
             <div className="contenedor-registro">
@@ -89,23 +95,45 @@ export function Registro() {
                     </div>
 
                     <div className="fila-campos">
-                        <div className="campo">
+                        <div className="campo campo-password">
                             <label>Contraseña</label>
-                            <input
-                                type="password"
-                                placeholder="••••••••"
-                                required
-                            />
+
+                            <div className="input-password">
+                                <input
+                                    type={mostrarPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    required
+                                />
+
+                                <span
+                                    className="icono-password"
+                                    onClick={() => setMostrarPassword(!mostrarPassword)}
+                                >
+                                    {mostrarPassword ? <IoEyeOff /> : <IoEye />}
+                                </span>
+                            </div>
                         </div>
 
-                        <div className="campo">
+
+                        <div className="campo campo-password">
                             <label>Confirmar contraseña</label>
-                            <input
-                                type="password"
-                                placeholder="••••••••"
-                                required
-                            />
+
+                            <div className="input-password">
+                                <input
+                                    type={mostrarConfirmPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    required
+                                />
+
+                                <span
+                                    className="icono-password"
+                                    onClick={() => setMostrarConfirmPassword(!mostrarConfirmPassword)}
+                                >
+                                    {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
+                                </span>
+                            </div>
                         </div>
+
                     </div>
 
                     <button type="submit" className="btn-registrar">

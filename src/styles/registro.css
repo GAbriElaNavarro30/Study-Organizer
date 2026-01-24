@@ -178,6 +178,36 @@
     font-weight: 500;
 }
 
+
+/* ===== INPUT PASSWORD CON ICONO ===== */
+.campo-password {
+    width: 100%;
+}
+
+.input-password {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-password input {
+    width: 100%;
+    padding-right: 40px;
+}
+
+.icono-password {
+    position: absolute;
+    right: 10px;
+    cursor: pointer;
+    font-size: 1.1rem;
+    color: #a8aaaf;
+    margin-top: 7px;
+}
+
+.icono-password:hover {
+    color: #2563EB;
+}
+
 /* =================== Responsividad =================== */
 @media (max-width: 480px) {
 

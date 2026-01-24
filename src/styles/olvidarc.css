@@ -1,0 +1,317 @@
+/* ================================== olvidar contraseña ================================== */
+.contenedor-olvidar {
+    min-height: 65vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: -webkit-linear-gradient(90deg, #f0f0f4, #d9def3, #a1b7ee);
+    background: linear-gradient(90deg, #f0f0f4, #d9def3, #a1b7ee);
+    padding: 20px;
+}
+
+.form-olvidar {
+    background: white;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.form-olvidar h2 {
+    color: #393939;
+    text-align: center;
+    font-weight: 600;
+    font-size: 22px;
+}
+
+.linea-separadora-o {
+    border: none;
+    height: 1px;
+    background-color: #dbdee2;
+}
+
+
+.form-olvidar p {
+    font-size: 0.9rem;
+    text-align: start;
+    color: #000000;
+}
+
+.campo-olvidar {
+    display: flex;
+    flex-direction: column;
+    gap: 5px;
+}
+
+.campo-olvidar label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.campo-olvidar input {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+}
+
+.campo-olvidar input:focus {
+    outline: none;
+    border-color: #2563EB;
+}
+
+.btn-recuperar {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-recuperar:hover {
+    background-color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+/* ============= responsividad ============== */
+@media (max-width: 768px) {
+    .contenedor-olvidar {
+        min-height: 65vh;
+        padding: 16px;
+    }
+
+    .form-olvidar {
+        padding: 18px;
+        gap: 18px;
+    }
+
+    .form-olvidar h2 {
+        font-size: 20px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contenedor-olvidar {
+        padding: 12px;
+    }
+
+    .form-olvidar {
+        padding: 16px;
+        gap: 16px;
+    }
+
+    .form-olvidar h2 {
+        font-size: 18px;
+    }
+
+    .form-olvidar p {
+        font-size: 0.85rem;
+    }
+
+    .campo-olvidar input {
+        font-size: 0.9rem;
+        padding: 14px;
+    }
+
+    .btn-recuperar {
+        font-size: 0.95rem;
+        padding: 15px;
+    }
+
+    .btn-volver {
+        top: 12px;
+        left: 12px;
+        font-size: 18px;
+    }
+}
+
+/* ============================= recuperar cuenta ============================= */
+.recuperar-contrasena {
+    min-height: 70vh;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: -webkit-linear-gradient(90deg, #f0f0f4, #d9def3, #a1b7ee);
+    background: linear-gradient(90deg, #f0f0f4, #d9def3, #a1b7ee);
+}
+
+.form-recuperar {
+    background: white;
+    padding: 20px;
+    width: 100%;
+    max-width: 420px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    position: relative;
+}
+
+/* Título */
+.form-recuperar h2 {
+    text-align: center;
+    color: #393939;
+    font-size: 20px;
+    font-weight: 600;
+}
+
+/* Texto */
+.texto-recuperar {
+    font-size: 0.9rem;
+    color: #000000;
+    text-align: start;
+    line-height: 1.4;
+}
+
+/* Campos */
+.campo-recuperar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-recuperar label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.campo-recuperar input {
+    padding: 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+}
+
+.campo-recuperar input:focus {
+    outline: none;
+    border-color: #2563EB;
+}
+
+/* Botón */
+.btn-recuperar {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 14px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    font-size: 14px;
+}
+
+.btn-recuperar:hover {
+    background-color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+.linea-separadora-rc {
+    border: none;
+    height: 1px;
+    background-color: #dbdee2;
+}
+
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 360px) {
+    .recuperar-contrasena {
+        min-height: 75vh !important;
+        padding: 20px;
+    }
+
+    .form-recuperar {
+        padding: 14px !important;
+    }
+
+    .form-recuperar h2 {
+        font-size: 17px !important;
+        white-space: normal !important;
+        overflow-wrap: break-word !important;
+        line-height: 1.3 !important;
+        text-align: center !important;
+        margin: 0px 30px;
+    }
+
+}
+
+/* ==== icono contraseña ==== */
+
+
+@media (max-width: 480px) {
+    .recuperar-contrasena {
+        min-height: 75vh !important;
+        padding: 20px;
+    }
+
+    .recuperar-contrasena {
+        padding: 16px;
+    }
+
+    .form-recuperar {
+        padding: 16px;
+        gap: 14px;
+        border-radius: 8px;
+    }
+
+    .form-recuperar h2 {
+        font-size: 18px;
+    }
+
+    .texto-recuperar {
+        font-size: 0.85rem;
+        line-height: 1.5;
+    }
+
+    .campo-recuperar label {
+        font-size: 0.8rem;
+    }
+
+    .campo-recuperar input {
+        padding: 14px;
+        font-size: 0.9rem;
+    }
+
+    .btn-recuperar {
+        padding: 15px;
+        font-size: 14px;
+    }
+
+    .linea-separadora-rc {
+        margin: 6px 0;
+    }
+}
+
+@media (max-width: 768px) {
+    .recuperar-contrasena {
+        min-height: 80vh;
+        padding: 20px;
+    }
+
+    .form-recuperar {
+        padding: 18px;
+        gap: 16px;
+    }
+
+    .form-recuperar h2 {
+        font-size: 19px;
+    }
+
+    .texto-recuperar {
+        font-size: 0.88rem;
+    }
+
+    .btn-recuperar {
+        padding: 13px;
+        font-size: 13px;
+    }
+}
+

@@ -1,0 +1,200 @@
+/* ==================================== Header Externo Olvidar y Recuperar ==================================== */
+.header-externo-o {
+    padding: 5px 20px;
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    background-color: #f7f7f2;
+    position: relative;
+}
+
+.logo-o {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    margin-left: 20px;
+}
+
+.logo-header-o {
+    width: 300px;
+    height: auto;
+}
+
+.espacio-login-o {
+    margin-right: 40px;
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.espacio-login-o span {
+    display: flex;
+    align-items: center;
+    color: #686868;
+}
+
+.btn-login-o {
+    background-color: white;
+    color: #2563EB;
+    border: 2px solid #2563EB;
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+}
+
+.btn-login-o:hover {
+    background-color: #89a4dd;
+    color: white;
+}
+
+.menu-eslogan-o {
+    position: absolute;
+    left: 50%;
+    transform: translateX(-50%);
+    font-size: 0.9rem;
+    color: #1E3A8A;
+    font-weight: 500;
+    font-style: italic;
+    text-align: center;
+}
+
+/* =========== Responsividad =========== */
+@media (max-width: 1120px) {
+    .header-externo-o {
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+
+    .logo-o {
+        margin-left: 0 !important;
+        justify-content: center !important;
+    }
+
+    .logo-header-o {
+        width: 280px !important;
+    }
+
+    .menu-eslogan-o {
+        position: static !important;     
+        transform: none !important;
+        font-size: 0.85rem !important;
+        text-align: center !important;
+        padding: 0 10px !important;
+    }
+
+    .espacio-login-o {
+        margin-right: 0;
+        flex-direction: row !important;
+        gap: 15px !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+     .espacio-login-o span{
+        font-size: 0.9rem !important;
+    }
+
+    .btn-login-o {
+        width: 100% !important;
+        max-width: 130px !important;
+        padding: 11px !important;
+    }
+}
+
+@media (max-width: 620px) {
+    .header-externo-o {
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+
+    .logo-o {
+        margin-left: 0 !important;
+        justify-content: center !important;
+    }
+
+    .logo-header-o {
+        width: 220px !important;
+    }
+
+    .menu-eslogan-o {
+        position: static !important;     
+        transform: none !important;
+        font-size: 0.75rem !important;
+        text-align: center !important;
+        padding: 0 10px !important;
+    }
+
+    .espacio-login-o {
+        margin-right: 0;
+        flex-direction: row !important;
+        gap: 10px !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+     .espacio-login-o span{
+        font-size: 0.85rem !important;
+    }
+
+    .btn-login-o {
+        width: 100% !important;
+        max-width: 120px !important;
+        padding: 9px !important;
+    }
+}
+
+@media (max-width: 468px) {
+    .header-externo-o {
+        flex-direction: column !important;
+        align-items: center !important;
+        padding: 15px !important;
+        gap: 12px !important;
+    }
+
+    .logo-o {
+        margin-left: 0 !important;
+        justify-content: center !important;
+    }
+
+    .logo-header-o {
+        width: 200px !important;
+    }
+
+    .menu-eslogan-o {
+        position: static !important;     
+        transform: none !important;
+        font-size: 0.65rem !important;
+        text-align: center !important;
+        padding: 0 10px !important;
+    }
+
+    .espacio-login-o {
+        margin-right: 0;
+        flex-direction: row !important;
+        gap: 10px !important;
+        width: 100% !important;
+        display: flex !important;
+        align-items: center !important;
+        justify-content: center !important;
+    }
+
+     .espacio-login-o span{
+        font-size: 0.8rem !important;
+    }
+
+    .btn-login-o {
+        width: 100% !important;
+        max-width: 100px !important;
+        padding: 8px !important;
+    }
+}

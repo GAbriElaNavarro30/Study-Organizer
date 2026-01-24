@@ -2,8 +2,13 @@ import "../styles/login.css";
 import logoLogin from "../assets/imagenes/logotipo-footer.png";
 import { Link } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
+import { useState } from "react";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 export function Login() {
+    const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+
     return (
         <>
             <div className="contenedor-login">
@@ -28,13 +33,23 @@ export function Login() {
                             />
                         </div>
 
-                        <div className="campo">
+                        <div className="campo campo-password">
                             <label>Contraseña</label>
-                            <input
-                                type="password"
-                                placeholder="••••••••"
-                                required
-                            />
+
+                            <div className="input-password">
+                                <input
+                                    type={mostrarPassword ? "text" : "password"}
+                                    placeholder="••••••••"
+                                    required
+                                />
+
+                                <span
+                                    className="icono-password"
+                                    onClick={() => setMostrarPassword(!mostrarPassword)}
+                                >
+                                    {mostrarPassword ? <IoEyeOff /> : <IoEye />}
+                                </span>
+                            </div>
                         </div>
 
                         <button type="submit" className="boton-login">
