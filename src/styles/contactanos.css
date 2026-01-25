@@ -297,13 +297,18 @@
     }
 
     .info-contacto p {
-        font-size: 0.8rem;
+        font-size: 0.85rem;
+        background-color: yellowgreen;
     }
 
     .redes-contacto a {
         font-size: 0.85rem;
         gap: 6px;
         word-break: break-word;
+    }
+
+    .redes-contacto a span {
+        font-size: 0.85rem;
     }
 
     .redes-contacto span {
