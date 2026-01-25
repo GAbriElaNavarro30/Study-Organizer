@@ -150,7 +150,74 @@
 @media (max-width: 768px) {
     .contenedor-login {
         flex-direction: column;
-        padding: 20px 160px;
+        padding: 20px 70px;
+    }
+
+    .logo-login {
+        margin: 20px 0px;
+        flex: none;
+    }
+
+    .logotipo-login {
+        width: 220px !important;
+        padding: 0px;
+    }
+
+    .contenedor-formulario-login {
+        width: 100%;
+        flex: none;
+        margin-bottom: 30px;
+    }
+
+    .formulario-login {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btn-crear-cuenta {
+        width: 70%;
+    }
+}
+
+@media (max-width: 600px) {
+    .contenedor-login {
+        flex-direction: column;
+        padding: 20px 50px;
+    }
+
+    .logo-login {
+        margin: 20px 0px;
+        flex: none;
+    }
+
+    .logotipo-login {
+        width: 220px !important;
+        padding: 0px;
+    }
+
+    .contenedor-formulario-login {
+        width: 100%;
+        flex: none;
+        margin-bottom: 30px;
+    }
+
+    .formulario-login {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btn-crear-cuenta {
+        width: 70%;
+    }
+}
+
+
+@media (max-width: 500px) {
+    .contenedor-login {
+        flex-direction: column;
+        padding: 20px 40px;
     }
 
     .logo-login {
