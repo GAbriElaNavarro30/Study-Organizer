@@ -79,7 +79,7 @@
     }
 
     .menu-eslogan-o {
-        position: static !important;     
+        position: static !important;
         transform: none !important;
         font-size: 0.85rem !important;
         text-align: center !important;
@@ -96,7 +96,7 @@
         justify-content: center !important;
     }
 
-     .espacio-login-o span{
+    .espacio-login-o span {
         font-size: 0.9rem !important;
     }
 
@@ -125,7 +125,7 @@
     }
 
     .menu-eslogan-o {
-        position: static !important;     
+        position: static !important;
         transform: none !important;
         font-size: 0.75rem !important;
         text-align: center !important;
@@ -142,7 +142,7 @@
         justify-content: center !important;
     }
 
-     .espacio-login-o span{
+    .espacio-login-o span {
         font-size: 0.85rem !important;
     }
 
@@ -153,48 +153,108 @@
     }
 }
 
-@media (max-width: 468px) {
+@media (max-width: 480px) {
     .header-externo-o {
-        flex-direction: column !important;
+        display: flex !important;
+        flex-direction: row !important;
         align-items: center !important;
-        padding: 15px !important;
-        gap: 12px !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        padding: 10px 10px !important;
     }
 
     .logo-o {
+        flex: 0 0 auto !important;
+        width: auto !important;
         margin-left: 0 !important;
-        justify-content: center !important;
+        order: 1;
     }
 
     .logo-header-o {
-        width: 200px !important;
-    }
-
-    .menu-eslogan-o {
-        position: static !important;     
-        transform: none !important;
-        font-size: 0.65rem !important;
-        text-align: center !important;
-        padding: 0 10px !important;
+        width: 175px !important;
     }
 
     .espacio-login-o {
-        margin-right: 0;
-        flex-direction: row !important;
+        flex: 0 0 auto !important;
+        width: auto !important;
+        order: 2;
+        justify-content: flex-end !important;
         gap: 10px !important;
-        width: 100% !important;
-        display: flex !important;
-        align-items: center !important;
-        justify-content: center !important;
+        padding-right: 5px;
     }
 
-     .espacio-login-o span{
-        font-size: 0.8rem !important;
+    .espacio-login-o span {
+        display: block !important;
+        width: auto;
+        font-size: 0.7rem !important;
     }
 
     .btn-login-o {
+        box-sizing: border-box;
+        padding: 8px 12px !important;
+        font-size: 0.7rem !important;
+        width: auto !important;
+        max-width: fit-content;
+    }
+
+    .menu-eslogan-o {
         width: 100% !important;
-        max-width: 100px !important;
-        padding: 8px !important;
+        order: 3 !important;
+        text-align: center !important;
+        font-size: 0.7rem !important;
+        margin-top: 0px;
+    }
+}
+
+@media (max-width: 430px) {
+    .header-externo-o {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        padding: 10px 10px !important;
+    }
+
+    .logo-o {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        margin-left: 0 !important;
+        order: 1;
+    }
+
+    .logo-header-o {
+        width: 175px !important;
+    }
+
+    .espacio-login-o {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        order: 2;
+        justify-content: flex-end !important;
+        gap: 10px !important;
+        padding-right: 5px;
+    }
+
+    .espacio-login-o span {
+        display: none !important;
+        width: auto;
+        font-size: 0.7rem !important;
+    }
+
+    .btn-login-o {
+        box-sizing: border-box;
+        padding: 8px 14px !important;
+        font-size: 0.7rem !important;
+        width: auto !important;
+        max-width: fit-content;
+    }
+
+    .menu-eslogan-o {
+        width: 100% !important;
+        order: 3 !important;
+        text-align: center !important;
+        font-size: 0.7rem !important;
+        margin-top: 0px;
     }
 }
