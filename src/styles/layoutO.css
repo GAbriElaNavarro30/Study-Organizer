@@ -224,7 +224,7 @@
     }
 
     .logo-header-o {
-        width: 175px !important;
+        width: 160px !important;
     }
 
     .espacio-login-o {
@@ -232,20 +232,20 @@
         width: auto !important;
         order: 2;
         justify-content: flex-end !important;
-        gap: 10px !important;
+        gap: 8px !important;
         padding-right: 5px;
     }
 
     .espacio-login-o span {
-        display: none !important;
+        display: block !important;
         width: auto;
-        font-size: 0.7rem !important;
+        font-size: 0.61rem !important;
     }
 
     .btn-login-o {
         box-sizing: border-box;
-        padding: 8px 14px !important;
-        font-size: 0.7rem !important;
+        padding: 7px 8px !important;
+        font-size: 0.61rem !important;
         width: auto !important;
         max-width: fit-content;
     }
@@ -254,7 +254,61 @@
         width: 100% !important;
         order: 3 !important;
         text-align: center !important;
-        font-size: 0.7rem !important;
+        font-size: 0.6rem !important;
         margin-top: 0px;
     }
 }
+
+@media (max-width: 380px) {
+    .header-externo-o {
+        display: flex !important;
+        flex-direction: row !important;
+        align-items: center !important;
+        justify-content: space-between !important;
+        flex-wrap: wrap !important;
+        padding: 10px 10px !important;
+    }
+
+    .logo-o {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        margin-left: 0 !important;
+        order: 1;
+    }
+
+    .logo-header-o {
+        width: 140px !important;
+    }
+
+    .espacio-login-o {
+        flex: 0 0 auto !important;
+        width: auto !important;
+        order: 2;
+        justify-content: flex-end !important;
+        gap: 8px !important;
+        padding-right: 5px;
+    }
+
+    .espacio-login-o span {
+        display: block !important;
+        width: auto;
+        font-size: 0.51rem !important;
+    }
+
+    .btn-login-o {
+        box-sizing: border-box;
+        padding: 6px 7px !important;
+        font-size: 0.51rem !important;
+        width: auto !important;
+        max-width: fit-content;
+    }
+
+    .menu-eslogan-o {
+        width: 100% !important;
+        order: 3 !important;
+        text-align: center !important;
+        font-size: 0.52rem !important;
+        margin-top: 0px;
+    }
+}
+
