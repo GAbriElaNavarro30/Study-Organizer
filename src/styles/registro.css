@@ -10,7 +10,7 @@
     background-color: white;
     padding: 15px;
     width: 100%;
-    max-width: 450px;
+    max-width: 580px;
     border-radius: 10px;
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     margin-top: 10px;
@@ -207,7 +207,7 @@
 @media (max-width: 480px) {
 
     .contenedor-registro {
-        padding: 10px;
+        padding: 10px 15px;
     }
 
     .formulario-registro {
@@ -224,7 +224,7 @@
     }
 
     .radio-opcion {
-        justify-content: center;
+        justify-content: start;
     }
 
     .btn-registrar {
