@@ -212,6 +212,7 @@
 
     .formulario-registro {
         padding: 15px 12px;
+        margin-bottom: 40px !important;
     }
 
     .fila-campos {
