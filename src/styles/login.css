@@ -179,3 +179,35 @@
     }
 }
 
+@media (max-width: 468px) {
+    .contenedor-login {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .logo-login {
+        margin: 20px 0px;
+        flex: none;
+    }
+
+    .logotipo-login {
+        width: 200px !important;
+        padding: 0px;
+    }
+
+    .contenedor-formulario-login {
+        width: 100%;
+        flex: none;
+        margin-bottom: 20px;
+    }
+
+    .formulario-login {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btn-crear-cuenta {
+        width: 70%;
+    }
+}
