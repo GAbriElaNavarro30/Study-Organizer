@@ -70,7 +70,6 @@
     margin: 15px 0 20px;
 }
 
-/* campos en filita */
 .fila-campos {
     display: flex;
     gap: 12px;
@@ -104,15 +103,12 @@
     border-color: #2563eb;
 }
 
-/* FIX input date en móvil */
 .campo input[type="date"] {
     appearance: none;
     -webkit-appearance: none;
     min-height: 42px;
 }
 
-
-/* para ell genero como tipo facebook */
 .opciones-genero {
     display: flex;
     gap: 12px;
@@ -136,7 +132,7 @@
     cursor: pointer;
 }
 
-/* btoncito de registro */
+
 .btn-registrar {
     display: flex;
     justify-content: center;
@@ -179,7 +175,6 @@
 }
 
 
-/* ===== INPUT PASSWORD CON ICONO ===== */
 .campo-password {
     width: 100%;
 }

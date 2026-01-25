@@ -1,0 +1,258 @@
+.contenedor-contactanos {
+    display: flex;
+    flex-direction: column;
+    gap: 30px;
+    padding: 20px 20px;
+    margin-bottom: 20px;
+}
+
+.imagen-contactanos {
+    display: flex;
+    justify-content: center;
+}
+
+.imagen-contacto {
+    max-width: 100%;
+    height: auto;
+    border-radius: 12px;
+}
+
+.contenido-contactanos {
+    width: 80%;
+    margin: 0 auto;
+    text-align: center;
+    padding: 20px;
+}
+
+.contenido-contactanos h2 {
+    font-size: 26px;
+    color: #000000;
+    margin-bottom: 30px;
+    font-weight: 600;
+}
+
+.texto-contactanos {
+    font-size: 0.95rem;
+    color: #383a3c;
+    margin-bottom: 30px;
+}
+
+.form-contactanos {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+.campo-contacto {
+    display: flex;
+    flex-direction: column;
+    text-align: left;
+}
+
+.campo-contacto label {
+    font-size: 0.85rem;
+    color: #374151;
+    margin-bottom: 4px;
+}
+
+.requerido {
+    color: #DC2626;
+    margin-left: 2px;
+    font-weight: 600;
+}
+
+
+.campo-contacto input,
+.campo-contacto textarea {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #D1D5DB;
+    font-size: 0.9rem;
+    background-color: #D1D5DB;
+}
+
+.campo-contacto input:focus,
+.campo-contacto textarea:focus {
+    outline: none;
+    border-color: #2563EB;
+}
+
+.btn-contacto {
+    margin-top: 10px;
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, transform 0.2s;
+}
+
+.btn-contacto:hover {
+    background-color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+.contacto-grid {
+    display: grid;
+    grid-template-columns: 1.2fr 0.8fr;
+    gap: 50px;
+    margin-top: 30px;
+}
+
+.info-contacto {
+    padding: 20px;
+    text-align: left;
+    
+}
+
+.info-contacto h3 {
+    font-size: 18px;
+    color: #000000;
+    margin-bottom: 15px;
+    font-weight: 600;
+}
+
+.info-contacto p {
+    font-size: 0.85rem;
+    color: #242424;
+    margin-bottom: 20px;
+}
+
+.redes-contacto {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+    margin-top: 15px;
+}
+
+.redes-contacto a {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    text-decoration: none;
+    color: #2563EB;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.redes-contacto a:hover {
+    text-decoration: underline;
+}
+
+.redes-contacto a span {
+    color: #374151;
+    font-size: 0.95rem;
+}
+
+.redes-contacto a:hover svg {
+    color: #1E40AF;
+    transform: scale(1.1);
+}
+
+.redes-contacto a:hover span {
+    color: #1E40AF;
+}
+
+/* Responsive */
+/* ===================== TABLET ===================== */
+@media (max-width: 1024px) {
+
+    .contenido-contactanos {
+        width: 90%;
+        padding: 15px;
+    }
+
+    .contacto-grid {
+        grid-template-columns: 1fr;
+        gap: 40px;
+    }
+
+    .info-contacto {
+        padding: 10px 0;
+    }
+}
+
+@media (max-width: 768px) {
+
+    .contenedor-contactanos {
+        padding: 15px;
+        gap: 20px;
+    }
+
+    .contenido-contactanos {
+        width: 100%;
+        padding: 10px;
+        text-align: left;
+    }
+
+    .contenido-contactanos h2 {
+        font-size: 22px;
+        text-align: center;
+    }
+
+    .texto-contactanos {
+        font-size: 0.9rem;
+        text-align: center;
+    }
+
+    .contacto-grid {
+        grid-template-columns: 1fr;
+        gap: 30px;
+    }
+
+    .form-contactanos {
+        gap: 16px;
+    }
+
+    .campo-contacto input,
+    .campo-contacto textarea {
+        font-size: 0.85rem;
+    }
+
+    .btn-contacto {
+        padding: 12px;
+        font-size: 0.9rem;
+    }
+
+    .info-contacto h3 {
+        font-size: 16px;
+    }
+
+    .info-contacto p {
+        font-size: 0.85rem;
+    }
+
+    .redes-contacto a {
+        font-size: 0.9rem;
+    }
+}
+
+@media (max-width: 480px) {
+
+    .contenido-contactanos h2 {
+        font-size: 20px;
+    }
+
+    .texto-contactanos {
+        font-size: 0.85rem;
+    }
+
+    .campo-contacto label {
+        font-size: 0.8rem;
+    }
+
+    .btn-contacto {
+        padding: 10px;
+        font-size: 0.85rem;
+    }
+
+    .redes-contacto a {
+        gap: 8px;
+    }
+
+    .redes-contacto a svg {
+        font-size: 16px;
+    }
+}

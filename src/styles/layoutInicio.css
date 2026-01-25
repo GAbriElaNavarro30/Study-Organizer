@@ -1,3 +1,4 @@
+/* ===================================== Header Interno ====================================== */
 .header-interno {
     padding: 5px 20px;
     display: flex;
@@ -6,14 +7,12 @@
 
 }
 
-/* LOS TRES CONTENEDORES CON EL MISMO TAMAÑO */
 .logotipo-interno,
 .eslogan-interno,
 .info-usuario {
     flex: 1 1 0;
 }
 
-/* Logo a la izquierda */
 .logotipo-interno {
     display: flex;
     align-items: center;
@@ -26,7 +25,6 @@
     height: auto;
 }
 
-/* Eslogan centrado */
 .eslogan-interno {
     display: flex;
     align-items: center;
@@ -39,7 +37,6 @@
     white-space: nowrap;
 }
 
-/* ===== INFO USUARIO ===== */
 .info-usuario {
     display: flex;
     align-items: center;
@@ -48,7 +45,6 @@
     padding-right: 10px;
 }
 
-/* Nombre */
 .nombre-usuario {
     font-size: 0.9rem;
     color: #1F2937;
@@ -56,13 +52,11 @@
     white-space: nowrap;
 }
 
-/* Avatar */
 .avatar-usuario {
     width: 48px;
     height: 48px;
     border-radius: 50%;
     border: 3px solid #14cf21;
-    /* borde azul */
     overflow: hidden;
     display: flex;
     align-items: center;
@@ -123,7 +117,6 @@
         padding-right: 0;
     }
 
-    /* Ocultar nombre en móvil */
     .eslogan-interno {
         display: block !important;
     }
@@ -165,7 +158,6 @@
         padding-right: 0;
     }
 
-    /* Ocultar nombre en móvil */
     .nombre-usuario {
         display: none;
     }
@@ -205,14 +197,11 @@
     }
 }
 
-/* ========================== MENU PERFIL - CIERRE SESION =========================== */
-/* ===== MENU USUARIO ===== */
-
+/* ==================================== MENU PERFIL - CIERRE SESION ==================================== */
 .info-usuario {
     position: relative;
 }
 
-/* Menú */
 .menu-usuario {
     position: absolute;
     top: 58px;
@@ -226,7 +215,6 @@
     z-index: 1000;
 
     border: 2px solid #b2c0d0;
-    /* borde azul */
 }
 
 
@@ -244,13 +232,10 @@
     background-color: #F3F4F6;
 }
 
-/* Cerrar sesión */
 .menu-usuario .cerrar-sesion {
     color: #DC2626;
     font-weight: 500;
 }
-
-/* ===== ICONOS MENU USUARIO ===== */
 
 .menu-usuario button {
     display: flex;
@@ -262,7 +247,6 @@
     font-size: 1.2rem;
 }
 
-/* ============ linea dividora =========== */
 .menu-usuario button {
     display: flex;
     align-items: center;
@@ -270,10 +254,8 @@
     padding: 12px 15px;
 }
 
-/* Línea divisora gris entre botones */
 .menu-usuario button+button {
     border-top: 1px solid #D1D5DB;
-    /* gris */
 }
 
 /* ===================== MENU USUARIO RESPONSIVO ===================== */

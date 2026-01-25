@@ -156,7 +156,6 @@
     position: relative;
 }
 
-/* Título */
 .form-recuperar h2 {
     text-align: center;
     color: #393939;
@@ -164,7 +163,6 @@
     font-weight: 600;
 }
 
-/* Texto */
 .texto-recuperar {
     font-size: 0.9rem;
     color: #000000;
@@ -172,7 +170,6 @@
     line-height: 1.4;
 }
 
-/* Campos */
 .campo-recuperar {
     display: flex;
     flex-direction: column;
@@ -196,7 +193,6 @@
     border-color: #2563EB;
 }
 
-/* Botón */
 .btn-recuperar {
     background-color: #2563EB;
     color: white;
@@ -242,9 +238,6 @@
     }
 
 }
-
-/* ==== icono contraseña ==== */
-
 
 @media (max-width: 480px) {
     .recuperar-contrasena {
@@ -314,4 +307,3 @@
         font-size: 13px;
     }
 }
-

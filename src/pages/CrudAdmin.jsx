@@ -1,10 +1,9 @@
+import "../styles/crudAdmin.css";
+
 export function CrudAdmin() {
     return(
         <div className="contenedor-admin">
-            <h1>aqui va el crud del administrador</h1>
-            <p>fdsfsdfdsfs</p>
-
-            <h1>aqui va el crud del administrador</h1>
+            <h1>Contenido aqui</h1>
         </div>
         
     );
