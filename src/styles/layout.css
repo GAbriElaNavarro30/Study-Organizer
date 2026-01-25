@@ -63,49 +63,80 @@
 
 /* =========== Responsividad =========== */
 @media (max-width: 768px) {
+    .header-externo-e {
+        padding: 10px 0px !important;
+    }
+
+    .logo-e {
+        padding-left: 8px !important;
+    }
+
     .logo-header-e {
         width: 220px;
     }
 
     .botones-e {
-        gap: 10px;
+        padding-right: 8px !important;
+        gap: 8px;
     }
 
     .btn-login-e,
     .btn-singup-e {
-        padding: 7px 10px;
-        font-size: 12px;
+        padding: 9px 14px;
+        font-size: 13px;
     }
 }
 
 @media (max-width: 480px) {
     .header-externo-e {
-        padding: 10px 5px;
+        padding: 10px 0px !important;
+    }
+
+    .logo-e {
+        padding-left: 10px !important;
     }
 
     .logo-header-e {
-        width: 160px;
-        margin-left: 0 !important;
+        width: 175px;
     }
 
     .botones-e {
+        padding-right: 5px !important;
         gap: 8px;
-        margin-right: 0 !important;
     }
 
     .btn-login-e,
     .btn-singup-e {
-        padding: 7px 10px;
-        font-size: 10px;
+        padding: 9px 10px;
+        font-size: 11px;
     }
 }
 
+@media (max-width: 360px) {
+    .header-externo-e {
+        padding: 10px 5px;
+    }
 
+    .logo-e {
+        padding-left: 8px !important;
+    }
 
+    .logo-header-e {
+        width: 160px !important;
+    }
 
+    .botones-e {
+        padding-right: 5px !important;
+        gap: 8px;
+    }
 
-
-
+    .btn-login-e,
+    .btn-singup-e {
+        padding: 8px 10px !important;
+        font-size: 10px !important;
+        border-radius: 5px !important;
+    }
+}
 
 /* ================================================================ */
 
@@ -190,7 +221,60 @@
         display: flex;
         /* area clickealble*/
         width: fit-content;
-         /* area clickealble*/
+        /* area clickealble*/
+        align-self: flex-start;
+        padding-bottom: 0 !important;
+    }
+
+    .menu-eslogan {
+        order: 2;
+
+        display: block;
+        text-align: center;
+        font-size: 0.8rem;
+        margin-top: -70px;
+        padding-left: 30%;
+    }
+
+    .menu-exterior {
+        flex-direction: column;
+        align-items: stretch;
+    }
+
+    .menu-items {
+        order: 3;
+
+        flex-direction: column;
+        width: 100%;
+        gap: 12px;
+        padding: 15px 0;
+        display: none;
+        margin-top: -40px !important;
+
+        margin-left: auto;
+        margin-right: auto;
+        align-items: center;
+    }
+
+    .menu-items.show {
+        display: flex;
+    }
+
+    .menu-item {
+        text-align: center;
+        font-size: 14px;
+    }
+}
+
+@media (max-width: 480px) {
+    .hamburger {
+        order: 1;
+        z-index: 999;
+
+        display: flex;
+        /* area clickealble*/
+        width: fit-content;
+        /* area clickealble*/
         align-self: flex-start;
         padding-bottom: 0 !important;
     }
@@ -202,7 +286,7 @@
         text-align: center;
         font-size: 0.70rem;
         margin-top: -70px;
-        padding-left: 30%;
+        padding-left: 20%;
     }
 
     .menu-exterior {
@@ -307,6 +391,23 @@
 }
 
 /* ======= responsividad ======= */
+/* ======= pantallas grandes (>= 769px) ======= */
+@media (max-width: 900px) {
+    .footer-container {
+        padding: 35px 30px;
+        gap: 30px;
+    }
+
+    .footer-logo img {
+        width: 150px;
+    }
+
+    .footer-links a,
+    .footer-info {
+        font-size: 0.85rem;
+    }
+}
+
 @media (max-width: 768px) {
     .footer-container {
         flex-direction: column;
@@ -333,6 +434,45 @@
     .footer p,
     .footer a {
         font-size: 0.7rem;
+    }
+
+    .footer-bottom {
+        font-size: 0.82rem !important;
+    }
+
+}
+
+@media (max-width: 480px) {
+    .footer-container {
+        flex-direction: column;
+        padding: 30px 20px;
+        gap: 25px;
+        text-align: center;
+    }
+
+    .footer-logo,
+    .footer-info {
+        max-width: 100%;
+    }
+
+    .footer-logo img {
+        margin: 0 auto 10px;
+        display: block;
+        width: 130px;
+    }
+
+    .footer h4 {
+        font-size: 0.85rem;
+        margin-bottom: 8px;
+    }
+
+    .footer p,
+    .footer a {
+        font-size: 0.7rem;
+    }
+
+    .footer-bottom {
+        font-size: 0.78rem !important;
     }
 
 }

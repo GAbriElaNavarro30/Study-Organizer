@@ -14,6 +14,10 @@ export function Login() {
             <div className="contenedor-login">
                 <div className="logo-login">
                     <img src={logoLogin} alt="Logotipo" className="logotipo-login" />
+
+                    <p className="eslogan-login">
+                        Organiza tu estudio, cuida tu bienestar
+                    </p>
                 </div>
 
                 <div className="contenedor-formulario-login">

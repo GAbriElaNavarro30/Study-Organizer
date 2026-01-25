@@ -10,11 +10,24 @@
 .logo-login {
     margin-top: 50px;
     margin-bottom: 50px;
-    
+
     flex: 1;
     display: flex;
+    flex-direction: column;
     justify-content: center;
     align-items: center;
+}
+
+
+.eslogan-login {
+    margin-top: 8px;
+    font-size: 0.98rem;
+    text-align: center;
+    max-width: 400px;
+    line-height: 1.4;
+    color: #1E3A8A;
+    font-weight: 500;
+    font-style: italic;
 }
 
 .contenedor-formulario-login {
@@ -32,7 +45,7 @@
     box-shadow: 0 10px 25px rgba(0, 0, 0, 0.1);
     padding: 15px;
     width: 100%;
-    max-width: 430px;
+    max-width: 400px;
     position: relative;
     padding-top: 20px;
 }
@@ -142,8 +155,13 @@
 /* ========================== RESPONSIVIDAD ========================== */
 @media (max-width: 920px) {
     .logotipo-login {
-        width: 320px !important;
+        width: 300px !important;
         padding: 20px;
+    }
+
+    .eslogan-login {
+        font-size: 0.9rem;
+        margin-top: 20px;
     }
 }
 
@@ -159,7 +177,7 @@
     }
 
     .logotipo-login {
-        width: 220px !important;
+        width: 215px !important;
         padding: 0px;
     }
 
@@ -171,14 +189,21 @@
 
     .formulario-login {
         margin: 0;
-        width: 100%;
+        width: 75%;
         max-width: 100%;
     }
 
     .btn-crear-cuenta {
         width: 70%;
     }
+
+    .eslogan-login {
+        font-size: 0.87rem;
+        margin-top: 20px;
+    }
 }
+
+
 
 @media (max-width: 600px) {
     .contenedor-login {
@@ -192,7 +217,7 @@
     }
 
     .logotipo-login {
-        width: 220px !important;
+        width: 210px !important;
         padding: 0px;
     }
 
@@ -210,6 +235,11 @@
 
     .btn-crear-cuenta {
         width: 70%;
+    }
+
+    .eslogan-login {
+        font-size: 0.86rem;
+        margin-top: 20px;
     }
 }
 
@@ -226,7 +256,7 @@
     }
 
     .logotipo-login {
-        width: 220px !important;
+        width: 200px !important;
         padding: 0px;
     }
 
@@ -245,6 +275,11 @@
     .btn-crear-cuenta {
         width: 70%;
     }
+
+    .eslogan-login {
+        font-size: 0.85rem;
+        margin-top: 20px;
+    }
 }
 
 @media (max-width: 468px) {
@@ -259,7 +294,7 @@
     }
 
     .logotipo-login {
-        width: 200px !important;
+        width: 180px !important;
         padding: 0px;
     }
 
@@ -277,5 +312,48 @@
 
     .btn-crear-cuenta {
         width: 70%;
+    }
+
+    .eslogan-login {
+        font-size: 0.8rem;
+        margin-top: 20px;
+    }
+}
+
+@media (max-width: 390px) {
+    .contenedor-login {
+        flex-direction: column;
+        padding: 20px;
+    }
+
+    .logo-login {
+        margin: 20px 0px;
+        flex: none;
+    }
+
+    .logotipo-login {
+        width: 150px !important;
+        padding: 0px;
+    }
+
+    .contenedor-formulario-login {
+        width: 100%;
+        flex: none;
+        margin-bottom: 20px;
+    }
+
+    .formulario-login {
+        margin: 0;
+        width: 100%;
+        max-width: 100%;
+    }
+
+    .btn-crear-cuenta {
+        width: 70%;
+    }
+
+    .eslogan-login {
+        font-size: 0.75rem;
+        margin-top: 20px;
     }
 }
