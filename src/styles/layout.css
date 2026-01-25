@@ -73,22 +73,24 @@
 
     .btn-login-e,
     .btn-singup-e {
-        padding: 8px 12px;
-        font-size: 13px;
+        padding: 7px 10px;
+        font-size: 12px;
     }
 }
 
 @media (max-width: 480px) {
     .header-externo-e {
-        padding: 8px 12px;
+        padding: 10px 5px;
     }
 
     .logo-header-e {
         width: 160px;
+        margin-left: 0 !important;
     }
 
     .botones-e {
         gap: 8px;
+        margin-right: 0 !important;
     }
 
     .btn-login-e,
