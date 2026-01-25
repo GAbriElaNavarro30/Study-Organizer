@@ -256,3 +256,57 @@
         font-size: 16px;
     }
 }
+
+@media (max-width: 400px) {
+
+    .contenedor-contactanos {
+        padding: 10px;
+        gap: 16px;
+    }
+
+    .contenido-contactanos {
+        padding: 5px;
+    }
+
+    .contenido-contactanos h2 {
+        font-size: 18px;
+    }
+
+    .texto-contactanos {
+        font-size: 0.8rem;
+        line-height: 1.4;
+    }
+
+    .campo-contacto label {
+        font-size: 0.75rem;
+    }
+
+    .campo-contacto input,
+    .campo-contacto textarea {
+        font-size: 0.8rem;
+        padding: 8px;
+    }
+
+    .btn-contacto {
+        padding: 10px;
+        font-size: 0.8rem;
+    }
+
+    .info-contacto h3 {
+        font-size: 15px;
+    }
+
+    .info-contacto p {
+        font-size: 0.8rem;
+    }
+
+    .redes-contacto a {
+        font-size: 0.85rem;
+        gap: 6px;
+        word-break: break-word;
+    }
+
+    .redes-contacto span {
+        line-height: 1.3;
+    }
+}

@@ -1,5 +1,5 @@
 /* ==================================== Header Externo ==================================== */
-.header-externo {
+.header-externo-e {
     padding: 5px;
     display: flex;
     justify-content: space-between;
@@ -7,7 +7,7 @@
     background-color: #f7f7f2;
 }
 
-.logo {
+.logo-e {
     flex: 1;
     display: flex;
     align-items: center;
@@ -15,7 +15,7 @@
     padding-left: 20px;
 }
 
-.botones {
+.botones-e {
     flex: 1;
     display: flex;
     align-items: center;
@@ -24,12 +24,12 @@
     gap: 12px;
 }
 
-.logo-header {
+.logo-header-e {
     width: 300px;
     height: auto;
 }
 
-.btn-singup {
+.btn-singup-e {
     background-color: #2563EB;
     color: white;
     border: none;
@@ -41,11 +41,11 @@
     transition: background-color 0.3s, transform 0.2s;
 }
 
-.btn-singup:hover {
+.btn-singup-e:hover {
     background-color: #1E40AF;
 }
 
-.btn-login {
+.btn-login-e {
     background-color: white;
     color: #2563EB;
     border: 2px solid #2563EB;
@@ -56,65 +56,54 @@
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
 }
 
-.btn-login:hover {
+.btn-login-e:hover {
     background-color: #89a4dd;
     color: white;
 }
 
 /* =========== Responsividad =========== */
 @media (max-width: 768px) {
-    .header-externo {
-        padding: 10px 15px;
+    .logo-header-e {
+        width: 220px;
     }
 
-    .logo {
-        padding-left: 10px;
+    .botones-e {
+        gap: 10px;
     }
 
-    .logo-header {
-        width: 200px;
-    }
-
-    .botones {
-        gap: 8px;
-        padding-right: 10px;
-    }
-
-    .btn-login,
-    .btn-singup {
-        padding: 8px 14px;
-        font-size: 14px;
+    .btn-login-e,
+    .btn-singup-e {
+        padding: 8px 12px;
+        font-size: 13px;
     }
 }
 
 @media (max-width: 480px) {
-    .header-externo {
-        padding: 8px 10px;
+    .header-externo-e {
+        padding: 8px 12px;
+    }
+
+    .logo-header-e {
+        width: 160px;
+    }
+
+    .botones-e {
         gap: 8px;
     }
 
-    .logo {
-        flex: 0 0 auto;
-        padding-left: 5px;
-    }
-
-    .logo-header {
-        width: 180px;
-    }
-
-    .botones {
-        flex: 0 0 auto;
-        padding-right: 10px !important;
-        gap: 10px;
-    }
-
-    .btn-login,
-    .btn-singup {
-        padding: 8px 12px;
-        font-size: 12px;
-        margin-right: 0;
+    .btn-login-e,
+    .btn-singup-e {
+        padding: 7px 10px;
+        font-size: 10px;
     }
 }
+
+
+
+
+
+
+
 
 /* ================================================================ */
 

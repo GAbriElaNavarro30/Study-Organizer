@@ -7,14 +7,14 @@ export function HeaderExt() {
   
   return (
     <>
-    <div className="header-externo">
-        <div className="logo">
-            <img src={logo} alt="" className="logo-header"/>
+    <div className="header-externo-e">
+        <div className="logo-e">
+            <img src={logo} alt="" className="logo-header-e"/>
         </div>
 
-        <div className="botones">
-            <button className="btn-login" onClick={() => navigate("/login")}>Acceder</button>
-            <button className="btn-singup" onClick={() => navigate("/registrarse")}>Registrarse</button>
+        <div className="botones-e">
+            <button className="btn-login-e" onClick={() => navigate("/login")}>Acceder</button>
+            <button className="btn-singup-e" onClick={() => navigate("/registrarse")}>Registrarse</button>
         </div>
     </div>
     </>

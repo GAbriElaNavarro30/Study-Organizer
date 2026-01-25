@@ -72,26 +72,26 @@
 /* ======= responsividad ======= */
 @media (max-width: 1172px) {
     .logo-header {
-        width: 220px;
+        width: 220px !important;
     }
 
     .nombre-usuario {
-        font-size: 0.8rem;
-        white-space: normal;
-        word-break: break-word;
-        text-align: right;
+        font-size: 0.8rem !important;
+        white-space: normal !important;
+        word-break: break-word !important;
+        text-align: right !important;
     }
 
 
     .avatar-usuario {
-        width: 42px;
-        height: 42px;
+        width: 42px !important;
+        height: 42px !important;
     }
 }
 
 @media (max-width: 990px) {
     .header-interno {
-        flex-direction: column;
+        flex-direction: column !important;
         padding: 7px 10px;
         gap: 12px;
     }
