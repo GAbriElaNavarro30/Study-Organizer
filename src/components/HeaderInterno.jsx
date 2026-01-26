@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import logo from "../assets/imagenes/logo-header.png";
 import { IoPersonCircleOutline, IoLogOutOutline } from "react-icons/io5";
+import "../styles/layoutInicio.css";
 
 export function HeaderInterno() {
     const [menuAbierto, setMenuAbierto] = useState(false);
