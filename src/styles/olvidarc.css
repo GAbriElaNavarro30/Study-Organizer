@@ -192,6 +192,7 @@
     color: #000000;
     text-align: start;
     line-height: 1.4;
+    margin-bottom: 5px;
 }
 
 .campo-recuperar {
@@ -227,6 +228,7 @@
     cursor: pointer;
     transition: background-color 0.3s, transform 0.2s;
     font-size: 14px;
+    margin-top: 8px;
 }
 
 .btn-recuperar:hover {
@@ -273,7 +275,7 @@
     .btn-recuperar {
         padding: 13px;
         font-size: 0.85rem;
-        margin-top: 5px;
+        margin-top: 8px;
     }
 }
 
@@ -310,7 +312,7 @@
     .btn-recuperar {
         padding: 15px;
         font-size: 0.82rem;
-        margin-top: 5px;
+        margin-top: 8px;
     }
 
     .linea-separadora-rc {
@@ -351,7 +353,7 @@
 
     .btn-recuperar {
         font-size: 0.8rem !important;
-        margin-top: 5px;
+        margin-top: 8px !important;
     }
 
 }
