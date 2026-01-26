@@ -22,7 +22,16 @@ export function Registro() {
 
                     <hr className="separador" />
 
-                    <div className="fila-campos">
+                    <div className="campo">
+                        <label>Nombre</label>
+                        <input
+                            type="text"
+                            placeholder="Nombre"
+                            required
+                        />
+                    </div>
+
+                    {/*<div className="fila-campos">
                         <div className="campo">
                             <label>Nombre</label>
                             <input
@@ -40,7 +49,7 @@ export function Registro() {
                                 required
                             />
                         </div>
-                    </div>
+                    </div>*/}
 
                     <div className="fila-campos">
                         <div className="campo">

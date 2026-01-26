@@ -1,42 +1,66 @@
 .menu-exterior-interno {
     display: flex;
-    gap: 50px;
-    background-color: #B3C8CF;
-    padding: 10px 35px;
+    justify-content: center;
     align-items: center;
-    justify-content: space-between;
+    background-color: #B3C8CF;
+    padding: 12px 40px;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
 /* ===== ITEMS ===== */
 .menu-items-interno {
     display: flex;
-    gap: 35px;
+    gap: 54px;
 }
 
 .menu-item-interno {
+    position: relative;
     text-decoration: none;
-    color: #111827;
-    padding-bottom: 5px;
-    border-bottom: 3px solid transparent;
-    transition: color 0.3s, border-bottom 0.3s;
-    font-size: 14px;
+    color: #1F2937;
+    font-size: 0.9rem;
+    font-weight: 500;
+    padding: 6px 0;
+    transition: color 0.25s ease;
+}
+
+/* Línea inferior animada */
+.menu-item-interno::after {
+    content: "";
+    position: absolute;
+    left: 50%;
+    bottom: 0px;
+    width: 0;
+    height: 3px;
+    background-color: #2563EB;
+    border-radius: 2px;
+    transition: all 0.3s ease;
+    transform: translateX(-50%);
 }
 
 .menu-item-interno:hover {
     color: #2563EB;
 }
 
+.menu-item-interno:hover::after {
+    width: 100%;
+}
+
 .menu-item-interno.active-interno {
-    border-bottom: 3px solid #2563EB;
     color: #2563EB;
+}
+
+.menu-item-interno.active-interno::after {
+    width: 100%;
 }
 
 /* ===== ESLOGAN ===== */
 .menu-eslogan-interno {
-    font-size: 0.9rem;
+    margin-left: 30px;
+    font-size: 0.85rem;
     color: #1E3A8A;
     font-weight: 500;
     font-style: italic;
+    opacity: 0.85;
     display: none;
 }
 
@@ -70,43 +94,40 @@
     transform: translateY(-8px) rotate(-45deg);
 }
 
+
 /* ======= RESPONSIVIDAD ======= */
-@media (max-width: 768px) {
+@media (max-width: 990px) {
+    .menu-exterior-interno {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 15px 15px 25px !important;
+        position: relative;
+    }
 
     .hamburger-interno {
-        order: 1;
-        z-index: 999;
         display: flex;
-        width: fit-content;
         align-self: flex-start;
-        padding-bottom: 0 !important;
     }
 
     .menu-eslogan-interno {
-        order: 2;
         display: block;
+        font-size: 0.92rem;
         text-align: center;
-        font-size: 0.8rem;
-        margin-top: -70px;
-        padding-left: 30%;
-    }
+        margin-bottom: 0;
+        padding: 0;
 
-    .menu-exterior-interno {
-        flex-direction: column;
-        align-items: stretch;
+        position: absolute;
+        right: 25px;
+        top: 15px;
     }
 
     .menu-items-interno {
-        order: 3;
-        flex-direction: column;
         width: 100%;
-        gap: 12px;
-        padding: 15px 0;
-        display: none;
-        margin-top: -40px !important;
-        margin-left: auto;
-        margin-right: auto;
+        flex-direction: column;
         align-items: center;
+        gap: 16px;
+        display: none;
+        padding-top: 10px;
     }
 
     .menu-items-interno.show-interno {
@@ -114,47 +135,42 @@
     }
 
     .menu-item-interno {
-        text-align: center;
-        font-size: 14px;
+        font-size: 0.95rem;
     }
 }
 
-@media (max-width: 480px) {
+@media (max-width: 900px) {
+    .menu-exterior-interno {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 15px 15px 25px !important;
+        position: relative;
+    }
 
     .hamburger-interno {
-        order: 1;
-        z-index: 999;
         display: flex;
-        width: fit-content;
         align-self: flex-start;
-        padding-bottom: 0 !important;
     }
 
     .menu-eslogan-interno {
-        order: 2;
         display: block;
+        font-size: 0.88rem;
         text-align: center;
-        font-size: 0.7rem;
-        margin-top: -70px;
-        padding-left: 20%;
-    }
+        margin-bottom: 0;
+        padding: 0;
 
-    .menu-exterior-interno {
-        flex-direction: column;
-        align-items: stretch;
+        position: absolute;
+        right: 25px;
+        top: 15px;
     }
 
     .menu-items-interno {
-        order: 3;
-        flex-direction: column;
         width: 100%;
-        gap: 12px;
-        padding: 15px 0;
-        display: none;
-        margin-top: -40px !important;
-        margin-left: auto;
-        margin-right: auto;
+        flex-direction: column;
         align-items: center;
+        gap: 16px;
+        display: none;
+        padding-top: 10px;
     }
 
     .menu-items-interno.show-interno {
@@ -162,7 +178,117 @@
     }
 
     .menu-item-interno {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 680px) {
+    .menu-exterior-interno {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 15px 15px 25px !important;
+        position: relative;
+    }
+
+    .hamburger-interno {
+        display: flex;
+        align-self: flex-start;
+    }
+
+    .menu-eslogan-interno {
+        display: block;
+        font-size: 0.85rem;
         text-align: center;
-        font-size: 14px;
+        margin-bottom: 0;
+        padding: 0;
+
+        position: absolute;
+        right: 25px;
+        top: 15px;
+    }
+
+    .menu-items-interno {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        display: none;
+        padding-top: 10px;
+    }
+
+    .menu-items-interno.show-interno {
+        display: flex;
+    }
+
+    .menu-item-interno {
+        font-size: 0.95rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-exterior-interno {
+        flex-direction: column;
+        align-items: center;
+        padding: 15px 15px 15px 25px !important;
+        position: relative;
+    }
+
+    .hamburger-interno {
+        display: flex;
+        align-self: flex-start;
+    }
+
+    .menu-eslogan-interno {
+        display: block;
+        font-size: 0.8rem;
+        text-align: center;
+        margin-bottom: 0;
+        padding: 0;
+
+        position: absolute;
+        right: 25px;
+        top: 15px;
+    }
+
+    .menu-items-interno {
+        width: 100%;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
+        display: none;
+        padding-top: 10px;
+    }
+
+    .menu-items-interno.show-interno {
+        display: flex;
+    }
+
+    .menu-item-interno {
+        font-size: 0.95rem;
+    }
+}
+
+
+
+@media (max-width: 480px) {
+    .menu-exterior-interno {
+        padding: 15px 15px 15px 25px !important;
+        position: relative;
+    }
+
+    .menu-eslogan-interno {
+        font-size: 0.75rem;
+        position: absolute;
+        right: 25px;
+        top: 15px;
+        padding-bottom: 0 !important;
+    }
+
+    .menu-items-interno {
+        margin-top: 15px;
+    }
+
+    .menu-item-interno {
+        font-size: 0.9rem;
     }
 }

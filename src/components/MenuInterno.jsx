@@ -65,6 +65,18 @@ export function MenuInterno() {
                             : "menu-item-interno"
                     }
                 >
+                    Cursos
+                </NavLink>
+
+                <NavLink
+                    to="/"
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                        isActive
+                            ? "menu-item-interno active-interno"
+                            : "menu-item-interno"
+                    }
+                >
                     Notas
                 </NavLink>
 
@@ -81,7 +93,7 @@ export function MenuInterno() {
                 </NavLink>
 
                 <NavLink
-                    to="/"
+                    to="/perfil"
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                         isActive
