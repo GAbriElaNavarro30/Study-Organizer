@@ -4,10 +4,14 @@ import EmojiPicker from "emoji-picker-react";
 import { useState, useRef } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { FiEdit2 } from "react-icons/fi";
+import { IoEye, IoEyeOff } from "react-icons/io5";
 
 export function Perfil() {
     const [descripcion, setDescripcion] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
+
+    const [mostrarPassword, setMostrarPassword] = useState(false);
+    const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
 
     // ===== FOTO PERFIL =====
     const [fotoPerfil, setFotoPerfil] = useState("/perfil.jpg");
@@ -29,17 +33,19 @@ export function Perfil() {
     };
 
     // ===== HABILITAR EDICIÓN =====
+    // ===== HABILITAR EDICIÓN =====
     const habilitarEdicion = (e) => {
-        const input = e.currentTarget.previousElementSibling;
+        const container = e.currentTarget.closest('.input-editable');
+        const input = container?.querySelector('input');
         if (input) {
-            input.disabled = !input.disabled; // toggle
+            input.disabled = !input.disabled;
             if (!input.disabled) {
                 input.focus();
             }
         }
     };
 
-   
+
 
     return (
         <div className="contenedor-perfil-usuario">
@@ -143,23 +149,62 @@ export function Perfil() {
                 <div className="fila-form-usuario">
                     <div className="campo-usuario">
                         <label>Contraseña</label>
-                        <div className="input-editable">
-                            <input type="password" disabled />
-                            <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+
+                        <div className="input-editable input-password">
+                            <input
+                                type={mostrarPassword ? "text" : "password"}
+                                disabled
+                            />
+
+                            {/* OJO */}
+                            <button
+                                type="button"
+                                className="btn-ojo"
+                                onClick={() => setMostrarPassword(prev => !prev)}
+                                aria-label="Mostrar u ocultar contraseña"
+                            >
+                                {mostrarPassword ? <IoEyeOff /> : <IoEye />}
+                            </button>
+
+                            {/* LÁPIZ */}
+                            <button
+                                type="button"
+                                className="btn-lapiz"
+                                onClick={habilitarEdicion}
+                            >
                                 <FiEdit2 />
                             </button>
                         </div>
                     </div>
 
+
                     <div className="campo-usuario">
                         <label>Confirmar contraseña</label>
-                        <div className="input-editable">
-                            <input type="password" disabled />
-                            <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+
+                        <div className="input-editable input-password">
+                            <input
+                                type={mostrarConfirmPassword ? "text" : "password"}
+                                disabled
+                            />
+
+                            <button
+                                type="button"
+                                className="btn-ojo"
+                                onClick={() => setMostrarConfirmPassword(prev => !prev)}
+                            >
+                                {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
+                            </button>
+
+                            <button
+                                type="button"
+                                className="btn-lapiz"
+                                onClick={habilitarEdicion}
+                            >
                                 <FiEdit2 />
                             </button>
                         </div>
                     </div>
+
                 </div>
 
                 {/* DESCRIPCIÓN */}

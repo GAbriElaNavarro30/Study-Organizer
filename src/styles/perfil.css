@@ -123,7 +123,6 @@
     background-color: #ffffff;
 }
 
-/* Focus */
 .campo-usuario input:focus,
 .campo-usuario textarea:focus {
     outline: none;
@@ -157,18 +156,12 @@
     object-fit: cover;
 }
 
-/* Botón cambiar foto */
 .foto-form-usuario button {
     font-size: 0.85rem;
     background: none;
     border: none;
     color: #2563EB;
     cursor: pointer;
-}
-
-.foto-form-usuario button:disabled {
-    color: #9CA3AF;
-    cursor: not-allowed;
 }
 
 /* ================= COLUMNAS ================= */
@@ -186,7 +179,6 @@
 
 .genero-opciones-usuario {
     display: flex;
-    width: 100%;
     gap: 20px;
 }
 
@@ -199,31 +191,17 @@
     border: 1px solid #D1D5DB;
     border-radius: 8px;
     cursor: pointer;
-    font-size: 0.9rem;
-    color: #374151;
     background-color: #ffffff;
-    transition: border-color 0.2s ease, box-shadow 0.2s ease;
+    transition: all 0.2s ease;
 }
 
 .genero-box-usuario:hover {
     border-color: #2563EB;
 }
 
-.genero-box-usuario input {
-    cursor: pointer;
-}
-
-/* Seleccionado */
 .genero-box-usuario:has(input:checked) {
     border-color: #2563EB;
     box-shadow: 0 0 0 1px #2563EB;
-}
-
-/* Deshabilitado */
-.genero-box-usuario:has(input:disabled) {
-    background-color: #F3F4F6;
-    cursor: not-allowed;
-    color: #9CA3AF;
 }
 
 /* ================= BOTONES ================= */
@@ -251,14 +229,7 @@
     cursor: pointer;
 }
 
-/* Botones deshabilitados */
-.btn-cancelar-usuario:disabled,
-.btn-guardar-usuario:disabled {
-    background-color: #D1D5DB;
-    cursor: not-allowed;
-}
-
-/* ================= TEXTAREA + ICONO ================= */
+/* ================= TEXTAREA + EMOJI ================= */
 .textarea-wrapper {
     position: relative;
     width: 100%;
@@ -270,52 +241,6 @@
     resize: none;
     border-radius: 10px;
     border: 1px solid #D1D5DB;
-    font-family: inherit;
-}
-
-/* BOTÓN ICONO (emoji / editar) */
-.btn-icono-usuario {
-    position: absolute;
-    bottom: 10px;
-    right: 10px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    color: #6B7280;
-    display: flex;
-    align-items: center;
-    justify-content: center;
-}
-
-/* Icono (ej. react-icons) */
-.btn-icono-usuario svg {
-    font-size: 1.2rem;
-}
-
-/* Hover */
-.btn-icono-usuario:hover {
-    color: #2563EB;
-}
-
-/* DESHABILITADO */
-.btn-icono-usuario:disabled {
-    color: #9CA3AF;
-    cursor: not-allowed;
-}
-
-/* ================= EMOJI PICKER ================= */
-.textarea-wrapper {
-    position: relative;
-    width: 100%;
-}
-
-.textarea-wrapper textarea {
-    width: 100%;
-    padding: 12px 40px 12px 12px;
-    resize: none;
-    border-radius: 10px;
-    border: 1px solid #ccc;
-    font-family: inherit;
 }
 
 .btn-emoji-usuario {
@@ -326,14 +251,18 @@
     border: none;
     cursor: pointer;
     font-size: 1.2rem;
-    color: #666;
+    color: #6B7280;
 }
 
+.btn-emoji-usuario:hover {
+    color: #2563EB;
+}
 
+/* ================= EMOJI PICKER ================= */
 .emoji-picker-wrapper {
+    margin-top: 8px;
     position: relative;
     z-index: 1000;
-    margin-top: 8px;
 }
 
 .emoji-picker-wrapper * {
@@ -341,17 +270,10 @@
 }
 
 .emoji-picker-wrapper input {
-    padding-left: 38px !important; 
-    height: 36px;
-    font-size: 0.9rem;
-    box-sizing: border-box;
+    padding-left: 38px !important;
 }
 
-.emoji-picker-wrapper svg {
-    margin-left: 10px;
-}
-
-/* ================= INPUT EDITABLE CON LÁPIZ ================= */
+/* ================= INPUT EDITABLE (GENERAL) ================= */
 .input-editable {
     position: relative;
     display: flex;
@@ -361,9 +283,10 @@
 
 .input-editable input {
     width: 100%;
-    padding-right: 40px; /* espacio para el botón */
+    padding-right: 42px;
 }
 
+/* ================= LÁPIZ ================= */
 .btn-lapiz {
     position: absolute;
     right: 10px;
@@ -375,14 +298,7 @@
     color: #6B7280;
     padding: 6px;
     border-radius: 6px;
-    display: flex;
-    align-items: center;
-    justify-content: center;
     transition: all 0.2s ease;
-}
-
-.btn-lapiz svg {
-    font-size: 1rem;
 }
 
 .btn-lapiz:hover {
@@ -390,14 +306,49 @@
     background-color: #EFF6FF;
 }
 
-.btn-lapiz:active {
-    transform: translateY(-50%) scale(0.95);
+/* ================= INPUT PASSWORD ================= */
+.input-password input {
+    padding-right: 80px;
 }
 
-/* Cuando el input está habilitado, cambiar apariencia del lápiz */
-.input-editable input:not(:disabled) + .btn-lapiz {
+/* OJO */
+.input-password .btn-ojo {
+    position: absolute;
+    right: 44px;
+    top: 50%;
+    transform: translateY(-50%);
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #6B7280;
+    font-size: 1.2rem;
+}
+
+.input-password .btn-ojo:hover {
     color: #2563EB;
 }
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 768px) {
+    .fila-form-usuario {
+        flex-direction: column;
+    }
+
+    .fila-botones-usuario {
+        justify-content: center;
+    }
+
+    .titulo-formulario-usuario {
+        text-align: center;
+    }
+}
+
+@media (max-width: 640px) {
+    .genero-opciones-usuario {
+        flex-direction: column;
+    }
+}
+
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {
@@ -435,10 +386,6 @@
         justify-content: flex-start;
     }
 }
-
-
-
-
 
 
 
