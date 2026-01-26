@@ -417,17 +417,30 @@
 /* ===================== MENU USUARIO RESPONSIVO ===================== */
 @media (max-width: 1172px) {
     .menu-usuario {
-        top: 47px;
+        width: 165px !important;
+        left: 80%;
+        right: auto;
+        transform: translateX(-50%);
+        top: 59px !important;
+    }
+
+    .menu-usuario button {
+        font-size: 0.9rem;
+        padding: 12px 16px;
+    }
+
+    .icono-menu {
+        font-size: 1.4rem;
     }
 }
 
 @media (max-width: 990px) {
     .menu-usuario {
-        width: 180px !important;
-        right: 43%;
-        transform: translateX(50%);
-        top: 47px;
-        border-radius: 10px;
+        width: 170px !important;
+        left: 78%;
+        right: auto;
+        transform: translateX(-50%);
+        top: 65px !important;
     }
 
     .menu-usuario button {
@@ -442,12 +455,49 @@
 
 @media (max-width: 768px) {
     .menu-usuario {
-        width: 180px !important;
-        right: 50%;
-        transform: translateX(50%);
-        top: 47px;
+        width: 170px !important;
+        left: 78%;
+        right: auto;
+        transform: translateX(-50%);
+        top: 62px !important;
+    }
 
-        border-radius: 10px;
+    .menu-usuario button {
+        font-size: 0.9rem;
+        padding: 12px 16px;
+    }
+
+    .icono-menu {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 680px) {
+    .menu-usuario {
+        width: 170px !important;
+        left: 75%;
+        right: auto;
+        transform: translateX(-50%);
+        top: 59px !important;
+    }
+
+    .menu-usuario button {
+        font-size: 0.9rem;
+        padding: 12px 16px;
+    }
+
+    .icono-menu {
+        font-size: 1.4rem;
+    }
+}
+
+@media (max-width: 600px) {
+    .menu-usuario {
+        width: 170px !important;
+        left: -45%;
+        right: auto;
+        transform: translateX(-50%);
+        top: 63px !important;
     }
 
     .menu-usuario button {
@@ -462,11 +512,11 @@
 
 @media (max-width: 480px) {
     .menu-usuario {
-        width: 160px;
-        left: 50%;
+        width: 150px !important;
+        left: -30%;
         right: auto;
         transform: translateX(-50%);
-        top: 47px !important;
+        top: 58px !important;
     }
 
     .menu-usuario button {
