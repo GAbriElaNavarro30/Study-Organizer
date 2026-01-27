@@ -9,9 +9,7 @@
 
 .contenedor-admin {
     width: 90%;
-    padding: 15px;
-    padding-bottom: 30px;
-    padding-top: 30px;
+    padding: 30px 15px 30px 15px;
     background: #ffffff;
     border-radius: 12px;
     box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
@@ -21,7 +19,7 @@
 
 /* ================= TÍTULO ================= */
 .titulo-admin {
-    font-size: 1.2rem;
+    font-size: 1.3rem;
     font-weight: 600;
     margin-bottom: 25px;
     color: #0f172a;
@@ -34,23 +32,33 @@
     justify-content: space-between;
     align-items: center;
     flex-wrap: wrap;
-    gap: 15px;
+    gap: 60px;
     margin-bottom: 25px;
+
 }
 
 /* ================= BOTONES ================= */
 .btn {
     display: flex;
     align-items: center;
-    gap: 6px; /* separación entre icono y texto */
-    padding: 8px 16px;
-    border-radius: 8px;
+    justify-content: center;
+    gap: 4px;
+    padding: 9px 10px;
+    border-radius: 6px;
     border: none;
     cursor: pointer;
     font-weight: 500;
-    font-size: 0.9rem;
+    font-size: 0.8rem;
     transition: all 0.2s ease;
+    flex: 0 0 auto;
 }
+
+.botones-superior {
+    display: flex;
+    gap: 60px;
+    flex-wrap: nowrap;
+}
+
 
 .btn-nuevo {
     background: #2563eb;
@@ -70,7 +78,6 @@
     background: #334155;
 }
 
-
 /* ================= BUSQUEDA Y SELECT ================= */
 .busqueda-con-icono {
     display: flex;
@@ -78,25 +85,30 @@
     background: #ffffff;
     border: 1px solid #cbd5e1;
     border-radius: 8px;
-    padding: 8px 10px;
+    padding: 8px 12px;
     gap: 6px;
+    flex: 2 1 0px;
+    min-width: 200px;
 }
 
 .input-busqueda {
     border: none;
     outline: none;
     font-size: 0.9rem;
-    width: 560px; /* ajustable */
+    width: 100%;
 }
 
 .icono-busqueda {
-    color: #64748b; /* gris profesional */
+    color: #64748b;
 }
 
 .mostrar-resultados {
     display: flex;
     align-items: center;
-    gap: 8px; /* separación entre texto y select */
+    gap: 8px;
+    flex-wrap: wrap;
+    justify-content: flex-end;
+    min-width: 120px;
     font-size: 0.9rem;
     color: #334155;
 }
@@ -118,12 +130,13 @@
 
 .tabla-admin {
     width: 100%;
+    min-width: 600px;
     border-collapse: collapse;
     background: #ffffff;
 }
 
 .tabla-admin thead {
-    background: #f1f5f9; /* gris suave */
+    background: #f1f5f9;
     color: #1e293b;
     font-weight: 600;
     font-size: 0.95rem;
@@ -142,7 +155,7 @@
 }
 
 .tabla-admin tbody tr:hover {
-    background: #f8fafc; /* hover sutil */
+    background: #f8fafc;
 }
 
 /* ================= ACCIONES TABLA ================= */
@@ -163,7 +176,7 @@
 }
 
 .btn-icono.editar {
-    background: #3b82f6; /* azul */
+    background: #3b82f6;
     color: #fff;
 }
 
@@ -172,7 +185,7 @@
 }
 
 .btn-icono.eliminar {
-    background: #ef4444; /* rojo */
+    background: #ef4444;
     color: #fff;
 }
 
@@ -180,34 +193,29 @@
     background: #dc2626;
 }
 
-
 /* ================= PAGINACIÓN ================= */
 .paginacion {
     display: flex;
     justify-content: center;
     gap: 8px;
     margin-top: 10px;
+    flex-wrap: wrap;
 }
 
 .pagina {
     width: 32px;
     height: 32px;
-
     display: flex;
     align-items: center;
     justify-content: center;
-
-    border-radius: 6px;          /* cuadrado con esquinas suaves */
+    border-radius: 6px;
     border: 1px solid #cbd5e1;
     background: #ffffff;
     cursor: pointer;
-
     font-size: 0.85rem;
     font-weight: 500;
-
     transition: all 0.2s ease;
 }
-
 
 .pagina.activa {
     background: #2563eb;
@@ -217,4 +225,129 @@
 
 .pagina:hover:not(.activa) {
     background: #f1f5f9;
+}
+
+/* ================= RESPONSIVIDAD ================= */
+@media (max-width: 1024px) {
+    .barra-superior {
+        justify-content: center;
+        gap: 20px;
+    }
+
+    .contenedor-admin {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .botones-superior {
+        gap: 20px;
+    }
+
+    .mostrar-resultados {
+        justify-content: center;
+    }
+}
+
+
+@media (max-width: 860px) {
+    .barra-superior {
+        flex-wrap: wrap;
+        align-items: center;
+        gap: 20px;
+    }
+
+    .mostrar-resultados {
+        flex: 1 1 100%;
+        justify-content: center;
+        margin-top: 10px;
+    }
+}
+
+@media (max-width: 768px) {
+    .contenedor-administrador {
+        padding: 30px 15px !important;
+        margin: 0px !important;
+        width: 100% !important;
+    }
+
+    .contenedor-admin {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .titulo-admin {
+        font-size: 1.2rem;
+    }
+
+    .barra-superior {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 10px;
+    }
+
+    .btn {
+        gap: 12px;
+    }
+
+    .botones-superior {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 40px;
+    }
+
+    .btn-nuevo,
+    .btn-pdf {
+        flex: 1 1 auto;
+        font-size: 0.75rem;
+        padding: 10px 8px !important;
+    }
+}
+
+@media (max-width: 480px) {
+    .contenedor-administrador {
+        padding: 30px 15px !important;
+        margin: 0px !important;
+        width: 100% !important;
+    }
+
+    .contenedor-admin {
+        margin: 0 !important;
+        width: 100% !important;
+    }
+
+    .tabla-admin th,
+    .tabla-admin td {
+        padding: 6px 8px;
+        font-size: 0.75rem;
+    }
+
+    .btn {
+        gap: 8px;
+    }
+
+    .barra-superior {
+        gap: 15px;
+    }
+
+    .botones-superior {
+        flex-direction: row;
+        justify-content: flex-start;
+        gap: 40px;
+    }
+
+    .btn-nuevo,
+    .btn-pdf {
+        flex: 1 1 auto;
+        font-size: 0.75rem;
+        padding: 10px 8px !important;
+    }
+
+    .input-busqueda {
+        font-size: 0.8rem;
+    }
+
+    .pagina {
+        padding: 4px 6px;
+        font-size: 0.7rem;
+    }
 }

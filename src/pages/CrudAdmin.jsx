@@ -10,15 +10,17 @@ export function CrudAdmin() {
                 <h1 className="titulo-admin">Administración de Usuarios</h1>
 
                 <div className="barra-superior">
-                    <button className="btn btn-nuevo">
-                        <IoAddCircleOutline />
-                        Nuevo
-                    </button>
+                    <div className="botones-superior">
+                        <button className="btn btn-nuevo">
+                            <IoAddCircleOutline />
+                            Nuevo
+                        </button>
 
-                    <button className="btn btn-pdf">
-                        <IoDocumentTextOutline />
-                        Exportar PDF
-                    </button>
+                        <button className="btn btn-pdf">
+                            <IoDocumentTextOutline />
+                            Exportar PDF
+                        </button>
+                    </div>
 
                     <div className="busqueda-con-icono">
                         <IoSearchOutline className="icono-busqueda" />
