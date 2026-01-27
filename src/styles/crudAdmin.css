@@ -1,7 +1,220 @@
+/* ================= CONTENEDOR ================= */
+.contenedor-administrador {
+    background-color: #F1F0E8;
+    padding: 40px 40px;
+    display: flex;
+    justify-content: center;
+    align-items: center;
+}
+
 .contenedor-admin {
-    background-color: rgb(255, 255, 255);
-    padding: 20px;
+    width: 90%;
+    padding: 15px;
+    padding-bottom: 30px;
+    padding-top: 30px;
+    background: #ffffff;
+    border-radius: 12px;
+    box-shadow: 0 6px 20px rgba(0, 0, 0, 0.08);
+    font-family: 'Inter', sans-serif;
+    color: #1e293b;
+}
+
+/* ================= TÍTULO ================= */
+.titulo-admin {
+    font-size: 1.2rem;
+    font-weight: 600;
+    margin-bottom: 25px;
+    color: #0f172a;
+    text-align: center;
+}
+
+/* ================= FILA SUPERIOR ================= */
+.barra-superior {
+    display: flex;
+    justify-content: space-between;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 15px;
+    margin-bottom: 25px;
+}
+
+/* ================= BOTONES ================= */
+.btn {
+    display: flex;
+    align-items: center;
+    gap: 6px; /* separación entre icono y texto */
+    padding: 8px 16px;
+    border-radius: 8px;
+    border: none;
+    cursor: pointer;
+    font-weight: 500;
+    font-size: 0.9rem;
+    transition: all 0.2s ease;
+}
+
+.btn-nuevo {
+    background: #2563eb;
+    color: #ffffff;
+}
+
+.btn-nuevo:hover {
+    background: #1e40af;
+}
+
+.btn-pdf {
+    background: #475569;
+    color: #ffffff;
+}
+
+.btn-pdf:hover {
+    background: #334155;
 }
 
 
+/* ================= BUSQUEDA Y SELECT ================= */
+.busqueda-con-icono {
+    display: flex;
+    align-items: center;
+    background: #ffffff;
+    border: 1px solid #cbd5e1;
+    border-radius: 8px;
+    padding: 8px 10px;
+    gap: 6px;
+}
 
+.input-busqueda {
+    border: none;
+    outline: none;
+    font-size: 0.9rem;
+    width: 560px; /* ajustable */
+}
+
+.icono-busqueda {
+    color: #64748b; /* gris profesional */
+}
+
+.mostrar-resultados {
+    display: flex;
+    align-items: center;
+    gap: 8px; /* separación entre texto y select */
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.select-registros {
+    padding: 8px 12px;
+    border-radius: 8px;
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    cursor: pointer;
+    font-size: 0.9rem;
+}
+
+/* ================= TABLA ================= */
+.tabla-contenedor {
+    overflow-x: auto;
+    border-radius: 12px;
+}
+
+.tabla-admin {
+    width: 100%;
+    border-collapse: collapse;
+    background: #ffffff;
+}
+
+.tabla-admin thead {
+    background: #f1f5f9; /* gris suave */
+    color: #1e293b;
+    font-weight: 600;
+    font-size: 0.95rem;
+}
+
+.tabla-admin th,
+.tabla-admin td {
+    padding: 14px 16px;
+    text-align: left;
+    font-size: 0.9rem;
+    color: #334155;
+}
+
+.tabla-admin tbody tr {
+    border-bottom: 1px solid #e2e8f0;
+}
+
+.tabla-admin tbody tr:hover {
+    background: #f8fafc; /* hover sutil */
+}
+
+/* ================= ACCIONES TABLA ================= */
+.acciones-tabla {
+    display: flex;
+    gap: 8px;
+}
+
+.btn-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 6px;
+    border-radius: 6px;
+    border: none;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.btn-icono.editar {
+    background: #3b82f6; /* azul */
+    color: #fff;
+}
+
+.btn-icono.editar:hover {
+    background: #2563eb;
+}
+
+.btn-icono.eliminar {
+    background: #ef4444; /* rojo */
+    color: #fff;
+}
+
+.btn-icono.eliminar:hover {
+    background: #dc2626;
+}
+
+
+/* ================= PAGINACIÓN ================= */
+.paginacion {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+    margin-top: 10px;
+}
+
+.pagina {
+    width: 32px;
+    height: 32px;
+
+    display: flex;
+    align-items: center;
+    justify-content: center;
+
+    border-radius: 6px;          /* cuadrado con esquinas suaves */
+    border: 1px solid #cbd5e1;
+    background: #ffffff;
+    cursor: pointer;
+
+    font-size: 0.85rem;
+    font-weight: 500;
+
+    transition: all 0.2s ease;
+}
+
+
+.pagina.activa {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.pagina:hover:not(.activa) {
+    background: #f1f5f9;
+}

@@ -2,6 +2,6 @@ import "../styles/layout.css"
 
 export function Inicio() {
   return (
-    <h1>Hola</h1>
+    <h1>Página de inicio</h1>
   );
 }

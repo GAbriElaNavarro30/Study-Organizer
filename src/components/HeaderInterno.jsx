@@ -21,10 +21,16 @@ export function HeaderInterno() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
+    /* Navegar y cerrar menú */
+    const handleNavigate = (ruta) => {
+        setMenuAbierto(false);
+        navigate(ruta);
+    };
+
     return (
         <div className="header-interno">
             <div className="logotipo-interno">
-                <img src={logo} alt="" className="logo-header" />
+                <img src={logo} alt="Logo" className="logo-header" />
             </div>
 
             <div className="eslogan-interno">
@@ -45,24 +51,20 @@ export function HeaderInterno() {
 
                 {menuAbierto && (
                     <div className="menu-usuario">
-                        <button onClick={() => navigate("/perfil")}>
+                        <button onClick={() => handleNavigate("/perfil")}>
                             <IoPersonCircleOutline className="icono-menu" />
                             Perfil
                         </button>
 
                         <button
                             className="cerrar-sesion"
-                            onClick={() => {
-                                setMenuAbierto(false);
-                                navigate("/login");
-                            }}
+                            onClick={() => handleNavigate("/login")}
                         >
                             <IoLogOutOutline className="icono-menu" />
                             Cerrar sesión
                         </button>
                     </div>
                 )}
-
             </div>
         </div>
     );
