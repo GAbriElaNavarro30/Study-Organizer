@@ -4,8 +4,12 @@ import logo from "../assets/imagenes/logo-header.png";
 import { IoPersonCircleOutline, IoLogOutOutline } from "react-icons/io5";
 import "../styles/layoutInicio.css";
 
+import { ModalCerrarSesion } from "./ModalCerrarSesion";
+
 export function HeaderInterno() {
     const [menuAbierto, setMenuAbierto] = useState(false);
+    const [openLogout, setOpenLogout] = useState(false);
+
     const menuRef = useRef(null);
     const navigate = useNavigate();
 
@@ -25,6 +29,18 @@ export function HeaderInterno() {
     const handleNavigate = (ruta) => {
         setMenuAbierto(false);
         navigate(ruta);
+    };
+
+    /* Confirmar cierre de sesión */
+    const handleConfirmLogout = () => {
+        setOpenLogout(false);
+        setMenuAbierto(false);
+
+        // 🔐 Limpia sesión (ajusta según tu auth)
+        localStorage.clear();
+        // localStorage.removeItem("token");
+
+        navigate("/login");
     };
 
     return (
@@ -58,7 +74,10 @@ export function HeaderInterno() {
 
                         <button
                             className="cerrar-sesion"
-                            onClick={() => handleNavigate("/login")}
+                            onClick={() => {
+                                setMenuAbierto(false);
+                                setOpenLogout(true);
+                            }}
                         >
                             <IoLogOutOutline className="icono-menu" />
                             Cerrar sesión
@@ -66,6 +85,13 @@ export function HeaderInterno() {
                     </div>
                 )}
             </div>
+
+            {/* MODAL CERRAR SESIÓN */}
+            <ModalCerrarSesion
+                isOpen={openLogout}
+                onClose={() => setOpenLogout(false)}
+                onConfirm={handleConfirmLogout}
+            />
         </div>
     );
 }

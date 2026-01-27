@@ -33,6 +33,7 @@ export function AppRoutes() {
                 {/* ----------------------- Rutas protegidas ------------------------- */}
                 <Route path="/crud-administrador" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
                 <Route path="/perfil" element={<LayoutInterno><Perfil /></LayoutInterno>} />
+                <Route path="/crud" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
 
             </Routes>
         </HashRouter>

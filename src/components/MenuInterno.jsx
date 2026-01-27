@@ -5,6 +5,8 @@ import { useState } from "react";
 export function MenuInterno() {
     const [open, setOpen] = useState(false);
 
+    const [openLogout, setOpenLogout] = useState(false);
+
     return (
         <nav className="menu-exterior-interno">
             {/* HAMBURGUESA */}
@@ -30,6 +32,18 @@ export function MenuInterno() {
                     }
                 >
                     Dashboard
+                </NavLink>
+
+                <NavLink
+                    to="/"
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                        isActive
+                            ? "menu-item-interno active-interno"
+                            : "menu-item-interno"
+                    }
+                >
+                    Bienvenida
                 </NavLink>
 
                 <NavLink
@@ -77,6 +91,18 @@ export function MenuInterno() {
                             : "menu-item-interno"
                     }
                 >
+                    Cursos Tutor
+                </NavLink>
+
+                <NavLink
+                    to="/"
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                        isActive
+                            ? "menu-item-interno active-interno"
+                            : "menu-item-interno"
+                    }
+                >
                     Notas
                 </NavLink>
 
@@ -90,6 +116,18 @@ export function MenuInterno() {
                     }
                 >
                     Recordatorio
+                </NavLink>
+
+                <NavLink
+                    to="/crud"
+                    onClick={() => setOpen(false)}
+                    className={({ isActive }) =>
+                        isActive
+                            ? "menu-item-interno active-interno"
+                            : "menu-item-interno"
+                    }
+                >
+                    Crud
                 </NavLink>
 
                 <NavLink
