@@ -332,7 +332,7 @@
     .botones-superior {
         flex-direction: row;
         justify-content: flex-start;
-        gap: 40px;
+        gap: 60px;
     }
 
     .btn-nuevo,
