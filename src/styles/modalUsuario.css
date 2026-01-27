@@ -1,0 +1,379 @@
+/* ================= OVERLAY ================= */
+.modal-overlay-create-update {
+    position: fixed;
+    top: 0;
+    left: 0;
+    width: 100%;
+    height: 100%;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    z-index: 1000;
+    padding: 16px;
+    box-sizing: border-box;
+}
+
+/* ================= CONTENEDOR ================= */
+.modal-container-create-update {
+    background: #ffffff;
+    border-radius: 12px;
+    padding: 26px 28px;
+    width: 100%;
+    max-width: 520px;
+    max-height: 100vh;
+    overflow-y: auto;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.15);
+    font-family: 'Inter', sans-serif;
+    box-sizing: border-box;
+    position: relative;
+}
+
+/* ================= Botón cerrar ================= */
+.modal-close-btn {
+    position: absolute;
+    top: 14px;
+    left: 14px;
+    background: transparent;
+    border: none;
+    cursor: pointer;
+    padding: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #475569;
+    font-size: 1.2rem;
+}
+
+.modal-close-btn:hover {
+    color: #0f172a;
+}
+
+/* ================= TÍTULO ================= */
+.modal-container-create-update h2 {
+    margin-bottom: 10px;
+    color: #0f172a;
+    text-align: center;
+    font-size: 1.25rem;
+    font-weight: 600;
+}
+
+/* ================= HR ================= */
+.linea-separadora-create-update {
+    border: none;
+    height: 1px;
+    background-color: #e5e7eb;
+    margin: 12px 0 18px;
+}
+
+/* ================= FORM ================= */
+.modal-form-create-update {
+    width: 100%;
+}
+
+.modal-form-create-update label {
+    display: flex;
+    flex-direction: column;
+    margin-bottom: 12px;
+    font-size: 0.9rem;
+    color: #1e293b;
+    width: 100%;
+}
+
+.modal-form-create-update input,
+.modal-form-create-update select {
+    padding: 9px 10px;
+    margin-top: 4px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.modal-form-create-update input:focus,
+.modal-form-create-update select:focus {
+    outline: none;
+    border-color: #2563eb;
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
+}
+
+.fila {
+    display: flex;
+    gap: 12px;
+    /* de los lados entre filas con 2 campos */
+    margin-bottom: 12px;
+    width: 100%;
+}
+
+.fila label {
+    flex: 1;
+    min-width: 0;
+    display: flex;
+    flex-direction: column;
+}
+
+/* ================= GENERO ================= */
+.genero-fb {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.genero-fb span {
+    text-align: left;
+    margin-bottom: 0;
+}
+
+.genero-fb-create-update {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.titulo-fila-create-update {
+    text-align: left;
+    margin-bottom: 8px;
+    font-size: 0.9rem;
+    color: #1e293b;
+}
+
+.radios-container,
+.radios-container-create-update {
+    display: flex;
+    flex-direction: row;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 12px;
+}
+
+.radio-btn,
+.radio-btn-create-update {
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    padding: 8px 14px;
+    border-radius: 6px;
+    border: 1px solid #cbd5e1;
+    cursor: pointer;
+    transition: all 0.2s;
+    flex: 1;
+    min-width: 80px;
+    justify-content: left;
+    align-items: center;
+}
+
+.radio-btn input[type="radio"],
+.radio-btn-create-update input[type="radio"] {
+    order: 0;
+    margin: 0;
+    width: 14px;
+    height: 14px;
+    flex-shrink: 0;
+}
+
+.radio-btn input[type="radio"],
+.radio-btn-create-update input[type="radio"] {
+    outline: none;
+    box-shadow: none;
+}
+
+
+.radio-btn span,
+.radio-btn-create-update span {
+    order: 1;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.radios-container label,
+.radios-container-create-update label {
+    flex: 1;
+    display: flex;
+    flex-direction: row;
+    gap: 8px;
+    margin-bottom: 0;
+}
+
+/* ================= BOTONES ================= */
+.modal-buttons-create-update {
+    display: flex;
+    justify-content: flex-end;
+    gap: 10px;
+    margin-top: 18px;
+    flex-wrap: wrap;
+}
+
+/* Botón guardar / actualizar */
+.btn-nuevo-create-update {
+    padding: 10px 18px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.btn-nuevo-create-update:hover {
+    background: #1e40af;
+}
+
+/* Botón cancelar */
+.btn-pdf-create-update {
+    padding: 10px 18px;
+    background: #e2e8f0;
+    color: #1e293b;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.btn-pdf-create-update:hover {
+    background: #cbd5e1;
+}
+
+/* ================= RESPONSIVIDAD ================= */
+
+@media (max-width: 600px) {
+    .modal-container-create-update {
+        padding: 22px 20px;
+        height: auto;
+        max-height: calc(100vh - 40px);
+        overflow-y: auto;
+    }
+
+    .modal-container-create-update h2 {
+        font-size: 1.15rem;
+    }
+
+    .fila {
+        flex-direction: column;
+        gap: 12px;
+    }
+
+    .fila label {
+        margin-bottom: 12px;
+    }
+
+    .radios-container,
+    .radios-container-create-update {
+        display: flex;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 8px;
+    }
+
+    .radio-btn,
+    .radio-btn-create-update {
+        flex: 1 1 calc(33.333% - 8px);
+        min-width: 90px;
+    }
+
+    .radios-container,
+    .radios-container-create-update {
+        margin-bottom: 0px;
+    }
+
+
+}
+
+
+@media (max-width: 420px) {
+    .modal-overlay-create-update {
+        padding: 12px;
+        padding-top: 24px;
+        align-items: flex-start;
+    }
+
+    .modal-container-create-update {
+        padding: 18px 16px;
+        height: auto;
+        max-height: calc(100vh - 48px);
+        overflow-y: auto;
+        border-radius: 10px;
+        justify-content: flex-start;
+    }
+
+    .modal-container-create-update h2 {
+        font-size: 1.1rem;
+    }
+
+    .modal-form-create-update {
+        margin-bottom: 0;
+    }
+
+    .modal-form-create-update label {
+        font-size: 0.85rem;
+        margin-bottom: 6px;
+    }
+
+    .modal-form-create-update input,
+    .modal-form-create-update select {
+        padding: 10px 12px;
+        font-size: 0.85rem;
+    }
+
+    .genero-fb span {
+        font-size: 0.85rem;
+    }
+
+    /* Radios en columna */
+    .radios-container,
+    .radios-container-create-update {
+        flex-direction: column;
+        gap: 6px;
+        margin-top: -12px !important;
+    }
+
+    .radio-btn,
+    .radio-btn-create-update {
+        width: 100%;
+        flex: none;
+        justify-content: flex-start;
+        padding: 10px 14px;
+    }
+
+    /* Botones */
+    .modal-buttons-create-update {
+        display: flex;
+        flex-direction: column-reverse;
+        gap: 10px;
+        align-items: center;
+        margin-top: 12px;
+    }
+
+    .btn-nuevo-create-update,
+    .btn-pdf-create-update {
+        width: 100%;
+        padding: 10px 20px;
+        font-size: 0.85rem;
+    }
+
+    .radios-container,
+    .radios-container-create-update {
+        margin-bottom: 0px;
+    }
+
+}
+
+@media (max-width: 340px) {
+    .modal-container-create-update {
+        padding: 14px 12px;
+    }
+
+    .titulo-fila-create-update {
+        font-size: 0.85rem;
+    }
+
+    .radio-btn,
+    .radio-btn-create-update {
+        padding: 8px 12px;
+        font-size: 0.85rem;
+    }
+}
