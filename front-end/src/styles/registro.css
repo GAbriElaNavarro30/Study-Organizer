@@ -37,6 +37,23 @@
     position: relative;
 }
 
+.fecha-nacimiento {
+    display: flex;
+    gap: 12px;
+    margin-top: 4px;
+}
+
+.fecha-nacimiento select {
+    padding: 8px 10px;
+    border-radius: 4px;
+    border: 1px solid #ccc;
+    background: #fff;
+    font-size: 0.9rem;
+    width: 100%;
+    color: rgb(107, 107, 107);
+}
+
+
 .btn-volver {
     position: absolute;
     top: 15px;
@@ -252,6 +269,16 @@
         width: 100%;
         font-size: 0.9rem;
     }
+
+    .fecha-nacimiento {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .fecha-nacimiento select {
+        width: 100%;
+        padding: 8px 8px;
+    }
 }
 
 @media (max-width: 600px) {
@@ -262,5 +289,9 @@
 
     .btn-registrar {
         width: 70%;
+    }
+
+    .fecha-nacimiento select {
+        font-size: 0.9rem;
     }
 }

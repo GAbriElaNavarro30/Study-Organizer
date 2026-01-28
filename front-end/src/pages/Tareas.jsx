@@ -4,10 +4,7 @@ import { IoAddCircleOutline } from "react-icons/io5";
 
 import {
     CheckCircle2,
-    Plus,
     Search,
-    Clock,
-    Flag,
     Pencil,
     Trash2,
     Inbox,
@@ -15,6 +12,7 @@ import {
 
 import { ModalEliminarTarea } from "../components/ModalEliminarTarea";
 import { ModalFinalizarTarea } from "../components/ModalFinalizarTarea";
+import { ModalCrearActualizarTarea } from "../components/ModalCrearActualizarTarea";
 
 const initialTasks = [
     {
@@ -62,13 +60,17 @@ export function Tareas() {
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
 
-    // ===== MODAL =====
+    // ===== MODAL ELIMINAR =====
     const [modalOpen, setModalOpen] = useState(false);
     const [taskToDelete, setTaskToDelete] = useState(null);
 
     // ===== MODAL FINALIZAR =====
     const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
     const [taskToFinish, setTaskToFinish] = useState(null);
+
+    // ===== MODAL CREAR - ACTUALIZAR =====
+    const [modalTareaOpen, setModalTareaOpen] = useState(false);
+    const [taskToEdit, setTaskToEdit] = useState(null);
 
     // ===== FUNCIONES =====
     const toggleTask = (id) => {
@@ -113,6 +115,30 @@ export function Tareas() {
 
 
 
+
+    const handleCreateClick = () => {
+        setTaskToEdit(null);
+        setModalTareaOpen(true);
+    };
+
+    const handleEditClick = (task) => {
+        setTaskToEdit(task);
+        setModalTareaOpen(true);
+    };
+
+    const handleSaveTask = (tarea) => {
+        if (tarea.id) {
+            // Editar
+            setTasks(tasks.map(t => t.id === tarea.id ? tarea : t));
+        } else {
+            // Crear nueva
+            const newTask = { ...tarea, id: Date.now(), completed: false };
+            setTasks([newTask, ...tasks]);
+        }
+    };
+
+
+
     // ===== FILTRADO Y BÚSQUEDA =====
     const filteredTasks = tasks.filter(task => {
         const match = task.title.toLowerCase().includes(searchQuery.toLowerCase());
@@ -145,7 +171,7 @@ export function Tareas() {
                 <div className="tareas-row fila-unica">
                     {/* IZQUIERDA */}
                     <div className="bloque-izq">
-                        <button className="btn-primary">
+                        <button className="btn-primary" onClick={handleCreateClick}>
                             <IoAddCircleOutline size={16} /> Nuevo
                         </button>
 
@@ -239,10 +265,14 @@ export function Tareas() {
 
                                         {/* Cada acción en su propia celda */}
                                         <td>
-                                            <button title="Editar">
+                                            <button
+                                                title="Editar"
+                                                onClick={() => handleEditClick(task)} // abre el modal con la tarea
+                                            >
                                                 <Pencil size={16} />
                                             </button>
                                         </td>
+
                                         <td>
                                             <button
                                                 title={task.completed ? "Tarea completada" : "Pendiente"}
@@ -310,6 +340,14 @@ export function Tareas() {
                     onClose={() => setModalFinalizarOpen(false)}
                     onConfirm={handleConfirmFinish}
                     tarea={taskToFinish}
+                />
+
+                {/* ===== MODAL CREAR - ACTUALIZAR ===== */}
+                <ModalCrearActualizarTarea
+                    isOpen={modalTareaOpen}
+                    onClose={() => setModalTareaOpen(false)}
+                    onSave={handleSaveTask}
+                    task={taskToEdit}
                 />
 
             </div>
