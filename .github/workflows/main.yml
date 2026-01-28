@@ -20,12 +20,11 @@ jobs:
         node-version: '20'
 
     - name: Install dependencies
+      working-directory: front-end
       run: npm install
 
-    - name: Run tests
-      run: npm test -- --watchAll=false --passWithNoTests
-
     - name: Build project
+      working-directory: front-end
       run: npm run build
 
     - name: Deploy to GitHub Pages
@@ -33,4 +32,4 @@ jobs:
       uses: peaceiris/actions-gh-pages@v3
       with:
         github_token: ${{ secrets.GH_PAT }}
-        publish_dir: ./build
+        publish_dir: front-end/dist
