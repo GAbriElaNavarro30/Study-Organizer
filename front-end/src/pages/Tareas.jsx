@@ -253,9 +253,6 @@ export function Tareas() {
                                             </button>
                                         </td>
 
-
-
-
                                         <td>
                                             <button
                                                 className="delete"
