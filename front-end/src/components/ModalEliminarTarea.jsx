@@ -1,0 +1,29 @@
+import React from "react";
+import "../styles/modalEliminar.css"; // puedes usar el mismo CSS que tu modal de usuario
+
+export function ModalEliminarTarea({ isOpen, onClose, onConfirm, nombreTarea }) {
+    if (!isOpen) return null;
+
+    return (
+        <div className="modal-overlay-eliminar">
+            <div className="modal-contenedor-eliminar">
+                <h2>Confirmar Eliminación</h2>
+
+                <hr className="linea-separadora-eliminar" />
+
+                <p>
+                    ¿Estás seguro que deseas eliminar la tarea: <strong>{nombreTarea}</strong>?
+                </p>
+
+                <div className="modal-botones-eliminar">
+                    <button className="btn btn-cancelar-eliminar" onClick={onClose}>
+                        Cancelar
+                    </button>
+                    <button className="btn btn-confirmar-eliminar" onClick={onConfirm}>
+                        Eliminar
+                    </button>
+                </div>
+            </div>
+        </div>
+    );
+}

@@ -155,14 +155,14 @@
 .tareas-table-container {
     margin-top: 26px;
     overflow-x: auto;
-    -webkit-overflow-scrolling: touch; /* smooth scroll móviles */
+    -webkit-overflow-scrolling: touch;
 }
 
 .tareas-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.88rem;
-    min-width: 600px; /* para tablas con muchas columnas */
+    min-width: 600px;
 }
 
 .tareas-table thead {
@@ -243,16 +243,52 @@
 }
 
 .tareas-table td button[title="Editar"] svg {
-    color: #2563eb; /* azul */
+    color: #2563eb; 
 }
 
 .tareas-table td button[title="Cambiar estado"] svg {
-    color: #16a34a; /* verde */
+    color: #29a316; 
 }
 
 .tareas-table td button.delete svg {
-    color: #dc2626; /* rojo */
+    color: #dc2626;
 }
+
+
+/* Botón Finalizar solo ícono */
+.btn-finalizar {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    padding: 0;          
+    border: none;
+    border-radius: 50%; 
+    cursor: pointer;
+    transition: all 0.2s;
+   
+}
+
+/* Estado pendiente */
+.btn-finalizar.pendiente {
+    color: #3b82f6; 
+}
+
+.btn-finalizar.pendiente:hover {
+    color: #2563eb;
+}
+
+/* Estado completada */
+.btn-finalizar.completada {
+    color: #16a34a; 
+    cursor: default;
+    opacity: 0.8;
+}
+
+.btn-finalizar.completada:hover {
+    color: #16a34a;
+}
+
+
 
 /* ==============================
    PAGINACIÓN
@@ -298,7 +334,7 @@
 }
 
 /* ==============================
-   RESPONSIVE
+   RESPONSIVIDAD
 ============================== */
 @media (max-width: 1070px) {
     .fila-unica {

@@ -13,6 +13,9 @@ import {
     Inbox,
 } from "lucide-react";
 
+import { ModalEliminarTarea } from "../components/ModalEliminarTarea";
+import { ModalFinalizarTarea } from "../components/ModalFinalizarTarea";
+
 const initialTasks = [
     {
         id: 1,
@@ -52,12 +55,22 @@ const initialTasks = [
 ];
 
 export function Tareas() {
+    // ===== ESTADOS =====
     const [tasks, setTasks] = useState(initialTasks);
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [itemsPerPage, setItemsPerPage] = useState(5);
     const [currentPage, setCurrentPage] = useState(1);
 
+    // ===== MODAL =====
+    const [modalOpen, setModalOpen] = useState(false);
+    const [taskToDelete, setTaskToDelete] = useState(null);
+
+    // ===== MODAL FINALIZAR =====
+    const [modalFinalizarOpen, setModalFinalizarOpen] = useState(false);
+    const [taskToFinish, setTaskToFinish] = useState(null);
+
+    // ===== FUNCIONES =====
     const toggleTask = (id) => {
         setTasks(tasks.map(task =>
             task.id === id ? { ...task, completed: !task.completed } : task
@@ -68,6 +81,39 @@ export function Tareas() {
         setTasks(tasks.filter(task => task.id !== id));
     };
 
+    const handleDeleteClick = (task) => {
+        setTaskToDelete(task);
+        setModalOpen(true);
+    };
+
+    const handleConfirmDelete = () => {
+        if (taskToDelete) {
+            deleteTask(taskToDelete.id);
+            setTaskToDelete(null);
+            setModalOpen(false);
+        }
+    };
+
+
+
+    // Función para abrir modal
+    const handleFinishClick = (task) => {
+        setTaskToFinish(task);
+        setModalFinalizarOpen(true);
+    };
+
+    // Función para confirmar finalización
+    const handleConfirmFinish = () => {
+        if (taskToFinish) {
+            toggleTask(taskToFinish.id); // Marca como completada
+            setTaskToFinish(null);
+            setModalFinalizarOpen(false);
+        }
+    };
+
+
+
+    // ===== FILTRADO Y BÚSQUEDA =====
     const filteredTasks = tasks.filter(task => {
         const match = task.title.toLowerCase().includes(searchQuery.toLowerCase());
         if (activeFilter === "pending") return match && !task.completed;
@@ -77,7 +123,7 @@ export function Tareas() {
 
     const pendingTasks = filteredTasks.filter(t => !t.completed);
 
-    /* ===== PAGINACIÓN ===== */
+    // ===== PAGINACIÓN =====
     const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
     const paginatedTasks = filteredTasks.slice(
@@ -156,8 +202,6 @@ export function Tareas() {
                     </div>
                 </div>
 
-
-
                 {/* ===== TABLA ===== */}
                 <div className="tareas-table-container">
                     {paginatedTasks.length === 0 ? (
@@ -188,9 +232,7 @@ export function Tareas() {
                                         <td>{task.dueDate}</td>
                                         <td>{task.dueDate}</td>
                                         <td>
-                                            <span
-                                                className={`estado ${task.completed ? "completado" : "pendiente"}`}
-                                            >
+                                            <span className={`estado ${task.completed ? "completado" : "pendiente"}`}>
                                                 {task.completed ? "Completada" : "Pendiente"}
                                             </span>
                                         </td>
@@ -203,17 +245,22 @@ export function Tareas() {
                                         </td>
                                         <td>
                                             <button
-                                                title="Cambiar estado"
-                                                onClick={() => toggleTask(task.id)}
+                                                title={task.completed ? "Tarea completada" : "Pendiente"}
+                                                onClick={() => handleFinishClick(task)}
+                                                className={`btn-finalizar ${task.completed ? "completada" : "pendiente"}`}
                                             >
-                                                <CheckCircle2 size={16} />
+                                                <CheckCircle2 size={20} />
                                             </button>
                                         </td>
+
+
+
+
                                         <td>
                                             <button
                                                 className="delete"
                                                 title="Eliminar"
-                                                onClick={() => deleteTask(task.id)}
+                                                onClick={() => handleDeleteClick(task)}
                                             >
                                                 <Trash2 size={16} />
                                             </button>
@@ -225,10 +272,8 @@ export function Tareas() {
                     )}
                 </div>
 
-
                 {/* ===== PAGINACIÓN ===== */}
                 <div className="pagination">
-                    {/* Botón Anterior */}
                     <button
                         className="page-btn"
                         disabled={currentPage === 1}
@@ -236,8 +281,6 @@ export function Tareas() {
                     >
                         &lt;
                     </button>
-
-                    {/* Botones de páginas */}
                     {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
                         <button
                             key={page}
@@ -247,8 +290,6 @@ export function Tareas() {
                             {page}
                         </button>
                     ))}
-
-                    {/* Botón Siguiente */}
                     <button
                         className="page-btn"
                         disabled={currentPage === totalPages}
@@ -258,6 +299,21 @@ export function Tareas() {
                     </button>
                 </div>
 
+                {/* ===== MODAL ELIMINAR ===== */}
+                <ModalEliminarTarea
+                    isOpen={modalOpen}
+                    onClose={() => setModalOpen(false)}
+                    onConfirm={handleConfirmDelete}
+                    nombreTarea={taskToDelete?.title}
+                />
+
+                {/* ===== MODAL FINALIZAR ===== */}
+                <ModalFinalizarTarea
+                    isOpen={modalFinalizarOpen}
+                    onClose={() => setModalFinalizarOpen(false)}
+                    onConfirm={handleConfirmFinish}
+                    tarea={taskToFinish}
+                />
 
             </div>
         </div>

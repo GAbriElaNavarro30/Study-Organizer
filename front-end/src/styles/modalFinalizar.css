@@ -1,5 +1,5 @@
 /* ================= OVERLAY ================= */
-.modal-overlay-eliminar {
+.modal-overlay-finalizar {
     position: fixed;
     top: 0;
     left: 0;
@@ -13,7 +13,7 @@
 }
 
 /* ================= CONTENEDOR ================= */
-.modal-contenedor-eliminar {
+.modal-contenedor-finalizar {
     background: #ffffff;
     padding: 28px 24px;
     border-radius: 12px;
@@ -25,7 +25,7 @@
 }
 
 /* ================= TÍTULO ================= */
-.modal-contenedor-eliminar h2 {
+.modal-contenedor-finalizar h2 {
     margin-bottom: 10px;
     font-size: 1.25rem;
     font-weight: 600;
@@ -33,7 +33,7 @@
 }
 
 /* ================= SEPARADOR ================= */
-.linea-separadora-eliminar {
+.linea-separadora-finalizar {
     border: none;
     height: 1px;
     background-color: #e5e7eb;
@@ -41,7 +41,7 @@
 }
 
 /* ================= TEXTO ================= */
-.modal-contenedor-eliminar p {
+.modal-contenedor-finalizar p {
     margin-bottom: 22px;
     font-size: 0.95rem;
     color: #334155;
@@ -49,13 +49,13 @@
 }
 
 /* ================= BOTONES ================= */
-.modal-botones-eliminar {
+.modal-botones-finalizar {
     display: flex;
     gap: 12px;
 }
 
 /* Botón cancelar */
-.btn-cancelar-eliminar {
+.btn-cancelar-finalizar {
     flex: 1;
     padding: 10px 12px;
     background: #e2e8f0;
@@ -68,15 +68,15 @@
     transition: background 0.2s ease;
 }
 
-.btn-cancelar-eliminar:hover {
+.btn-cancelar-finalizar:hover {
     background: #cbd5e1;
 }
 
 /* Botón confirmar */
-.btn-confirmar-eliminar {
+.btn-confirmar-finalizar {
     flex: 1;
     padding: 10px 12px;
-    background: #ef4444;
+    background: #41b72f;
     color: #ffffff;
     border: none;
     border-radius: 8px;
@@ -86,8 +86,8 @@
     transition: background 0.2s ease;
 }
 
-.btn-confirmar-eliminar:hover {
-    background: #b91c1c;
+.btn-confirmar-finalizar:hover {
+    background: #297f1b;
 }
 
 /* ================= ANIMACIÓN ================= */
@@ -105,27 +105,27 @@
 /* ================= RESPONSIVE ================= */
 @media (max-width: 480px) {
 
-    .modal-contenedor-eliminar {
+    .modal-contenedor-finalizar {
         padding: 22px 18px;
         border-radius: 10px;
     }
 
-    .modal-contenedor-eliminar h2 {
+    .modal-contenedor-finalizar h2 {
         font-size: 1.15rem;
     }
 
-    .modal-contenedor-eliminar p {
+    .modal-contenedor-finalizar p {
         font-size: 0.9rem;
         margin-bottom: 18px;
     }
 
-    .modal-botones-eliminar {
+    .modal-botones-finalizar {
         flex-direction: column;
         gap: 8px;
     }
 
-    .btn-cancelar-eliminar,
-    .btn-confirmar-eliminar {
+    .btn-cancelar-finalizar,
+    .btn-confirmar-finalizar {
         padding: 12px;
         font-size: 0.85rem;
     }
