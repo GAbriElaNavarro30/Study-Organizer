@@ -300,7 +300,7 @@
 /* ================================
    RESPONSIVE
 ================================ */
-@media (max-width: 1024px) {
+@media (max-width: 1070px) {
 
     .fila-unica {
         flex-wrap: wrap;
@@ -317,9 +317,7 @@
         gap: 20px;
     }
 
-    .search-container {
-        min-width: 100%;
-    }
+    
 }
 
 @media (max-width: 768px) {
@@ -340,12 +338,10 @@
     }
 
     .btn-primary {
-        width: 100%;
         justify-content: center;
     }
 
     .filter-tabs {
-        width: 100%;
         justify-content: space-between;
     }
 
@@ -357,9 +353,19 @@
         justify-content: center;
         flex-wrap: wrap;
     }
+
+    .bloque-izq {
+        display: flex;
+        flex-direction: row;
+    }
+
+    .bloque-der {
+        display: flex;
+        flex-direction: row;
+    }
 }
 
-@media (max-width: 600px) {
+@media (max-width: 505px) {
 
     .tareas-table {
         font-size: 0.82rem;
@@ -382,6 +388,16 @@
     .pagination {
         flex-wrap: wrap;
         gap: 8px;
+    }
+
+    .bloque-izq {
+        display: flex;
+        flex-direction: column;
+    }
+
+    .bloque-der {
+        display: flex;
+        flex-direction: column;
     }
 }
 
@@ -411,14 +427,6 @@
         flex-wrap: wrap;
         gap: 8px;
     }
-
-
-
-
-
-
-
-
     .filter-tabs {
         display: flex;
         gap: 8px;
