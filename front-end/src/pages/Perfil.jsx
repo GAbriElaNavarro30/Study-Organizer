@@ -248,8 +248,8 @@ export function Perfil() {
 
                 {/* BOTONES */}
                 <div className="fila-botones-usuario">
-                    <button className="btn-cancelar-usuario">Cancelar</button>
                     <button className="btn-guardar-usuario">Guardar</button>
+                    <button className="btn-cancelar-usuario">Cancelar</button>
                 </div>
             </div>
         </div>

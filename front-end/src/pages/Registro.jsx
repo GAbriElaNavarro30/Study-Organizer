@@ -31,26 +31,6 @@ export function Registro() {
                         />
                     </div>
 
-                    {/*<div className="fila-campos">
-                        <div className="campo">
-                            <label>Nombre</label>
-                            <input
-                                type="text"
-                                placeholder="Nombre"
-                                required
-                            />
-                        </div>
-
-                        <div className="campo">
-                            <label>Apellido</label>
-                            <input
-                                type="text"
-                                placeholder="Apellido"
-                                required
-                            />
-                        </div>
-                    </div>*/}
-
                     <div className="fila-campos">
                         <div className="campo">
                             <label>Fecha de nacimiento</label>

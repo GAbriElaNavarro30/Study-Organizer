@@ -16,11 +16,12 @@ export function ModalEliminarTarea({ isOpen, onClose, onConfirm, nombreTarea }) 
                 </p>
 
                 <div className="modal-botones-eliminar">
-                    <button className="btn btn-cancelar-eliminar" onClick={onClose}>
-                        Cancelar
-                    </button>
                     <button className="btn btn-confirmar-eliminar" onClick={onConfirm}>
                         Eliminar
+                    </button>
+
+                    <button className="btn btn-cancelar-eliminar" onClick={onClose}>
+                        Cancelar
                     </button>
                 </div>
             </div>
