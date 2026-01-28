@@ -195,6 +195,11 @@
     margin-bottom: 0;
 }
 
+.fecha-nacimiento {
+    margin-bottom: 12px;
+    margin-top: -2px !important;
+}
+
 /* ================= BOTONES ================= */
 .modal-buttons-create-update {
     display: flex;
@@ -267,6 +272,13 @@
         flex-direction: row;
         flex-wrap: wrap;
         gap: 8px;
+        margin-top: -8px !important;
+    }
+
+    .fecha-nacimiento {
+        gap: 8px;
+        margin-top: -8px !important;
+        margin-bottom: 12px;
     }
 
     .radio-btn,
@@ -328,7 +340,7 @@
     .radios-container-create-update {
         flex-direction: column;
         gap: 6px;
-        margin-top: -12px !important;
+        margin-top: -8px !important;
     }
 
     .radio-btn,
@@ -337,6 +349,12 @@
         flex: none;
         justify-content: flex-start;
         padding: 10px 14px;
+    }
+
+    .fecha-nacimiento {
+        gap: 6px;
+        margin-top: -8px !important;
+        margin-bottom: 6px;
     }
 
     /* Botones */

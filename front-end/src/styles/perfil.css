@@ -180,12 +180,10 @@
     gap: 8px;
 }
 
-/* Selects más compactos */
+
 .fecha-nacimiento-usuario select {
     flex: 0 0 auto;
-    /* No crecer ni encogerse automáticamente */
     width: 29%;
-    /* Ancho fijo: ajusta según prefieras */
     padding: 9px 8px;
     border-radius: 4px;
     border: 1px solid #ccc;
@@ -194,10 +192,8 @@
     color: rgb(107, 107, 107);
 }
 
-/* Botón lápiz separado de los selects */
 .fecha-nacimiento-usuario .btn-lapiz {
     margin-left: 12px;
-    /* espacio entre los selects y el lápiz */
 }
 
 
