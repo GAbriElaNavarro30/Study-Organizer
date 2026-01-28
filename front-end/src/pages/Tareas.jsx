@@ -173,8 +173,11 @@ export function Tareas() {
                                     <th>Título</th>
                                     <th>Descripción</th>
                                     <th>Fecha</th>
+                                    <th>Hora</th>
                                     <th>Estado</th>
-                                    <th>Acciones</th>
+                                    <th>Editar</th>
+                                    <th>Finalizar</th>
+                                    <th>Eliminar</th>
                                 </tr>
                             </thead>
                             <tbody>
@@ -183,21 +186,30 @@ export function Tareas() {
                                         <td>{task.title}</td>
                                         <td>{task.description || "-"}</td>
                                         <td>{task.dueDate}</td>
+                                        <td>{task.dueDate}</td>
                                         <td>
-                                            <span className={`estado ${task.completed ? "completado" : "pendiente"}`}>
+                                            <span
+                                                className={`estado ${task.completed ? "completado" : "pendiente"}`}
+                                            >
                                                 {task.completed ? "Completada" : "Pendiente"}
                                             </span>
                                         </td>
-                                        <td className="acciones">
+
+                                        {/* Cada acción en su propia celda */}
+                                        <td>
                                             <button title="Editar">
                                                 <Pencil size={16} />
                                             </button>
+                                        </td>
+                                        <td>
                                             <button
                                                 title="Cambiar estado"
                                                 onClick={() => toggleTask(task.id)}
                                             >
                                                 <CheckCircle2 size={16} />
                                             </button>
+                                        </td>
+                                        <td>
                                             <button
                                                 className="delete"
                                                 title="Eliminar"
@@ -212,6 +224,7 @@ export function Tareas() {
                         </table>
                     )}
                 </div>
+
 
                 {/* ===== PAGINACIÓN ===== */}
                 <div className="pagination">

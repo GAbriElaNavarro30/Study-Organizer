@@ -1,3 +1,6 @@
+/* ==============================
+   CONTENEDORES PRINCIPALES
+============================== */
 .contenedor-tareas-principal {
     width: 100%;
     background-color: #E5E1DA;
@@ -14,7 +17,9 @@
     box-shadow: 0 10px 30px rgba(0, 0, 0, 0.05);
 }
 
-/* ================== TITULO ================ */
+/* ==============================
+   TÍTULO
+============================== */
 .tareas-title h1 {
     font-size: 1.7rem;
     font-weight: 600;
@@ -29,7 +34,9 @@
     margin-bottom: 30px;
 }
 
-/* =============== FILA DE DONDE ESTAN LA BUSQUEDA, NUEVO, FILTROS =============== */
+/* ==============================
+   FILAS Y BLOQUES
+============================== */
 .fila-unica {
     width: 100%;
     display: flex;
@@ -38,7 +45,6 @@
     flex-wrap: nowrap;
 }
 
-/* ================ BLOQUES =============== */
 .bloque-izq {
     display: flex;
     align-items: center;
@@ -53,7 +59,9 @@
     flex: 1;
 }
 
-/* =================== BUSCAR ================== */
+/* ==============================
+   BUSCAR
+============================== */
 .search-container {
     display: flex;
     align-items: center;
@@ -62,7 +70,6 @@
     border: 1px solid #bdbdbf;
     border-radius: 8px;
     padding: 8px 12px;
-
     flex: 1;
     min-width: 220px;
 }
@@ -75,7 +82,9 @@
     font-size: 0.9rem;
 }
 
-/* ================== BOTON DE NUEVO ================== */
+/* ==============================
+   BOTÓN NUEVO
+============================== */
 .btn-primary {
     display: inline-flex;
     align-items: center;
@@ -94,7 +103,9 @@
     background: #1e40af;
 }
 
-/* ======================= FILTROS ======================== */
+/* ==============================
+   FILTROS
+============================== */
 .filter-tabs {
     display: flex;
     gap: 8px;
@@ -118,9 +129,9 @@
     border-color: #2563eb;
 }
 
-/* ================================
+/* ==============================
    SELECT
-================================ */
+============================== */
 .select-container {
     display: flex;
     align-items: center;
@@ -138,21 +149,20 @@
     font-size: 0.85rem;
 }
 
-
-
-
-/* ================================
+/* ==============================
    TABLA
-================================ */
+============================== */
 .tareas-table-container {
     margin-top: 26px;
     overflow-x: auto;
+    -webkit-overflow-scrolling: touch; /* smooth scroll móviles */
 }
 
 .tareas-table {
     width: 100%;
     border-collapse: collapse;
     font-size: 0.88rem;
+    min-width: 600px; /* para tablas con muchas columnas */
 }
 
 .tareas-table thead {
@@ -171,15 +181,16 @@
     padding: 12px;
     border-bottom: 1px solid #e5e7eb;
     color: #1f2937;
+    white-space: nowrap;
 }
 
 .tareas-table tr:hover {
     background: #f9fafb;
 }
 
-/* ================================
+/* ==============================
    ESTADOS
-================================ */
+============================== */
 .estado {
     padding: 4px 10px;
     border-radius: 999px;
@@ -197,9 +208,9 @@
     color: #166534;
 }
 
-/* ================================
+/* ==============================
    PRIORIDAD
-================================ */
+============================== */
 .priority-high {
     color: #dc2626;
 }
@@ -212,51 +223,45 @@
     color: #16a34a;
 }
 
-/* ================================
-   ACCIONES
-================================ */
-.acciones button {
+/* ==============================
+   ACCIONES (BOTONES)
+============================== */
+.tareas-table td button {
     border: none;
     background: transparent;
     cursor: pointer;
     display: inline-flex;
     align-items: center;
     justify-content: center;
-    padding: 4px;
-    transition: transform 0.2s ease;
-    margin: 0 8px;
+    padding: 6px;
+    transition: transform 0.2s ease, color 0.2s ease;
+    font-size: 1rem;
 }
 
-.acciones button:hover {
+.tareas-table td button:hover {
     transform: scale(1.2);
-    /* pequeño efecto al pasar el mouse */
 }
 
-/* Colores por función */
-.acciones button[title="Editar"] svg {
-    color: #2563eb;
-    /* azul */
+.tareas-table td button[title="Editar"] svg {
+    color: #2563eb; /* azul */
 }
 
-.acciones button[title="Cambiar estado"] svg {
-    color: #16a34a;
-    /* verde */
+.tareas-table td button[title="Cambiar estado"] svg {
+    color: #16a34a; /* verde */
 }
 
-.acciones button.delete svg {
-    color: #dc2626;
-    /* rojo */
+.tareas-table td button.delete svg {
+    color: #dc2626; /* rojo */
 }
 
-/* ================================
+/* ==============================
    PAGINACIÓN
-================================ */
+============================== */
 .pagination {
     display: flex;
     align-items: center;
     gap: 6px;
     justify-content: center;
-    /* centra la paginación */
     margin-top: 20px;
 }
 
@@ -292,16 +297,10 @@
     cursor: not-allowed;
 }
 
-
-/* ================================
+/* ==============================
    RESPONSIVE
-================================ */
-
-/* ================================
-   RESPONSIVE
-================================ */
+============================== */
 @media (max-width: 1070px) {
-
     .fila-unica {
         flex-wrap: wrap;
         gap: 20px;
@@ -316,12 +315,9 @@
     .bloque-der {
         gap: 20px;
     }
-
-    
 }
 
 @media (max-width: 768px) {
-
     .contenedor-tareas-principal {
         padding: 16px;
     }
@@ -353,32 +349,17 @@
         justify-content: center;
         flex-wrap: wrap;
     }
-
-    .bloque-izq {
-        display: flex;
-        flex-direction: row;
-    }
-
-    .bloque-der {
-        display: flex;
-        flex-direction: row;
-    }
 }
 
 @media (max-width: 505px) {
-
     .tareas-table {
-        font-size: 0.82rem;
+        font-size: 0.8rem;
+        min-width: 100%;
     }
 
     .tareas-table th,
     .tareas-table td {
-        padding: 10px 8px;
-    }
-
-    .acciones {
-        display: flex;
-        justify-content: center;
+        padding: 8px 6px;
     }
 
     .acciones button {
@@ -390,21 +371,25 @@
         gap: 8px;
     }
 
-    .bloque-izq {
-        display: flex;
+    .bloque-izq,
+    .bloque-der {
         flex-direction: column;
     }
 
-    .bloque-der {
-        display: flex;
-        flex-direction: column;
+    .tareas-table-container {
+        overflow-x: auto;
+    }
+
+    .tareas-table td {
+        text-align: left;
+    }
+
+    .tareas-table td button {
+        padding: 4px;
     }
 }
 
-
-
 @media (max-width: 380px) {
-
     .tareas-table {
         font-size: 0.82rem;
     }
@@ -416,17 +401,19 @@
 
     .acciones {
         display: flex;
-        justify-content: center;
+        justify-content: left;
     }
 
     .acciones button {
-        margin: 0px 4px;
+        margin: 0 4px;
+        padding: 3px;
     }
 
     .pagination {
         flex-wrap: wrap;
         gap: 8px;
     }
+
     .filter-tabs {
         display: flex;
         gap: 8px;
@@ -449,5 +436,4 @@
         color: #2563eb;
         border-color: #2563eb;
     }
-
 }
