@@ -17,7 +17,7 @@
     padding: 24px;
     width: 100%;
     max-width: 450px;
-    max-height: 90vh;
+    max-height: 96vh;
     overflow-y: auto;
     position: relative;
 }
@@ -49,7 +49,7 @@
 }
 
 /* FORM */
-.modal-form-tarea .campo {
+.modal-form-tarea .campo-tarea {
     display: flex;
     flex-direction: column;
     gap: 4px;
@@ -142,7 +142,34 @@
     margin-top: 2px;
 }
 
-/* 📱 RESPONSIVE */
+.fecha-facebook {
+    display: flex;
+    gap: 8px;
+}
+
+.fecha-facebook select {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    font-size: 0.85rem;
+}
+
+.hora-facebook {
+    display: flex;
+    gap: 8px;
+}
+
+.hora-facebook select {
+    flex: 1;
+    padding: 8px 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    background: #fff;
+    font-size: 0.85rem;
+}
+
 @media (max-width: 480px) {
 
     .modal-contenedor-tarea {
@@ -178,5 +205,13 @@
         width: 16px;
         height: 16px;
         font-size: 0.7rem;
+    }
+
+    .fecha-facebook {
+        flex-direction: column;
+    }
+
+    .hora-facebook {
+        flex-direction: column;
     }
 }

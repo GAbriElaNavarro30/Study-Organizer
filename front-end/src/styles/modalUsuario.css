@@ -199,6 +199,9 @@
 .fecha-nacimiento {
     margin-bottom: 12px;
     margin-top: -2px !important;
+    display: flex;
+    flex-direction: row;
+    gap: 10px;
 }
 
 .fecha-nacimiento select {
@@ -382,6 +385,11 @@
     .radios-container,
     .radios-container-create-update {
         margin-bottom: 0px;
+    }
+
+    .fecha-nacimiento {
+        display: flex;
+        flex-direction: column;
     }
 
 }
