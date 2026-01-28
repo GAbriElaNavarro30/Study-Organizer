@@ -37,13 +37,13 @@
     position: relative;
 }
 
-.fecha-nacimiento {
+.fecha-nacimiento-registro {
     display: flex;
     gap: 12px;
-    margin-top: 4px;
+    margin-top: 0px;
 }
 
-.fecha-nacimiento select {
+.fecha-nacimiento-registro select {
     padding: 8px 10px;
     border-radius: 4px;
     border: 1px solid #ccc;
@@ -126,14 +126,14 @@
     min-height: 42px;
 }
 
-.opciones-genero {
+.opciones-genero-registro {
     display: flex;
     gap: 12px;
-    margin-top: 6px;
     width: 100%;
+    margin-bottom: -4px;
 }
 
-.radio-opcion {
+.radio-opcion-registro {
     flex: 1;
     display: flex;
     gap: 20px;
@@ -145,7 +145,7 @@
 }
 
 
-.radio-opcion input {
+.radio-opcion-registro input {
     cursor: pointer;
 }
 
@@ -237,11 +237,11 @@
         gap: 0;
     }
 
-    .opciones-genero {
+    .opciones-genero-registro {
         flex-direction: column;
     }
 
-    .radio-opcion {
+    .radio-opcion-registro {
         justify-content: start;
     }
 
@@ -270,12 +270,12 @@
         font-size: 0.9rem;
     }
 
-    .fecha-nacimiento {
+    .fecha-nacimiento-registro {
         flex-direction: column;
         gap: 8px;
     }
 
-    .fecha-nacimiento select {
+    .fecha-nacimiento-registro select {
         width: 100%;
         padding: 8px 8px;
     }
@@ -291,7 +291,7 @@
         width: 70%;
     }
 
-    .fecha-nacimiento select {
+    .fecha-nacimiento-registro select {
         font-size: 0.9rem;
     }
 }

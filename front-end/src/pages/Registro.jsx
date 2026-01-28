@@ -15,8 +15,8 @@ export function Registro() {
   // Generar opciones
   const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const months = [
-    "Enero","Febrero","Marzo","Abril","Mayo","Junio",
-    "Julio","Agosto","Septiembre","Octubre","Noviembre","Diciembre"
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
   ];
   const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
@@ -52,7 +52,7 @@ export function Registro() {
         {/* FILA 2: Fecha de nacimiento estilo Facebook */}
         <div className="campo">
           <label>Fecha de nacimiento</label>
-          <div className="fecha-nacimiento">
+          <div className="fecha-nacimiento-registro">
             <select
               value={fechaNacimiento.day}
               onChange={(e) => handleFechaChange(e.target.value, fechaNacimiento.month, fechaNacimiento.year)}
@@ -85,18 +85,18 @@ export function Registro() {
         {/* FILA 3: Género */}
         <div className="campo">
           <label>Género</label>
-          <div className="opciones-genero">
-            <label className="radio-opcion">
+          <div className="opciones-genero-registro">
+            <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="mujer" required />
               Mujer
             </label>
 
-            <label className="radio-opcion">
+            <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="hombre" />
               Hombre
             </label>
 
-            <label className="radio-opcion">
+            <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="otro" />
               Otro
             </label>
