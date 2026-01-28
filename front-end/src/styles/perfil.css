@@ -189,7 +189,7 @@
     border: 1px solid #ccc;
     background: #fff;
     font-size: 0.9rem;
-    color: rgb(107, 107, 107);
+    color: rgb(0, 0, 0);
 }
 
 .fecha-nacimiento-usuario .btn-lapiz {
@@ -220,7 +220,7 @@
     cursor: pointer;
     background-color: #ffffff;
     transition: all 0.2s ease;
-    color: rgb(105, 104, 104);
+    color: rgb(0, 0, 0);
 }
 
 .genero-box-usuario:hover {

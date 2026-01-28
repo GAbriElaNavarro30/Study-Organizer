@@ -88,17 +88,17 @@ export function Registro() {
           <div className="opciones-genero-registro">
             <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="mujer" required />
-              Mujer
+              <span>Mujer</span>
             </label>
 
             <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="hombre" />
-              Hombre
+              <span>Hombre</span>
             </label>
 
             <label className="radio-opcion-registro">
               <input type="radio" name="genero" value="otro" />
-              Otro
+              <span>Otro</span>
             </label>
           </div>
         </div>

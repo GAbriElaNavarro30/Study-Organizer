@@ -193,7 +193,7 @@
     flex-direction: row;
     gap: 8px;
     margin-bottom: 0;
-    color: rgb(92, 91, 91);
+    color: rgb(0, 0, 0);
 }
 
 .fecha-nacimiento {
@@ -203,7 +203,7 @@
 
 .fecha-nacimiento select {
     background-color: white;
-    color: rgb(92, 91, 91);
+    color: rgb(0, 0, 0);
 }
 
 /* ================= BOTONES ================= */
