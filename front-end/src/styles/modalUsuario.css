@@ -193,11 +193,17 @@
     flex-direction: row;
     gap: 8px;
     margin-bottom: 0;
+    color: rgb(92, 91, 91);
 }
 
 .fecha-nacimiento {
     margin-bottom: 12px;
     margin-top: -2px !important;
+}
+
+.fecha-nacimiento select {
+    background-color: white;
+    color: rgb(92, 91, 91);
 }
 
 /* ================= BOTONES ================= */
