@@ -107,7 +107,7 @@ export function MenuInterno() {
                 </NavLink>
 
                 <NavLink
-                    to="/"
+                    to="/tareas"
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                         isActive
@@ -115,7 +115,7 @@ export function MenuInterno() {
                             : "menu-item-interno"
                     }
                 >
-                    Recordatorio
+                    Tareas
                 </NavLink>
 
                 <NavLink

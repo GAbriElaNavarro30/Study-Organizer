@@ -15,6 +15,7 @@ import { OlvidarC } from "../pages/OlvidarC";
 import { RecuperarC } from "../pages/RecuperarC";
 import { CrudAdmin } from "../pages/CrudAdmin";
 import { Perfil } from "../pages/Perfil";
+import { Tareas } from "../pages/Tareas";
 
 export function AppRoutes() {
     return (
@@ -34,6 +35,7 @@ export function AppRoutes() {
                 <Route path="/crud-administrador" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
                 <Route path="/perfil" element={<LayoutInterno><Perfil /></LayoutInterno>} />
                 <Route path="/crud" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
+                <Route path="/tareas" element={<LayoutInterno><Tareas /></LayoutInterno>} />
 
             </Routes>
         </HashRouter>
