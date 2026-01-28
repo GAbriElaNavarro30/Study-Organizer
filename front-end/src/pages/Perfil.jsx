@@ -1,5 +1,4 @@
 import "../styles/perfil.css";
-
 import EmojiPicker from "emoji-picker-react";
 import { useState, useRef } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
@@ -32,20 +31,30 @@ export function Perfil() {
         reader.readAsDataURL(file);
     };
 
-    // ===== HABILITAR EDICIÓN =====
-    // ===== HABILITAR EDICIÓN =====
+    // ===== FECHA DE NACIMIENTO =====
+    const [fechaNacimiento, setFechaNacimiento] = useState({
+        day: "",
+        month: "",
+        year: ""
+    });
+    const [editarFecha, setEditarFecha] = useState(false);
+
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const months = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+
+    // ===== HABILITAR EDICIÓN INPUTS =====
     const habilitarEdicion = (e) => {
         const container = e.currentTarget.closest('.input-editable');
         const input = container?.querySelector('input');
         if (input) {
             input.disabled = !input.disabled;
-            if (!input.disabled) {
-                input.focus();
-            }
+            if (!input.disabled) input.focus();
         }
     };
-
-
 
     return (
         <div className="contenedor-perfil-usuario">
@@ -110,9 +119,43 @@ export function Perfil() {
                 <div className="fila-form-usuario">
                     <div className="campo-usuario">
                         <label>Fecha de nacimiento</label>
-                        <div className="input-editable">
-                            <input type="date" disabled />
-                            <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                        <div className="input-editable fecha-nacimiento-usuario">
+                            {/* Día */}
+                            <select
+                                value={fechaNacimiento.day}
+                                disabled={!editarFecha}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, day: e.target.value }))}
+                            >
+                                <option value="">Día</option>
+                                {days.map(d => <option key={d} value={d}>{d}</option>)}
+                            </select>
+
+                            {/* Mes */}
+                            <select
+                                value={fechaNacimiento.month}
+                                disabled={!editarFecha}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, month: e.target.value }))}
+                            >
+                                <option value="">Mes</option>
+                                {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
+                            </select>
+
+                            {/* Año */}
+                            <select
+                                value={fechaNacimiento.year}
+                                disabled={!editarFecha}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, year: e.target.value }))}
+                            >
+                                <option value="">Año</option>
+                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                            </select>
+
+                            {/* Botón lápiz */}
+                            <button
+                                type="button"
+                                className="btn-lapiz"
+                                onClick={() => setEditarFecha(prev => !prev)}
+                            >
                                 <FiEdit2 />
                             </button>
                         </div>
