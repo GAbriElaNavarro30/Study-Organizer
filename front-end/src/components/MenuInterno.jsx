@@ -95,7 +95,7 @@ export function MenuInterno() {
                 </NavLink>
 
                 <NavLink
-                    to="/"
+                    to="/notas"
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                         isActive

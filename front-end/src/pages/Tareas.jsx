@@ -162,9 +162,11 @@ export function Tareas() {
             <div className="tareas-page">
 
                 {/* ===== TÍTULO ===== */}
-                <div className="tareas-title">
-                    <h1>Mis tareas</h1>
-                    <p>{pendingTasks.length} tareas pendientes</p>
+                <div className="tareas-title-bar">
+                    <div className="tareas-title">
+                        <h1>Mis tareas</h1>
+                        <p>{pendingTasks.length} tareas pendientes</p>
+                    </div>
                 </div>
 
                 {/* ===== FILA 1: ACCIONES ===== */}

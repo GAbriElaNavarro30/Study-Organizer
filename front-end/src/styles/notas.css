@@ -1,0 +1,338 @@
+/* ======================================================
+   BASE
+====================================================== */
+.notes-app {
+    max-width: 100%;
+    margin: auto;
+    padding: 10px;
+    font-family: system-ui, -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+    color: #111827;
+}
+
+/* ======================================================
+   HERO / IMAGEN
+====================================================== */
+.notas-contenedor {
+    width: 100%;
+    overflow: hidden;
+    border-radius: 20px;
+}
+
+.notas-logo {
+    width: 100%;
+    height: 260px;
+    display: block;
+    border-radius: 20px;
+}
+
+/* ======================================================
+   CONTENEDOR PRINCIPAL
+====================================================== */
+.contenedor-notas-almacenadas {
+    background: #ffffff;
+    margin-top: 20px;
+    margin-bottom: 20px;
+    padding: 20px;
+    border-radius: 24px;
+    box-shadow: 0 12px 28px rgba(37, 99, 235, 0.08);
+}
+
+/* ======================================================
+   HEADER
+====================================================== */
+.notes-header {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    width: 100%;
+}
+
+.notes-header-actions {
+    display: flex;
+    align-items: center;
+    gap: 40px;
+    flex-shrink: 0;
+}
+
+/* ======================================================
+   SEARCH
+====================================================== */
+.notes-search {
+    flex: 1;
+    min-width: 200px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 8px 12px;
+    background: #f1f5f9;
+    border-radius: 10px;
+}
+
+.notes-search input {
+    width: 100%;
+    border: none;
+    outline: none;
+    background: transparent;
+    font-size: 0.9rem;
+}
+
+/* ======================================================
+   LIMIT SELECT
+====================================================== */
+.notes-limit {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.notes-limit select {
+    padding: 6px 8px;
+    border-radius: 8px;
+    border: 1px solid #e2e8f0;
+}
+
+/* ======================================================
+   BUTTONS
+====================================================== */
+.btn-new,
+.btn-ghost {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    padding: 10px 14px;
+    border-radius: 999px;
+    border: none;
+    cursor: pointer;
+    font-size: 0.85rem;
+}
+
+.btn-new {
+    background: #111827;
+    color: #ffffff;
+}
+
+.btn-ghost {
+    background: #767677;
+    color: #ffffff;
+}
+
+/* ======================================================
+   LIST
+====================================================== */
+.notes-list {
+    margin-top: 30px;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ======================================================
+   NOTE ROW
+====================================================== */
+.note-row {
+    display: grid;
+    grid-template-columns: 28px 1fr auto;
+    gap: 16px;
+    padding: 18px 4px;
+    align-items: center;
+    border-bottom: 1px solid #e5e7eb;
+}
+
+.note-content h3 {
+    margin: 0;
+    font-size: 1rem;
+    font-weight: 500;
+}
+
+.note-content span {
+    display: block;
+    font-size: 0.8rem;
+    color: #6b7280;
+}
+
+/* ======================================================
+   NOTE ACTIONS (ICONOS)
+====================================================== */
+.note-actions {
+    display: flex;
+    gap: 25px;
+}
+
+.note-row:hover .note-actions {
+    opacity: 1;
+}
+
+.note-actions svg {
+    cursor: pointer;
+    color: #64748b;
+    transition: color 0.2s ease;
+    width: 22px;
+    height: 22px;
+    
+}
+
+
+.note-actions svg:nth-child(1) {
+    color: #0ea5e9;
+}
+
+
+.note-actions svg:nth-child(2) {
+    color: #8b5cf6;
+}
+
+.note-actions svg:nth-child(3) {
+    color: #ef4444;
+}
+
+/* ======================================================
+   PAGINACIÓN
+====================================================== */
+.notes-pagination {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    gap: 14px;
+    margin-top: 28px;
+}
+
+.page-arrow {
+    width: 38px;
+    height: 38px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2563eb;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-arrow:hover {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+.page-arrow.disabled {
+    opacity: 0.4;
+    cursor: not-allowed;
+}
+
+.page-numbers {
+    display: flex;
+    gap: 6px;
+}
+
+.page-number {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    border: 1px solid #e2e8f0;
+    background: #ffffff;
+    color: #334155;
+    font-size: 0.9rem;
+    cursor: pointer;
+    transition: all 0.2s ease;
+}
+
+.page-number:hover {
+    background: #f1f5f9;
+}
+
+.page-number.active {
+    background: #2563eb;
+    color: #ffffff;
+    border-color: #2563eb;
+}
+
+/* ======================================================
+   RESPONSIVIDAD
+====================================================== */
+/* ======================================================
+   RESPONSIVE - TABLET & MOBILE
+====================================================== */
+@media (max-width: 768px) {
+
+    /* HERO */
+    .notas-logo {
+        height: 100px;
+    }
+
+    /* HEADER */
+    .notes-header {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 16px;
+    }
+
+    .notes-header-actions {
+        flex-wrap: wrap;
+        gap: 12px;
+        justify-content: space-between;
+    }
+
+    /* SEARCH */
+    .notes-search {
+        width: 100%;
+    }
+
+    /* LIMIT SELECT */
+    .notes-limit {
+        justify-content: flex-start;
+    }
+
+    /* BUTTONS */
+    .btn-new,
+    .btn-ghost {
+        width: 100%;
+        justify-content: center;
+    }
+
+    /* NOTE ROW */
+    .note-row {
+        grid-template-columns: 1fr;
+        gap: 12px;
+    }
+
+    .note-actions {
+        justify-content: flex-end;
+        gap: 20px;
+    }
+
+}
+
+@media (max-width: 480px) {
+
+    .contenedor-notas-almacenadas {
+        padding: 14px;
+        border-radius: 18px;
+    }
+
+    .note-content h3 {
+        font-size: 0.95rem;
+    }
+
+    .note-content span {
+        font-size: 0.75rem;
+    }
+
+    .note-actions svg {
+        width: 26px;
+        height: 26px;
+    }
+
+    /* PAGINACIÓN */
+    .page-number {
+        width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
+    }
+
+    .page-arrow {
+        width: 34px;
+        height: 34px;
+    }
+}
+
