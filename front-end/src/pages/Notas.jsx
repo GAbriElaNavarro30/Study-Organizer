@@ -1,8 +1,54 @@
 import "../styles/notas.css";
-import { FileText, Plus, Search, Download, Share2, Pencil, Trash2 } from "lucide-react";
+import { FileText, Plus, Search, Download, Share2, Pencil, Trash2, Type } from "lucide-react";
 import logoNotas from "../assets/imagenes/fondo-notas.png";
 
+import { useState } from "react";
+import { ModalEliminarNota } from "./ModalEliminarNota";
+
+import { ModalCompartirNota } from "../components/ModalCompartirNota";
+
 export function Notas() {
+    const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
+    const [notaSeleccionada, setNotaSeleccionada] = useState(null);
+
+    const [mostrarModalCompartir, setMostrarModalCompartir] = useState(false);
+    const [notaACompartir, setNotaACompartir] = useState(null);
+
+    const abrirModalEliminar = (nota) => {
+        setNotaSeleccionada(nota);
+        setMostrarModalEliminar(true);
+    };
+
+    const cerrarModalEliminar = () => {
+        setMostrarModalEliminar(false);
+        setNotaSeleccionada(null);
+    };
+
+    const confirmarEliminarNota = () => {
+        console.log("Eliminar nota:", notaSeleccionada);
+        // aquí luego conectas API o estado
+        cerrarModalEliminar();
+    };
+
+
+
+
+    const abrirModalCompartir = (nota) => {
+        setNotaACompartir(nota);
+        setMostrarModalCompartir(true);
+    };
+
+    const cerrarModalCompartir = () => {
+        setMostrarModalCompartir(false);
+        setNotaACompartir(null);
+    };
+
+    const confirmarCompartirNota = () => {
+        console.log("Compartir nota:", notaACompartir);
+        cerrarModalCompartir();
+    };
+
+
     return (
         <main className="notes-app">
             <div className="notas-contenedor">
@@ -48,7 +94,7 @@ export function Notas() {
                 <section className="notes-list">
 
                     <div className="note-row">
-                        <FileText size={18} className="icono-notas"/>
+                        <FileText size={18} className="icono-notas" />
 
                         <div className="note-content">
                             <h3>Ideas para el proyecto final</h3>
@@ -57,14 +103,31 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} className="icono-notas-compartir"/>
-                            <Pencil size={16} className="icono-notas-editar"/>
-                            <Trash2 size={16} className="icono-notas-eliminar"/>
+                            <Share2
+                                size={16}
+                                className="icono-notas-compartir"
+                                onClick={() =>
+                                    abrirModalCompartir("Ideas para el proyecto final")
+                                }
+                            />
+
+                            <Pencil size={16} className="icono-notas-editar" />
+
+                            <Type size={16} className="icono-notas-renombrar"/>
+
+                            <Trash2
+                                size={16}
+                                className="icono-notas-eliminar"
+                                onClick={() =>
+                                    abrirModalEliminar("Ideas para el proyecto final")
+                                }
+                            />
+
                         </div>
                     </div>
 
                     <div className="note-row">
-                        <FileText size={18} className="icono-notas"/>
+                        <FileText size={18} className="icono-notas" />
 
                         <div className="note-content">
                             <h3>Notas de la reunión</h3>
@@ -73,14 +136,31 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} className="icono-notas-compartir"/>
-                            <Pencil size={16} className="icono-notas-editar"/>
-                            <Trash2 size={16} className="icono-notas-eliminar"/>
+                            <Share2
+                                size={16}
+                                className="icono-notas-compartir"
+                                onClick={() =>
+                                    abrirModalCompartir("Ideas para el proyecto final")
+                                }
+                            />
+
+                            <Pencil size={16} className="icono-notas-editar" />
+
+                            <Type size={16} className="icono-notas-renombrar"/>
+
+                            <Trash2
+                                size={16}
+                                className="icono-notas-eliminar"
+                                onClick={() =>
+                                    abrirModalEliminar("Ideas para el proyecto final")
+                                }
+                            />
+
                         </div>
                     </div>
 
                     <div className="note-row">
-                        <FileText size={18} className="icono-notas"/>
+                        <FileText size={18} className="icono-notas" />
 
                         <div className="note-content">
                             <h3>Notas de la reunión</h3>
@@ -89,9 +169,26 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} className="icono-notas-compartir"/>
-                            <Pencil size={16} className="icono-notas-editar"/>
-                            <Trash2 size={16} className="icono-notas-eliminar"/>
+                            <Share2
+                                size={16}
+                                className="icono-notas-compartir"
+                                onClick={() =>
+                                    abrirModalCompartir("Ideas para el proyecto final")
+                                }
+                            />
+
+                            <Pencil size={16} className="icono-notas-editar" />
+                            
+                            <Type size={16} className="icono-notas-renombrar"/>
+
+                            <Trash2
+                                size={16}
+                                className="icono-notas-eliminar"
+                                onClick={() =>
+                                    abrirModalEliminar("Ideas para el proyecto final")
+                                }
+                            />
+
                         </div>
                     </div>
 
@@ -112,6 +209,22 @@ export function Notas() {
 
 
             </div>
+
+            <ModalEliminarNota
+                isOpen={mostrarModalEliminar}
+                onClose={cerrarModalEliminar}
+                onConfirm={confirmarEliminarNota}
+                nombreNota={notaSeleccionada}
+            />
+
+            <ModalCompartirNota
+                isOpen={mostrarModalCompartir}
+                onClose={cerrarModalCompartir}
+                onConfirm={confirmarCompartirNota}
+                nombreNota={notaACompartir}
+            />
+
+
         </main>
     );
 }

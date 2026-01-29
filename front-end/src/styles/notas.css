@@ -180,17 +180,24 @@
 }
 
 
+/* COMPARTIR (1) */
 .note-actions svg:nth-child(1) {
-    color: #0ea5e9;
+    color: #0ea5e9; /* azul */
 }
 
-
+/* EDITAR (2) */
 .note-actions svg:nth-child(2) {
-    color: #8b5cf6;
+    color: #8b5cf6; /* morado */
 }
 
+/* / RENOMBRAR  (3) */
 .note-actions svg:nth-child(3) {
-    color: #ef4444;
+    color: #000000; /* azul */
+}
+
+/* ELIMINAR (4) */
+.note-actions svg:nth-child(4) {
+    color: #ef4444; /* rojo */
 }
 
 /* ======================================================
