@@ -20,7 +20,7 @@
 
 .notas-logo {
     width: 100%;
-    height: 260px;
+    height: 270px;
     display: block;
     border-radius: 20px;
 }
@@ -126,6 +126,14 @@
     border-top: 1px solid #e5e7eb;
 }
 
+.icono-notas {
+    width: 24px;
+    height: 24px;
+    flex-shrink: 0;
+    color: #475569;
+    margin-top: -30px;
+}
+
 /* ======================================================
    NOTE ROW
 ====================================================== */
@@ -168,7 +176,7 @@
     transition: color 0.2s ease;
     width: 22px;
     height: 22px;
-    
+
 }
 
 
@@ -248,91 +256,246 @@
 }
 
 /* ======================================================
-   RESPONSIVIDAD
+   RESPONSIVIDAD (Móviles y Tablets)
 ====================================================== */
-/* ======================================================
-   RESPONSIVE - TABLET & MOBILE
-====================================================== */
-@media (max-width: 768px) {
-
-    /* HERO */
-    .notas-logo {
-        height: 100px;
-    }
-
-    /* HEADER */
+@media (max-width: 900px) {
     .notes-header {
-        flex-direction: column;
-        align-items: stretch;
-        gap: 16px;
+        display: grid;
+        grid-template-columns: 1fr 1fr;
+        gap: 16px 12px;
     }
 
+    /* Acciones ocupan toda la fila */
     .notes-header-actions {
-        flex-wrap: wrap;
+        grid-column: 1 / -1;
+        display: flex;
         gap: 12px;
-        justify-content: space-between;
     }
 
-    /* SEARCH */
+    /* Buscar y limit en la MISMA fila */
     .notes-search {
+        grid-column: 1;
         width: 100%;
     }
 
-    /* LIMIT SELECT */
     .notes-limit {
-        justify-content: flex-start;
+        grid-column: 2;
+        width: 100%;
+        justify-content: flex-end;
     }
 
-    /* BUTTONS */
     .btn-new,
     .btn-ghost {
-        width: 100%;
+        flex: 1;
         justify-content: center;
-    }
-
-    /* NOTE ROW */
-    .note-row {
-        grid-template-columns: 1fr;
-        gap: 12px;
-    }
-
-    .note-actions {
-        justify-content: flex-end;
-        gap: 20px;
     }
 
 }
 
-@media (max-width: 480px) {
+@media (max-width: 768px) {
+    .notas-logo {
+        height: 130px;
+    }
 
     .contenedor-notas-almacenadas {
-        padding: 14px;
-        border-radius: 18px;
+        margin-top: 0px;
+    }
+
+    .notes-limit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .notes-header {
+        display: flex;
+        flex-direction: column;
+        align-items: stretch;
+        gap: 20px;
+    }
+
+    .notes-header-actions {
+        width: 100%;
+    }
+
+    .btn-new,
+    .btn-ghost {
+        flex: 1;
+        justify-content: center;
+    }
+}
+
+@media (max-width: 550px) {
+    .notas-logo {
+        height: 110px;
+    }
+
+    .notes-header {
+        gap: 15px;
+    }
+
+    .notes-header-actions {
+        width: 100%;
+        gap: 20px;
+    }
+
+    .btn-new,
+    .btn-ghost {
+        font-size: 0.8rem;
+    }
+
+    .contenedor-notas-almacenadas {
+        margin-top: 0px;
+    }
+
+    .notes-search input {
+        font-size: 0.8rem;
+    }
+
+    .notes-limit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .notes-limit select,
+    .notes-limit span {
+        font-size: 0.8rem;
+    }
+
+    .notes-list {
+        margin-top: 20px;
+    }
+
+    .note-row {
+        grid-template-columns: 30px 1fr;
+    }
+
+    .icono-notas {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        color: #475569;
+        margin-top: -30px;
     }
 
     .note-content h3 {
-        font-size: 0.95rem;
+        font-size: 0.9rem;
+    }
+
+    .note-content span {
+        font-size: 0.8rem;
+    }
+
+    .note-actions {
+        grid-column: 2;
+        justify-content: flex-start;
+    }
+
+    .icono-notas-compartir,
+    .icono-notas-editar,
+    .icono-notas-eliminar {
+        width: 22px !important;
+        height: 22px !important;
+    }
+
+    .notes-pagination {
+        gap: 8px;
+    }
+
+    .page-number,
+    .page-arrow {
+        min-width: 34px;
+        height: 34px;
+        font-size: 0.85rem;
+    }
+}
+
+@media (max-width: 480px) {
+    .notas-logo {
+        height: 92px;
+    }
+
+    .notes-header {
+        gap: 12px;
+    }
+
+    .notes-header-actions {
+        width: 100%;
+        gap: 20px;
+    }
+
+    .btn-new,
+    .btn-ghost {
+        font-size: 0.75rem;
+    }
+
+    .contenedor-notas-almacenadas {
+        margin-top: 0px;
+    }
+
+    .notes-search input {
+        font-size: 0.75rem;
+    }
+
+    .notes-limit {
+        width: 100%;
+        justify-content: center;
+    }
+
+    .notes-limit select,
+    .notes-limit span {
+        font-size: 0.75rem;
+    }
+
+    .notes-list {
+        margin-top: 20px;
+    }
+
+    .note-row {
+        grid-template-columns: 30px 1fr;
+    }
+
+    .icono-notas {
+        width: 22px;
+        height: 22px;
+        flex-shrink: 0;
+        color: #475569;
+        margin-top: -30px;
+    }
+
+    .note-content h3 {
+        font-size: 0.9rem;
     }
 
     .note-content span {
         font-size: 0.75rem;
     }
 
-    .note-actions svg {
-        width: 26px;
-        height: 26px;
+    .note-actions {
+        grid-column: 2;
+        justify-content: flex-start;
     }
 
-    /* PAGINACIÓN */
-    .page-number {
-        width: 32px;
-        height: 32px;
-        font-size: 0.8rem;
+    .icono-notas-compartir,
+    .icono-notas-editar,
+    .icono-notas-eliminar {
+        width: 20px !important;
+        height: 20px !important;
     }
 
+    .notes-pagination {
+        gap: 8px;
+    }
+
+    .page-number,
     .page-arrow {
-        width: 34px;
+        min-width: 34px;
         height: 34px;
+        font-size: 0.85rem;
     }
 }
 
+@media (max-width: 385px) {
+    .notas-logo {
+        height: 85px;
+    }
+}

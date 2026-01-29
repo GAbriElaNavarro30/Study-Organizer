@@ -44,12 +44,11 @@ export function Notas() {
                 </header>
 
 
-
                 {/* ===== LIST ===== */}
                 <section className="notes-list">
 
                     <div className="note-row">
-                        <FileText size={18} />
+                        <FileText size={18} className="icono-notas"/>
 
                         <div className="note-content">
                             <h3>Ideas para el proyecto final</h3>
@@ -58,14 +57,14 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} />
-                            <Pencil size={16} />
-                            <Trash2 size={16} />
+                            <Share2 size={16} className="icono-notas-compartir"/>
+                            <Pencil size={16} className="icono-notas-editar"/>
+                            <Trash2 size={16} className="icono-notas-eliminar"/>
                         </div>
                     </div>
 
                     <div className="note-row">
-                        <FileText size={18} />
+                        <FileText size={18} className="icono-notas"/>
 
                         <div className="note-content">
                             <h3>Notas de la reunión</h3>
@@ -74,14 +73,14 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} />
-                            <Pencil size={16} />
-                            <Trash2 size={16} />
+                            <Share2 size={16} className="icono-notas-compartir"/>
+                            <Pencil size={16} className="icono-notas-editar"/>
+                            <Trash2 size={16} className="icono-notas-eliminar"/>
                         </div>
                     </div>
 
                     <div className="note-row">
-                        <FileText size={18} />
+                        <FileText size={18} className="icono-notas"/>
 
                         <div className="note-content">
                             <h3>Notas de la reunión</h3>
@@ -90,9 +89,9 @@ export function Notas() {
                         </div>
 
                         <div className="note-actions">
-                            <Share2 size={16} />
-                            <Pencil size={16} />
-                            <Trash2 size={16} />
+                            <Share2 size={16} className="icono-notas-compartir"/>
+                            <Pencil size={16} className="icono-notas-editar"/>
+                            <Trash2 size={16} className="icono-notas-eliminar"/>
                         </div>
                     </div>
 
