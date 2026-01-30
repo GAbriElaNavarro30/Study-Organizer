@@ -1,0 +1,163 @@
+.modal-overlay-renombrar {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+.modal-contenedor-renombrar {
+    background: #ffffff;
+    border-radius: 14px;
+    width: 100%;
+    max-width: 420px;
+    padding: 22px;
+    box-shadow: 0 20px 40px rgba(0, 0, 0, 0.15);
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.modal-header-renombrar {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 1.05rem;
+    font-weight: 600;
+    color: #111827;
+}
+
+.modal-header-renombrar svg {
+    width: 22px;
+    height: 22px;
+}
+
+.modal-header-renombrar h2 {
+    font-weight: 600;
+    font-size: 1.5rem;
+}
+
+.modal-descripcion-renombrar {
+    font-size: 0.9rem;
+    color: #2a2a2b;
+}
+
+.campo-renombrar {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-renombrar label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.campo-renombrar input {
+    width: 100%;
+    padding: 9px 10px;
+    border-radius: 8px;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+}
+
+.campo-renombrar input:focus {
+    outline: none;
+    border-color: #6366f1;
+}
+
+.modal-botones-renombrar {
+    display: flex;
+    gap: 12px;
+    width: 100%;
+    margin-top: 10px;
+}
+
+/* Ambos botones ocupan el mismo ancho */
+.modal-botones-renombrar .btn {
+    flex: 1;
+    width: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+
+.btn-confirmar-renombrar {
+    background: #2563eb; /* azul limpio */
+    color: #ffffff;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: none;
+    cursor: pointer;
+}
+
+.btn-confirmar-renombrar:hover:not(:disabled) {
+    background: #1e40af;
+}
+
+.btn-confirmar-renombrar:disabled {
+    background: #93c5fd;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+.btn-cancelar-renombrar {
+    background: #d7d8d8;
+    color: #000000;
+    padding: 9px 16px;
+    border-radius: 10px;
+    font-size: 0.85rem;
+    font-weight: 500;
+    border: 1px solid #d1d5db;
+    cursor: pointer;
+}
+
+.btn-cancelar-renombrar:hover {
+    background: #e5e7eb;
+}
+
+
+.modal-divider {
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ================================
+   RESPONSIVIDAD
+================================ */
+@media (max-width: 480px) {
+    .modal-contenedor-renombrar {
+        max-width: 100%;
+        padding: 18px;
+        border-radius: 12px;
+    }
+
+    .modal-header-renombrar h2 {
+        font-size: 1rem;
+    }
+
+    .modal-descripcion-renombrar {
+        font-size: 0.85rem;
+    }
+
+    .campo-renombrar input {
+        font-size: 0.85rem;
+        padding: 10px;
+    }
+
+    .modal-botones-renombrar {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    .modal-botones-renombrar button {
+        width: 100%;
+    }
+}

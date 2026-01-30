@@ -7,12 +7,17 @@ import { ModalEliminarNota } from "./ModalEliminarNota";
 
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
 
+import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
+
 export function Notas() {
     const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
     const [notaSeleccionada, setNotaSeleccionada] = useState(null);
 
     const [mostrarModalCompartir, setMostrarModalCompartir] = useState(false);
     const [notaACompartir, setNotaACompartir] = useState(null);
+
+    const [mostrarModalRenombrar, setMostrarModalRenombrar] = useState(false);
+    const [notaARenombrar, setNotaARenombrar] = useState(null);
 
     const abrirModalEliminar = (nota) => {
         setNotaSeleccionada(nota);
@@ -46,6 +51,24 @@ export function Notas() {
     const confirmarCompartirNota = () => {
         console.log("Compartir nota:", notaACompartir);
         cerrarModalCompartir();
+    };
+
+
+
+
+    const abrirModalRenombrar = (nota) => {
+        setNotaARenombrar(nota);
+        setMostrarModalRenombrar(true);
+    };
+
+    const cerrarModalRenombrar = () => {
+        setMostrarModalRenombrar(false);
+        setNotaARenombrar(null);
+    };
+
+    const confirmarRenombrarNota = (nuevoNombre) => {
+        console.log("Renombrar:", notaARenombrar, "→", nuevoNombre);
+        cerrarModalRenombrar();
     };
 
 
@@ -113,7 +136,13 @@ export function Notas() {
 
                             <Pencil size={16} className="icono-notas-editar" />
 
-                            <Type size={16} className="icono-notas-renombrar"/>
+                            <Type
+                                size={16}
+                                className="icono-notas-renombrar"
+                                onClick={() =>
+                                    abrirModalRenombrar("Ideas para el proyecto final")
+                                }
+                            />
 
                             <Trash2
                                 size={16}
@@ -146,7 +175,13 @@ export function Notas() {
 
                             <Pencil size={16} className="icono-notas-editar" />
 
-                            <Type size={16} className="icono-notas-renombrar"/>
+                            <Type
+                                size={16}
+                                className="icono-notas-renombrar"
+                                onClick={() =>
+                                    abrirModalRenombrar("Ideas para el proyecto final")
+                                }
+                            />
 
                             <Trash2
                                 size={16}
@@ -178,8 +213,14 @@ export function Notas() {
                             />
 
                             <Pencil size={16} className="icono-notas-editar" />
-                            
-                            <Type size={16} className="icono-notas-renombrar"/>
+
+                            <Type
+                                size={16}
+                                className="icono-notas-renombrar"
+                                onClick={() =>
+                                    abrirModalRenombrar("Ideas para el proyecto final")
+                                }
+                            />
 
                             <Trash2
                                 size={16}
@@ -222,6 +263,13 @@ export function Notas() {
                 onClose={cerrarModalCompartir}
                 onConfirm={confirmarCompartirNota}
                 nombreNota={notaACompartir}
+            />
+
+            <ModalRenombrarNota
+                isOpen={mostrarModalRenombrar}
+                onClose={cerrarModalRenombrar}
+                onConfirm={confirmarRenombrarNota}
+                nombreActual={notaARenombrar}
             />
 
 
