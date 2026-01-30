@@ -18,6 +18,7 @@ import { Perfil } from "../pages/Perfil";
 import { Tareas } from "../pages/Tareas";
 import { Notas } from "../pages/Notas";
 import { EditorNota } from "../pages/EditorNota";
+import { Bienvenida } from "../pages/Bienvenida";
 
 export function AppRoutes() {
     return (
@@ -40,6 +41,7 @@ export function AppRoutes() {
                 <Route path="/tareas" element={<LayoutInterno><Tareas /></LayoutInterno>} />
                 <Route path="/notas" element={<LayoutInterno><Notas /></LayoutInterno>} />
                 <Route path="/editor-nota" element={<LayoutInterno><EditorNota /></LayoutInterno>} />
+                <Route path="/home" element={<LayoutInterno><Bienvenida /></LayoutInterno>} />
 
             </Routes>
         </HashRouter>

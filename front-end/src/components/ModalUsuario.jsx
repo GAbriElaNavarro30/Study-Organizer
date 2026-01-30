@@ -109,6 +109,24 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 required
                             />
                         </label>
+                    </div>
+
+                    <div className="fila">
+                        <label>
+                            Rol
+                            <select
+                                name="rol"
+                                value={formData.rol}
+                                onChange={handleChange}
+                                required
+                            >
+                                <option value="">Selecciona un rol</option>
+                                <option value="Estudiante">Estudiante</option>
+                                <option value="Tutor">Tutor</option>
+                                <option value="Administrador">Administrador</option>
+                            </select>
+                        </label>
+
 
                         <label>
                             Teléfono
