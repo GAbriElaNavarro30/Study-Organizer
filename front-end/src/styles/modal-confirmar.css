@@ -1,0 +1,104 @@
+/* ================= OVERLAY ================= */
+.modal-overlay-volver {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.4);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 16px;
+}
+
+/* ================= MODAL ================= */
+.modal-confirmar-volver {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 24px 24px 22px;
+    width: 100%;
+    max-width: 420px;
+    box-shadow: 0 30px 60px rgba(0, 0, 0, 0.2);
+    animation: modalFadeIn 0.28s ease;
+}
+
+/* ================= TEXT ================= */
+.modal-confirmar-volver h3 {
+    margin: 0;
+    font-size: 1.2rem;
+    font-weight: 600;
+    color: #0f172a;
+    letter-spacing: -0.2px;
+}
+
+.modal-confirmar-volver p {
+    margin: 0;
+    font-size: 0.95rem;
+    color: #475569;
+    line-height: 1.6;
+    max-width: 90%;
+}
+
+/* ================= DIVIDER ================= */
+.modal-divider {
+    margin: 16px 0 18px;
+    border: none;
+    height: 1px;
+    background-color: rgb(222, 222, 222);
+}
+
+/* ================= ACTIONS ================= */
+.modal-acciones-volver {
+    display: flex;
+    justify-content: center;
+    gap: 12px;
+    margin-top: 22px;
+    width: 100%;
+}
+
+/* ================= BUTTONS ================= */
+.btn-cancelar-volver,
+.btn-confirmar-volver {
+    flex: 1;                /* 🔥 OCUPA TODO EL ANCHO DISPONIBLE */
+    padding: 10px 0;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    text-align: center;
+    transition: background 0.2s ease, transform 0.15s ease;
+}
+
+/* Cancelar */
+.btn-cancelar-volver {
+    border: none;
+    color: #000000;
+    background-color: rgb(175, 175, 175);
+}
+
+.btn-cancelar-volver:hover {
+    background: rgb(211, 211, 211);
+}
+
+/* Confirmar */
+.btn-confirmar-volver {
+    background: #2563eb;
+    border: none;
+    color: #ffffff;
+    font-weight: 500;
+}
+
+.btn-confirmar-volver:hover {
+    background: #1e40af;
+    transform: translateY(-1px);
+}
+
+/* ================= RESPONSIVE ================= */
+@media (max-width: 480px) {
+    .modal-acciones-volver {
+        flex-direction: column;
+    }
+
+    .btn-confirmar-volver,
+    .btn-cancelar-volver {
+        width: 100%; /* extra seguridad */
+    }
+}

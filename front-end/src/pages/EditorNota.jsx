@@ -20,25 +20,33 @@ import {
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
+import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
+
 export function EditorNota() {
     const navigate = useNavigate();
 
     const [titulo, setTitulo] = useState("");
     const [contenido, setContenido] = useState("");
 
+    const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
+
     return (
         <main className="editor-nota">
             {/* ===== HEADER ===== */}
             <header className="editor-header">
-                <button className="btn-volver-editor" onClick={() => navigate(-1)}>
+                <button
+                    className="btn-volver-editor"
+                    onClick={() => setMostrarModalSalir(true)}
+                >
                     <ArrowLeft size={18} />
                     Volver
                 </button>
 
+
                 <h2 className="editor-titulo">
-                    
+
                     {titulo || "Un lugar tranquilo para organizar tus ideas"}
-                    
+
                 </h2>
 
                 <button className="btn-guardar-editor">
@@ -123,6 +131,13 @@ export function EditorNota() {
                     </div>
                 </aside>
             </section>
+
+            <ModalConfirmarSalir
+                isOpen={mostrarModalSalir}
+                onCancel={() => setMostrarModalSalir(false)}
+                onConfirm={() => navigate(-1)}
+            />
+
         </main>
     );
 }
