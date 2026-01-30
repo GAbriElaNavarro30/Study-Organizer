@@ -1,0 +1,136 @@
+/* ================= MODAL OVERLAY ================= */
+.modal-overlay-guardar-nota {
+    position: fixed;
+    inset: 0;
+    background: rgba(0, 0, 0, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    padding: 10px; /* espacio lateral en móviles */
+}
+
+/* ================= MODAL CONTAINER ================= */
+.modal-guardar-guardar-nota {
+    background: white;
+    padding: 22px 16px;
+    border-radius: 14px;
+    width: 100%;        /* ocupa casi toda la pantalla en móviles */
+    max-width: 400px;   /* límite en pantallas grandes */
+    max-height: 90vh;   /* no sale del viewport */
+    overflow-y: auto;   /* scroll si el contenido es muy alto */
+    animation: fadeIn 0.25s ease;
+}
+
+/* ================= TITULO ================= */
+.modal-guardar-guardar-nota h3 {
+    text-align: center;
+    font-weight: 600;
+    font-size: 1.3rem;
+}
+
+/* ================= DIVIDER ================= */
+.modal-divider-guardar-nota {
+    margin: 12px 0;
+    border: none;
+    border-top: 1px solid #e5e7eb;
+}
+
+/* ================= TEXTO ================= */
+.modal-guardar-guardar-nota p {
+    text-align: center;
+    color: #475569;
+    margin-bottom: 12px;
+    font-size: 0.95rem;
+}
+
+/* ================= INPUT ================= */
+.input-titulo-nota-guardar-nota {
+    width: 100%;
+    padding: 10px;
+    border-radius: 8px;
+    border: 1px solid #cbd5f5;
+    outline: none;
+    font-size: 0.95rem;
+}
+
+/* ================= BOTONES ================= */
+.modal-acciones-guardar-nota {
+    display: flex;
+    gap: 10px;
+    margin-top: 18px;
+    flex-direction: column; /* default: columna para móviles */
+}
+
+.btn-confirmar-guardar-nota,
+.btn-cancelar-guardar-nota {
+    flex: 1;
+    padding: 10px;
+    font-size: 0.85rem;
+    border-radius: 8px;
+    cursor: pointer;
+}
+
+.btn-confirmar-guardar-nota {
+    background: #2563eb;
+    color: white;
+    border: none;
+}
+
+.btn-cancelar-guardar-nota {
+    background: #e5e7eb;
+    border: none;
+}
+
+/* ================= MEDIA QUERIES ================= */
+
+/* Botones en fila para pantallas más grandes */
+@media (min-width: 500px) {
+    .modal-acciones-guardar-nota {
+        flex-direction: row;
+    }
+}
+
+/* Ajustes para pantallas muy pequeñas (<350px) */
+@media (max-width: 350px) {
+    .modal-guardar-guardar-nota {
+        padding: 16px 10px;
+    }
+
+    .modal-guardar-guardar-nota h3 {
+        font-size: 1.1rem;
+    }
+
+    .modal-guardar-guardar-nota p,
+    .input-titulo-nota-guardar-nota {
+        font-size: 0.9rem;
+    }
+
+    .btn-confirmar-guardar-nota,
+    .btn-cancelar-guardar-nota {
+        font-size: 0.95rem;
+        padding: 8px;
+    }
+}
+
+/* ================= SCROLL BELLITO ================= */
+.modal-guardar-guardar-nota::-webkit-scrollbar {
+    width: 6px;
+}
+
+.modal-guardar-guardar-nota::-webkit-scrollbar-thumb {
+    background: rgba(0,0,0,0.2);
+    border-radius: 3px;
+}
+
+/* ================= ANIMACIÓN ================= */
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: scale(0.97);
+    }
+    to {
+        opacity: 1;
+        transform: scale(1);
+    }
+}

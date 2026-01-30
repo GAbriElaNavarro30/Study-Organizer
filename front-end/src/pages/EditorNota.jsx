@@ -14,13 +14,14 @@ import {
     Mic,
     PaintBucket,
     Palette,
-    Highlighter,
-    Sparkles
+    Highlighter
 } from "lucide-react";
+
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 
 import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
+import { ModalGuardarNota } from "../components/ModalGuardarNota";
 
 export function EditorNota() {
     const navigate = useNavigate();
@@ -29,6 +30,39 @@ export function EditorNota() {
     const [contenido, setContenido] = useState("");
 
     const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
+
+    const [mostrarModalGuardar, setMostrarModalGuardar] = useState(false);
+    const [modoGuardar, setModoGuardar] = useState("editar"); // "editar" | "crear"
+
+    /* ===== HANDLERS ===== */
+
+    const handleGuardarClick = () => {
+        if (titulo.trim() === "") {
+            setModoGuardar("crear");
+        } else {
+            setModoGuardar("editar");
+        }
+        setMostrarModalGuardar(true);
+    };
+
+    const handleConfirmarGuardar = (tituloNota) => {
+        if (modoGuardar === "crear") {
+            setTitulo(tituloNota);
+            console.log("Nota creada:", tituloNota);
+        } else {
+            console.log("Cambios guardados");
+        }
+
+        // aquí luego conectas backend o localStorage
+        setMostrarModalGuardar(false);
+    };
+
+    const handleConfirmarSalir = () => {
+        setMostrarModalSalir(false);
+        navigate(-1);
+    };
+
+    /* ===== RENDER ===== */
 
     return (
         <main className="editor-nota">
@@ -42,14 +76,14 @@ export function EditorNota() {
                     Volver
                 </button>
 
-
                 <h2 className="editor-titulo">
-
                     {titulo || "Un lugar tranquilo para organizar tus ideas"}
-
                 </h2>
 
-                <button className="btn-guardar-editor">
+                <button
+                    className="btn-guardar-editor"
+                    onClick={handleGuardarClick}
+                >
                     <Save size={18} />
                     Guardar
                 </button>
@@ -107,16 +141,14 @@ export function EditorNota() {
                         <button><ListOrdered size={16} /></button>
                     </div>
 
-                    {/* FILA 5 - color del fondo, color de la letra, subrayar la letra, borrar subrayado */}
+                    {/* FILA 5 */}
                     <div className="herramientas-fila">
                         <button title="Color de texto">
                             <Palette size={16} />
                         </button>
-
                         <button title="Color de fondo">
                             <PaintBucket size={16} />
                         </button>
-
                         <button title="Resaltar texto">
                             <Highlighter size={16} />
                         </button>
@@ -132,12 +164,19 @@ export function EditorNota() {
                 </aside>
             </section>
 
+            {/* ===== MODALES ===== */}
             <ModalConfirmarSalir
                 isOpen={mostrarModalSalir}
                 onCancel={() => setMostrarModalSalir(false)}
-                onConfirm={() => navigate(-1)}
+                onConfirm={handleConfirmarSalir}
             />
 
+            <ModalGuardarNota
+                isOpen={mostrarModalGuardar}
+                modo={modoGuardar}
+                onCancel={() => setMostrarModalGuardar(false)}
+                onConfirm={handleConfirmarGuardar}
+            />
         </main>
     );
 }
