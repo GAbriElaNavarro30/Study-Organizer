@@ -36,7 +36,7 @@ export function ModalRenombrarNota({
                     <h2>Cambiar título</h2>
                 </div>
 
-                <hr className="modal-divider" />
+                <hr className="modal-divider-renombrar" />
 
                 {/* DESCRIPCIÓN */}
                 <p className="modal-descripcion-renombrar">
