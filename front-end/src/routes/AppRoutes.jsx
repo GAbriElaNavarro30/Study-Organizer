@@ -17,6 +17,7 @@ import { CrudAdmin } from "../pages/CrudAdmin";
 import { Perfil } from "../pages/Perfil";
 import { Tareas } from "../pages/Tareas";
 import { Notas } from "../pages/Notas";
+import { EditorNota } from "../pages/EditorNota";
 
 export function AppRoutes() {
     return (
@@ -38,6 +39,7 @@ export function AppRoutes() {
                 <Route path="/crud" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
                 <Route path="/tareas" element={<LayoutInterno><Tareas /></LayoutInterno>} />
                 <Route path="/notas" element={<LayoutInterno><Notas /></LayoutInterno>} />
+                <Route path="/editor-nota" element={<LayoutInterno><EditorNota /></LayoutInterno>} />
 
             </Routes>
         </HashRouter>

@@ -3,6 +3,8 @@ import { FileText, Plus, Search, Download, Share2, Pencil, Trash2, Type } from "
 import logoNotas from "../assets/imagenes/fondo-notas.png";
 
 import { useState } from "react";
+import { useNavigate } from "react-router-dom";
+
 import { ModalEliminarNota } from "./ModalEliminarNota";
 
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
@@ -10,6 +12,8 @@ import { ModalCompartirNota } from "../components/ModalCompartirNota";
 import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
 
 export function Notas() {
+    const navigate = useNavigate();
+
     const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
     const [notaSeleccionada, setNotaSeleccionada] = useState(null);
 
@@ -82,10 +86,11 @@ export function Notas() {
                 {/* ===== TOP ===== */}
                 <header className="notes-header">
                     <div className="notes-header-actions">
-                        <button className="btn-new">
+                        <button className="btn-new" onClick={() => navigate("/editor-nota")}>
                             <Plus size={16} />
                             Nueva nota
                         </button>
+
 
                         <button className="btn-ghost">
                             <Download size={16} />
@@ -134,7 +139,12 @@ export function Notas() {
                                 }
                             />
 
-                            <Pencil size={16} className="icono-notas-editar" />
+                            <Pencil
+                                size={16}
+                                className="icono-notas-editar"
+                                onClick={() => navigate("/editor-nota")}
+                            />
+
 
                             <Type
                                 size={16}
@@ -173,7 +183,11 @@ export function Notas() {
                                 }
                             />
 
-                            <Pencil size={16} className="icono-notas-editar" />
+                            <Pencil
+                                size={16}
+                                className="icono-notas-editar"
+                                onClick={() => navigate("/editor-nota")}
+                            />
 
                             <Type
                                 size={16}
@@ -212,7 +226,11 @@ export function Notas() {
                                 }
                             />
 
-                            <Pencil size={16} className="icono-notas-editar" />
+                            <Pencil
+                                size={16}
+                                className="icono-notas-editar"
+                                onClick={() => navigate("/editor-nota")}
+                            />
 
                             <Type
                                 size={16}
