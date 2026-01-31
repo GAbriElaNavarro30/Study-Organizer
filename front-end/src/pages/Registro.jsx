@@ -43,6 +43,20 @@ export function Registro() {
             <input type="text" placeholder="Nombre" required />
           </div>
 
+
+        </div>
+
+        <div className="fila-campos">
+          <div className="campo">
+            <label>Rol</label>
+            <select required>
+              <option value="">Selecciona un rol</option>
+              <option value="Tutor">Tutor</option>
+              <option value="Estudiante">Estudiante</option>
+            </select>
+          </div>
+
+
           <div className="campo">
             <label>Teléfono</label>
             <input type="tel" placeholder="Ej. 5512345678" pattern="[0-9]{10}" required />

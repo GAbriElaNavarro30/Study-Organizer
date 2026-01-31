@@ -120,6 +120,20 @@
     border-color: #2563eb;
 }
 
+.campo select {
+    padding: 10px;
+    border-radius: 6px;
+    border: 1px solid #d1d5db;
+    font-size: 0.9rem;
+    background-color: #fff;
+    color: #000;
+}
+
+.campo select:focus {
+    outline: none;
+    border-color: #2563eb;
+}
+
 .campo input[type="date"] {
     appearance: none;
     -webkit-appearance: none;
