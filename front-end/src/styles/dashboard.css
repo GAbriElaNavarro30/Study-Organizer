@@ -23,8 +23,8 @@
 
 /* FOTO */
 .perfil-foto img {
-    width: 64px;
-    height: 64px;
+    width: 84px;
+    height: 84px;
     border-radius: 50%;
     object-fit: cover;
 }
@@ -244,6 +244,52 @@
     text-align: center;
     max-width: 600px;
 }
+
+.card {
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 14px;
+    text-align: center;
+    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.card button {
+    margin-top: auto;
+
+    align-self: center;      /* 👈 centra el botón */
+    width: fit-content;     /* 👈 evita que se estire */
+    padding: 8px 14px;      /* 👈 más pequeño */
+
+    border-radius: 999px;   /* 👈 estilo suave */
+    border: none;
+    background: #2563eb;
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+}
+
+.card button:hover {
+    background: #1e40af;
+}
+
+.card button:active {
+    transform: translateY(0);
+}
+
+
+.card button:hover {
+    background: #1e40af;
+}
+
+.card button:active {
+    transform: translateY(0);
+}
+
 
 /* ================= RESPONSIVE ================= */
 @media (max-width: 768px) {

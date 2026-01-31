@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/dashboard.css";
 import "../styles/bienvenida.css";
 import perfil from "../assets/imagenes/perfil-usuario.png";
@@ -10,6 +10,7 @@ export function Dashboard({
     descripcion = "Este es tu espacio personal dentro de la plataforma."
 }) {
 
+    /* ================= EMOCIONES ================= */
     const emocionesBase = [
         "Tranquilo/a",
         "Feliz",
@@ -37,6 +38,58 @@ export function Dashboard({
         setMostrarInput(false);
         setEmocionNueva("");
         setEmocionSeleccionada(null);
+    };
+
+    /* ================= RESULTADOS DE TESTS ================= */
+    const [resultadosTests, setResultadosTests] = useState({
+        aprendizaje: [],
+        estudio: []
+    });
+
+    /* Cargar resultados guardados */
+    useEffect(() => {
+        const guardados = localStorage.getItem("resultadosTests");
+        if (guardados) {
+            setResultadosTests(JSON.parse(guardados));
+        }
+    }, []);
+
+    /* Guardar cambios */
+    useEffect(() => {
+        localStorage.setItem(
+            "resultadosTests",
+            JSON.stringify(resultadosTests)
+        );
+    }, [resultadosTests]);
+
+    /* Simulación de guardado (esto luego vendrá del test real) */
+    const simularResultadoAprendizaje = () => {
+        const nuevoResultado = {
+            fecha: new Date().toLocaleDateString(),
+            resultado: "Visual",
+            detalle: {
+                visual: 60,
+                auditivo: 25,
+                kinestesico: 15
+            }
+        };
+
+        setResultadosTests(prev => ({
+            ...prev,
+            aprendizaje: [nuevoResultado, ...prev.aprendizaje]
+        }));
+    };
+
+    const simularResultadoEstudio = () => {
+        const nuevoResultado = {
+            fecha: new Date().toLocaleDateString(),
+            resultado: "Pomodoro + Resúmenes"
+        };
+
+        setResultadosTests(prev => ({
+            ...prev,
+            estudio: [nuevoResultado, ...prev.estudio]
+        }));
     };
 
     return (
@@ -87,7 +140,6 @@ export function Dashboard({
                         </button>
                     ))}
 
-                    {/* BOTÓN OTRO */}
                     <button
                         className={`likert-opcion ${
                             mostrarInput ? "activa" : ""
@@ -101,7 +153,6 @@ export function Dashboard({
                     </button>
                 </div>
 
-                {/* INPUT EMOCIÓN PERSONALIZADA */}
                 {mostrarInput && (
                     <div className="likert-input">
                         <input
@@ -130,22 +181,33 @@ export function Dashboard({
                 )}
             </section>
 
-            {/* ===== RESUMEN EMOCIONAL (PLACEHOLDER) ===== */}
+            {/* ===== RESULTADOS DE TESTS ===== */}
             <section className="dashboard-resumen">
-                <h3>Emociones predominantes</h3>
+                <h3>Resultados de tus tests</h3>
 
                 <div className="resumen-cards">
                     <div className="card">
-                        <span>Tranquilidad</span>
-                        <strong>45%</strong>
+                        <span>Estilo de aprendizaje</span>
+                        <strong>
+                            {resultadosTests.aprendizaje.length > 0
+                                ? resultadosTests.aprendizaje[0].resultado
+                                : "Sin realizar"}
+                        </strong>
+                        <button onClick={simularResultadoAprendizaje}>
+                            Realizar test
+                        </button>
                     </div>
+
                     <div className="card">
-                        <span>Motivación</span>
-                        <strong>30%</strong>
-                    </div>
-                    <div className="card">
-                        <span>Estrés</span>
-                        <strong>25%</strong>
+                        <span>Métodos de estudio</span>
+                        <strong>
+                            {resultadosTests.estudio.length > 0
+                                ? resultadosTests.estudio[0].resultado
+                                : "Sin realizar"}
+                        </strong>
+                        <button onClick={simularResultadoEstudio}>
+                            Realizar test
+                        </button>
                     </div>
                 </div>
             </section>
