@@ -127,9 +127,8 @@ export function Dashboard({
                     {emociones.map((emocion, index) => (
                         <button
                             key={index}
-                            className={`likert-opcion ${
-                                emocionSeleccionada === emocion ? "activa" : ""
-                            }`}
+                            className={`likert-opcion ${emocionSeleccionada === emocion ? "activa" : ""
+                                }`}
                             onClick={() => {
                                 setEmocionSeleccionada(emocion);
                                 setMostrarInput(false);
@@ -141,9 +140,8 @@ export function Dashboard({
                     ))}
 
                     <button
-                        className={`likert-opcion ${
-                            mostrarInput ? "activa" : ""
-                        }`}
+                        className={`likert-opcion ${mostrarInput ? "activa" : ""
+                            }`}
                         onClick={() => {
                             setEmocionSeleccionada(null);
                             setMostrarInput(true);
@@ -179,6 +177,26 @@ export function Dashboard({
                         </div>
                     </div>
                 )}
+            </section>
+
+            {/* ===== RESUMEN EMOCIONAL (PLACEHOLDER) ===== */}
+            <section className="dashboard-resumen">
+                <h3>Emociones predominantes</h3>
+
+                <div className="resumen-cards">
+                    <div className="card">
+                        <span>Tranquilidad</span>
+                        <strong>45%</strong>
+                    </div>
+                    <div className="card">
+                        <span>Motivación</span>
+                        <strong>30%</strong>
+                    </div>
+                    <div className="card">
+                        <span>Estrés</span>
+                        <strong>25%</strong>
+                    </div>
+                </div>
             </section>
 
             {/* ===== RESULTADOS DE TESTS ===== */}
