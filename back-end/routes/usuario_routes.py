@@ -20,4 +20,3 @@ def crear_usuario():
 
     except ValueError as e:
         return {"error": str(e)}, 400
-
