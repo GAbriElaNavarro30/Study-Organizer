@@ -60,21 +60,21 @@
 }
 
 
-.btn-nuevo {
+.btn-nuevo-admin {
     background: #2563eb;
     color: #ffffff;
 }
 
-.btn-nuevo:hover {
+.btn-nuevo-admin:hover {
     background: #1e40af;
 }
 
-.btn-pdf {
+.btn-pdf-admin {
     background: #475569;
     color: #ffffff;
 }
 
-.btn-pdf:hover {
+.btn-pdf-admin:hover {
     background: #334155;
 }
 
@@ -295,8 +295,8 @@
         gap: 40px;
     }
 
-    .btn-nuevo,
-    .btn-pdf {
+    .btn-nuevo-admin,
+    .btn-pdf-admin {
         flex: 1 1 auto;
         font-size: 0.75rem;
         padding: 10px 8px !important;
@@ -332,14 +332,14 @@
     .botones-superior {
         flex-direction: row;
         justify-content: flex-start;
-        gap: 80px;
+        gap: 38px;
     }
 
-    .btn-nuevo,
-    .btn-pdf {
+    .btn-nuevo-admin,
+    .btn-pdf-admin {
         flex: 1 1 auto;
         font-size: 0.75rem;
-        padding: 10px 8px !important;
+        padding: 0px 8px !important;
     }
 
     .input-busqueda {

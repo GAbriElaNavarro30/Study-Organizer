@@ -19,6 +19,7 @@ import { Tareas } from "../pages/Tareas";
 import { Notas } from "../pages/Notas";
 import { EditorNota } from "../pages/EditorNota";
 import { Bienvenida } from "../pages/Bienvenida";
+import { Dashboard } from "../pages/Dashboard";
 
 export function AppRoutes() {
     return (
@@ -42,6 +43,7 @@ export function AppRoutes() {
                 <Route path="/notas" element={<LayoutInterno><Notas /></LayoutInterno>} />
                 <Route path="/editor-nota" element={<LayoutInterno><EditorNota /></LayoutInterno>} />
                 <Route path="/home" element={<LayoutInterno><Bienvenida /></LayoutInterno>} />
+                <Route path="/dashboard" element={<LayoutInterno><Dashboard /></LayoutInterno>} />
 
             </Routes>
         </HashRouter>

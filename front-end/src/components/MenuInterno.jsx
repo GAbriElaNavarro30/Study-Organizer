@@ -23,7 +23,7 @@ export function MenuInterno() {
             {/* ITEMS */}
             <div className={`menu-items-interno ${open ? "show-interno" : ""}`}>
                 <NavLink
-                    to="/"
+                    to="/dashboard"
                     onClick={() => setOpen(false)}
                     className={({ isActive }) =>
                         isActive

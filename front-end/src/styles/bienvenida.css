@@ -1,3 +1,179 @@
-.bienvenida {
-    background-color: violet;
+/* ================= CONTENEDOR GENERAL ================= */
+.bienvenida-container {
+    background: #f1f5f9;
+    padding: 40px 32px;
+    font-family: 'Inter', system-ui, sans-serif;
+    color: #0f172a;
+    display: flex;
+    flex-direction: column;
+    gap: 28px;
+}
+
+/* ================= PERFIL ================= */
+.bienvenida-perfil {
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 28px;
+    display: flex;
+    gap: 28px;
+    align-items: center;
+    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+}
+
+.perfil-foto img {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    object-fit: cover;
+    border: 3px solid #53eb25;
+}
+
+/* ================= TEXTO PERFIL ================= */
+.perfil-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.perfil-saludo-bienvenida {
+    display: flex;
+    align-items: baseline;
+    gap: 8px;
+}
+
+.perfil-saludo-bienvenida h2 {
+    margin: 0;
+    font-size: 24px;
+    font-weight: 700;
+    color: #0f172a;
+}
+
+.perfil-rol {
+    display: inline-block;
+    width: fit-content;
+    font-size: 13px;
+    padding: 4px 12px;
+    border-radius: 999px;
+    background: #e0e7ff;
+    color: #1e3a8a;
+    margin-top: 8px;
+}
+
+.perfil-descripcion {
+    margin-top: 12px;
+    font-size: 15px;
+    color: #475569;
+    max-width: 520px;
+    line-height: 1.5;
+}
+
+/* ================= FRASE PRINCIPAL ================= */
+.bienvenida-frase-principal {
+    text-align: center;
+    font-size: 17px;
+    color: #334155;
+}
+
+.bienvenida-frase-principal strong {
+    color: #2563eb;
+}
+
+/* ================= INSPIRACIÓN ================= */
+.bienvenida-inspiracion {
+    position: relative;
+    border-radius: 18px;
+    overflow: hidden;
+    height: 240px;
+    box-shadow: 0 10px 28px rgba(0, 0, 0, 0.08);
+}
+
+.bienvenida-inspiracion img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.inspiracion-overlay {
+    position: absolute;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.35);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 20px;
+}
+
+.inspiracion-overlay p {
+    color: #f8fafc;
+    font-size: 24px;
+    font-style: italic;
+    text-align: center;
+    max-width: 700px;
+    line-height: 1.4;
+}
+
+/* ================= TABLET ================= */
+@media (max-width: 768px) {
+    .bienvenida-container {
+        padding: 20px;
+        gap: 24px;
+    }
+
+    .bienvenida-perfil {
+        flex-direction: column;
+        text-align: center;
+        padding: 22px;
+    }
+
+    .perfil-info {
+        align-items: center;
+    }
+
+    .perfil-descripcion {
+        max-width: 100%;
+        text-align: center;
+    }
+
+    .bienvenida-inspiracion {
+        height: 200px;
+    }
+
+    .inspiracion-overlay p {
+        font-size: 20px;
+    }
+}
+
+/* ================= MÓVIL ================= */
+@media (max-width: 480px) {
+    .bienvenida-container {
+        padding: 25px 16px;
+        gap: 20px;
+    }
+
+    .perfil-foto img {
+        width: 90px;
+        height: 90px;
+    }
+
+    .perfil-saludo-bienvenida h2 {
+        font-size: 22px;
+    }
+
+    .perfil-descripcion {
+        font-size: 14px;
+        line-height: 1.45;
+    }
+
+    .bienvenida-frase-principal {
+        font-size: 15px;
+        padding: 0 6px;
+    }
+
+    .bienvenida-inspiracion {
+        height: 160px;
+    }
+
+    .inspiracion-overlay p {
+        font-size: 18px;
+        max-width: 90%;
+    }
 }

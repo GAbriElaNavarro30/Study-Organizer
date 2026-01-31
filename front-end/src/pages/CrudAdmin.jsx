@@ -68,11 +68,11 @@ export function CrudAdmin() {
                 {/* Barra superior */}
                 <div className="barra-superior">
                     <div className="botones-superior">
-                        <button className="btn btn-nuevo" onClick={() => abrirModalUsuario("crear")}>
+                        <button className="btn btn-nuevo-admin" onClick={() => abrirModalUsuario("crear")}>
                             <IoAddCircleOutline /> Nuevo
                         </button>
 
-                        <button className="btn btn-pdf">
+                        <button className="btn btn-pdf-admin">
                             <IoDocumentTextOutline /> Exportar PDF
                         </button>
                     </div>
