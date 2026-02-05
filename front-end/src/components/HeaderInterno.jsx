@@ -5,6 +5,8 @@ import { IoPersonCircleOutline, IoLogOutOutline } from "react-icons/io5";
 import "../styles/layoutInicio.css";
 
 import { ModalCerrarSesion } from "./ModalCerrarSesion";
+import { useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export function HeaderInterno() {
     const [menuAbierto, setMenuAbierto] = useState(false);
@@ -12,6 +14,9 @@ export function HeaderInterno() {
 
     const menuRef = useRef(null);
     const navigate = useNavigate();
+
+    const { logout } = useContext(AuthContext);
+
 
     /* Cerrar menú al hacer click fuera */
     useEffect(() => {
@@ -32,16 +37,14 @@ export function HeaderInterno() {
     };
 
     /* Confirmar cierre de sesión */
-    const handleConfirmLogout = () => {
+    const handleConfirmLogout = async () => {
         setOpenLogout(false);
         setMenuAbierto(false);
 
-        // 🔐 Limpia sesión (ajusta según tu auth)
-        localStorage.clear();
-        // localStorage.removeItem("token");
-
+        await logout();   // backend + context
         navigate("/login");
     };
+
 
     return (
         <div className="header-interno">
@@ -95,3 +98,4 @@ export function HeaderInterno() {
         </div>
     );
 }
+

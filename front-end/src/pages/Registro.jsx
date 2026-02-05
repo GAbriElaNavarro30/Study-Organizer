@@ -1,9 +1,14 @@
+import React from "react";
 import "../styles/registro.css";
 import { Link } from "react-router-dom";
 import { IoArrowBack, IoEye, IoEyeOff } from "react-icons/io5";
 import { useRegistro } from "../hooks/useRegistro";
+import { useNavigate } from "react-router-dom";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
 
 export function Registro() {
+  const navigate = useNavigate();
   const {
     mostrarPassword,
     setMostrarPassword,
@@ -16,17 +21,47 @@ export function Registro() {
     handleFechaChange,
     formData,
     handleChange,
-    registrarUsuario
+    registrarUsuario,
+    errores
   } = useRegistro();
+
+  // --------------- alertas ----------------
+  const [alertData, setAlertData] = React.useState({
+    visible: false,
+    type: "success", // "success" o "error"
+    title: "",
+    message: "",
+  });
+
+  const showAlert = (type, title, message) => {
+    setAlertData({
+      visible: true,
+      type,
+      title,
+      message,
+    });
+  };
+
+  const handleCloseAlert = () => {
+    setAlertData(prev => ({ ...prev, visible: false }));
+  };
+
+
+  const handleSubmit = async (e) => {
+    e.preventDefault();
+    const result = await registrarUsuario();
+
+    if (result.success) {
+      showAlert("success", "¡Registro exitoso!", "Tu cuenta ha sido creada correctamente.");
+    } else {
+      showAlert("error", "Error", result.message || "Ocurrió un problema al registrar la cuenta.");
+    }
+  };
 
   return (
     <div className="contenedor-registro">
-      <form
+      <form onSubmit={handleSubmit}
         className="formulario-registro"
-        onSubmit={(e) => {
-          e.preventDefault();
-          registrarUsuario();
-        }}
       >
         <Link to="/" className="btn-volver">
           <IoArrowBack />
@@ -47,8 +82,15 @@ export function Registro() {
               placeholder="Nombre"
               value={formData.nombre_usuario}
               onChange={handleChange}
-              required
+              className={errores.nombre_usuario ? "input-error" : ""}
+
             />
+
+            {errores.nombre_usuario && (
+              <span className="mensaje-error">
+                {errores.nombre_usuario}
+              </span>
+            )}
           </div>
         </div>
 
@@ -60,12 +102,18 @@ export function Registro() {
               name="id_rol"
               value={formData.id_rol}
               onChange={handleChange}
-              required
+              className={errores.id_rol ? "input-error" : ""}
             >
               <option value="">Selecciona un rol</option>
               <option value="3">Tutor</option>
               <option value="2">Estudiante</option>
             </select>
+
+            {errores.id_rol && (
+              <span className="mensaje-error">
+                {errores.id_rol}
+              </span>
+            )}
           </div>
 
           <div className="campo">
@@ -76,15 +124,23 @@ export function Registro() {
               placeholder="Ej. 5512345678"
               value={formData.telefono}
               onChange={handleChange}
-              pattern="[0-9]{10}"
-              required
+
+              className={errores.telefono ? "input-error" : ""}
+
             />
+
+            {errores.telefono && (
+              <span className="mensaje-error">
+                {errores.telefono}
+              </span>
+            )}
           </div>
         </div>
 
         {/* FECHA */}
         <div className="campo">
           <label>Fecha de nacimiento</label>
+
           <div className="fecha-nacimiento-registro">
             <select
               value={fechaNacimiento.day}
@@ -95,7 +151,6 @@ export function Registro() {
                   fechaNacimiento.year
                 )
               }
-              required
             >
               <option value="">Día</option>
               {days.map((d) => (
@@ -112,7 +167,6 @@ export function Registro() {
                   fechaNacimiento.year
                 )
               }
-              required
             >
               <option value="">Mes</option>
               {months.map((m, i) => (
@@ -129,7 +183,6 @@ export function Registro() {
                   e.target.value
                 )
               }
-              required
             >
               <option value="">Año</option>
               {years.map((y) => (
@@ -137,11 +190,19 @@ export function Registro() {
               ))}
             </select>
           </div>
+
+          {errores.fecha_nacimiento && (
+            <span className="mensaje-error">
+              {errores.fecha_nacimiento}
+            </span>
+          )}
         </div>
+
 
         {/* GÉNERO */}
         <div className="campo">
           <label>Género</label>
+
           <div className="opciones-genero-registro">
             <label className="radio-opcion-registro">
               <input
@@ -149,7 +210,7 @@ export function Registro() {
                 name="genero"
                 value="mujer"
                 onChange={handleChange}
-                required
+                checked={formData.genero === "mujer"}
               />
               <span>Mujer</span>
             </label>
@@ -160,6 +221,7 @@ export function Registro() {
                 name="genero"
                 value="hombre"
                 onChange={handleChange}
+                checked={formData.genero === "hombre"}
               />
               <span>Hombre</span>
             </label>
@@ -170,11 +232,19 @@ export function Registro() {
                 name="genero"
                 value="otro"
                 onChange={handleChange}
+                checked={formData.genero === "otro"}
               />
               <span>Otro</span>
             </label>
           </div>
+
+          {errores.genero && (
+            <span className="mensaje-error">
+              {errores.genero}
+            </span>
+          )}
         </div>
+
 
         {/* CORREO */}
         <div className="campo">
@@ -185,23 +255,33 @@ export function Registro() {
             placeholder="correo@example.com"
             value={formData.correo_electronico}
             onChange={handleChange}
-            required
+            className={errores.correo_electronico ? "input-error" : ""}
           />
+
+          {errores.correo_electronico && (
+            <span className="mensaje-error">
+              {errores.correo_electronico}
+            </span>
+          )}
         </div>
+
 
         {/* CONTRASEÑAS */}
         <div className="fila-campos">
+          {/* CONTRASEÑA */}
           <div className="campo campo-password">
             <label>Contraseña</label>
+
             <div className="input-password">
               <input
                 type={mostrarPassword ? "text" : "password"}
-                name="contraseña"
+                name="contrasena"
                 placeholder="Contraseña"
-                value={formData.contraseña}
+                value={formData.contrasena}
                 onChange={handleChange}
-                required
+                className={errores.contrasena ? "input-error" : ""}
               />
+
               <span
                 className="icono-password"
                 onClick={() => setMostrarPassword(!mostrarPassword)}
@@ -209,19 +289,28 @@ export function Registro() {
                 {mostrarPassword ? <IoEyeOff /> : <IoEye />}
               </span>
             </div>
+
+            {errores.contrasena && (
+              <span className="mensaje-error">
+                {errores.contrasena}
+              </span>
+            )}
           </div>
 
+          {/* CONFIRMAR CONTRASEÑA */}
           <div className="campo campo-password">
             <label>Confirmar contraseña</label>
+
             <div className="input-password">
               <input
                 type={mostrarConfirmPassword ? "text" : "password"}
-                name="confirmarContraseña"
+                name="confirmarContrasena"
                 placeholder="Confirmar contraseña"
-                value={formData.confirmarContraseña}
+                value={formData.confirmarContrasena}
                 onChange={handleChange}
-                required
+                className={errores.confirmarContrasena ? "input-error" : ""}
               />
+
               <span
                 className="icono-password"
                 onClick={() =>
@@ -231,8 +320,15 @@ export function Registro() {
                 {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
               </span>
             </div>
+
+            {errores.confirmarContrasena && (
+              <span className="mensaje-error">
+                {errores.confirmarContrasena}
+              </span>
+            )}
           </div>
         </div>
+
 
         <button type="submit" className="btn-registrar">
           Registrarse
@@ -243,6 +339,22 @@ export function Registro() {
           <Link to="/login">Inicia sesión</Link>
         </p>
       </form>
+
+      {alertData.visible && (
+        <CustomAlert
+          type={alertData.type}
+          title={alertData.title}
+          message={alertData.message}
+          logo={logo}
+          onClose={() => {
+            handleCloseAlert();
+            if (alertData.type === "success") {
+              navigate("/login"); // navega solo si fue éxito
+            }
+          }}
+        />
+      )}
+
     </div>
   );
 }

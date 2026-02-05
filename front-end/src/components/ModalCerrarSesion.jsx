@@ -21,11 +21,12 @@ export function ModalCerrarSesion({ isOpen, onClose, onConfirm }) {
                 <p>¿Estás seguro de que desea cerrar su sesión?</p>
 
                 <div className="modal-buttons-logout">
-                    <button className="btn btn-cancelar" onClick={onClose}>
-                        Cancelar
-                    </button>
                     <button className="btn btn-confirmar" onClick={onConfirm}>
                         Cerrar sesión
+                    </button>
+
+                    <button className="btn btn-cancelar" onClick={onClose}>
+                        Cancelar
                     </button>
                 </div>
             </div>

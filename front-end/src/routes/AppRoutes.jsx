@@ -1,4 +1,4 @@
-import { HashRouter, Routes, Route, Link } from 'react-router-dom';
+import { HashRouter, Routes, Route } from 'react-router-dom';
 
 import { Layout } from "../layouts/Layout";
 import { LayoutLR } from "../layouts/LayoutLR";
@@ -21,31 +21,112 @@ import { EditorNota } from "../pages/EditorNota";
 import { Bienvenida } from "../pages/Bienvenida";
 import { Dashboard } from "../pages/Dashboard";
 
+import { PrivateRoute } from "../components/PrivateRoute";
+
 export function AppRoutes() {
-    return (
-        <HashRouter>
-            <Routes>
-                {/* ----------------------- Rutas publicas ------------------------- */}
+  return (
+    <HashRouter>
+      <Routes>
 
-                <Route path="/" element={<Layout><Inicio /></Layout>} />
-                <Route path="/manual-usuario" element={<Layout><ManualUsuario /></Layout>} />
-                <Route path="/contactanos" element={<Layout><Contactanos /></Layout>} />
-                <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>} />
-                <Route path="/login" element={<LayoutL><Login /></LayoutL>} />
-                <Route path="/olvidar-contrasena" element={<LayoutO><OlvidarC /></LayoutO>} />
-                <Route path="/recuperar-contrasena" element={<LayoutO><RecuperarC /></LayoutO>} />
+        {/* ===================== RUTAS PÚBLICAS ===================== */}
+        <Route path="/" element={<Layout><Inicio /></Layout>} />
+        <Route path="/manual-usuario" element={<Layout><ManualUsuario /></Layout>} />
+        <Route path="/contactanos" element={<Layout><Contactanos /></Layout>} />
+        <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>} />
+        <Route path="/login" element={<LayoutL><Login /></LayoutL>} />
+        <Route path="/olvidar-contrasena" element={<LayoutO><OlvidarC /></LayoutO>} />
+        <Route path="/recuperar-contrasena" element={<LayoutO><RecuperarC /></LayoutO>} />
 
-                {/* ----------------------- Rutas protegidas ------------------------- */}
-                <Route path="/crud-administrador" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
-                <Route path="/perfil" element={<LayoutInterno><Perfil /></LayoutInterno>} />
-                <Route path="/crud" element={<LayoutInterno><CrudAdmin /></LayoutInterno>} />
-                <Route path="/tareas" element={<LayoutInterno><Tareas /></LayoutInterno>} />
-                <Route path="/notas" element={<LayoutInterno><Notas /></LayoutInterno>} />
-                <Route path="/editor-nota" element={<LayoutInterno><EditorNota /></LayoutInterno>} />
-                <Route path="/home" element={<LayoutInterno><Bienvenida /></LayoutInterno>} />
-                <Route path="/dashboard" element={<LayoutInterno><Dashboard /></LayoutInterno>} />
+        {/* ===================== RUTAS PROTEGIDAS ===================== */}
+        <Route
+          path="/home"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <Bienvenida />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
 
-            </Routes>
-        </HashRouter>
-    )
+        <Route
+          path="/dashboard"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <Dashboard />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/perfil"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <Perfil />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/crud"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <CrudAdmin />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/crud-administrador"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <CrudAdmin />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/tareas"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <Tareas />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/notas"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <Notas />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+        <Route
+          path="/editor-nota"
+          element={
+            <PrivateRoute>
+              <LayoutInterno>
+                <EditorNota />
+              </LayoutInterno>
+            </PrivateRoute>
+          }
+        />
+
+      </Routes>
+    </HashRouter>
+  );
 }

@@ -1,0 +1,128 @@
+/* ================== OVERLAY ================== */
+.custom-alert {
+  position: fixed;
+  inset: 0;
+  background: rgba(31, 41, 55, 0.4);
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  z-index: 9999;
+  animation: fadeOverlay 0.25s ease;
+}
+
+/* ================== CARD ================== */
+.custom-alert-content-box {
+  background: #f8f6f2; /* beige suave */
+  border-radius: 18px;
+  width: 92%;
+  max-width: 400px;
+  padding: 30px 26px;
+  border: 1px solid #e5e7eb;
+  box-shadow: 0 18px 40px rgba(0, 0, 0, 0.18);
+  animation: scaleIn 0.25s ease;
+  text-align: center;
+}
+
+/* ================== LOGO ================== */
+.custom-alert-logo {
+  width: 54px;
+  height: 54px;
+  margin-bottom: 16px;
+  filter: drop-shadow(0 2px 4px rgba(0, 0, 0, 0.15));
+}
+
+/* ================== TEXTO ================== */
+.custom-alert-text h2 {
+  margin: 0;
+  font-size: 1.35rem;
+  font-weight: 600;
+  color: #1f2937;
+  letter-spacing: 0.3px;
+}
+
+.custom-alert-text p {
+  margin-top: 10px;
+  font-size: 0.96rem;
+  color: #6b7280;
+  line-height: 1.55;
+}
+
+/* ================== BOTÓN BASE ================== */
+.custom-alert-button {
+  margin-top: 26px;
+  padding: 11px 22px;
+  border-radius: 12px;
+  border: none;
+  color: #ffffff;
+  font-weight: 500;
+  cursor: pointer;
+  transition: all 0.2s ease;
+}
+
+.custom-alert-button:active {
+  transform: scale(0.96);
+}
+
+/* ================== BOTÓN SUCCESS ================== */
+.custom-alert.success .custom-alert-button {
+  background: linear-gradient(180deg, #2563eb, #1e4ed8);
+  border: 1px solid #2563eb;
+}
+
+.custom-alert.success .custom-alert-button:hover {
+  box-shadow: 0 6px 14px rgba(37, 99, 235, 0.35);
+}
+
+/* ================== BOTÓN ERROR ================== */
+.custom-alert.error .custom-alert-button {
+  background: linear-gradient(180deg, #dc2626, #b91c1c);
+  border: 1px solid #dc2626;
+}
+
+.custom-alert.error .custom-alert-button:hover {
+  box-shadow: 0 6px 14px rgba(220, 38, 38, 0.35);
+}
+
+/* ================== BOTÓN WARNING ================== */
+.custom-alert.warning .custom-alert-button {
+  background: linear-gradient(180deg, #f59e0b, #d97706);
+  border: 1px solid #f59e0b;
+}
+
+.custom-alert.warning .custom-alert-button:hover {
+  box-shadow: 0 6px 14px rgba(245, 158, 11, 0.35);
+}
+
+/* ================== BORDE SUPERIOR ================== */
+.custom-alert.success .custom-alert-content-box {
+  border-top: 6px solid #2563eb;
+}
+
+.custom-alert.error .custom-alert-content-box {
+  border-top: 6px solid #dc2626;
+}
+
+.custom-alert.warning .custom-alert-content-box {
+  border-top: 6px solid #f59e0b;
+}
+
+/* ================== ANIMACIONES ================== */
+@keyframes scaleIn {
+  from {
+    opacity: 0;
+    transform: scale(0.96);
+  }
+  to {
+    opacity: 1;
+    transform: scale(1);
+  }
+}
+
+@keyframes fadeOverlay {
+  from {
+    opacity: 0;
+  }
+  to {
+    opacity: 1;
+  }
+}
