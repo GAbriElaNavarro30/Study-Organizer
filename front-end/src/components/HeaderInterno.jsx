@@ -15,7 +15,7 @@ export function HeaderInterno() {
     const menuRef = useRef(null);
     const navigate = useNavigate();
 
-    const { logout } = useContext(AuthContext);
+    const { usuario, logout } = useContext(AuthContext);
 
 
     /* Cerrar menú al hacer click fuera */
@@ -58,7 +58,7 @@ export function HeaderInterno() {
 
             <div className="info-usuario" ref={menuRef}>
                 <span className="nombre-usuario">
-                    Gabriela del Goretti Navarro Basurto
+                    {usuario?.nombre}
                 </span>
 
                 <div

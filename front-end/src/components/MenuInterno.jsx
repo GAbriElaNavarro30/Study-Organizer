@@ -1,15 +1,48 @@
 import "../styles/menuInterno.css";
 import { NavLink } from "react-router-dom";
-import { useState } from "react";
+import { useState, useContext } from "react";
+import { AuthContext } from "../context/AuthContext";
 
 export function MenuInterno() {
     const [open, setOpen] = useState(false);
 
-    const [openLogout, setOpenLogout] = useState(false);
+    const { usuario } = useContext(AuthContext);
+
+    // Mientras se carga la sesión, no mostrar menú
+    if (!usuario) return null;
+
+    // MENÚS SEGÚN ROL
+    const menusPorRol = {
+        1: [ // ADMIN
+            { to: "/home", label: "Bienvenida" },
+            { to: "/crud", label: "Crud" },
+            { to: "/perfil", label: "Perfil" },
+        ],
+
+        2: [ // ESTUDIANTE
+            { to: "/dashboard", label: "Dashboard" },
+            { to: "/", label: "Estilos Aprendizaje" },
+            { to: "/", label: "Métodos de Estudio" },
+            { to: "/", label: "Cursos" },
+            { to: "/notas", label: "Notas" },
+            { to: "/tareas", label: "Tareas" },
+            { to: "/perfil", label: "Perfil" },
+        ],
+
+        3: [ // TUTOR
+            { to: "/home", label: "Bienvenida" },
+            { to: "/", label: "Cursos Tutor" },
+            { to: "/perfil", label: "Perfil" },
+        ],
+    };
+
+    // MENÚ ACTUAL SEGÚN EL ROL DEL USUARIO
+    const menuActual = menusPorRol[usuario.rol] || [];
 
     return (
         <nav className="menu-exterior-interno">
-            {/* HAMBURGUESA */}
+
+            {/* BOTÓN HAMBURGUESA */}
             <button
                 className={`hamburger-interno ${open ? "open-interno" : ""}`}
                 onClick={() => setOpen(!open)}
@@ -20,134 +53,27 @@ export function MenuInterno() {
                 <span></span>
             </button>
 
-            {/* ITEMS */}
+            {/* ITEMS DEL MENÚ (DINÁMICOS) */}
             <div className={`menu-items-interno ${open ? "show-interno" : ""}`}>
-                <NavLink
-                    to="/dashboard"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Dashboard
-                </NavLink>
-
-                <NavLink
-                    to="/home"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Bienvenida
-                </NavLink>
-
-                <NavLink
-                    to="/"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Estilos Aprendizaje
-                </NavLink>
-
-                <NavLink
-                    to="/"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Métodos de Estudio
-                </NavLink>
-
-                <NavLink
-                    to="/"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Cursos
-                </NavLink>
-
-                <NavLink
-                    to="/"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Cursos Tutor
-                </NavLink>
-
-                <NavLink
-                    to="/notas"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Notas
-                </NavLink>
-
-                <NavLink
-                    to="/tareas"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Tareas
-                </NavLink>
-
-                <NavLink
-                    to="/crud"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Crud
-                </NavLink>
-
-                <NavLink
-                    to="/perfil"
-                    onClick={() => setOpen(false)}
-                    className={({ isActive }) =>
-                        isActive
-                            ? "menu-item-interno active-interno"
-                            : "menu-item-interno"
-                    }
-                >
-                    Perfil
-                </NavLink>
-
+                {menuActual.map((item) => (
+                    <NavLink
+                        key={item.to}
+                        to={item.to}
+                        onClick={() => setOpen(false)}
+                        className={({ isActive }) =>
+                            isActive
+                                ? "menu-item-interno active-interno"
+                                : "menu-item-interno"
+                        }
+                    >
+                        {item.label}
+                    </NavLink>
+                ))}
             </div>
 
             <div className="menu-eslogan-interno">
                 Organiza tu estudio, cuida tu bienestar
             </div>
         </nav>
-
     );
 }
