@@ -5,13 +5,17 @@ import { db } from "../config/db.js";
 import bcrypt from "bcrypt";
 import jwt from "jsonwebtoken";
 import { verificarToken } from "../middlewares/auth.js";
+import cloudinary from "../config/cloudinary.js"; // Asegúrate de la ruta correcta
+import multer from "multer";
 
+// Multer: almacenamiento en memoria (no en disco)
+const storage = multer.memoryStorage();
+const upload = multer({ storage });
 const router = Router();
 
 /* ====================================================
 -------------------------- ROLES ----------------------
 =====================================================*/
-
 //== obtener roles == 
 router.get("/obtener-roles", async (req, res) => {
   try {
@@ -118,7 +122,7 @@ router.post("/login", async (req, res) => {
       { expiresIn: "2h" }
     );
 
-    // 🍪 COOKIE HttpOnly
+    // COOKIE HttpOnly
     res.cookie("token", token, {
       httpOnly: true,
       secure: false, // true cuando uses HTTPS
@@ -147,7 +151,7 @@ router.post("/login", async (req, res) => {
 ========================================================*/
 router.get("/me", verificarToken, async (req, res) => {
   const [rows] = await db.query(
-    "SELECT id_usuario, nombre_usuario, correo_electronico, id_rol FROM Usuario WHERE id_usuario = ?",
+    "SELECT id_usuario, nombre_usuario, correo_electronico, id_rol, foto_perfil, telefono, contrasena FROM Usuario WHERE id_usuario = ?",
     [req.usuario.id]
   );
 
@@ -162,7 +166,10 @@ router.get("/me", verificarToken, async (req, res) => {
       id: usuario.id_usuario,
       nombre: usuario.nombre_usuario,
       correo: usuario.correo_electronico,
-      rol: usuario.id_rol
+      rol: usuario.id_rol,
+      foto_perfil: usuario.foto_perfil,
+      telefono: usuario.telefono,
+      contrasena: usuario.contrasena,
     }
   });
 });
@@ -176,6 +183,44 @@ router.post("/logout", (req, res) => {
   });
 
   res.json({ mensaje: "Sesión cerrada" });
+});
+
+/* =======================================================
+---------------------- Perfil Usuario --------------------
+========================================================*/
+// Subir foto de perfil
+router.post("/perfil/foto", verificarToken, upload.single("foto"), async (req, res) => {
+  try {
+    if (!req.file) {
+      return res.status(400).json({ mensaje: "No se envió ningún archivo" });
+    }
+
+    // Subir la imagen a Cloudinary
+    const result = await cloudinary.uploader.upload_stream(
+      { folder: "perfiles_usuarios" }, // Carpeta opcional en Cloudinary
+      async (error, result) => {
+        if (error) {
+          console.error(error);
+          return res.status(500).json({ mensaje: "Error al subir la imagen" });
+        }
+
+        // Guardar URL en la base de datos
+        await db.query(
+          "UPDATE Usuario SET foto_perfil = ? WHERE id_usuario = ?",
+          [result.secure_url, req.usuario.id]
+        );
+
+        res.json({ mensaje: "Foto de perfil actualizada", url: result.secure_url });
+      }
+    );
+
+    // Escribir el buffer de la imagen
+    result.end(req.file.buffer);
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ mensaje: "Error al subir foto de perfil" });
+  }
 });
 
 

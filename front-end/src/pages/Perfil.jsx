@@ -4,31 +4,47 @@ import { useState, useRef } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { FiEdit2 } from "react-icons/fi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
+import { useContext, useEffect } from "react";
+import { AuthContext } from "../context/AuthContext";
+import perfilPredeterminado from "../assets/imagenes/perfil-usuario.png";
 
 export function Perfil() {
-    const [descripcion, setDescripcion] = useState("");
+    const [descripcion, setDescripcion] = useState();
     const [showEmoji, setShowEmoji] = useState(false);
 
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
 
+    const { usuario } = useContext(AuthContext);
+    const [nombre, setNombre] = useState("");
+    const [correo, setCorreo] = useState("");
+    const [telefono, setTelefono] = useState("");
+
     // ===== FOTO PERFIL =====
-    const [fotoPerfil, setFotoPerfil] = useState("/perfil.jpg");
+    const [fotoPerfil, setFotoPerfil] = useState(perfilPredeterminado);
     const fileInputRef = useRef(null);
 
     const handleCambiarFoto = () => {
         fileInputRef.current.click();
     };
 
-    const handleFotoSeleccionada = (e) => {
+    const handleFotoSeleccionada = async (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        const reader = new FileReader();
-        reader.onloadend = () => {
-            setFotoPerfil(reader.result);
-        };
-        reader.readAsDataURL(file);
+        // Subir a Cloudinary
+        const formData = new FormData();
+        formData.append("foto", file);
+
+        const res = await fetch("http://localhost:3000/api/usuario/subir-foto", {
+            method: "POST",
+            body: formData
+        });
+
+        const data = await res.json();
+        if (data.url) {
+            setFotoPerfil(data.url); // ahora tu state tiene la URL de Cloudinary
+        }
     };
 
     // ===== FECHA DE NACIMIENTO =====
@@ -56,6 +72,15 @@ export function Perfil() {
         }
     };
 
+    useEffect(() => {
+        if (usuario) {
+            setNombre(usuario.nombre || "");
+            setCorreo(usuario.correo || "");
+            setTelefono(usuario.telefono || "");
+        }
+    }, [usuario]);
+
+
     return (
         <div className="contenedor-perfil-usuario">
 
@@ -67,7 +92,7 @@ export function Perfil() {
 
             {/* ===== INFO ===== */}
             <div className="perfil-info-usuario">
-                <h2 className="perfil-nombre-usuario">Goretti Navarro</h2>
+                <h2 className="perfil-nombre-usuario">{nombre}</h2>
                 <p className="perfil-descripcion-usuario">
                     Estudiante de desarrollo web apasionada por crear interfaces
                     limpias, funcionales y profesionales.
@@ -96,7 +121,8 @@ export function Perfil() {
                         <div className="campo-usuario">
                             <label>Nombre</label>
                             <div className="input-editable">
-                                <input type="text" placeholder="Nombre completo" disabled />
+                                <input type="text" placeholder="Nombre completo" value={nombre}
+                                    onChange={(e) => setNombre(e.target.value)} disabled />
                                 <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                     <FiEdit2 />
                                 </button>
@@ -106,7 +132,8 @@ export function Perfil() {
                         <div className="campo-usuario">
                             <label>Correo electrónico</label>
                             <div className="input-editable">
-                                <input type="email" placeholder="Correo electrónico" disabled />
+                                <input type="email" placeholder="Correo electrónico" value={correo}
+                                    onChange={(e) => setCorreo(e.target.value)} disabled />
                                 <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                     <FiEdit2 />
                                 </button>
@@ -164,7 +191,8 @@ export function Perfil() {
                     <div className="campo-usuario">
                         <label>Teléfono</label>
                         <div className="input-editable">
-                            <input type="tel" placeholder="Ej. 5512345678" disabled />
+                            <input type="tel" placeholder="Ej. 5512345678" value={telefono}
+                                onChange={(e) => setTelefono(e.target.value)} disabled />
                             <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                 <FiEdit2 />
                             </button>

@@ -65,7 +65,10 @@ export function HeaderInterno() {
                     className="avatar-usuario"
                     onClick={() => setMenuAbierto(!menuAbierto)}
                 >
-                    <img src="/avatar-default.png" alt="Foto de perfil" />
+                    <img
+                        src={usuario?.foto_perfil || "/avatars/perfil-usuario.png"}
+                        alt="Foto de perfil"
+                    />
                 </div>
 
                 {menuAbierto && (
