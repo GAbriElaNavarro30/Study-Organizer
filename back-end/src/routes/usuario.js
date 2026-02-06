@@ -7,7 +7,7 @@ import jwt from "jsonwebtoken";
 import { verificarToken } from "../middlewares/auth.js";
 import cloudinary from "../config/cloudinary.js"; // Asegúrate de la ruta correcta
 import multer from "multer";
-import fs from "fs/promises"; // Solo si quieres usar archivos temporales (opcional)
+import { transporter } from "../config/mailer.js";
 
 // Multer: almacenamiento en memoria (no en disco)
 const storage = multer.memoryStorage();
@@ -82,6 +82,139 @@ router.post("/crear-usuario", async (req, res) => {
     res.status(500).json({ message: "Error al crear el usuario", error: error.message });
   }
 });
+
+/* =======================================================
+------------------- Recuperar Contraseña -----------------
+========================================================*/
+router.post("/recuperar-contrasena", async (req, res) => {
+  try {
+    const { correo_electronico } = req.body;
+
+    if (!correo_electronico || !correo_electronico.trim()) {
+      return res.status(400).json({
+        mensaje: "El campo correo electrónico es obligatorio",
+      });
+    }
+
+    const [rows] = await db.query(
+      "SELECT id_usuario, nombre_usuario FROM Usuario WHERE correo_electronico = ?",
+      [correo_electronico]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        mensaje: "El correo electrónico no está registrado en el sistema",
+      });
+    }
+
+    const usuario = rows[0];
+
+    // TOKEN DE RECUPERACIÓN (15 min)
+    const token = jwt.sign(
+      { id: usuario.id_usuario },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    // LINK
+    const link = `${process.env.FRONTEND_URL}/#/recuperar-contrasena?token=${token}`;
+
+    // ENVÍO DE CORREO
+    await transporter.sendMail({
+      from: `"Soporte Study Organizer" <${process.env.EMAIL_USER}>`,
+      to: correo_electronico,
+      subject: "Solicitud de recuperación de contraseña",
+      html: `
+        <p>Estimado/a <strong>${usuario.nombre_usuario}</strong>,</p>
+
+        <p>
+          Hemos recibido una solicitud para restablecer la contraseña
+          asociada a su cuenta en <strong>Study Organizer</strong>.
+        </p>
+
+        <p>
+          Para continuar con el proceso, por favor haga clic en el siguiente enlace:
+        </p>
+
+        <p>
+          <a href="${link}">${link}</a>
+        </p>
+
+        <p>
+          Por motivos de seguridad, este enlace tendrá una vigencia de
+          <strong>15 minutos</strong>.
+        </p>
+
+        <p>
+          Si usted no realizó esta solicitud, puede ignorar este mensaje.
+          No se realizará ningún cambio en su cuenta.
+        </p>
+
+        <p>
+          Atentamente,<br />
+          <strong>Equipo de Soporte<br />
+          Study Organizer</strong>
+        </p>
+      `,
+    });
+
+    res.json({
+      mensaje: "Se ha enviado un enlace de recuperación a tu correo",
+    });
+
+  } catch (error) {
+    console.error("Error recuperar contraseña:", error);
+    res.status(500).json({
+      mensaje: "Error al procesar la recuperación de contraseña",
+    });
+  }
+});
+
+router.post("/resetear-contrasena", async (req, res) => {
+  try {
+    const { token, nueva_contrasena } = req.body;
+
+    // Validación básica
+    if (!token || !nueva_contrasena) {
+      return res.status(400).json({
+        mensaje: "Datos incompletos",
+      });
+    }
+
+    // Verificar token
+    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+
+    // Hashear nueva contraseña
+    const hashed = await bcrypt.hash(nueva_contrasena, 10);
+
+    // Actualizar contraseña
+    await db.query(
+      "UPDATE Usuario SET contrasena = ? WHERE id_usuario = ?",
+      [hashed, decoded.id]
+    );
+
+    res.json({
+      mensaje: "Contraseña actualizada correctamente",
+    });
+
+  } catch (error) {
+    console.error("Error resetear contraseña:", error);
+
+    // 🔹 Token expirado
+    if (error.name === "TokenExpiredError") {
+      return res.status(401).json({
+        mensaje:
+          "El token ha expirado. Vuelva a solicitar un token de recuperación.",
+      });
+    }
+
+    // 🔹 Token inválido
+    return res.status(401).json({
+      mensaje: "El token es inválido.",
+    });
+  }
+});
+
 
 
 /* =======================================================
@@ -158,6 +291,8 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ mensaje: "Error en el login" });
   }
 });
+
+
 
 
 

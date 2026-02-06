@@ -74,6 +74,9 @@ export function Login() {
         setErrores({ correo: "", password: "Contraseña incorrecta" });
       } else {
         setErrores({ correo: "", password: "Error al iniciar sesión" });
+
+        console.error("Error login completo:", error);   // <--- línea clave
+        console.error("Error response.data:", error.response?.data);
       }
     }
   };

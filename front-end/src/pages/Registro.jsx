@@ -6,8 +6,12 @@ import { useRegistro } from "../hooks/useRegistro";
 import { useNavigate } from "react-router-dom";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
+import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 
 export function Registro() {
+  const [modalVisible, setModalVisible] = React.useState(false);
+  const [nextPath, setNextPath] = React.useState(null);
+
   const navigate = useNavigate();
   const {
     mostrarPassword,
@@ -58,12 +62,39 @@ export function Registro() {
     }
   };
 
+  const hayDatosIngresados = () => {
+    return Object.values(formData).some(value => value !== "");
+  };
+
+  const handleVolverClick = (e) => {
+    e.preventDefault(); // previene navegación automática
+    if (hayDatosIngresados()) {
+      setNextPath("/"); // ruta a donde queremos ir si confirma
+      setModalVisible(true);
+    } else {
+      navigate("/"); // navega directamente si no hay datos
+    }
+  };
+
+  const handleLoginClick = (e) => {
+    e.preventDefault();
+    if (hayDatosIngresados()) {
+      setNextPath("/login");
+      setModalVisible(true);
+    } else {
+      navigate("/login");
+    }
+  };
+
+
+
+
   return (
     <div className="contenedor-registro">
       <form onSubmit={handleSubmit}
         className="formulario-registro"
       >
-        <Link to="/" className="btn-volver">
+        <Link to="/" className="btn-volver" onClick={handleVolverClick}>
           <IoArrowBack />
         </Link>
 
@@ -336,9 +367,19 @@ export function Registro() {
 
         <p className="texto-login">
           <span>¿Ya tienes cuenta?</span>
-          <Link to="/login">Inicia sesión</Link>
+          <Link to="/login" onClick={handleLoginClick}>Inicia sesión</Link>
         </p>
       </form>
+
+      <ModalConfirmarCancelar
+        isOpen={modalVisible}
+        onConfirm={() => {
+          setModalVisible(false);
+          navigate(nextPath); // navega a la ruta guardada
+        }}
+        onCancel={() => setModalVisible(false)} // cierra modal si cancela
+      />
+
 
       {alertData.visible && (
         <CustomAlert
@@ -355,6 +396,10 @@ export function Registro() {
         />
       )}
 
+
+
+
     </div>
+
   );
 }

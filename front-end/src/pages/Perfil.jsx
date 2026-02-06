@@ -6,9 +6,11 @@ import { FiEdit2 } from "react-icons/fi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 import fotoPredeterminada from "../assets/imagenes/perfil-usuario.png";
+import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 
 export function Perfil() {
 
+    const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false);
     const { usuario, setUsuario } = useContext(AuthContext);
 
     // ===== ESTADOS BÁSICOS =====
@@ -217,6 +219,16 @@ export function Perfil() {
 
         // Si nada de lo anterior, usar predeterminada
         return fotoPredeterminada;
+    };
+
+    // Modal de cancelar
+    const confirmarCancelar = () => {
+        handleCancelar(); // Resetea los valores
+        setMostrarModalCancelar(false); // Cierra el modal
+    };
+
+    const cerrarModal = () => {
+        setMostrarModalCancelar(false); // Solo cierra el modal si decide no cancelar
     };
 
 
@@ -472,9 +484,20 @@ export function Perfil() {
                 {/* BOTONES */}
                 <div className="fila-botones-usuario">
                     <button className="btn-guardar-usuario" onClick={handleGuardar}>Guardar</button>
-                    <button className="btn-cancelar-usuario" onClick={handleCancelar}>Cancelar</button>
+                    <button className="btn-cancelar-usuario" onClick={() => setMostrarModalCancelar(true)}>Cancelar</button>
                 </div>
             </div>
+
+            {mostrarModalCancelar && (
+                <ModalConfirmarCancelar
+                    isOpen={mostrarModalCancelar}  // <<--- esto faltaba
+                    onConfirm={confirmarCancelar}
+                    onCancel={cerrarModal}
+                    mensaje="¿Estás seguro que quieres cancelar los cambios?"
+                />
+            )}
+
+
         </div>
     );
 }

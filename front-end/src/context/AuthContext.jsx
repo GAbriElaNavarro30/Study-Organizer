@@ -71,6 +71,7 @@ export function AuthProvider({ children }) {
         setUsuario: (user) => setUsuario(normalizarUsuario(user)),
         loading,
         logout,
+        setLoading,
       }}
     >
       {children}
