@@ -365,3 +365,14 @@
     margin-top: 4px;
     display: block;
 }
+
+.mensaje-error {
+  color: #e53935;
+  font-size: 12px;
+  margin-top: 4px;
+  display: block;
+}
+
+.input-error {
+  border: 1px solid #e53935;
+}
