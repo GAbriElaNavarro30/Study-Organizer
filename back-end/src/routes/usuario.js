@@ -7,6 +7,7 @@ import jwt from "jsonwebtoken";
 import { verificarToken } from "../middlewares/auth.js";
 import cloudinary from "../config/cloudinary.js"; // Asegúrate de la ruta correcta
 import multer from "multer";
+import fs from "fs/promises"; // Solo si quieres usar archivos temporales (opcional)
 
 // Multer: almacenamiento en memoria (no en disco)
 const storage = multer.memoryStorage();
@@ -189,39 +190,92 @@ router.post("/logout", (req, res) => {
 ---------------------- Perfil Usuario --------------------
 ========================================================*/
 // Subir foto de perfil
-router.post("/perfil/foto", verificarToken, upload.single("foto"), async (req, res) => {
-  try {
-    if (!req.file) {
-      return res.status(400).json({ mensaje: "No se envió ningún archivo" });
-    }
+// PUT /api/usuario
+router.put(
+  "/actualizar-perfil",
+  verificarToken,
+  upload.fields([
+    { name: "foto_perfil", maxCount: 1 },
+    { name: "foto_portada", maxCount: 1 }
+  ]),
+  async (req, res) => {
+    try {
+      const {
+        nombre,
+        correo,
+        telefono,
+        descripcion,
+        fechaNacimiento,
+        genero,
+        password
+      } = req.body;
 
-    // Subir la imagen a Cloudinary
-    const result = await cloudinary.uploader.upload_stream(
-      { folder: "perfiles_usuarios" }, // Carpeta opcional en Cloudinary
-      async (error, result) => {
-        if (error) {
-          console.error(error);
-          return res.status(500).json({ mensaje: "Error al subir la imagen" });
-        }
+      const campos = [];
+      const valores = [];
 
-        // Guardar URL en la base de datos
-        await db.query(
-          "UPDATE Usuario SET foto_perfil = ? WHERE id_usuario = ?",
-          [result.secure_url, req.usuario.id]
-        );
+      // ===== CAMPOS NORMALES =====
+      if (nombre) campos.push("nombre_usuario = ?"), valores.push(nombre);
+      if (correo) campos.push("correo_electronico = ?"), valores.push(correo);
+      if (telefono) campos.push("telefono = ?"), valores.push(telefono);
+      if (descripcion) campos.push("descripcion = ?"), valores.push(descripcion);
+      if (genero) campos.push("genero = ?"), valores.push(genero);
 
-        res.json({ mensaje: "Foto de perfil actualizada", url: result.secure_url });
+      if (password) {
+        const hashed = await bcrypt.hash(password, 10);
+        campos.push("contrasena = ?");
+        valores.push(hashed);
       }
-    );
 
-    // Escribir el buffer de la imagen
-    result.end(req.file.buffer);
+      if (fechaNacimiento && fechaNacimiento.year && fechaNacimiento.month && fechaNacimiento.day) {
+        campos.push("fecha_nacimiento = ?");
+        valores.push(`${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`);
+      }
 
-  } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error al subir foto de perfil" });
+      // ===== FOTOS (CLOUDINARY) =====
+      const subirArchivoCloudinary = async (file) => {
+        const base64 = file.buffer.toString("base64");
+        const dataUri = `data:${file.mimetype};base64,${base64}`;
+        const result = await cloudinary.uploader.upload(dataUri, {
+          folder: "fotos_usuarios",
+          resource_type: "image"
+        });
+        return result.secure_url;
+      };
+
+      // Solo sube si hay archivos nuevos
+      if (req.files?.foto_perfil?.length > 0) {
+        const file = req.files.foto_perfil[0];
+        const urlPerfil = await subirArchivoCloudinary(file);
+        campos.push("foto_perfil = ?");
+        valores.push(urlPerfil);
+      }
+
+      if (req.files?.foto_portada?.length > 0) {
+        const file = req.files.foto_portada[0];
+        const urlPortada = await subirArchivoCloudinary(file);
+        campos.push("foto_portada = ?");
+        valores.push(urlPortada);
+      }
+
+      if (campos.length === 0) {
+        return res.status(400).json({ mensaje: "No hay datos para actualizar" });
+      }
+
+      // id_usuario del token
+      valores.push(req.usuario.id);
+
+      const sql = `UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`;
+      await db.query(sql, valores);
+
+      res.json({ mensaje: "Perfil actualizado correctamente" });
+    } catch (error) {
+      console.error("ERROR actualizar perfil:", error);
+      res.status(500).json({ mensaje: "Error al actualizar perfil" });
+    }
   }
-});
+);
+
+
 
 
 export default router;

@@ -9,7 +9,7 @@ import { AuthContext } from "../context/AuthContext";
 import perfilPredeterminado from "../assets/imagenes/perfil-usuario.png";
 
 export function Perfil() {
-    const [descripcion, setDescripcion] = useState();
+    const [descripcion, setDescripcion] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
 
     const [mostrarPassword, setMostrarPassword] = useState(false);
@@ -24,28 +24,69 @@ export function Perfil() {
     const [fotoPerfil, setFotoPerfil] = useState(perfilPredeterminado);
     const fileInputRef = useRef(null);
 
+    const [fotoPortada, setFotoPortada] = useState("/portada.jpg");
+    const [fotoPerfilFile, setFotoPerfilFile] = useState(null);
+    const [fotoPortadaFile, setFotoPortadaFile] = useState(null);
+
     const handleCambiarFoto = () => {
         fileInputRef.current.click();
     };
 
-    const handleFotoSeleccionada = async (e) => {
+    const handleFotoSeleccionada = (e) => {
         const file = e.target.files[0];
         if (!file) return;
 
-        // Subir a Cloudinary
-        const formData = new FormData();
-        formData.append("foto", file);
+        setFotoPerfilFile(file);              // Guardar archivo para subir
+        setFotoPerfil(URL.createObjectURL(file)); // Vista previa
+    };
 
-        const res = await fetch("http://localhost:3000/api/usuario/subir-foto", {
-            method: "POST",
-            body: formData
-        });
+    const handleFotoPortadaSeleccionada = (e) => {
+        const file = e.target.files[0];
+        if (!file) return;
 
-        const data = await res.json();
-        if (data.url) {
-            setFotoPerfil(data.url); // ahora tu state tiene la URL de Cloudinary
+        setFotoPortadaFile(file);
+        setFotoPortada(URL.createObjectURL(file)); // opcional vista previa
+    };
+
+
+
+    const handleGuardar = async () => {
+        try {
+            const formData = new FormData();
+            formData.append("nombre", nombre);
+            formData.append("correo", correo);
+            formData.append("telefono", telefono);
+            formData.append("descripcion", descripcion);
+
+            if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
+                formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
+            }
+
+            // Archivos
+            if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
+            if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
+
+            const res = await fetch("http://localhost:3000/usuarios/actualizar-perfil", {
+                method: "PUT",
+                body: formData,
+                credentials: "include", // importante para cookies
+            });
+
+            const data = await res.json();
+
+            if (res.ok) {
+                alert("Perfil actualizado correctamente");
+            } else {
+                alert(data.mensaje || "Error al actualizar perfil");
+            }
+        } catch (error) {
+            console.error(error);
+            alert("Error al actualizar perfil");
         }
     };
+
+
+
 
     // ===== FECHA DE NACIMIENTO =====
     const [fechaNacimiento, setFechaNacimiento] = useState({
@@ -77,8 +118,22 @@ export function Perfil() {
             setNombre(usuario.nombre || "");
             setCorreo(usuario.correo || "");
             setTelefono(usuario.telefono || "");
+            setDescripcion(usuario.descripcion || "");
+
+            if (usuario.foto_perfil) setFotoPerfil(usuario.foto_perfil);
+            if (usuario.foto_portada) setFotoPortada(usuario.foto_portada);
+
+            if (usuario.fecha_nacimiento) {
+                const fecha = new Date(usuario.fecha_nacimiento);
+                setFechaNacimiento({
+                    day: fecha.getDate(),
+                    month: fecha.getMonth() + 1,
+                    year: fecha.getFullYear()
+                });
+            }
         }
     }, [usuario]);
+
 
 
     return (
@@ -86,7 +141,8 @@ export function Perfil() {
 
             {/* ===== PORTADA ===== */}
             <div className="perfil-portada-usuario">
-                <img src="/portada.jpg" alt="Portada" className="imagen-portada-usuario" />
+                <img src={fotoPortada} alt="Portada" className="imagen-portada-usuario" />
+
                 <img src={fotoPerfil} alt="Foto de perfil" className="imagen-perfil-usuario" />
             </div>
 
@@ -313,13 +369,18 @@ export function Perfil() {
                 <div className="fila-form-usuario">
                     <div className="campo-usuario campo-full-usuario">
                         <label>Foto de portada</label>
-                        <input type="file" />
+                        <input
+                            type="file"
+                            accept="image/*"
+                            onChange={handleFotoPortadaSeleccionada}
+                        />
+
                     </div>
                 </div>
 
                 {/* BOTONES */}
                 <div className="fila-botones-usuario">
-                    <button className="btn-guardar-usuario">Guardar</button>
+                    <button className="btn-guardar-usuario" onClick={handleGuardar}>Guardar</button>
                     <button className="btn-cancelar-usuario">Cancelar</button>
                 </div>
             </div>
