@@ -5,6 +5,8 @@ import { useState } from "react";
 import api from "../services/api";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
+import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
+import { HeaderExtO } from "../components/HeaderExtO";
 
 export function RecuperarC() {
     const [searchParams] = useSearchParams();
@@ -19,6 +21,10 @@ export function RecuperarC() {
 
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+
+    // ===== Modal confirmar salir =====
+    const [mostrarModal, setMostrarModal] = useState(false);
+    const [rutaDestino, setRutaDestino] = useState("/");
 
     const [alert, setAlert] = useState({
         visible: false,
@@ -48,6 +54,16 @@ export function RecuperarC() {
             </div>
         );
     }
+
+    // ===== INTENTO DE SALIDA =====
+    const intentarSalir = (ruta) => {
+        if (password || confirmPassword) {
+            setRutaDestino(ruta);
+            setMostrarModal(true);
+        } else {
+            navigate(ruta);
+        }
+    };
 
     const handleSubmit = async (e) => {
         e.preventDefault();
@@ -100,84 +116,106 @@ export function RecuperarC() {
 
 
     return (
-        <div className="recuperar-contrasena">
-            <form className="form-recuperar" onSubmit={handleSubmit}>
-                <Link to="/" className="btn-volver">
-                    <IoArrowBack />
-                </Link>
+        <>
+            {/* ===== HEADER ===== */}
+            <HeaderExtO onAcceder={() => intentarSalir("/login")} />
 
-                <h2>Restablecer contraseña</h2>
-                <hr className="linea-separadora-rc" />
+            <div className="recuperar-contrasena">
+                <form className="form-recuperar" onSubmit={handleSubmit}>
+                    <Link
+                        to="/"
+                        className="btn-volver"
+                        onClick={(e) => {
+                            e.preventDefault();
+                            intentarSalir("/");
+                        }}
+                    >
+                        <IoArrowBack />
+                    </Link>
 
-                <p className="texto-recuperar">
-                    Ingresa tu nueva contraseña y confírmala para recuperar el acceso a tu cuenta.
-                </p>
+                    <h2>Restablecer contraseña</h2>
+                    <hr className="linea-separadora-rc" />
 
-                <div className="campo-recuperar campo-password">
-                    <label>Nueva contraseña</label>
-                    <div className="input-password">
-                        <input
-                            type={mostrarPassword ? "text" : "password"}
-                            placeholder="Nueva contraseña"
-                            value={password}
-                            onChange={(e) => {
-                                setPassword(e.target.value);
-                                setError("");
-                            }}
-                        />
-                        <span
-                            className="icono-password"
-                            onClick={() => setMostrarPassword(!mostrarPassword)}
-                        >
-                            {mostrarPassword ? <IoEyeOff /> : <IoEye />}
-                        </span>
+                    <p className="texto-recuperar">
+                        Ingresa tu nueva contraseña y confírmala para recuperar el acceso a tu cuenta.
+                    </p>
+
+                    <div className="campo-recuperar campo-password">
+                        <label>Nueva contraseña</label>
+                        <div className="input-password">
+                            <input
+                                type={mostrarPassword ? "text" : "password"}
+                                placeholder="Nueva contraseña"
+                                value={password}
+                                onChange={(e) => {
+                                    setPassword(e.target.value);
+                                    setError("");
+                                }}
+                            />
+                            <span
+                                className="icono-password"
+                                onClick={() => setMostrarPassword(!mostrarPassword)}
+                            >
+                                {mostrarPassword ? <IoEyeOff /> : <IoEye />}
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                <div className="campo-recuperar campo-password">
-                    <label>Confirmar contraseña</label>
-                    <div className="input-password">
-                        <input
-                            type={mostrarConfirmPassword ? "text" : "password"}
-                            placeholder="Confirmar contraseña"
-                            value={confirmPassword}
-                            onChange={(e) => {
-                                setConfirmPassword(e.target.value);
-                                setError("");
-                            }}
-                        />
-                        <span
-                            className="icono-password"
-                            onClick={() =>
-                                setMostrarConfirmPassword(!mostrarConfirmPassword)
-                            }
-                        >
-                            {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
-                        </span>
+                    <div className="campo-recuperar campo-password">
+                        <label>Confirmar contraseña</label>
+                        <div className="input-password">
+                            <input
+                                type={mostrarConfirmPassword ? "text" : "password"}
+                                placeholder="Confirmar contraseña"
+                                value={confirmPassword}
+                                onChange={(e) => {
+                                    setConfirmPassword(e.target.value);
+                                    setError("");
+                                }}
+                            />
+                            <span
+                                className="icono-password"
+                                onClick={() =>
+                                    setMostrarConfirmPassword(!mostrarConfirmPassword)
+                                }
+                            >
+                                {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
+                            </span>
+                        </div>
                     </div>
-                </div>
 
-                {error && <p className="mensaje-error">{error}</p>}
-                {mensaje && <p className="mensaje-exito">{mensaje}</p>}
+                    {error && <p className="mensaje-error">{error}</p>}
+                    {mensaje && <p className="mensaje-exito">{mensaje}</p>}
 
-                <button type="submit" className="btn-recuperar">
-                    Guardar cambios
-                </button>
-            </form>
+                    <button type="submit" className="btn-recuperar">
+                        Guardar cambios
+                    </button>
+                </form>
 
-            {alert.visible && (
-                <CustomAlert
-                    type={alert.type}
-                    title={alert.title}
-                    message={alert.message}
-                    logo={logo}
-                    onClose={() => {
-                        setAlert({ ...alert, visible: false });
-                        navigate("/login"); // redirige SOLO si fue exitoso
+                {alert.visible && (
+                    <CustomAlert
+                        type={alert.type}
+                        title={alert.title}
+                        message={alert.message}
+                        logo={logo}
+                        onClose={() => {
+                            setAlert({ ...alert, visible: false });
+                            navigate("/login"); // redirige SOLO si fue exitoso
+                        }}
+                    />
+                )}
+
+                {/* ===== MODAL CONFIRMAR ===== */}
+                <ModalConfirmarCancelar
+                    isOpen={mostrarModal}
+                    onConfirm={() => {
+                        setMostrarModal(false);
+                        navigate(rutaDestino);
                     }}
+                    onCancel={() => setMostrarModal(false)}
                 />
-            )}
 
-        </div>
+            </div>
+        </>
     );
 }

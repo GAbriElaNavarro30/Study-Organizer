@@ -6,7 +6,7 @@ export function ModalConfirmarCancelar({ isOpen, onCancel, onConfirm }) {
     return (
         <div className="modal-overlay-volver">
             <div className="modal-confirmar-volver">
-                <h3>¿Desea cancelar?</h3>
+                <h3>¿Desea salir?</h3>
 
                 <hr className="modal-divider" />
 

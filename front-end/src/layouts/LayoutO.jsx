@@ -4,7 +4,6 @@ import { HeaderExtO } from "../components/HeaderExtO";
 export function LayoutO({ children }) {
     return (
         <>
-            <HeaderExtO />
                 <main>
                     {children}
                 </main>
