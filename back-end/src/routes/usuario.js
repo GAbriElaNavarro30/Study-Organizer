@@ -111,6 +111,7 @@ router.post("/login", async (req, res) => {
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
 
+    // Generar token JWT
     const token = jwt.sign(
       { id: usuario.id_usuario, id_rol: usuario.id_rol },
       "TU_SECRETO_SUPER_SEGURO",
@@ -119,25 +120,27 @@ router.post("/login", async (req, res) => {
 
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false,
+      secure: false, // true solo en HTTPS
       sameSite: "lax",
       maxAge: 2 * 60 * 60 * 1000
     });
 
-    // 🔥 Normalizar URLs de Cloudinary
-    const baseCloudinaryUrl = "https://res.cloudinary.com/mi-cuenta/"; // Cambia a tu cuenta
-    const fotoPerfilUrl = usuario.foto_perfil?.startsWith("http")
-      ? usuario.foto_perfil
-      : usuario.foto_perfil
-        ? `${usuario.foto_perfil}` // Si ya guardas la URL completa en DB, solo usarla
-        : null;
+    // ===== FOTO PREDETERMINADA =====
+    // ===== FOTO PREDETERMINADA =====
+    const FOTO_PREDETERMINADA = "/perfil-usuario.png";
+    const PORTADA_PREDETERMINADA = "/portada.jpg";
 
-    const fotoPortadaUrl = usuario.foto_portada?.startsWith("http")
-      ? usuario.foto_portada
-      : usuario.foto_portada
-        ? `${usuario.foto_portada}`
-        : null;
+    const fotoPerfilUrl =
+      usuario.foto_perfil && usuario.foto_perfil !== "null" && usuario.foto_perfil !== ""
+        ? usuario.foto_perfil
+        : FOTO_PREDETERMINADA;
 
+    const fotoPortadaUrl =
+      usuario.foto_portada && usuario.foto_portada !== "null" && usuario.foto_portada !== ""
+        ? usuario.foto_portada
+        : PORTADA_PREDETERMINADA;
+
+    // ===== RESPUESTA =====
     res.json({
       usuario: {
         id: usuario.id_usuario,
@@ -157,33 +160,55 @@ router.post("/login", async (req, res) => {
 });
 
 
+
 /* =======================================================
 ------------------------- Sesiones -----------------------
 ========================================================*/
 router.get("/me", verificarToken, async (req, res) => {
-  const [rows] = await db.query(
-    "SELECT id_usuario, nombre_usuario, correo_electronico, id_rol, foto_perfil, telefono, contrasena FROM Usuario WHERE id_usuario = ?",
-    [req.usuario.id]
-  );
+  try {
+    const [rows] = await db.query(
+      "SELECT id_usuario, nombre_usuario, correo_electronico, id_rol, foto_perfil, foto_portada, telefono, contrasena FROM Usuario WHERE id_usuario = ?",
+      [req.usuario.id]
+    );
 
-  if (rows.length === 0) {
-    return res.status(401).json({ mensaje: "Usuario no válido" });
-  }
-
-  const usuario = rows[0];
-
-  res.json({
-    usuario: {
-      id: usuario.id_usuario,
-      nombre: usuario.nombre_usuario,
-      correo: usuario.correo_electronico,
-      rol: usuario.id_rol,
-      foto_perfil: usuario.foto_perfil,
-      telefono: usuario.telefono,
-      contrasena: usuario.contrasena,
+    if (rows.length === 0) {
+      return res.status(401).json({ mensaje: "Usuario no válido" });
     }
-  });
+
+    const usuario = rows[0];
+
+    // ===== FOTO PREDETERMINADA =====
+    const FOTO_PREDETERMINADA = "/perfil-usuario.png";
+    const PORTADA_PREDETERMINADA = "/portada.jpg";
+
+    const fotoPerfilUrl =
+      usuario.foto_perfil && usuario.foto_perfil !== "null" && usuario.foto_perfil !== ""
+        ? usuario.foto_perfil
+        : FOTO_PREDETERMINADA;
+
+    const fotoPortadaUrl =
+      usuario.foto_portada && usuario.foto_portada !== "null" && usuario.foto_portada !== ""
+        ? usuario.foto_portada
+        : PORTADA_PREDETERMINADA;
+
+    res.json({
+      usuario: {
+        id: usuario.id_usuario,
+        nombre: usuario.nombre_usuario,
+        correo: usuario.correo_electronico,
+        rol: usuario.id_rol,
+        foto_perfil: fotoPerfilUrl,
+        foto_portada: fotoPortadaUrl,
+        telefono: usuario.telefono,
+        contrasena: usuario.contrasena,
+      },
+    });
+  } catch (error) {
+    console.error("Error en /me:", error);
+    res.status(500).json({ mensaje: "Error al obtener datos del usuario" });
+  }
 });
+
 
 
 router.post("/logout", (req, res) => {

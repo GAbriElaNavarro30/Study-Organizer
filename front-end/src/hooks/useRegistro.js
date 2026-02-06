@@ -199,7 +199,6 @@ export function useRegistro() {
       genero: formData.genero,
       fecha_nacimiento: fecha,
       id_rol: formData.id_rol,
-      foto_perfil: "/avatars/perfil-usuario.png",
     };
 
     // ================== FETCH ==================
