@@ -91,53 +91,62 @@ router.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;
 
   try {
-    // Verificar que se enviaron los datos
     if (!correo_electronico || !contrasena) {
       return res.status(400).json({ mensaje: "Datos incompletos" });
     }
 
-    // Buscar usuario por correo
     const result = await db.query(
       "SELECT * FROM Usuario WHERE correo_electronico = ?",
       [correo_electronico]
     );
 
     if (result[0].length === 0) {
-      // Usuario no encontrado
       return res.status(401).json({ mensaje: "No encontrado" });
     }
 
     const usuario = result[0][0];
 
-    // Verificar contraseña
     const passwordValida = await bcrypt.compare(contrasena, usuario.contrasena);
     if (!passwordValida) {
-      // Contraseña incorrecta
       return res.status(401).json({ mensaje: "Contraseña incorrecta" });
     }
 
-    // Crear token JWT
     const token = jwt.sign(
       { id: usuario.id_usuario, id_rol: usuario.id_rol },
       "TU_SECRETO_SUPER_SEGURO",
       { expiresIn: "2h" }
     );
 
-    // COOKIE HttpOnly
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true cuando uses HTTPS
+      secure: false,
       sameSite: "lax",
       maxAge: 2 * 60 * 60 * 1000
     });
 
-    // Responder con usuario y token
+    // 🔥 Normalizar URLs de Cloudinary
+    const baseCloudinaryUrl = "https://res.cloudinary.com/mi-cuenta/"; // Cambia a tu cuenta
+    const fotoPerfilUrl = usuario.foto_perfil?.startsWith("http")
+      ? usuario.foto_perfil
+      : usuario.foto_perfil
+        ? `${usuario.foto_perfil}` // Si ya guardas la URL completa en DB, solo usarla
+        : null;
+
+    const fotoPortadaUrl = usuario.foto_portada?.startsWith("http")
+      ? usuario.foto_portada
+      : usuario.foto_portada
+        ? `${usuario.foto_portada}`
+        : null;
+
     res.json({
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre_usuario,
         correo: usuario.correo_electronico,
-        rol: usuario.id_rol
+        rol: usuario.id_rol,
+        foto_perfil: fotoPerfilUrl,
+        foto_portada: fotoPortadaUrl,
+        telefono: usuario.telefono,
       },
     });
 
@@ -146,6 +155,7 @@ router.post("/login", async (req, res) => {
     res.status(500).json({ mensaje: "Error en el login" });
   }
 });
+
 
 /* =======================================================
 ------------------------- Sesiones -----------------------
@@ -214,11 +224,11 @@ router.put(
       const valores = [];
 
       // ===== CAMPOS NORMALES =====
-      if (nombre) campos.push("nombre_usuario = ?"), valores.push(nombre);
-      if (correo) campos.push("correo_electronico = ?"), valores.push(correo);
-      if (telefono) campos.push("telefono = ?"), valores.push(telefono);
-      if (descripcion) campos.push("descripcion = ?"), valores.push(descripcion);
-      if (genero) campos.push("genero = ?"), valores.push(genero);
+      if (nombre) { campos.push("nombre_usuario = ?"); valores.push(nombre); }
+      if (correo) { campos.push("correo_electronico = ?"); valores.push(correo); }
+      if (telefono) { campos.push("telefono = ?"); valores.push(telefono); }
+      if (descripcion) { campos.push("descripcion = ?"); valores.push(descripcion); }
+      if (genero) { campos.push("genero = ?"); valores.push(genero); }
 
       if (password) {
         const hashed = await bcrypt.hash(password, 10);
@@ -242,12 +252,14 @@ router.put(
         return result.secure_url;
       };
 
-      // Solo sube si hay archivos nuevos
+      const fotosActualizadas = {};
+
       if (req.files?.foto_perfil?.length > 0) {
         const file = req.files.foto_perfil[0];
         const urlPerfil = await subirArchivoCloudinary(file);
         campos.push("foto_perfil = ?");
         valores.push(urlPerfil);
+        fotosActualizadas.foto_perfil = urlPerfil;
       }
 
       if (req.files?.foto_portada?.length > 0) {
@@ -255,6 +267,7 @@ router.put(
         const urlPortada = await subirArchivoCloudinary(file);
         campos.push("foto_portada = ?");
         valores.push(urlPortada);
+        fotosActualizadas.foto_portada = urlPortada;
       }
 
       if (campos.length === 0) {
@@ -267,7 +280,12 @@ router.put(
       const sql = `UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`;
       await db.query(sql, valores);
 
-      res.json({ mensaje: "Perfil actualizado correctamente" });
+      // Devuelve mensaje y URLs nuevas si hay
+      res.json({
+        mensaje: "Perfil actualizado correctamente",
+        fotos: fotosActualizadas
+      });
+
     } catch (error) {
       console.error("ERROR actualizar perfil:", error);
       res.status(500).json({ mensaje: "Error al actualizar perfil" });

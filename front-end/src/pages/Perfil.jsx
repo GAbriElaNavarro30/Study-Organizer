@@ -1,140 +1,143 @@
 import "../styles/perfil.css";
 import EmojiPicker from "emoji-picker-react";
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect, useContext } from "react";
 import { BsEmojiSmile } from "react-icons/bs";
 import { FiEdit2 } from "react-icons/fi";
 import { IoEye, IoEyeOff } from "react-icons/io5";
-import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import perfilPredeterminado from "../assets/imagenes/perfil-usuario.png";
 
 export function Perfil() {
-    const [descripcion, setDescripcion] = useState("");
-    const [showEmoji, setShowEmoji] = useState(false);
+  const { usuario } = useContext(AuthContext);
 
-    const [mostrarPassword, setMostrarPassword] = useState(false);
-    const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
+  // ===== ESTADOS BÁSICOS =====
+  const [nombre, setNombre] = useState(usuario?.nombre || "");
+  const [correo, setCorreo] = useState(usuario?.correo || "");
+  const [telefono, setTelefono] = useState(usuario?.telefono || "");
+  const [descripcion, setDescripcion] = useState(usuario?.descripcion || "");
 
-    const { usuario } = useContext(AuthContext);
-    const [nombre, setNombre] = useState("");
-    const [correo, setCorreo] = useState("");
-    const [telefono, setTelefono] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState({
+    day: "",
+    month: "",
+    year: "",
+  });
+  const [editarFecha, setEditarFecha] = useState(false);
 
-    // ===== FOTO PERFIL =====
-    const [fotoPerfil, setFotoPerfil] = useState(perfilPredeterminado);
-    const fileInputRef = useRef(null);
+  // ===== FOTO PERFIL Y PORTADA =====
+  const [fotoPerfil, setFotoPerfil] = useState(usuario?.foto_perfil || perfilPredeterminado);
+  const [fotoPortada, setFotoPortada] = useState(usuario?.foto_portada || "/portada.jpg");
 
-    const [fotoPortada, setFotoPortada] = useState("/portada.jpg");
-    const [fotoPerfilFile, setFotoPerfilFile] = useState(null);
-    const [fotoPortadaFile, setFotoPortadaFile] = useState(null);
+  const [fotoPerfilFile, setFotoPerfilFile] = useState(null);
+  const [fotoPortadaFile, setFotoPortadaFile] = useState(null);
 
-    const handleCambiarFoto = () => {
-        fileInputRef.current.click();
-    };
+  const fileInputRef = useRef(null);
 
-    const handleFotoSeleccionada = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+  // ===== VISIBILIDAD DE PASSWORD =====
+  const [mostrarPassword, setMostrarPassword] = useState(false);
+  const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
 
-        setFotoPerfilFile(file);              // Guardar archivo para subir
-        setFotoPerfil(URL.createObjectURL(file)); // Vista previa
-    };
+  // ===== EMOJI PICKER =====
+  const [showEmoji, setShowEmoji] = useState(false);
 
-    const handleFotoPortadaSeleccionada = (e) => {
-        const file = e.target.files[0];
-        if (!file) return;
+  // ===== ARRAYS PARA FECHA =====
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
+  const months = [
+    "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+    "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+  ];
+  const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
-        setFotoPortadaFile(file);
-        setFotoPortada(URL.createObjectURL(file)); // opcional vista previa
-    };
+  // ===== USEEFFECT PARA CARGAR DATOS DEL USUARIO =====
+  useEffect(() => {
+    if (!usuario) return;
 
+    setNombre(usuario.nombre || "");
+    setCorreo(usuario.correo || "");
+    setTelefono(usuario.telefono || "");
+    setDescripcion(usuario.descripcion || "");
+    setFotoPerfil(usuario.foto_perfil || perfilPredeterminado);
+    setFotoPortada(usuario.foto_portada || "/portada.jpg");
 
+    if (usuario.fecha_nacimiento) {
+      const fecha = new Date(usuario.fecha_nacimiento);
+      setFechaNacimiento({
+        day: fecha.getDate(),
+        month: fecha.getMonth() + 1,
+        year: fecha.getFullYear(),
+      });
+    }
+  }, [usuario]);
 
-    const handleGuardar = async () => {
-        try {
-            const formData = new FormData();
-            formData.append("nombre", nombre);
-            formData.append("correo", correo);
-            formData.append("telefono", telefono);
-            formData.append("descripcion", descripcion);
+  // ===== FUNCIONES PARA CAMBIAR FOTOS =====
+  const handleCambiarFoto = () => fileInputRef.current.click();
 
-            if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
-                formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
-            }
+  const handleFotoSeleccionada = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFotoPerfilFile(file);
+    setFotoPerfil(URL.createObjectURL(file)); // vista previa
+  };
 
-            // Archivos
-            if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
-            if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
+  const handleFotoPortadaSeleccionada = (e) => {
+    const file = e.target.files[0];
+    if (!file) return;
+    setFotoPortadaFile(file);
+    setFotoPortada(URL.createObjectURL(file)); // vista previa
+  };
 
-            const res = await fetch("http://localhost:3000/usuarios/actualizar-perfil", {
-                method: "PUT",
-                body: formData,
-                credentials: "include", // importante para cookies
-            });
+  // ===== FUNCION GUARDAR PERFIL =====
+  const handleGuardar = async () => {
+    try {
+      const formData = new FormData();
+      formData.append("nombre", nombre);
+      formData.append("correo", correo);
+      formData.append("telefono", telefono);
+      formData.append("descripcion", descripcion);
 
-            const data = await res.json();
+      if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
+        formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
+      }
 
-            if (res.ok) {
-                alert("Perfil actualizado correctamente");
-            } else {
-                alert(data.mensaje || "Error al actualizar perfil");
-            }
-        } catch (error) {
-            console.error(error);
-            alert("Error al actualizar perfil");
-        }
-    };
+      // Archivos
+      if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
+      if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
 
+      const res = await fetch("http://localhost:3000/usuarios/actualizar-perfil", {
+        method: "PUT",
+        body: formData,
+        credentials: "include", // cookies
+      });
 
+      const data = await res.json();
 
+      if (res.ok) {
+        alert("Perfil actualizado correctamente");
 
-    // ===== FECHA DE NACIMIENTO =====
-    const [fechaNacimiento, setFechaNacimiento] = useState({
-        day: "",
-        month: "",
-        year: ""
-    });
-    const [editarFecha, setEditarFecha] = useState(false);
+        // Actualizar fotos con URLs devueltas desde el backend
+        if (data.fotos?.foto_perfil) setFotoPerfil(data.fotos.foto_perfil);
+        if (data.fotos?.foto_portada) setFotoPortada(data.fotos.foto_portada);
 
-    const days = Array.from({ length: 31 }, (_, i) => i + 1);
-    const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-    const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+        // Limpiar archivos seleccionados
+        setFotoPerfilFile(null);
+        setFotoPortadaFile(null);
+      } else {
+        alert(data.mensaje || "Error al actualizar perfil");
+      }
+    } catch (error) {
+      console.error(error);
+      alert("Error al actualizar perfil");
+    }
+  };
 
-    // ===== HABILITAR EDICIÓN INPUTS =====
-    const habilitarEdicion = (e) => {
-        const container = e.currentTarget.closest('.input-editable');
-        const input = container?.querySelector('input');
-        if (input) {
-            input.disabled = !input.disabled;
-            if (!input.disabled) input.focus();
-        }
-    };
-
-    useEffect(() => {
-        if (usuario) {
-            setNombre(usuario.nombre || "");
-            setCorreo(usuario.correo || "");
-            setTelefono(usuario.telefono || "");
-            setDescripcion(usuario.descripcion || "");
-
-            if (usuario.foto_perfil) setFotoPerfil(usuario.foto_perfil);
-            if (usuario.foto_portada) setFotoPortada(usuario.foto_portada);
-
-            if (usuario.fecha_nacimiento) {
-                const fecha = new Date(usuario.fecha_nacimiento);
-                setFechaNacimiento({
-                    day: fecha.getDate(),
-                    month: fecha.getMonth() + 1,
-                    year: fecha.getFullYear()
-                });
-            }
-        }
-    }, [usuario]);
-
-
+  // ===== FUNCION PARA HABILITAR EDICIÓN =====
+  const habilitarEdicion = (e) => {
+    const container = e.currentTarget.closest(".input-editable");
+    const input = container?.querySelector("input");
+    if (input) {
+      input.disabled = !input.disabled;
+      if (!input.disabled) input.focus();
+    }
+  };
 
     return (
         <div className="contenedor-perfil-usuario">
