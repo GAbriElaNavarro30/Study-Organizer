@@ -510,8 +510,53 @@ router.put("/editar-usuario/:id", async (req, res) => {
   }
 });
 
-
 // buscar informcion usuarios
+router.get("/buscar-informacion", async (req, res) => {
+  try {
+    const { q } = req.query;
+
+    let sql = `
+      SELECT 
+        u.id_usuario,
+        u.nombre_usuario,
+        u.correo_electronico,
+        u.telefono,
+        u.genero,
+        u.fecha_nacimiento,
+        r.tipo_usuario AS rol
+      FROM Usuario u
+      JOIN Rol r ON u.id_rol = r.id_rol
+    `;
+
+    const params = [];
+
+    if (q) {
+      sql += `
+        WHERE 
+          CAST(u.id_usuario AS CHAR) LIKE ?
+          OR u.nombre_usuario LIKE ?
+          OR u.correo_electronico LIKE ?
+          OR u.telefono LIKE ?
+          OR u.genero LIKE ?
+          OR r.tipo_usuario LIKE ?
+      `;
+
+      const like = `%${q}%`;
+      params.push(like, like, like, like, like, like);
+    }
+
+    const [rows] = await db.query(sql, params);
+
+    res.json(rows);
+
+  } catch (error) {
+    console.error("Error al buscar usuarios:", error);
+    res.status(500).json({
+      message: "Error al buscar usuarios",
+    });
+  }
+});
+
 
 
 /* =======================================================

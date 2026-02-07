@@ -27,6 +27,8 @@ export function CrudAdmin() {
     const [tipoAlert, setTipoAlert] = useState("success"); // success | error
     const [tituloAlert, setTituloAlert] = useState(""); // nuevo estado
 
+    const [busqueda, setBusqueda] = useState("");
+
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
         setUsuarioSeleccionado(usuario);
@@ -151,8 +153,43 @@ export function CrudAdmin() {
     };
 
     useEffect(() => {
-        obtenerUsuarios();
-    }, []);
+        const cargarUsuarios = async () => {
+            try {
+                let response;
+
+                if (busqueda.trim() === "") {
+                    // 🔹 SIN búsqueda → traer todos
+                    response = await api.get("/usuarios/obtener-usuarios");
+                } else {
+                    // 🔹 CON búsqueda
+                    response = await api.get("/usuarios/buscar-informacion", {
+                        params: { q: busqueda }
+                    });
+                }
+
+                console.log("Respuesta búsqueda:", response.data);
+
+
+                const usuariosFormateados = response.data.map((u) => ({
+                    id: u.id_usuario,
+                    nombre: u.nombre_usuario,
+                    correo: u.correo_electronico,
+                    rol: u.rol,
+                    telefono: u.telefono,
+                    genero: u.genero || "",
+                    fechaNacimiento: u.fecha_nacimiento,
+                }));
+
+                setUsuarios(usuariosFormateados);
+
+            } catch (error) {
+                console.error("Error al cargar usuarios:", error);
+            }
+        };
+
+        cargarUsuarios();
+    }, [busqueda]);
+
 
 
 
@@ -211,7 +248,8 @@ export function CrudAdmin() {
 
                     <div className="busqueda-con-icono">
                         <IoSearchOutline className="icono-busqueda" />
-                        <input type="text" placeholder="Buscar usuario..." className="input-busqueda" />
+                        <input type="text" placeholder="Buscar usuario..." className="input-busqueda" value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)} />
                     </div>
 
                     <div className="mostrar-resultados">
@@ -241,31 +279,40 @@ export function CrudAdmin() {
                             </tr>
                         </thead>
                         <tbody>
-                            {usuarios.map((usuario) => (
-                                <tr key={usuario.id}>
-                                    <td>{usuario.id}</td>
-                                    <td>{usuario.nombre}</td>
-                                    <td>{usuario.correo}</td>
-                                    <td>{usuario.rol}</td>
-                                    <td>{usuario.telefono}</td>
-                                    <td>{usuario.genero}</td>
-                                    <td className="acciones-tabla">
-                                        <button
-                                            className="btn-icono editar"
-                                            onClick={() => abrirModalUsuario("editar", usuario)}
-                                        >
-                                            <IoPencilOutline />
-                                        </button>
-                                        <button
-                                            className="btn-icono eliminar"
-                                            onClick={() => abrirModalEliminar(usuario)}
-                                        >
-                                            <IoTrashOutline />
-                                        </button>
+                            {usuarios.length > 0 ? (
+                                usuarios.map((usuario) => (
+                                    <tr key={usuario.id}>
+                                        <td>{usuario.id}</td>
+                                        <td>{usuario.nombre}</td>
+                                        <td>{usuario.correo}</td>
+                                        <td>{usuario.rol}</td>
+                                        <td>{usuario.telefono}</td>
+                                        <td>{usuario.genero}</td>
+                                        <td className="acciones-tabla">
+                                            <button
+                                                className="btn-icono editar"
+                                                onClick={() => abrirModalUsuario("editar", usuario)}
+                                            >
+                                                <IoPencilOutline />
+                                            </button>
+                                            <button
+                                                className="btn-icono eliminar"
+                                                onClick={() => abrirModalEliminar(usuario)}
+                                            >
+                                                <IoTrashOutline />
+                                            </button>
+                                        </td>
+                                    </tr>
+                                ))
+                            ) : (
+                                <tr>
+                                    <td colSpan="7" style={{ textAlign: "center", padding: "1rem", color: "#666" }}>
+                                        Ningún resultado coincide con la búsqueda
                                     </td>
                                 </tr>
-                            ))}
+                            )}
                         </tbody>
+
                     </table>
                 </div>
 
