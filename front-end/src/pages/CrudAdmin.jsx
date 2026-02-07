@@ -3,9 +3,11 @@ import { IoPencilOutline, IoTrashOutline } from "react-icons/io5";
 import { IoAddCircleOutline, IoDocumentTextOutline } from "react-icons/io5";
 import { IoSearchOutline } from "react-icons/io5";
 
-import React, { useState } from "react";
 import { ModalEliminar } from "../components/ModalEliminar"; // importar el modal
 import { ModalUsuario } from "../components/ModalUsuario";
+
+import { useEffect, useState } from "react";
+import api from "../services/api";
 
 export function CrudAdmin() {
     // Estado de modales
@@ -14,12 +16,9 @@ export function CrudAdmin() {
     const [tipoModal, setTipoModal] = useState("crear"); // "crear" o "editar"
     const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
 
-    // Datos de prueba
-    const [usuarios, setUsuarios] = useState([
-        { id: 1, nombre: "Juan Pérez", correo: "juan@email.com", rol: "Administrador", telefono: "5512345678", genero: "Hombre" },
-        { id: 2, nombre: "Ana Gómez", correo: "ana@email.com", rol: "Usuario", telefono: "5598765432", genero: "Mujer" },
-        { id: 3, nombre: "Luis Ramírez", correo: "luis@email.com", rol: "Usuario", telefono: "5511122233", genero: "Hombre" },
-    ]);
+    // Datos
+    const [usuarios, setUsuarios] = useState([]);
+    const [erroresBackend, setErroresBackend] = useState({});
 
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
@@ -41,24 +40,99 @@ export function CrudAdmin() {
     const abrirModalUsuario = (tipo, usuario = null) => {
         setTipoModal(tipo);
         setUsuarioSeleccionado(usuario);
+        setErroresBackend({}); // limpia
         setModalUsuarioOpen(true);
     };
 
     const cerrarModalUsuario = () => setModalUsuarioOpen(false);
 
-    const guardarUsuario = (usuario) => {
-        if (tipoModal === "crear") {
-            // Crear nuevo usuario
-            const nuevoUsuario = { ...usuario, id: Date.now() };
-            setUsuarios([...usuarios, nuevoUsuario]);
-        } else if (tipoModal === "editar") {
-            // Editar usuario existente
-            setUsuarios(
-                usuarios.map(u => u.id === usuario.id ? usuario : u)
-            );
+    const guardarUsuario = async (usuario) => {
+        try {
+            if (tipoModal === "crear") {
+                const payload = {
+                    nombre_usuario: usuario.nombre,
+                    correo_electronico: usuario.correo,
+                    telefono: usuario.telefono,
+                    genero: usuario.genero,
+                    fecha_nacimiento: usuario.fechaNacimiento,
+                    contrasena: usuario.password,
+                    id_rol: convertirRol(usuario.rol),
+                };
+
+                await api.post("/usuarios/alta-usuario", payload);
+            }
+
+            if (tipoModal === "editar") {
+                // más adelante aquí irá PUT /editar-usuario/:id
+            }
+
+            await obtenerUsuarios(); // refresca la tabla
+            cerrarModalUsuario();
+
+        } catch (error) {
+            if (error.response?.data?.errors) {
+                const errores = {};
+                error.response.data.errors.forEach(err => {
+                    if (err.path === "correo_electronico") {
+                        errores.correo = err.message;
+                    } else {
+                        errores[err.path] = err.message;
+                    }
+                });
+
+                setErroresBackend(errores);
+                return; // no cerramos el modal
+            }
+
+            console.error("Error:", error);
+            alert("Error al guardar usuario");
         }
-        cerrarModalUsuario();
+
     };
+
+
+    useEffect(() => {
+
+
+        obtenerUsuarios();
+    }, []);
+
+
+
+    const convertirRol = (rol) => {
+        switch (rol) {
+            case "Administrador":
+                return 1;
+            case "Tutor":
+                return 2;
+            case "Estudiante":
+                return 3;
+            default:
+                return null;
+        }
+    };
+
+    const obtenerUsuarios = async () => {
+        try {
+            const response = await api.get("/usuarios/obtener-usuarios");
+
+            const usuariosFormateados = response.data.map((u) => ({
+                id: u.id_usuario,
+                nombre: u.nombre_usuario,
+                correo: u.correo_electronico,
+                rol: u.rol,
+                telefono: u.telefono,
+                genero: u.genero || "—",
+            }));
+
+            setUsuarios(usuariosFormateados);
+        } catch (error) {
+            console.error("Error al obtener usuarios:", error);
+        }
+    };
+
+
+
 
     return (
         <div className="contenedor-administrador">
@@ -160,6 +234,7 @@ export function CrudAdmin() {
                     onSubmit={guardarUsuario}
                     tipo={tipoModal}
                     usuario={usuarioSeleccionado}
+                    erroresBackend={erroresBackend}
                 />
             </div>
         </div>

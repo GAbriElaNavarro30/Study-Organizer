@@ -30,16 +30,6 @@ router.get("/obtener-roles", async (req, res) => {
 /* =======================================================
 ------------------------- REGISTRO -----------------------
 ========================================================*/
-// obtener usuarios
-router.get("/obtener-usuarios", async (req, res) => {
-  try {
-    const usuarios = await Usuario.getAll();
-    res.json(usuarios);
-  } catch (error) {
-    res.status(500).json({ mensaje: "Error al obtener usuarios" });
-  }
-});
-
 // registrar usuario
 router.post("/crear-usuario", async (req, res) => {
   try {
@@ -215,8 +205,6 @@ router.post("/resetear-contrasena", async (req, res) => {
   }
 });
 
-
-
 /* =======================================================
 ------------------------- LOGIN --------------------------
 ========================================================*/
@@ -292,10 +280,6 @@ router.post("/login", async (req, res) => {
   }
 });
 
-
-
-
-
 /* =======================================================
 ------------------------- Sesiones -----------------------
 ========================================================*/
@@ -344,8 +328,6 @@ router.get("/me", verificarToken, async (req, res) => {
   }
 });
 
-
-
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
@@ -357,10 +339,70 @@ router.post("/logout", (req, res) => {
 });
 
 /* =======================================================
+------------------------ CRUD Admin ----------------------
+========================================================*/
+// obtener usuarios
+router.get("/obtener-usuarios", async (req, res) => {
+  try {
+    const usuarios = await Usuario.getAll();
+    res.json(usuarios);
+  } catch (error) {
+    res.status(500).json({ mensaje: "Error al obtener usuarios" });
+  }
+});
+
+// alta usuario 
+router.post("/alta-usuario", async (req, res) => {
+  try {
+    const data = { ...req.body, id_rol: Number(req.body.id_rol) };
+    const errores = [];
+
+    const correoExiste = await db.query(
+      "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
+      [data.correo_electronico]
+    );
+    if (correoExiste[0].length > 0) {
+      errores.push({
+        path: "correo_electronico",
+        message: "Este correo electrónico ya está registrado"
+      });
+    }
+
+    const telefonoExiste = await db.query(
+      "SELECT id_usuario FROM Usuario WHERE telefono = ?",
+      [data.telefono]
+    );
+    if (telefonoExiste[0].length > 0) {
+      errores.push({
+        path: "telefono",
+        message: "Este número de teléfono ya está registrado"
+      });
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ errors: errores });
+    }
+
+    const usuario = new Usuario(data);
+    await usuario.save();
+
+    res.status(201).json({ mensaje: "Usuario creado correctamente" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ message: "Error al crear el usuario", error: error.message });
+  }
+});
+
+// actualziar usuario
+// eliminar usuario
+// buscar informcion usuarios
+
+
+/* =======================================================
 ---------------------- Perfil Usuario --------------------
 ========================================================*/
-// Subir foto de perfil
-// PUT /api/usuario
+// Actualizar info usuario
 router.put(
   "/actualizar-perfil",
   verificarToken,
@@ -452,8 +494,5 @@ router.put(
     }
   }
 );
-
-
-
 
 export default router;

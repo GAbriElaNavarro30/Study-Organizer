@@ -138,13 +138,16 @@
     color: #1e293b;
 }
 
+.genero-fb {
+    margin-top: 15px;
+}
+
 .radios-container,
 .radios-container-create-update {
     display: flex;
     flex-direction: row;
     flex-wrap: wrap;
     gap: 10px;
-    margin-bottom: 12px;
 }
 
 .radio-btn,
@@ -197,7 +200,7 @@
 }
 
 .fecha-nacimiento {
-    margin-bottom: 12px;
+    margin-top: 12px;
     margin-top: -2px !important;
     display: flex;
     flex-direction: row;
@@ -408,4 +411,12 @@
         padding: 8px 12px;
         font-size: 0.85rem;
     }
+}
+
+/* ===================== Mensajes de error ====================== */
+.error-text {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
 }

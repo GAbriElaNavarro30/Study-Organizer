@@ -48,10 +48,18 @@ export class Usuario {
 
     static async getAll() {
         const [rows] = await db.query(`
-            SELECT u.id_usuario, u.nombre_usuario, u.correo_electronico, r.tipo_usuario
-            FROM Usuario u
-            JOIN Rol r ON u.id_rol = r.id_rol
-        `);
+    SELECT 
+      u.id_usuario,
+      u.nombre_usuario,
+      u.correo_electronico,
+      u.telefono,
+      u.genero,
+      u.fecha_nacimiento,
+      r.tipo_usuario AS rol
+    FROM Usuario u
+    LEFT JOIN Rol r ON u.id_rol = r.id_rol
+  `);
+
         return rows;
     }
 

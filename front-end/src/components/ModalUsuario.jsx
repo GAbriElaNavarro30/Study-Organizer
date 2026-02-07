@@ -1,8 +1,9 @@
 import React, { useState, useEffect } from "react";
 import "../styles/modalUsuario.css";
 import { IoClose } from "react-icons/io5";
+import bcrypt from "bcryptjs";
 
-export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
+export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, erroresBackend = {}, ...props }) {
     const [formData, setFormData] = useState({
         nombre: "",
         correo: "",
@@ -25,6 +26,121 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
         "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
     ];
     const years = Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i);
+    const [errors, setErrors] = useState({});
+
+    const validarFormulario = () => {
+        const nuevosErrores = {};
+
+        if (!formData.nombre.trim()) nuevosErrores.nombre = "El campo es obligatorio";
+        if (!formData.rol) nuevosErrores.rol = "El campo es obligatorio";
+        if (!formData.telefono.trim()) nuevosErrores.telefono = "El campo es obligatorio";
+        if (!formData.genero) nuevosErrores.genero = "El campo es obligatorio";
+        if (!formData.correo.trim()) nuevosErrores.correo = "El campo es obligatorio";
+
+        const { day, month, year } = formData.fechaNacimiento;
+        if (!day || !month || !year) {
+            nuevosErrores.fechaNacimiento = "El campo es obligatorio";
+        }
+
+        // ================== VALIDAR FORMATOS ==================
+
+        // Nombre
+        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+        if (formData.nombre && !nombreRegex.test(formData.nombre)) {
+            nuevosErrores.nombre =
+                "El nombre solo puede contener letras, espacios, puntos y acentos";
+        }
+
+        // Teléfono
+        const telefonoRegex = /^[0-9]{10}$/;
+        if (formData.telefono && !telefonoRegex.test(formData.telefono)) {
+            nuevosErrores.telefono = "El teléfono debe tener 10 dígitos numéricos";
+        }
+
+        // Correo electrónico
+        const correoRegex =
+            /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+        if (formData.correo && !correoRegex.test(formData.correo)) {
+            nuevosErrores.correo =
+                "El correo electrónico no cumple con un formato válido y profesional";
+        }
+
+        const parteUsuario = formData.correo.split("@")[0] || "";
+        if (parteUsuario.length > 64) {
+            nuevosErrores.correo =
+                "El correo no debe superar 64 caracteres antes del @";
+        }
+
+        // ================== PASSWORD (solo crear) ==================
+        if (tipo === "crear") {
+            const passwordRegex =
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
+
+            if (!formData.password) {
+                nuevosErrores.password = "El campo es obligatorio";
+            } else if (!passwordRegex.test(formData.password)) {
+                nuevosErrores.password =
+                    "Debe tener mínimo 6 caracteres, mayúscula, minúscula, número y carácter especial (@ # $ ¡ *)";
+            }
+
+            if (!formData.confirmarPassword) {
+                nuevosErrores.confirmarPassword = "El campo es obligatorio";
+            } else if (formData.password !== formData.confirmarPassword) {
+                nuevosErrores.confirmarPassword = "Las contraseñas no coinciden";
+            }
+        }
+
+        // ================== FECHA DE NACIMIENTO ==================
+        if (day && month && year) {
+            const pad = (n) => String(n).padStart(2, "0");
+            const fecha = `${year}-${pad(month)}-${pad(day)}`;
+
+            const fechaNacimientoDate = new Date(fecha);
+            const hoy = new Date();
+
+            // No hoy ni futuro
+            if (fechaNacimientoDate >= hoy) {
+                nuevosErrores.fechaNacimiento =
+                    "La fecha de nacimiento no puede ser hoy ni una fecha futura";
+            }
+
+            // Edad mínima
+            const edadMinima = 13;
+            const fechaMinima = new Date(
+                hoy.getFullYear() - edadMinima,
+                hoy.getMonth(),
+                hoy.getDate()
+            );
+
+            if (fechaNacimientoDate > fechaMinima) {
+                nuevosErrores.fechaNacimiento =
+                    `Debes tener al menos ${edadMinima} años`;
+            }
+
+            // Edad máxima
+            const edadMaxima = 120;
+            const fechaMaxima = new Date(
+                hoy.getFullYear() - edadMaxima,
+                hoy.getMonth(),
+                hoy.getDate()
+            );
+
+            if (fechaNacimientoDate < fechaMaxima) {
+                nuevosErrores.fechaNacimiento =
+                    `La edad no puede ser mayor a ${edadMaxima} años`;
+            }
+        }
+
+        setErrors(nuevosErrores);
+        return Object.keys(nuevosErrores).length === 0;
+    };
+
+    const erroresCombinados = {
+        ...erroresBackend,
+        ...errors
+    };
+
 
     // ===== EDITAR USUARIO =====
     useEffect(() => {
@@ -59,25 +175,42 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
     // ===== INPUT NORMAL =====
     const handleChange = (e) => {
         const { name, value } = e.target;
+
         setFormData(prev => ({ ...prev, [name]: value }));
+
+        setErrors(prev => ({ ...prev, [name]: null }));
     };
+
 
     // ===== SUBMIT =====
     const handleSubmit = (e) => {
         e.preventDefault();
 
-        // Convertir fecha a YYYY-MM-DD
+        if (!validarFormulario()) return;
+
         const { day, month, year } = formData.fechaNacimiento;
         const fechaNacimiento =
             day && month && year ? `${year}-${month}-${day}` : "";
 
+        // ================== HASH PASSWORD (FRONT) ==================
+        let hashedPassword = "";
+
+        if (formData.password) {
+            const salt = bcrypt.genSaltSync(10);
+            hashedPassword = bcrypt.hashSync(formData.password, salt);
+        }
+
+
         onSubmit({
             ...formData,
+            password: hashedPassword, // YA VA HASHEADA
             fechaNacimiento
         });
-
-        onClose();
     };
+
+    useEffect(() => {
+        setErrors({});
+    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -106,8 +239,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 placeholder="Nombre"
                                 value={formData.nombre}
                                 onChange={handleChange}
-                                required
                             />
+                            {erroresCombinados.nombre && (
+                                <span className="error-text">{erroresCombinados.nombre}</span>
+                            )}
                         </label>
                     </div>
 
@@ -118,13 +253,16 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 name="rol"
                                 value={formData.rol}
                                 onChange={handleChange}
-                                required
                             >
                                 <option value="">Selecciona un rol</option>
                                 <option value="Estudiante">Estudiante</option>
                                 <option value="Tutor">Tutor</option>
                                 <option value="Administrador">Administrador</option>
                             </select>
+                            {erroresCombinados.rol && (
+                                <span className="error-text">{erroresCombinados.rol}</span>
+                            )}
+
                         </label>
 
 
@@ -137,6 +275,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 value={formData.telefono}
                                 onChange={handleChange}
                             />
+                            {erroresCombinados.telefono && (
+                                <span className="error-text">{erroresCombinados.telefono}</span>
+                            )}
+
                         </label>
                     </div>
 
@@ -159,7 +301,6 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                         }
                                     }))
                                 }
-                                required
                             >
                                 <option value="">Día</option>
                                 {days.map(d => (
@@ -178,7 +319,6 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                         }
                                     }))
                                 }
-                                required
                             >
                                 <option value="">Mes</option>
                                 {months.map((m, i) => (
@@ -197,7 +337,6 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                         }
                                     }))
                                 }
-                                required
                             >
                                 <option value="">Año</option>
                                 {years.map(y => (
@@ -205,6 +344,9 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 ))}
                             </select>
                         </div>
+                        {erroresCombinados.fechaNacimiento && (
+                            <span className="error-text">{erroresCombinados.fechaNacimiento}</span>
+                        )}
                     </div>
 
                     {/* 3ra fila: Género estilo Facebook */}
@@ -242,6 +384,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 <span>Otro</span>
                             </label>
                         </div>
+                        {erroresCombinados.genero && (
+                            <span className="error-text">{erroresCombinados.genero}</span>
+                        )}
+
                     </div>
 
 
@@ -255,8 +401,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 placeholder="correo@ejemplo.com"
                                 value={formData.correo}
                                 onChange={handleChange}
-                                required
                             />
+                            {erroresCombinados.correo && (
+                                <span className="error-text">{erroresCombinados.correo}</span>
+                            )}
                         </label>
                     </div>
 
@@ -270,8 +418,12 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 placeholder="••••••••"
                                 value={formData.password}
                                 onChange={handleChange}
-                                required={tipo === "crear"} // obligatorio solo al crear
+
                             />
+                            {erroresCombinados.password && (
+                                <span className="error-text">{erroresCombinados.password}</span>
+                            )}
+
                         </label>
                         <label>
                             Confirmar contraseña:
@@ -281,8 +433,13 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario }) {
                                 placeholder="••••••••"
                                 value={formData.confirmarPassword}
                                 onChange={handleChange}
-                                required={tipo === "crear"}
+
                             />
+
+                            {erroresCombinados.confirmarPassword && (
+                                <span className="error-text">{erroresCombinados.confirmarPassword}</span>
+                            )}
+
                         </label>
                     </div>
 
