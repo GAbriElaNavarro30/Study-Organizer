@@ -5,9 +5,11 @@ import { IoSearchOutline } from "react-icons/io5";
 
 import { ModalEliminar } from "../components/ModalEliminar"; // importar el modal
 import { ModalUsuario } from "../components/ModalUsuario";
+import { CustomAlert } from "../components/CustomAlert";
 
 import { useEffect, useState } from "react";
 import api from "../services/api";
+import logo from "../assets/imagenes/logotipo.png";
 
 export function CrudAdmin() {
     // Estado de modales
@@ -20,6 +22,11 @@ export function CrudAdmin() {
     const [usuarios, setUsuarios] = useState([]);
     const [erroresBackend, setErroresBackend] = useState({});
 
+    const [mostrarAlert, setMostrarAlert] = useState(false);
+    const [mensajeAlert, setMensajeAlert] = useState("");
+    const [tipoAlert, setTipoAlert] = useState("success"); // success | error
+    const [tituloAlert, setTituloAlert] = useState(""); // nuevo estado
+
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
         setUsuarioSeleccionado(usuario);
@@ -31,10 +38,31 @@ export function CrudAdmin() {
         setUsuarioSeleccionado(null);
     };
 
-    const confirmarEliminacion = () => {
-        setUsuarios(usuarios.filter(u => u.id !== usuarioSeleccionado.id));
-        cerrarModalEliminar();
+    const confirmarEliminacion = async () => {
+        try {
+            await api.delete(
+                `/usuarios/eliminar-usuario/${usuarioSeleccionado.id}`
+            );
+
+            // ALERT ÉXITO
+            setTituloAlert("Éxito");
+            setMensajeAlert("Usuario eliminado correctamente");
+            setTipoAlert("success");
+            setMostrarAlert(true);
+
+            cerrarModalEliminar();
+            await obtenerUsuarios();
+
+        } catch (error) {
+            console.error("Error al eliminar usuario:", error);
+
+            setTituloAlert("Error");
+            setMensajeAlert("No se pudo eliminar el usuario");
+            setTipoAlert("error");
+            setMostrarAlert(true);
+        }
     };
+
 
     // --- Modal Crear/Editar ---
     const abrirModalUsuario = (tipo, usuario = null) => {
@@ -60,18 +88,25 @@ export function CrudAdmin() {
                 };
 
                 await api.post("/usuarios/alta-usuario", payload);
+
+                // ALERT DE ÉXITO
+                setTituloAlert("Éxito");
+                setMensajeAlert("Usuario registrado correctamente");
+                setTipoAlert("success");
+                setMostrarAlert(true);
             }
 
             if (tipoModal === "editar") {
-                // más adelante aquí irá PUT /editar-usuario/:id
+                // aquí después irá PUT /editar-usuario/:id
             }
 
-            await obtenerUsuarios(); // refresca la tabla
+            await obtenerUsuarios(); // refresca tabla
             cerrarModalUsuario();
 
         } catch (error) {
             if (error.response?.data?.errors) {
                 const errores = {};
+
                 error.response.data.errors.forEach(err => {
                     if (err.path === "correo_electronico") {
                         errores.correo = err.message;
@@ -81,19 +116,19 @@ export function CrudAdmin() {
                 });
 
                 setErroresBackend(errores);
-                return; // no cerramos el modal
+                return; // NO cerramos modal
             }
 
+            // ERROR GENERAL
             console.error("Error:", error);
-            alert("Error al guardar usuario");
+            setTituloAlert("Error");
+            setMensajeAlert("Error al guardar usuario");
+            setTipoAlert("error");
+            setMostrarAlert(true);
         }
-
     };
 
-
     useEffect(() => {
-
-
         obtenerUsuarios();
     }, []);
 
@@ -236,6 +271,17 @@ export function CrudAdmin() {
                     usuario={usuarioSeleccionado}
                     erroresBackend={erroresBackend}
                 />
+
+                {mostrarAlert && (
+                    <CustomAlert
+                        type={tipoAlert}
+                        title={tituloAlert}
+                        message={mensajeAlert}
+                        logo={logo}
+                        onClose={() => setMostrarAlert(false)}
+                    />
+                )}
+
             </div>
         </div>
     );

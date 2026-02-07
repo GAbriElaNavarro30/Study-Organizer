@@ -395,7 +395,36 @@ router.post("/alta-usuario", async (req, res) => {
 });
 
 // actualziar usuario
+
 // eliminar usuario
+router.delete("/eliminar-usuario/:id", async (req, res) => {
+    try {
+        const { id } = req.params;
+
+        const [resultado] = await db.query(
+            "DELETE FROM Usuario WHERE id_usuario = ?",
+            [id]
+        );
+
+        if (resultado.affectedRows === 0) {
+            return res.status(404).json({
+                message: "Usuario no encontrado"
+            });
+        }
+
+        res.status(200).json({
+            message: "Usuario eliminado correctamente"
+        });
+
+    } catch (error) {
+        console.error(error);
+        res.status(500).json({
+            message: "Error al eliminar el usuario",
+            error: error.message
+        });
+    }
+});
+
 // buscar informcion usuarios
 
 
