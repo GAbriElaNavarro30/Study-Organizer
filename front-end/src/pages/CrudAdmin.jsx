@@ -97,8 +97,30 @@ export function CrudAdmin() {
             }
 
             if (tipoModal === "editar") {
-                // aquí después irá PUT /editar-usuario/:id
+                const payload = {
+                    nombre_usuario: usuario.nombre,
+                    correo_electronico: usuario.correo,
+                    telefono: usuario.telefono,
+                    genero: usuario.genero,
+                    fecha_nacimiento: usuario.fechaNacimiento,
+                    id_rol: convertirRol(usuario.rol),
+                };
+
+                if (usuario.password) {
+                    payload.contrasena = usuario.password; // YA va hasheada
+                }
+
+                await api.put(
+                    `/usuarios/editar-usuario/${usuarioSeleccionado.id}`,
+                    payload
+                );
+
+                setTituloAlert("Éxito");
+                setMensajeAlert("Usuario actualizado correctamente");
+                setTipoAlert("success");
+                setMostrarAlert(true);
             }
+
 
             await obtenerUsuarios(); // refresca tabla
             cerrarModalUsuario();
@@ -157,7 +179,8 @@ export function CrudAdmin() {
                 correo: u.correo_electronico,
                 rol: u.rol,
                 telefono: u.telefono,
-                genero: u.genero || "—",
+                genero: u.genero || "",
+                fechaNacimiento: u.fecha_nacimiento,
             }));
 
             setUsuarios(usuariosFormateados);

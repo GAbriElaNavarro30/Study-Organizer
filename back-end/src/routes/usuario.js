@@ -394,36 +394,122 @@ router.post("/alta-usuario", async (req, res) => {
   }
 });
 
-// actualziar usuario
-
 // eliminar usuario
 router.delete("/eliminar-usuario/:id", async (req, res) => {
-    try {
-        const { id } = req.params;
+  try {
+    const { id } = req.params;
 
-        const [resultado] = await db.query(
-            "DELETE FROM Usuario WHERE id_usuario = ?",
-            [id]
-        );
+    const [resultado] = await db.query(
+      "DELETE FROM Usuario WHERE id_usuario = ?",
+      [id]
+    );
 
-        if (resultado.affectedRows === 0) {
-            return res.status(404).json({
-                message: "Usuario no encontrado"
-            });
-        }
-
-        res.status(200).json({
-            message: "Usuario eliminado correctamente"
-        });
-
-    } catch (error) {
-        console.error(error);
-        res.status(500).json({
-            message: "Error al eliminar el usuario",
-            error: error.message
-        });
+    if (resultado.affectedRows === 0) {
+      return res.status(404).json({
+        message: "Usuario no encontrado"
+      });
     }
+
+    res.status(200).json({
+      message: "Usuario eliminado correctamente"
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error al eliminar el usuario",
+      error: error.message
+    });
+  }
 });
+
+// actualziar usuario
+router.put("/editar-usuario/:id", async (req, res) => {
+  try {
+    const { id } = req.params;
+
+    const data = {
+      ...req.body,
+      id_rol: Number(req.body.id_rol),
+    };
+
+    const errores = [];
+
+    // ================== VALIDAR DUPLICADOS ==================
+
+    const correoExiste = await db.query(
+      `SELECT id_usuario FROM Usuario 
+       WHERE correo_electronico = ? AND id_usuario != ?`,
+      [data.correo_electronico, id]
+    );
+
+    if (correoExiste[0].length > 0) {
+      errores.push({
+        path: "correo",
+        message: "Este correo electrónico ya está registrado",
+      });
+    }
+
+    const telefonoExiste = await db.query(
+      `SELECT id_usuario FROM Usuario 
+       WHERE telefono = ? AND id_usuario != ?`,
+      [data.telefono, id]
+    );
+
+    if (telefonoExiste[0].length > 0) {
+      errores.push({
+        path: "telefono",
+        message: "Este número de teléfono ya está registrado",
+      });
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ errors: errores });
+    }
+
+    // ================== UPDATE DINÁMICO ==================
+
+    let query = `
+      UPDATE Usuario SET
+        nombre_usuario = ?,
+        correo_electronico = ?,
+        telefono = ?,
+        genero = ?,
+        fecha_nacimiento = ?,
+        id_rol = ?
+    `;
+
+    const params = [
+      data.nombre_usuario,
+      data.correo_electronico,
+      data.telefono,
+      data.genero,
+      data.fecha_nacimiento,
+      data.id_rol,
+    ];
+
+    // 👉 SOLO si viene contraseña
+    if (data.contrasena) {
+      query += `, contrasena = ?`;
+      params.push(data.contrasena); // ya viene hasheada
+    }
+
+    query += ` WHERE id_usuario = ?`;
+    params.push(id);
+
+    await db.query(query, params);
+
+    res.json({ mensaje: "Usuario actualizado correctamente" });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({
+      message: "Error al actualizar usuario",
+      error: error.message,
+    });
+  }
+});
+
 
 // buscar informcion usuarios
 
@@ -432,96 +518,89 @@ router.delete("/eliminar-usuario/:id", async (req, res) => {
 ---------------------- Perfil Usuario --------------------
 ========================================================*/
 // Actualizar info usuario
-router.put(
-  "/actualizar-perfil",
-  verificarToken,
-  upload.fields([
-    { name: "foto_perfil", maxCount: 1 },
-    { name: "foto_portada", maxCount: 1 }
-  ]),
-  async (req, res) => {
-    try {
-      const {
-        nombre,
-        correo,
-        telefono,
-        descripcion,
-        fechaNacimiento,
-        genero,
-        password
-      } = req.body;
+router.put("/actualizar-perfil", verificarToken, upload.fields([{ name: "foto_perfil", maxCount: 1 }, { name: "foto_portada", maxCount: 1 }]), async (req, res) => {
+  try {
+    const {
+      nombre,
+      correo,
+      telefono,
+      descripcion,
+      fechaNacimiento,
+      genero,
+      password
+    } = req.body;
 
-      const campos = [];
-      const valores = [];
+    const campos = [];
+    const valores = [];
 
-      // ===== CAMPOS NORMALES =====
-      if (nombre) { campos.push("nombre_usuario = ?"); valores.push(nombre); }
-      if (correo) { campos.push("correo_electronico = ?"); valores.push(correo); }
-      if (telefono) { campos.push("telefono = ?"); valores.push(telefono); }
-      if (descripcion) { campos.push("descripcion = ?"); valores.push(descripcion); }
-      if (genero) { campos.push("genero = ?"); valores.push(genero); }
+    // ===== CAMPOS NORMALES =====
+    if (nombre) { campos.push("nombre_usuario = ?"); valores.push(nombre); }
+    if (correo) { campos.push("correo_electronico = ?"); valores.push(correo); }
+    if (telefono) { campos.push("telefono = ?"); valores.push(telefono); }
+    if (descripcion) { campos.push("descripcion = ?"); valores.push(descripcion); }
+    if (genero) { campos.push("genero = ?"); valores.push(genero); }
 
-      if (password) {
-        const hashed = await bcrypt.hash(password, 10);
-        campos.push("contrasena = ?");
-        valores.push(hashed);
-      }
-
-      if (fechaNacimiento && fechaNacimiento.year && fechaNacimiento.month && fechaNacimiento.day) {
-        campos.push("fecha_nacimiento = ?");
-        valores.push(`${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`);
-      }
-
-      // ===== FOTOS (CLOUDINARY) =====
-      const subirArchivoCloudinary = async (file) => {
-        const base64 = file.buffer.toString("base64");
-        const dataUri = `data:${file.mimetype};base64,${base64}`;
-        const result = await cloudinary.uploader.upload(dataUri, {
-          folder: "fotos_usuarios",
-          resource_type: "image"
-        });
-        return result.secure_url;
-      };
-
-      const fotosActualizadas = {};
-
-      if (req.files?.foto_perfil?.length > 0) {
-        const file = req.files.foto_perfil[0];
-        const urlPerfil = await subirArchivoCloudinary(file);
-        campos.push("foto_perfil = ?");
-        valores.push(urlPerfil);
-        fotosActualizadas.foto_perfil = urlPerfil;
-      }
-
-      if (req.files?.foto_portada?.length > 0) {
-        const file = req.files.foto_portada[0];
-        const urlPortada = await subirArchivoCloudinary(file);
-        campos.push("foto_portada = ?");
-        valores.push(urlPortada);
-        fotosActualizadas.foto_portada = urlPortada;
-      }
-
-      if (campos.length === 0) {
-        return res.status(400).json({ mensaje: "No hay datos para actualizar" });
-      }
-
-      // id_usuario del token
-      valores.push(req.usuario.id);
-
-      const sql = `UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`;
-      await db.query(sql, valores);
-
-      // Devuelve mensaje y URLs nuevas si hay
-      res.json({
-        mensaje: "Perfil actualizado correctamente",
-        fotos: fotosActualizadas
-      });
-
-    } catch (error) {
-      console.error("ERROR actualizar perfil:", error);
-      res.status(500).json({ mensaje: "Error al actualizar perfil" });
+    if (password) {
+      const hashed = await bcrypt.hash(password, 10);
+      campos.push("contrasena = ?");
+      valores.push(hashed);
     }
+
+    if (fechaNacimiento && fechaNacimiento.year && fechaNacimiento.month && fechaNacimiento.day) {
+      campos.push("fecha_nacimiento = ?");
+      valores.push(`${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`);
+    }
+
+    // ===== FOTOS (CLOUDINARY) =====
+    const subirArchivoCloudinary = async (file) => {
+      const base64 = file.buffer.toString("base64");
+      const dataUri = `data:${file.mimetype};base64,${base64}`;
+      const result = await cloudinary.uploader.upload(dataUri, {
+        folder: "fotos_usuarios",
+        resource_type: "image"
+      });
+      return result.secure_url;
+    };
+
+    const fotosActualizadas = {};
+
+    if (req.files?.foto_perfil?.length > 0) {
+      const file = req.files.foto_perfil[0];
+      const urlPerfil = await subirArchivoCloudinary(file);
+      campos.push("foto_perfil = ?");
+      valores.push(urlPerfil);
+      fotosActualizadas.foto_perfil = urlPerfil;
+    }
+
+    if (req.files?.foto_portada?.length > 0) {
+      const file = req.files.foto_portada[0];
+      const urlPortada = await subirArchivoCloudinary(file);
+      campos.push("foto_portada = ?");
+      valores.push(urlPortada);
+      fotosActualizadas.foto_portada = urlPortada;
+    }
+
+    if (campos.length === 0) {
+      return res.status(400).json({ mensaje: "No hay datos para actualizar" });
+    }
+
+    // id_usuario del token
+    valores.push(req.usuario.id);
+
+    const sql = `UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`;
+    await db.query(sql, valores);
+
+    // Devuelve mensaje y URLs nuevas si hay
+    res.json({
+      mensaje: "Perfil actualizado correctamente",
+      fotos: fotosActualizadas
+    });
+
+  } catch (error) {
+    console.error("ERROR actualizar perfil:", error);
+    res.status(500).json({ mensaje: "Error al actualizar perfil" });
   }
+}
 );
 
 export default router;

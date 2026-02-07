@@ -73,7 +73,9 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         }
 
         // ================== PASSWORD (solo crear) ==================
-        if (tipo === "crear") {
+        // PASSWORD (crear obligatorio / editar opcional)
+        if (tipo === "crear" || (tipo === "editar" && formData.password)) {
+
             const passwordRegex =
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
 
@@ -90,6 +92,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                 nuevosErrores.confirmarPassword = "Las contraseñas no coinciden";
             }
         }
+
 
         // ================== FECHA DE NACIMIENTO ==================
         if (day && month && year) {
@@ -148,13 +151,26 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
             const [year = "", month = "", day = ""] =
                 usuario.fechaNacimiento?.split("-") || [];
 
+            const normalizarGenero = (g) => {
+                if (!g) return "";
+                if (g.toLowerCase() === "mujer") return "Mujer";
+                if (g.toLowerCase() === "hombre") return "Hombre";
+                if (g.toLowerCase() === "otro") return "Otro";
+                return "";
+            };
+
+
             setFormData({
                 nombre: usuario.nombre || "",
                 correo: usuario.correo || "",
                 rol: usuario.rol || "",
                 telefono: usuario.telefono || "",
-                genero: usuario.genero || "",
-                fechaNacimiento: { day, month, year },
+                genero: normalizarGenero(usuario.genero),
+                fechaNacimiento: {
+                    day: String(parseInt(day)),
+                    month: String(parseInt(month)),
+                    year: String(year),
+                },
                 password: "",
                 confirmarPassword: ""
             });
@@ -171,6 +187,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
             });
         }
     }, [usuario, tipo, isOpen]);
+
 
     // ===== INPUT NORMAL =====
     const handleChange = (e) => {
@@ -192,21 +209,27 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         const fechaNacimiento =
             day && month && year ? `${year}-${month}-${day}` : "";
 
-        // ================== HASH PASSWORD (FRONT) ==================
-        let hashedPassword = "";
+        // Construimos el payload base
+        const dataEnviar = {
+            ...formData,
+            fechaNacimiento
+        };
 
+        // SOLO si escribió contraseña → hashearla y enviarla
         if (formData.password) {
             const salt = bcrypt.genSaltSync(10);
-            hashedPassword = bcrypt.hashSync(formData.password, salt);
+            dataEnviar.password = bcrypt.hashSync(formData.password, salt);
+        } else {
+            // Si no hay contraseña, NO se envía
+            delete dataEnviar.password;
         }
 
+        // Nunca enviamos confirmarPassword
+        delete dataEnviar.confirmarPassword;
 
-        onSubmit({
-            ...formData,
-            password: hashedPassword, // YA VA HASHEADA
-            fechaNacimiento
-        });
+        onSubmit(dataEnviar);
     };
+
 
     useEffect(() => {
         setErrors({});
