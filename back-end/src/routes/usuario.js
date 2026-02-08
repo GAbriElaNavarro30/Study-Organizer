@@ -272,6 +272,15 @@ router.post("/login", async (req, res) => {
         foto_perfil: fotoPerfilUrl,
         foto_portada: fotoPortadaUrl,
         telefono: usuario.telefono,
+        descripcion: usuario.descripcion,
+        genero: usuario.genero,
+        fecha_nacimiento: usuario.fecha_nacimiento
+          ? {
+            day: new Date(usuario.fecha_nacimiento).getDate(),
+            month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
+            year: new Date(usuario.fecha_nacimiento).getFullYear(),
+          }
+          : { day: "", month: "", year: "" },
       },
     });
 
@@ -287,7 +296,20 @@ router.post("/login", async (req, res) => {
 router.get("/me", verificarToken, async (req, res) => {
   try {
     const [rows] = await db.query(
-      "SELECT id_usuario, nombre_usuario, correo_electronico, id_rol, foto_perfil, foto_portada, telefono, contrasena, descripcion FROM Usuario WHERE id_usuario = ?",
+      `SELECT 
+        id_usuario,
+        nombre_usuario,
+        correo_electronico,
+        id_rol,
+        foto_perfil,
+        foto_portada,
+        telefono,
+        contrasena,
+        descripcion,
+        genero,
+        fecha_nacimiento
+      FROM Usuario 
+      WHERE id_usuario = ?`,
       [req.usuario.id]
     );
 
@@ -297,7 +319,7 @@ router.get("/me", verificarToken, async (req, res) => {
 
     const usuario = rows[0];
 
-    // ===== FOTO PREDETERMINADA =====
+    // ===== FOTOS PREDETERMINADAS =====
     const FOTO_PREDETERMINADA = "/perfil-usuario.png";
     const PORTADA_PREDETERMINADA = "/portada.jpg";
 
@@ -311,6 +333,15 @@ router.get("/me", verificarToken, async (req, res) => {
         ? usuario.foto_portada
         : PORTADA_PREDETERMINADA;
 
+    // ===== 🔥 NORMALIZAR FECHA =====
+    const fechaNacimiento = usuario.fecha_nacimiento
+      ? {
+        day: new Date(usuario.fecha_nacimiento).getDate(),
+        month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
+        year: new Date(usuario.fecha_nacimiento).getFullYear(),
+      }
+      : { day: "", month: "", year: "" };
+
     res.json({
       usuario: {
         id: usuario.id_usuario,
@@ -320,8 +351,10 @@ router.get("/me", verificarToken, async (req, res) => {
         foto_perfil: fotoPerfilUrl,
         foto_portada: fotoPortadaUrl,
         telefono: usuario.telefono,
+        genero: usuario.genero,
         contrasena: usuario.contrasena,
-        descripcion: usuario.descripcion
+        descripcion: usuario.descripcion,
+        fecha_nacimiento: fechaNacimiento, // ✅ FORMATO CORRECTO
       },
     });
   } catch (error) {
@@ -329,6 +362,7 @@ router.get("/me", verificarToken, async (req, res) => {
     res.status(500).json({ mensaje: "Error al obtener datos del usuario" });
   }
 });
+
 
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
@@ -627,7 +661,7 @@ router.put(
         password
       } = req.body;
 
-      // 🔥 Si fechaNacimiento viene string desde FormData
+      // 🔥 Si fechaNacimiento viene como string desde FormData
       if (typeof fechaNacimiento === "string") {
         fechaNacimiento = JSON.parse(fechaNacimiento);
       }
@@ -644,18 +678,17 @@ router.put(
 
       if (password) {
         const hashed = await bcrypt.hash(password, 10);
-        campos.push("contrasena = ?");
+        campos.push("contrasena = ?"); 
         valores.push(hashed);
       }
 
       if (fechaNacimiento?.year && fechaNacimiento?.month && fechaNacimiento?.day) {
+        // Guardar como YYYY-MM-DD
         campos.push("fecha_nacimiento = ?");
-        valores.push(
-          `${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`
-        );
+        valores.push(`${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`);
       }
 
-      // ===== CLOUDINARY (SOLO SUBE, NO TRANSFORMA) =====
+      // ===== CLOUDINARY (solo sube) =====
       const subirArchivoCloudinary = async (file) => {
         const base64 = file.buffer.toString("base64");
         const dataUri = `data:${file.mimetype};base64,${base64}`;
@@ -692,7 +725,7 @@ router.put(
       const sql = `UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`;
       await db.query(sql, valores);
 
-      // ===== OBTENER USUARIO + TIPO_USUARIO =====
+      // ===== OBTENER USUARIO ACTUALIZADO =====
       const [rows] = await db.query(`
         SELECT 
           u.id_usuario AS id,
@@ -711,9 +744,23 @@ router.put(
         WHERE u.id_usuario = ?
       `, [req.usuario.id]);
 
+      const usuario = rows[0];
+
+      // ===== NORMALIZAR FECHA =====
+      const fechaNacimientoNormalizada = usuario.fecha_nacimiento
+        ? {
+            day: new Date(usuario.fecha_nacimiento).getDate(),
+            month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
+            year: new Date(usuario.fecha_nacimiento).getFullYear(),
+          }
+        : { day: "", month: "", year: "" };
+
       res.json({
         mensaje: "Perfil actualizado correctamente",
-        usuario: rows[0],
+        usuario: {
+          ...usuario,
+          fecha_nacimiento: fechaNacimientoNormalizada,
+        },
         fotos: fotosActualizadas
       });
 
@@ -723,6 +770,7 @@ router.put(
     }
   }
 );
+
 
 
 

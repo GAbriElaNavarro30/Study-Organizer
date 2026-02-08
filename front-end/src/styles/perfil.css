@@ -223,14 +223,6 @@
     color: rgb(0, 0, 0);
 }
 
-.genero-box-usuario:hover {
-    border-color: #2563EB;
-}
-
-.genero-box-usuario:has(input:checked) {
-    border-color: #2563EB;
-    box-shadow: 0 0 0 1px #2563EB;
-}
 
 /* ================= BOTONES ================= */
 .fila-botones-usuario {

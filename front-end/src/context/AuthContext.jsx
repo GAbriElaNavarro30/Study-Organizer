@@ -17,6 +17,16 @@ const esFotoValida = (foto) => {
   return !invalidas.some(v => foto.includes(v));
 };
 
+// Normaliza el género para que siempre coincida con los radios
+const normalizarGenero = (g) => {
+  if (!g) return "";
+  g = g.toString().toLowerCase();
+
+  if (g === "hombre" || g === "male" || g === "m") return "Hombre";
+  if (g === "mujer" || g === "female" || g === "f") return "Mujer";
+  return "Otro";
+};
+
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -27,16 +37,40 @@ export function AuthProvider({ children }) {
     3: "Tutor",
   };
 
+  // Normaliza la fecha a objeto { day, month, year }
+  const normalizarFecha = (fecha) => {
+    if (!fecha) return { day: "", month: "", year: "" };
 
-  // NORMALIZADOR CENTRAL
+    // ✅ SI YA VIENE COMO OBJETO {day, month, year}
+    if (
+      typeof fecha === "object" &&
+      "day" in fecha &&
+      "month" in fecha &&
+      "year" in fecha
+    ) {
+      return fecha;
+    }
+
+    // Si viene como string o Date
+    const d = new Date(fecha);
+    return {
+      day: d.getDate(),
+      month: d.getMonth() + 1,
+      year: d.getFullYear(),
+    };
+  };
+
+
+  // NORMALIZADOR CENTRAL DEL USUARIO
   const normalizarUsuario = (user) => {
     if (!user) return null;
 
     return {
       ...user,
-
-      rol: user.rol, // id_rol (number)
+      rol: user.rol,
       rol_texto: ROLES_MAP[user.rol] || "Sin rol",
+      genero: normalizarGenero(user.genero), // Género normalizado para los radios
+      fecha_nacimiento: normalizarFecha(user.fecha_nacimiento),
 
       foto_perfil: esFotoValida(user.foto_perfil)
         ? user.foto_perfil
@@ -47,8 +81,7 @@ export function AuthProvider({ children }) {
     };
   };
 
-
-  // Verificar sesión
+  // Verificar sesión al montar
   useEffect(() => {
     const verificarSesion = async () => {
       try {
@@ -64,7 +97,7 @@ export function AuthProvider({ children }) {
     verificarSesion();
   }, []);
 
-  // ✅ LOGOUT REAL
+  // LOGOUT
   const logout = async () => {
     try {
       await api.post("/usuarios/logout");

@@ -319,6 +319,7 @@ export function CrudAdmin() {
                                 <th>Rol</th>
                                 <th>Teléfono</th>
                                 <th>Género</th>
+                                <th>Fecha Nacimiento</th>
                                 <th>Acciones</th>
                             </tr>
                         </thead>
@@ -332,6 +333,7 @@ export function CrudAdmin() {
                                         <td>{usuario.rol}</td>
                                         <td>{usuario.telefono}</td>
                                         <td>{usuario.genero}</td>
+                                        <td>{usuario.fechaNacimiento ? new Date(usuario.fechaNacimiento).toLocaleDateString() : "-"}</td>
                                         <td className="acciones-tabla">
                                             <button
                                                 className="btn-icono editar"

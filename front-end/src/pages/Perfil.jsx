@@ -18,12 +18,8 @@ export function Perfil() {
     const [correo, setCorreo] = useState(usuario?.correo || "");
     const [telefono, setTelefono] = useState(usuario?.telefono || "");
     const [descripcion, setDescripcion] = useState(usuario?.descripcion || "");
+    const [genero, setGenero] = useState("");
 
-    const [fechaNacimiento, setFechaNacimiento] = useState({
-        day: "",
-        month: "",
-        year: "",
-    });
     const [editarFecha, setEditarFecha] = useState(false);
 
     // ===== FOTO PERFIL Y PORTADA =====
@@ -40,14 +36,6 @@ export function Perfil() {
 
     // ===== EMOJI PICKER =====
     const [showEmoji, setShowEmoji] = useState(false);
-
-    // ===== ARRAYS PARA FECHA =====
-    const days = Array.from({ length: 31 }, (_, i) => i + 1);
-    const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-    const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
 
     // ===== USEEFFECT PARA CARGAR DATOS DEL USUARIO =====
     const FOTO_PREDETERMINADA = fotoPredeterminada;
@@ -67,6 +55,18 @@ export function Perfil() {
         esFotoValida(usuario?.foto_portada) ? usuario.foto_portada : PORTADA_PREDETERMINADA
     );
 
+
+    // ===== ARRAYS PARA FECHA =====
+    const days = Array.from({ length: 31 }, (_, i) => i + 1);
+    const months = [
+        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
+        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
+    ];
+    const years = Array.from({ length: 100 }, (_, i) => new Date().getFullYear() - i);
+
+    const FECHA_VACIA = { day: "", month: "", year: "" };
+    const [fechaNacimiento, setFechaNacimiento] = useState(FECHA_VACIA);
+
     // En useEffect
     useEffect(() => {
         if (!usuario) return;
@@ -74,24 +74,18 @@ export function Perfil() {
         setNombre(usuario.nombre || "");
         setCorreo(usuario.correo || "");
         setTelefono(usuario.telefono || "");
+        setGenero(usuario.genero || "Otro"); // Default "Otro" si viene vacío
         setDescripcion(usuario.descripcion || "");
 
-        setFotoPerfil(
-            esFotoValida(usuario.foto_perfil)
-                ? usuario.foto_perfil
-                : FOTO_PREDETERMINADA
+        // ===== Fecha de nacimiento =====
+        setFechaNacimiento(
+            usuario.fecha_nacimiento || { day: "", month: "", year: "" }
         );
-        setFotoPortada(esFotoValida(usuario.foto_portada) ? usuario.foto_portada : PORTADA_PREDETERMINADA);
 
-        if (usuario.fecha_nacimiento) {
-            const fecha = new Date(usuario.fecha_nacimiento);
-            setFechaNacimiento({
-                day: fecha.getDate(),
-                month: fecha.getMonth() + 1,
-                year: fecha.getFullYear(),
-            });
-        }
+        setFotoPerfil(usuario.foto_perfil || FOTO_PREDETERMINADA);
+        setFotoPortada(usuario.foto_portada || PORTADA_PREDETERMINADA);
     }, [usuario]);
+
 
     // ===== FUNCIONES PARA CAMBIAR FOTOS =====
     const handleCambiarFoto = () => fileInputRef.current.click();
@@ -117,12 +111,9 @@ export function Perfil() {
         setTelefono(usuario?.telefono || "");
         setDescripcion(usuario?.descripcion || "");
 
-        setFechaNacimiento(usuario?.fecha_nacimiento ? {
-            day: new Date(usuario.fecha_nacimiento).getDate(),
-            month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
-            year: new Date(usuario.fecha_nacimiento).getFullYear(),
-        } : { day: "", month: "", year: "" });
-
+        setFechaNacimiento(
+            usuario?.fecha_nacimiento || { day: "", month: "", year: "" }
+        );
         // Restaurar fotos
         setFotoPerfil(usuario?.foto_perfil || FOTO_PREDETERMINADA);
         setFotoPortada(usuario?.foto_portada || PORTADA_PREDETERMINADA);
@@ -147,6 +138,7 @@ export function Perfil() {
             formData.append("correo", correo);
             formData.append("telefono", telefono);
             formData.append("descripcion", descripcion);
+            formData.append("genero", genero);
 
             if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
                 formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
@@ -176,12 +168,7 @@ export function Perfil() {
                 setFotoPortadaFile(null);
 
                 // Actualizar contexto global
-                setUsuario({
-                    ...data.usuario, // VIENE DEL BACKEND
-                    foto_perfil: data.fotos?.foto_perfil || data.usuario.foto_perfil,
-                    foto_portada: data.fotos?.foto_portada || data.usuario.foto_portada,
-                });
-
+                setUsuario(data.usuario);
             } else {
                 alert(data.mensaje || "Error al actualizar perfil");
             }
@@ -227,13 +214,7 @@ export function Perfil() {
         setMostrarModalCancelar(false); // Solo cierra el modal si decide no cancelar
     };
 
-
-
-
-    console.log("perfil TEST:", fotoPerfil);
-    console.log("MAY: ", FOTO_PREDETERMINADA);
-    console.log("usuario: ", usuario?.foto_perfil);
-    console.log("foto: ", esFotoValida);
+    console.log("GENERO REAL:", JSON.stringify(genero));
 
     return (
         <div className="contenedor-perfil-usuario">
@@ -308,7 +289,7 @@ export function Perfil() {
                             <select
                                 value={fechaNacimiento.day}
                                 disabled={!editarFecha}
-                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, day: e.target.value }))}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, day: Number(e.target.value) }))}
                             >
                                 <option value="">Día</option>
                                 {days.map(d => <option key={d} value={d}>{d}</option>)}
@@ -318,7 +299,7 @@ export function Perfil() {
                             <select
                                 value={fechaNacimiento.month}
                                 disabled={!editarFecha}
-                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, month: e.target.value }))}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, month: Number(e.target.value) }))}
                             >
                                 <option value="">Mes</option>
                                 {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
@@ -328,7 +309,7 @@ export function Perfil() {
                             <select
                                 value={fechaNacimiento.year}
                                 disabled={!editarFecha}
-                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, year: e.target.value }))}
+                                onChange={(e) => setFechaNacimiento(prev => ({ ...prev, year: Number(e.target.value) }))}
                             >
                                 <option value="">Año</option>
                                 {years.map(y => <option key={y} value={y}>{y}</option>)}
@@ -362,15 +343,39 @@ export function Perfil() {
                     <label className="label-full-usuario">Género</label>
                     <div className="genero-opciones-usuario">
                         <label className="genero-box-usuario">
-                            <input type="radio" name="genero" /> <span>Mujer</span>
+                            <input
+                                type="radio"
+                                name="genero"
+                                value="Mujer"
+                                checked={genero === "Mujer"}
+                                onChange={(e) => setGenero(e.target.value)}
+                            />
+                            <span>Mujer</span>
                         </label>
+
                         <label className="genero-box-usuario">
-                            <input type="radio" name="genero" /> <span>Hombre</span>
+                            <input
+                                type="radio"
+                                name="genero"
+                                value="Hombre"
+                                checked={genero === "Hombre"}
+                                onChange={(e) => setGenero(e.target.value)}
+                            />
+                            <span>Hombre</span>
                         </label>
+
                         <label className="genero-box-usuario">
-                            <input type="radio" name="genero" /> <span>Otro</span>
+                            <input
+                                type="radio"
+                                name="genero"
+                                value="Otro"
+                                checked={genero === "Otro"}
+                                onChange={(e) => setGenero(e.target.value)}
+                            />
+                            <span>Otro</span>
                         </label>
                     </div>
+
                 </div>
 
                 {/* CONTRASEÑAS */}
