@@ -21,12 +21,23 @@ export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
 
-  // 🔥 NORMALIZADOR CENTRAL
+  const ROLES_MAP = {
+    1: "Administrador",
+    2: "Usuario",
+    3: "Tutor",
+  };
+
+
+  // NORMALIZADOR CENTRAL
   const normalizarUsuario = (user) => {
     if (!user) return null;
 
     return {
       ...user,
+
+      rol: user.rol, // id_rol (number)
+      rol_texto: ROLES_MAP[user.rol] || "Sin rol",
+
       foto_perfil: esFotoValida(user.foto_perfil)
         ? user.foto_perfil
         : perfilPredeterminado,
@@ -35,6 +46,7 @@ export function AuthProvider({ children }) {
         : "/portada.jpg",
     };
   };
+
 
   // Verificar sesión
   useEffect(() => {

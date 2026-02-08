@@ -543,14 +543,11 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
             {showConfirmCancel && (
                 <ModalConfirmarCancelar
                     isOpen={showConfirmCancel}
-                    onCancel={() => setShowConfirmCancel(false)} // <- aquí
+                    onCancel={() => setShowConfirmCancel(false)} 
                     onConfirm={handleConfirmarCancelar}
                     mensaje="Tienes cambios sin guardar. ¿Seguro que quieres cancelar?"
                 />
             )}
-
-
-
         </>
     );
 

@@ -9,9 +9,9 @@ import fotoPredeterminada from "../assets/imagenes/perfil-usuario.png";
 import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 
 export function Perfil() {
+    const { usuario, setUsuario } = useContext(AuthContext);
 
     const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false);
-    const { usuario, setUsuario } = useContext(AuthContext);
 
     // ===== ESTADOS BÁSICOS =====
     const [nombre, setNombre] = useState(usuario?.nombre || "");
@@ -177,15 +177,11 @@ export function Perfil() {
 
                 // Actualizar contexto global
                 setUsuario({
-                    ...usuario,
-                    nombre,
-                    correo,
-                    telefono,
-                    descripcion,
-                    fecha_nacimiento: fechaNacimiento,
-                    foto_perfil: data.fotos?.foto_perfil || usuario.foto_perfil,
-                    foto_portada: data.fotos?.foto_portada || usuario.foto_portada,
+                    ...data.usuario, // VIENE DEL BACKEND
+                    foto_perfil: data.fotos?.foto_perfil || data.usuario.foto_perfil,
+                    foto_portada: data.fotos?.foto_portada || data.usuario.foto_portada,
                 });
+
             } else {
                 alert(data.mensaje || "Error al actualizar perfil");
             }
@@ -251,10 +247,12 @@ export function Perfil() {
 
             {/* ===== INFO ===== */}
             <div className="perfil-info-usuario">
-                <h2 className="perfil-nombre-usuario">{nombre}</h2>
                 <p className="perfil-descripcion-usuario">
-                    Estudiante de desarrollo web apasionada por crear interfaces
-                    limpias, funcionales y profesionales.
+                    <strong>{usuario?.rol_texto}</strong>
+                </p>
+                <h2 className="perfil-nombre-usuario">{usuario?.nombre}</h2>
+                <p className="perfil-descripcion-usuario">
+                    {usuario?.descripcion}
                 </p>
             </div>
 
