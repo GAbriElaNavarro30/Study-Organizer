@@ -11,6 +11,10 @@ import { useEffect, useState } from "react";
 import api from "../services/api";
 import logo from "../assets/imagenes/logotipo.png";
 
+import html2pdf from "html2pdf.js";
+import { PdfUsuarios } from "../components/PdfUsuarios";
+import { useRef } from "react";
+
 export function CrudAdmin() {
     // Estado de modales
     const [modalOpen, setModalOpen] = useState(false);
@@ -161,6 +165,28 @@ export function CrudAdmin() {
         }
     };
 
+    const pdfRef = useRef();
+
+    const generarPDF = () => {
+        if (!usuarios.length) return;
+
+        const element = pdfRef.current;
+
+        html2pdf()
+            .from(element)
+            .set({
+                margin: [10, 10, 10, 10], // márgenes en mm [top, left, bottom, right]
+                filename: `Usuarios_${new Date().toLocaleDateString()}.pdf`,
+                image: { type: "jpeg", quality: 0.98 },
+                html2canvas: { scale: 2 },
+                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }, // <-- cambio aquí
+            })
+            .save();
+    };
+
+
+
+
     useEffect(() => {
         const cargarUsuarios = async () => {
             try {
@@ -238,7 +264,9 @@ export function CrudAdmin() {
 
 
 
+
     return (
+
         <div className="contenedor-administrador">
             <div className="contenedor-admin">
                 <h1 className="titulo-admin">Administración de Usuarios</h1>
@@ -250,9 +278,10 @@ export function CrudAdmin() {
                             <IoAddCircleOutline /> Nuevo
                         </button>
 
-                        <button className="btn btn-pdf-admin">
+                        <button className="btn btn-pdf-admin" onClick={generarPDF}>
                             <IoDocumentTextOutline /> Exportar PDF
                         </button>
+
                     </div>
 
                     <div className="busqueda-con-icono">
@@ -393,6 +422,13 @@ export function CrudAdmin() {
                         onClose={() => setMostrarAlert(false)}
                     />
                 )}
+
+                <div style={{ display: "none" }}>
+                    <div ref={pdfRef}>
+                        <PdfUsuarios usuarios={usuarios} />
+                    </div>
+                </div>
+
 
             </div>
         </div>

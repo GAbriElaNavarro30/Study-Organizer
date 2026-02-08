@@ -8,6 +8,7 @@ import { verificarToken } from "../middlewares/auth.js";
 import cloudinary from "../config/cloudinary.js"; // Asegúrate de la ruta correcta
 import multer from "multer";
 import { transporter } from "../config/mailer.js";
+import PDFDocument from "pdfkit";
 
 // Multer: almacenamiento en memoria (no en disco)
 const storage = multer.memoryStorage();
@@ -557,7 +558,50 @@ router.get("/buscar-informacion", async (req, res) => {
   }
 });
 
+// exportar PDF
+router.get("/exportar-pdf", async (req, res) => {
+  try {
+    // Traer todos los usuarios
+    const [usuarios] = await db.query(`
+      SELECT 
+        u.id_usuario,
+        u.nombre_usuario,
+        u.correo_electronico,
+        u.telefono,
+        u.genero,
+        u.fecha_nacimiento,
+        r.tipo_usuario AS rol
+      FROM Usuario u
+      JOIN Rol r ON u.id_rol = r.id_rol
+      ORDER BY u.id_usuario ASC
+    `);
 
+    const doc = new PDFDocument({ margin: 30, size: "A4" });
+
+    const filename = "usuarios.pdf";
+    res.setHeader("Content-disposition", "attachment; filename=" + filename);
+    res.setHeader("Content-type", "application/pdf");
+
+    doc.pipe(res);
+
+    doc.fontSize(20).text("Usuarios", { align: "center" });
+    doc.moveDown();
+
+    // Tabla simple
+    usuarios.forEach((u, i) => {
+      doc
+        .fontSize(12)
+        .text(`${i + 1}. ID: ${u.id_usuario} | Nombre: ${u.nombre_usuario} | Correo: ${u.correo_electronico} | Rol: ${u.rol} | Tel: ${u.telefono} | Género: ${u.genero} | Nacimiento: ${u.fecha_nacimiento}`);
+      doc.moveDown(0.5);
+    });
+
+    doc.end();
+
+  } catch (error) {
+    console.error("Error al generar PDF:", error);
+    res.status(500).json({ message: "Error al generar PDF" });
+  }
+});
 
 /* =======================================================
 ---------------------- Perfil Usuario --------------------
