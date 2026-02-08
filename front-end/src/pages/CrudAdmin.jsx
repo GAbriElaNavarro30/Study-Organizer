@@ -29,6 +29,15 @@ export function CrudAdmin() {
 
     const [busqueda, setBusqueda] = useState("");
 
+    const [paginaActual, setPaginaActual] = useState(1);
+    const [registrosPorPagina, setRegistrosPorPagina] = useState(5); // por defecto
+    const indiceUltimoUsuario = paginaActual * registrosPorPagina;
+    const indicePrimerUsuario = indiceUltimoUsuario - registrosPorPagina;
+    const usuariosActuales = usuarios.slice(indicePrimerUsuario, indiceUltimoUsuario);
+    const totalPaginas = Math.ceil(usuarios.length / registrosPorPagina);
+
+
+
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
         setUsuarioSeleccionado(usuario);
@@ -254,7 +263,13 @@ export function CrudAdmin() {
 
                     <div className="mostrar-resultados">
                         <span>Mostrar</span>
-                        <select className="select-registros">
+                        <select className="select-registros"
+                            value={registrosPorPagina}
+                            onChange={(e) => {
+                                setRegistrosPorPagina(Number(e.target.value));
+                                setPaginaActual(1); // reiniciar a primera página
+                            }}
+                        >
                             <option value="5">5</option>
                             <option value="10">10</option>
                             <option value="15">15</option>
@@ -279,8 +294,8 @@ export function CrudAdmin() {
                             </tr>
                         </thead>
                         <tbody>
-                            {usuarios.length > 0 ? (
-                                usuarios.map((usuario) => (
+                            {usuariosActuales.length > 0 ? (
+                                usuariosActuales.map((usuario) => (
                                     <tr key={usuario.id}>
                                         <td>{usuario.id}</td>
                                         <td>{usuario.nombre}</td>
@@ -306,23 +321,50 @@ export function CrudAdmin() {
                                 ))
                             ) : (
                                 <tr>
-                                    <td colSpan="7" style={{ textAlign: "center", padding: "1rem", color: "#666" }}>
+                                    <td
+                                        colSpan="7"
+                                        style={{ textAlign: "center", padding: "1rem", color: "#666" }}
+                                    >
                                         Ningún resultado coincide con la búsqueda
                                     </td>
                                 </tr>
                             )}
                         </tbody>
 
+
                     </table>
                 </div>
 
                 {/* Paginación */}
                 <div className="paginacion">
-                    <button className="pagina">&laquo;</button>
-                    <button className="pagina activa">1</button>
-                    <button className="pagina">2</button>
-                    <button className="pagina">3</button>
-                    <button className="pagina">&raquo;</button>
+                    {/* Botón "anterior" */}
+                    <button
+                        className="pagina"
+                        onClick={() => setPaginaActual(paginaActual > 1 ? paginaActual - 1 : 1)}
+                        disabled={paginaActual === 1}
+                    >
+                        &laquo;
+                    </button>
+
+                    {/* Botones de cada página */}
+                    {[...Array(totalPaginas)].map((_, index) => (
+                        <button
+                            key={index}
+                            className={`pagina ${paginaActual === index + 1 ? "activa" : ""}`}
+                            onClick={() => setPaginaActual(index + 1)}
+                        >
+                            {index + 1}
+                        </button>
+                    ))}
+
+                    {/* Botón "siguiente" */}
+                    <button
+                        className="pagina"
+                        onClick={() => setPaginaActual(paginaActual < totalPaginas ? paginaActual + 1 : totalPaginas)}
+                        disabled={paginaActual === totalPaginas || totalPaginas === 0}
+                    >
+                        &raquo;
+                    </button>
                 </div>
 
                 {/* Modales */}
