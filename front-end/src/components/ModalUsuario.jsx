@@ -2,6 +2,7 @@ import React, { useState, useEffect } from "react";
 import "../styles/modalUsuario.css";
 import { IoClose } from "react-icons/io5";
 import bcrypt from "bcryptjs";
+import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 
 export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, erroresBackend = {}, ...props }) {
     const [formData, setFormData] = useState({
@@ -18,6 +19,54 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         password: "",
         confirmarPassword: ""
     });
+
+    const [showConfirmCancel, setShowConfirmCancel] = useState(false);
+
+    // ===== Detectar si hay cambios en el formulario =====
+    const tieneCambios = () => {
+        if (tipo === "crear") {
+            // si alguno de los campos tiene algo
+            return Object.values(formData).some(value => {
+                if (typeof value === "object") {
+                    return Object.values(value).some(v => v !== "");
+                }
+                return value !== "";
+            });
+        } else if (tipo === "editar" && usuario) {
+            // compara con el usuario original
+            const fecha = usuario.fechaNacimiento?.split("-") || ["", "", ""];
+            const usuarioOriginal = {
+                nombre: usuario.nombre || "",
+                correo: usuario.correo || "",
+                rol: usuario.rol || "",
+                telefono: usuario.telefono || "",
+                genero: usuario.genero || "",
+                fechaNacimiento: {
+                    year: fecha[0],
+                    month: fecha[1],
+                    day: fecha[2]
+                },
+                password: "",
+                confirmarPassword: ""
+            };
+
+            return JSON.stringify(formData) !== JSON.stringify(usuarioOriginal);
+        }
+        return false;
+    };
+
+    const handleCancelar = () => {
+        if (tieneCambios()) {
+            setShowConfirmCancel(true);
+        } else {
+            onClose();
+        }
+    };
+
+    const handleConfirmarCancelar = () => {
+        setShowConfirmCancel(false);
+        onClose();
+    };
 
     // ===== LISTAS FECHA =====
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -238,246 +287,271 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
     if (!isOpen) return null;
 
     return (
-        <div className="modal-overlay-create-update">
-            <div className="modal-container-create-update" onClick={(e) => e.stopPropagation()}>
-                <button
-                    type="button"
-                    className="modal-close-btn"
-                    onClick={onClose}
-                    aria-label="Cerrar"
-                >
-                    <IoClose />
-                </button>
-                <h2>{tipo === "editar" ? "Editar Usuario" : "Nuevo Usuario"}</h2>
-                <hr className="linea-separadora-create-update" />
-
-                <form onSubmit={handleSubmit} className="modal-form-create-update">
-                    {/* 1ra fila: Nombre */}
-                    <div className="fila">
-                        <label>
-                            Nombre
-                            <input
-                                type="text"
-                                name="nombre"
-                                placeholder="Nombre"
-                                value={formData.nombre}
-                                onChange={handleChange}
-                            />
-                            {erroresCombinados.nombre && (
-                                <span className="error-text">{erroresCombinados.nombre}</span>
-                            )}
-                        </label>
-                    </div>
-
-                    <div className="fila">
-                        <label>
-                            Rol
-                            <select
-                                name="rol"
-                                value={formData.rol}
-                                onChange={handleChange}
-                            >
-                                <option value="">Selecciona un rol</option>
-                                <option value="Estudiante">Estudiante</option>
-                                <option value="Tutor">Tutor</option>
-                                <option value="Administrador">Administrador</option>
-                            </select>
-                            {erroresCombinados.rol && (
-                                <span className="error-text">{erroresCombinados.rol}</span>
-                            )}
-
-                        </label>
-
-
-                        <label>
-                            Teléfono
-                            <input
-                                type="text"
-                                name="telefono"
-                                placeholder="Ej. 5512345678"
-                                value={formData.telefono}
-                                onChange={handleChange}
-                            />
-                            {erroresCombinados.telefono && (
-                                <span className="error-text">{erroresCombinados.telefono}</span>
-                            )}
-
-                        </label>
-                    </div>
-
-                    {/* 2da fila: Fecha de nacimiento y teléfono */}
-                    {/* FECHA NACIMIENTO (FACEBOOK) */}
-                    <div className="fila genero-fb">
-                        <span className="titulo-fila-create-update">
-                            Fecha de nacimiento
-                        </span>
-
-                        <div className="fecha-nacimiento">
-                            <select
-                                value={formData.fechaNacimiento.day}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        fechaNacimiento: {
-                                            ...prev.fechaNacimiento,
-                                            day: e.target.value
-                                        }
-                                    }))
-                                }
-                            >
-                                <option value="">Día</option>
-                                {days.map(d => (
-                                    <option key={d} value={d}>{d}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={formData.fechaNacimiento.month}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        fechaNacimiento: {
-                                            ...prev.fechaNacimiento,
-                                            month: e.target.value
-                                        }
-                                    }))
-                                }
-                            >
-                                <option value="">Mes</option>
-                                {months.map((m, i) => (
-                                    <option key={i} value={i + 1}>{m}</option>
-                                ))}
-                            </select>
-
-                            <select
-                                value={formData.fechaNacimiento.year}
-                                onChange={(e) =>
-                                    setFormData(prev => ({
-                                        ...prev,
-                                        fechaNacimiento: {
-                                            ...prev.fechaNacimiento,
-                                            year: e.target.value
-                                        }
-                                    }))
-                                }
-                            >
-                                <option value="">Año</option>
-                                {years.map(y => (
-                                    <option key={y} value={y}>{y}</option>
-                                ))}
-                            </select>
-                        </div>
-                        {erroresCombinados.fechaNacimiento && (
-                            <span className="error-text">{erroresCombinados.fechaNacimiento}</span>
-                        )}
-                    </div>
-
-                    {/* 3ra fila: Género estilo Facebook */}
-                    <div className="fila genero-fb">
-                        <span className="titulo-fila-create-update">Género</span>
-                        <div className="radios-container">
-                            <label className={`radio-btn ${formData.genero === "Mujer" ? "activo" : ""}`}>
-                                <input
-                                    type="radio"
-                                    name="genero"
-                                    value="Mujer"
-                                    checked={formData.genero === "Mujer"}
-                                    onChange={handleChange}
-                                />
-                                <span>Mujer</span>
-                            </label>
-                            <label className={`radio-btn ${formData.genero === "Hombre" ? "activo" : ""}`}>
-                                <input
-                                    type="radio"
-                                    name="genero"
-                                    value="Hombre"
-                                    checked={formData.genero === "Hombre"}
-                                    onChange={handleChange}
-                                />
-                                <span>Hombre</span>
-                            </label>
-                            <label className={`radio-btn ${formData.genero === "Otro" ? "activo" : ""}`}>
-                                <input
-                                    type="radio"
-                                    name="genero"
-                                    value="Otro"
-                                    checked={formData.genero === "Otro"}
-                                    onChange={handleChange}
-                                />
-                                <span>Otro</span>
-                            </label>
-                        </div>
-                        {erroresCombinados.genero && (
-                            <span className="error-text">{erroresCombinados.genero}</span>
-                        )}
-
-                    </div>
-
-
-                    {/* 4ta fila: Correo */}
-                    <div className="fila">
-                        <label>
-                            Correo electrónico:
-                            <input
-                                type="email"
-                                name="correo"
-                                placeholder="correo@ejemplo.com"
-                                value={formData.correo}
-                                onChange={handleChange}
-                            />
-                            {erroresCombinados.correo && (
-                                <span className="error-text">{erroresCombinados.correo}</span>
-                            )}
-                        </label>
-                    </div>
-
-                    {/* 5ta fila: Contraseña y confirmar contraseña */}
-                    <div className="fila">
-                        <label>
-                            Contraseña:
-                            <input
-                                type="password"
-                                name="password"
-                                placeholder="••••••••"
-                                value={formData.password}
-                                onChange={handleChange}
-
-                            />
-                            {erroresCombinados.password && (
-                                <span className="error-text">{erroresCombinados.password}</span>
-                            )}
-
-                        </label>
-                        <label>
-                            Confirmar contraseña:
-                            <input
-                                type="password"
-                                name="confirmarPassword"
-                                placeholder="••••••••"
-                                value={formData.confirmarPassword}
-                                onChange={handleChange}
-
-                            />
-
-                            {erroresCombinados.confirmarPassword && (
-                                <span className="error-text">{erroresCombinados.confirmarPassword}</span>
-                            )}
-
-                        </label>
-                    </div>
-
-                    {/* Botones */}
-                    <div className="modal-buttons-create-update">
-                        <button type="submit" className="btn btn-nuevo-create-update">
-                            {tipo === "editar" ? "Actualizar" : "Guardar"}
+        <>
+            {isOpen && (
+                <div className="modal-overlay-create-update">
+                    <div className="modal-container-create-update" onClick={(e) => e.stopPropagation()}>
+                        <button
+                            type="button"
+                            className="modal-close-btn"
+                            onClick={handleCancelar}  // cambio aquí
+                            aria-label="Cerrar"
+                        >
+                            <IoClose />
                         </button>
-                        <button type="button" className="btn btn-pdf-create-update" onClick={onClose}>
-                            Cancelar
-                        </button>
+
+                        <h2>{tipo === "editar" ? "Editar Usuario" : "Nuevo Usuario"}</h2>
+                        <hr className="linea-separadora-create-update" />
+
+                        <form onSubmit={handleSubmit} className="modal-form-create-update">
+                            {/* 1ra fila: Nombre */}
+                            <div className="fila">
+                                <label>
+                                    Nombre
+                                    <input
+                                        type="text"
+                                        name="nombre"
+                                        placeholder="Nombre"
+                                        value={formData.nombre}
+                                        onChange={handleChange}
+                                    />
+                                    {erroresCombinados.nombre && (
+                                        <span className="error-text">{erroresCombinados.nombre}</span>
+                                    )}
+                                </label>
+                            </div>
+
+                            <div className="fila">
+                                <label>
+                                    Rol
+                                    <select
+                                        name="rol"
+                                        value={formData.rol}
+                                        onChange={handleChange}
+                                    >
+                                        <option value="">Selecciona un rol</option>
+                                        <option value="Estudiante">Estudiante</option>
+                                        <option value="Tutor">Tutor</option>
+                                        <option value="Administrador">Administrador</option>
+                                    </select>
+                                    {erroresCombinados.rol && (
+                                        <span className="error-text">{erroresCombinados.rol}</span>
+                                    )}
+
+                                </label>
+
+
+                                <label>
+                                    Teléfono
+                                    <input
+                                        type="text"
+                                        name="telefono"
+                                        placeholder="Ej. 5512345678"
+                                        value={formData.telefono}
+                                        onChange={handleChange}
+                                    />
+                                    {erroresCombinados.telefono && (
+                                        <span className="error-text">{erroresCombinados.telefono}</span>
+                                    )}
+
+                                </label>
+                            </div>
+
+                            {/* 2da fila: Fecha de nacimiento y teléfono */}
+                            {/* FECHA NACIMIENTO (FACEBOOK) */}
+                            <div className="fila genero-fb">
+                                <span className="titulo-fila-create-update">
+                                    Fecha de nacimiento
+                                </span>
+
+                                <div className="fecha-nacimiento">
+                                    <select
+                                        value={formData.fechaNacimiento.day}
+                                        onChange={(e) =>
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                fechaNacimiento: {
+                                                    ...prev.fechaNacimiento,
+                                                    day: e.target.value
+                                                }
+                                            }))
+                                        }
+                                    >
+                                        <option value="">Día</option>
+                                        {days.map(d => (
+                                            <option key={d} value={d}>{d}</option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        value={formData.fechaNacimiento.month}
+                                        onChange={(e) =>
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                fechaNacimiento: {
+                                                    ...prev.fechaNacimiento,
+                                                    month: e.target.value
+                                                }
+                                            }))
+                                        }
+                                    >
+                                        <option value="">Mes</option>
+                                        {months.map((m, i) => (
+                                            <option key={i} value={i + 1}>{m}</option>
+                                        ))}
+                                    </select>
+
+                                    <select
+                                        value={formData.fechaNacimiento.year}
+                                        onChange={(e) =>
+                                            setFormData(prev => ({
+                                                ...prev,
+                                                fechaNacimiento: {
+                                                    ...prev.fechaNacimiento,
+                                                    year: e.target.value
+                                                }
+                                            }))
+                                        }
+                                    >
+                                        <option value="">Año</option>
+                                        {years.map(y => (
+                                            <option key={y} value={y}>{y}</option>
+                                        ))}
+                                    </select>
+                                </div>
+                                {erroresCombinados.fechaNacimiento && (
+                                    <span className="error-text">{erroresCombinados.fechaNacimiento}</span>
+                                )}
+                            </div>
+
+                            {/* 3ra fila: Género estilo Facebook */}
+                            <div className="fila genero-fb">
+                                <span className="titulo-fila-create-update">Género</span>
+                                <div className="radios-container">
+                                    <label className={`radio-btn ${formData.genero === "Mujer" ? "activo" : ""}`}>
+                                        <input
+                                            type="radio"
+                                            name="genero"
+                                            value="Mujer"
+                                            checked={formData.genero === "Mujer"}
+                                            onChange={handleChange}
+                                        />
+                                        <span>Mujer</span>
+                                    </label>
+                                    <label className={`radio-btn ${formData.genero === "Hombre" ? "activo" : ""}`}>
+                                        <input
+                                            type="radio"
+                                            name="genero"
+                                            value="Hombre"
+                                            checked={formData.genero === "Hombre"}
+                                            onChange={handleChange}
+                                        />
+                                        <span>Hombre</span>
+                                    </label>
+                                    <label className={`radio-btn ${formData.genero === "Otro" ? "activo" : ""}`}>
+                                        <input
+                                            type="radio"
+                                            name="genero"
+                                            value="Otro"
+                                            checked={formData.genero === "Otro"}
+                                            onChange={handleChange}
+                                        />
+                                        <span>Otro</span>
+                                    </label>
+                                </div>
+                                {erroresCombinados.genero && (
+                                    <span className="error-text">{erroresCombinados.genero}</span>
+                                )}
+
+                            </div>
+
+
+                            {/* 4ta fila: Correo */}
+                            <div className="fila">
+                                <label>
+                                    Correo electrónico:
+                                    <input
+                                        type="email"
+                                        name="correo"
+                                        placeholder="correo@ejemplo.com"
+                                        value={formData.correo}
+                                        onChange={handleChange}
+                                    />
+                                    {erroresCombinados.correo && (
+                                        <span className="error-text">{erroresCombinados.correo}</span>
+                                    )}
+                                </label>
+                            </div>
+
+                            {/* 5ta fila: Contraseña y confirmar contraseña */}
+                            <div className="fila">
+                                <label>
+                                    Contraseña:
+                                    <input
+                                        type="password"
+                                        name="password"
+                                        placeholder="••••••••"
+                                        value={formData.password}
+                                        onChange={handleChange}
+
+                                    />
+                                    {erroresCombinados.password && (
+                                        <span className="error-text">{erroresCombinados.password}</span>
+                                    )}
+
+                                </label>
+                                <label>
+                                    Confirmar contraseña:
+                                    <input
+                                        type="password"
+                                        name="confirmarPassword"
+                                        placeholder="••••••••"
+                                        value={formData.confirmarPassword}
+                                        onChange={handleChange}
+
+                                    />
+
+                                    {erroresCombinados.confirmarPassword && (
+                                        <span className="error-text">{erroresCombinados.confirmarPassword}</span>
+                                    )}
+
+                                </label>
+                            </div>
+
+                            {/* Botones */}
+                            <div className="modal-buttons-create-update">
+                                <button type="submit" className="btn btn-nuevo-create-update">
+                                    {tipo === "editar" ? "Actualizar" : "Guardar"}
+                                </button>
+
+                                <button
+                                    type="button"
+                                    className="btn btn-pdf-create-update"
+                                    onClick={handleCancelar}
+                                >
+                                    Cancelar
+                                </button>
+
+
+                            </div>
+                        </form>
                     </div>
-                </form>
-            </div>
-        </div>
+                </div>
+            )}
+
+            {/* ModalConfirmarCancelar */}
+            {showConfirmCancel && (
+                <ModalConfirmarCancelar
+                    isOpen={showConfirmCancel}
+                    onCancel={() => setShowConfirmCancel(false)} // <- aquí
+                    onConfirm={handleConfirmarCancelar}
+                    mensaje="Tienes cambios sin guardar. ¿Seguro que quieres cancelar?"
+                />
+            )}
+
+
+
+        </>
     );
 
 }
