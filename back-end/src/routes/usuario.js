@@ -661,7 +661,7 @@ router.put(
         password
       } = req.body;
 
-      // 🔥 Si fechaNacimiento viene como string desde FormData
+      // Si fechaNacimiento viene como string desde FormData
       if (typeof fechaNacimiento === "string") {
         fechaNacimiento = JSON.parse(fechaNacimiento);
       }

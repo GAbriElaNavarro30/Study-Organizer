@@ -12,6 +12,9 @@ export function Perfil() {
     const { usuario, setUsuario } = useContext(AuthContext);
 
     const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false);
+    const [errores, setErrores] = useState({});
+    const limpiarErrores = () => setErrores({});
+
 
     // ===== ESTADOS BÁSICOS =====
     const [nombre, setNombre] = useState(usuario?.nombre || "");
@@ -129,9 +132,105 @@ export function Perfil() {
     };
 
 
+    const validarFormulario = () => {
+        const nuevosErrores = {};
+
+        // ================== NOMBRE ==================
+        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+        if (!nombre || !nombreRegex.test(nombre)) {
+            nuevosErrores.nombre =
+                "El nombre solo puede contener letras, espacios, puntos y acentos";
+        }
+
+        // ================== TELÉFONO ==================
+        const telefonoRegex = /^[0-9]{10}$/;
+        if (telefono && !telefonoRegex.test(telefono)) {
+            nuevosErrores.telefono =
+                "El teléfono debe tener 10 dígitos numéricos";
+        }
+
+        // ================== CORREO ==================
+        const correoRegex =
+            /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+        if (!correoRegex.test(correo)) {
+            nuevosErrores.correo =
+                "El correo electrónico no cumple con un formato válido y profesional";
+        }
+
+        const parteUsuario = correo.split("@")[0];
+        if (parteUsuario?.length > 64) {
+            nuevosErrores.correo =
+                "El correo no debe superar 64 caracteres antes del @";
+        }
+
+        // ================== CONTRASEÑA ==================
+        /*if (password || confirmarPassword) {
+            const passwordRegex =
+                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
+
+            if (!passwordRegex.test(password)) {
+                nuevosErrores.password =
+                    "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)";
+            }
+
+            if (password !== confirmarPassword) {
+                nuevosErrores.confirmarPassword =
+                    "Las contraseñas no coinciden";
+            }
+        }*/
+
+        // ================== FECHA DE NACIMIENTO ==================
+        if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
+            const pad = (n) => String(n).padStart(2, "0");
+            const fecha = `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`;
+            const fechaNacimientoDate = new Date(fecha);
+            const hoy = new Date();
+
+            if (fechaNacimientoDate >= hoy) {
+                nuevosErrores.fecha_nacimiento =
+                    "La fecha de nacimiento no puede ser hoy ni una fecha futura";
+            }
+
+            const edadMinima = 13;
+            const fechaMinima = new Date(
+                hoy.getFullYear() - edadMinima,
+                hoy.getMonth(),
+                hoy.getDate()
+            );
+
+            if (fechaNacimientoDate > fechaMinima) {
+                nuevosErrores.fecha_nacimiento =
+                    `Debes tener al menos ${edadMinima} años`;
+            }
+
+            const edadMaxima = 120;
+            const fechaMaxima = new Date(
+                hoy.getFullYear() - edadMaxima,
+                hoy.getMonth(),
+                hoy.getDate()
+            );
+
+            if (fechaNacimientoDate < fechaMaxima) {
+                nuevosErrores.fecha_nacimiento =
+                    `La edad no puede ser mayor a ${edadMaxima} años`;
+            }
+        }
+
+        setErrores(nuevosErrores);
+        return Object.keys(nuevosErrores).length === 0;
+    };
+
+
 
     // ===== FUNCION GUARDAR PERFIL =====
     const handleGuardar = async () => {
+        limpiarErrores();
+
+        if (!validarFormulario()) {
+            return; // NO ENVÍA AL BACKEND
+        }
+
         try {
             const formData = new FormData();
             formData.append("nombre", nombre);
@@ -265,6 +364,7 @@ export function Perfil() {
                                     <FiEdit2 />
                                 </button>
                             </div>
+                            {errores.nombre && <p className="error-text">{errores.nombre}</p>}
                         </div>
 
                         <div className="campo-usuario">
@@ -276,6 +376,7 @@ export function Perfil() {
                                     <FiEdit2 />
                                 </button>
                             </div>
+                            {errores.correo && <p className="error-text">{errores.correo}</p>}
                         </div>
                     </div>
                 </div>
