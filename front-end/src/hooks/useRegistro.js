@@ -1,5 +1,4 @@
 import { useState } from "react";
-import bcrypt from "bcryptjs";
 
 export function useRegistro() {
   // ================== UI ==================
@@ -50,154 +49,32 @@ export function useRegistro() {
     });
   };
 
+  // ============= VER SI HAY DATOS INGRESADOS ==============
+  const hayDatosIngresados = () => {
+    return Object.values(formData).some(value => value !== "");
+  };
+
   // ================== REGISTRO ==================
   const registrarUsuario = async () => {
-    const nuevosErrores = {};
+    const erroresFrontend = {};
 
-    // ================== VALIDAR VACÍOS ==================
-    if (!formData.nombre_usuario.trim()) {
-      nuevosErrores.nombre_usuario = "El nombre es obligatorio";
-    }
+    // ============== FECHA FORMATEADA =============
+    const fechaFormateada =
+      `${fechaNacimiento.year}-${String(fechaNacimiento.month).padStart(2, "0")}-${String(fechaNacimiento.day).padStart(2, "0")}`;
 
-    if (!formData.telefono.trim()) {
-      nuevosErrores.telefono = "El teléfono es obligatorio";
-    }
-
-    if (!formData.correo_electronico.trim()) {
-      nuevosErrores.correo_electronico = "El correo electrónico es obligatorio";
-    }
-
-    if (!formData.contrasena) {
-      nuevosErrores.contrasena = "La contraseña es obligatoria";
-    }
-
-    if (!formData.confirmarContrasena) {
-      nuevosErrores.confirmarContrasena =
-        "Confirma tu contraseña";
-    }
-
-    if (!formData.genero) {
-      nuevosErrores.genero = "El género es obligatorio";
-    }
-
-    if (!formData.id_rol) {
-      nuevosErrores.id_rol = "El rol es obligatorio";
-    }
-
-    if (
-      !fechaNacimiento.day ||
-      !fechaNacimiento.month ||
-      !fechaNacimiento.year
-    ) {
-      nuevosErrores.fecha_nacimiento =
-        "Completa la fecha de nacimiento";
-    }
-
-    // Si hay vacíos, detener aquí
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      return;
-    }
-
-    // ================== VALIDAR FORMATOS ==================
-
-    // Nombre
-    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-    if (!nombreRegex.test(formData.nombre_usuario)) {
-      nuevosErrores.nombre_usuario =
-        "El nombre solo puede contener letras, espacios, puntos y acentos";
-    }
-
-    // Teléfono
-    const telefonoRegex = /^[0-9]{10}$/;
-    if (!telefonoRegex.test(formData.telefono)) {
-      nuevosErrores.telefono =
-        "El teléfono debe tener 10 dígitos numéricos";
-    }
-
-    // Correo electrónico
-    const correoRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-    if (!correoRegex.test(formData.correo_electronico)) {
-      nuevosErrores.correo_electronico =
-        "El correo electrónico no cumple con un formato válido y profesional";
-    }
-
-    const parteUsuario = formData.correo_electronico.split("@")[0];
-    if (parteUsuario.length > 64) {
-      nuevosErrores.correo_electronico =
-        "El correo no debe superar 64 caracteres antes del @";
-    }
-
-    // Contraseña
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
-
-    if (!passwordRegex.test(formData.contrasena)) {
-      nuevosErrores.contrasena =
-        "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)";
-    }
-
+    // ======= VALIDAR CONTRASEÑA COINCIDE =========
     if (formData.contrasena !== formData.confirmarContrasena) {
-      nuevosErrores.confirmarContrasena =
-        "Las contraseñas no coinciden";
+      erroresFrontend.confirmarContrasena = "Las contraseñas no coinciden";
     }
 
-    // Fecha de Nacimiento
-    const pad = (n) => String(n).padStart(2, "0");
-    const fecha = `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`;
-    const fechaNacimientoDate = new Date(fecha);
-    const hoy = new Date();
-
-    // Validar que no sea hoy ni futuro
-    if (fechaNacimientoDate >= hoy) {
-      nuevosErrores.fecha_nacimiento = "La fecha de nacimiento no puede ser hoy ni una fecha futura";
-    }
-
-    // Validar edad mínima (ejemplo: 13 años)
-    const edadMinima = 13;
-    const fechaMinima = new Date(
-      hoy.getFullYear() - edadMinima,
-      hoy.getMonth(),
-      hoy.getDate()
-    );
-
-    if (fechaNacimientoDate > fechaMinima) {
-      nuevosErrores.fecha_nacimiento = `Debes tener al menos ${edadMinima} años`;
-    }
-
-    // Validar edad máxima (ejemplo: no más de 120 años)
-    const edadMaxima = 120;
-    const fechaMaxima = new Date(
-      hoy.getFullYear() - edadMaxima,
-      hoy.getMonth(),
-      hoy.getDate()
-    );
-
-    if (fechaNacimientoDate < fechaMaxima) {
-      nuevosErrores.fecha_nacimiento = `La edad no puede ser mayor a ${edadMaxima} años`;
-    }
-
-
-
-    // Si hay errores de formato
-    if (Object.keys(nuevosErrores).length > 0) {
-      setErrores(nuevosErrores);
-      return;
-    }
-    
-
-    // ================== HASH PASSWORD ==================
-    const salt = bcrypt.genSaltSync(10); // factor de costo
-    const hashedPassword = bcrypt.hashSync(formData.contrasena, salt);
-
+    // ================== MANDAR DATOS AL BACKEND ==================
     const usuario = {
       nombre_usuario: formData.nombre_usuario,
       telefono: formData.telefono,
       correo_electronico: formData.correo_electronico,
-      contrasena: hashedPassword, // ahora mandas el hash
+      contrasena: formData.contrasena,
       genero: formData.genero,
-      fecha_nacimiento: fecha,
+      fecha_nacimiento: fechaFormateada,
       id_rol: formData.id_rol,
     };
 
@@ -223,8 +100,22 @@ export function useRegistro() {
         });
       }
 
-      setErrores(erroresBackend);
+      setErrores({
+        ...erroresFrontend,
+        ...erroresBackend,
+      });
+
       return;
+      // { success: false, message: "Error al registrar la cuenta" };
+    }
+
+    // ================== SOLO FRONTEND ==================
+    if (Object.keys(erroresFrontend).length > 0) {
+      setErrores(erroresFrontend);
+      return {
+        success: false,
+        message: "Errores de validación"
+      };
     }
 
     setErrores({});
@@ -232,7 +123,7 @@ export function useRegistro() {
 
   };
 
-  // ================== EXPORT ==================
+  // ======= EXPORTAR DATOS DEL HOOK PARA LA PAGE REGISTRO.JSX ======
   return {
     mostrarPassword,
     setMostrarPassword,
@@ -247,5 +138,6 @@ export function useRegistro() {
     handleChange,
     registrarUsuario,
     errores,
+    hayDatosIngresados,
   };
 }

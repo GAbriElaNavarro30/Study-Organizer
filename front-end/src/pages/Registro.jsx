@@ -26,13 +26,14 @@ export function Registro() {
     formData,
     handleChange,
     registrarUsuario,
-    errores
+    errores,
+    hayDatosIngresados
   } = useRegistro();
 
-  // --------------- alertas ----------------
+  // ================================= ALERTAS =======================================
   const [alertData, setAlertData] = React.useState({
     visible: false,
-    type: "success", // "success" o "error"
+    type: "success",
     title: "",
     message: "",
   });
@@ -50,7 +51,7 @@ export function Registro() {
     setAlertData(prev => ({ ...prev, visible: false }));
   };
 
-
+  // ============================== CREAR CUENTA ===================================
   const handleSubmit = async (e) => {
     e.preventDefault();
     const result = await registrarUsuario();
@@ -62,20 +63,18 @@ export function Registro() {
     }
   };
 
-  const hayDatosIngresados = () => {
-    return Object.values(formData).some(value => value !== "");
-  };
-
+  // ============================ BOTÓN DE VOLVER ==============================
   const handleVolverClick = (e) => {
-    e.preventDefault(); // previene navegación automática
+    e.preventDefault();
     if (hayDatosIngresados()) {
-      setNextPath("/"); // ruta a donde queremos ir si confirma
+      setNextPath("/");
       setModalVisible(true);
     } else {
-      navigate("/"); // navega directamente si no hay datos
+      navigate("/");
     }
   };
 
+  // ============================ BOTÓN DE LOGIN ===============================
   const handleLoginClick = (e) => {
     e.preventDefault();
     if (hayDatosIngresados()) {
@@ -85,9 +84,6 @@ export function Registro() {
       navigate("/login");
     }
   };
-
-
-
 
   return (
     <div className="contenedor-registro">
@@ -103,7 +99,7 @@ export function Registro() {
 
         <hr className="separador" />
 
-        {/* NOMBRE */}
+        {/* ========================== NOMBRE ============================ */}
         <div className="fila-campos">
           <div className="campo">
             <label>Nombre</label>
@@ -116,7 +112,6 @@ export function Registro() {
               className={errores.nombre_usuario ? "input-error" : ""}
 
             />
-
             {errores.nombre_usuario && (
               <span className="mensaje-error">
                 {errores.nombre_usuario}
@@ -125,7 +120,7 @@ export function Registro() {
           </div>
         </div>
 
-        {/* ROL Y TELÉFONO */}
+        {/* ========================== ROL Y TELÉFONO =========================== */}
         <div className="fila-campos">
           <div className="campo">
             <label>Rol</label>
@@ -168,7 +163,7 @@ export function Registro() {
           </div>
         </div>
 
-        {/* FECHA */}
+        {/* ===================================== FECHA ==================================== */}
         <div className="campo">
           <label>Fecha de nacimiento</label>
 
@@ -229,8 +224,7 @@ export function Registro() {
           )}
         </div>
 
-
-        {/* GÉNERO */}
+        {/* =============================== GÉNERO ================================== */}
         <div className="campo">
           <label>Género</label>
 
@@ -276,8 +270,7 @@ export function Registro() {
           )}
         </div>
 
-
-        {/* CORREO */}
+        {/* =================================== CORREO ================================== */}
         <div className="campo">
           <label>Correo electrónico</label>
           <input
@@ -296,10 +289,8 @@ export function Registro() {
           )}
         </div>
 
-
-        {/* CONTRASEÑAS */}
+        {/* ================================ CONTRASEÑAS ================================== */}
         <div className="fila-campos">
-          {/* CONTRASEÑA */}
           <div className="campo campo-password">
             <label>Contraseña</label>
 
@@ -328,7 +319,6 @@ export function Registro() {
             )}
           </div>
 
-          {/* CONFIRMAR CONTRASEÑA */}
           <div className="campo campo-password">
             <label>Confirmar contraseña</label>
 
@@ -360,7 +350,7 @@ export function Registro() {
           </div>
         </div>
 
-
+        {/* ================================== BOTONES ================================== */}
         <button type="submit" className="btn-registrar">
           Registrarse
         </button>
@@ -371,15 +361,15 @@ export function Registro() {
         </p>
       </form>
 
+      {/* ============================= MODALS Y ALERT ================================ */}
       <ModalConfirmarCancelar
         isOpen={modalVisible}
         onConfirm={() => {
           setModalVisible(false);
-          navigate(nextPath); // navega a la ruta guardada
+          navigate(nextPath);
         }}
-        onCancel={() => setModalVisible(false)} // cierra modal si cancela
+        onCancel={() => setModalVisible(false)}
       />
-
 
       {alertData.visible && (
         <CustomAlert
@@ -390,14 +380,11 @@ export function Registro() {
           onClose={() => {
             handleCloseAlert();
             if (alertData.type === "success") {
-              navigate("/login"); // navega solo si fue éxito
+              navigate("/login");
             }
           }}
         />
       )}
-
-
-
 
     </div>
 
