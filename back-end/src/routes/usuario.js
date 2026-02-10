@@ -670,15 +670,34 @@ router.put(
       const valores = [];
 
       // ===== CAMPOS NORMALES =====
-      if (nombre) { campos.push("nombre_usuario = ?"); valores.push(nombre); }
-      if (correo) { campos.push("correo_electronico = ?"); valores.push(correo); }
-      if (telefono) { campos.push("telefono = ?"); valores.push(telefono); }
-      if (descripcion) { campos.push("descripcion = ?"); valores.push(descripcion); }
-      if (genero) { campos.push("genero = ?"); valores.push(genero); }
+      if (nombre) { 
+        campos.push("nombre_usuario = ?"); 
+        valores.push(nombre); 
+      }
+
+      if (correo) { 
+        campos.push("correo_electronico = ?"); 
+        valores.push(correo); 
+      }
+
+      if (telefono) { 
+        campos.push("telefono = ?"); 
+        valores.push(telefono); 
+      }
+
+      if (descripcion !== undefined) {
+        campos.push("descripcion = ?");
+        valores.push(descripcion);
+      }
+
+      if (genero) { 
+        campos.push("genero = ?"); 
+        valores.push(genero); 
+      }
 
       if (password) {
         const hashed = await bcrypt.hash(password, 10);
-        campos.push("contrasena = ?"); 
+        campos.push("contrasena = ?");
         valores.push(hashed);
       }
 
@@ -749,10 +768,10 @@ router.put(
       // ===== NORMALIZAR FECHA =====
       const fechaNacimientoNormalizada = usuario.fecha_nacimiento
         ? {
-            day: new Date(usuario.fecha_nacimiento).getDate(),
-            month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
-            year: new Date(usuario.fecha_nacimiento).getFullYear(),
-          }
+          day: new Date(usuario.fecha_nacimiento).getDate(),
+          month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
+          year: new Date(usuario.fecha_nacimiento).getFullYear(),
+        }
         : { day: "", month: "", year: "" };
 
       res.json({

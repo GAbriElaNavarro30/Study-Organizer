@@ -13,40 +13,25 @@ export function Perfil() {
 
     const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false);
     const [errores, setErrores] = useState({});
-    const limpiarErrores = () => setErrores({});
-
-
-    // ===== ESTADOS BÁSICOS =====
     const [nombre, setNombre] = useState(usuario?.nombre || "");
     const [correo, setCorreo] = useState(usuario?.correo || "");
     const [telefono, setTelefono] = useState(usuario?.telefono || "");
     const [descripcion, setDescripcion] = useState(usuario?.descripcion || "");
     const [genero, setGenero] = useState("");
-
     const [editarFecha, setEditarFecha] = useState(false);
-
-    // ===== FOTO PERFIL Y PORTADA =====
-
-
     const [fotoPerfilFile, setFotoPerfilFile] = useState(null);
     const [fotoPortadaFile, setFotoPortadaFile] = useState(null);
-
-    const fileInputRef = useRef(null);
-
-    // ===== VISIBILIDAD DE PASSWORD =====
     const [mostrarPassword, setMostrarPassword] = useState(false);
     const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
-
-    // ===== EMOJI PICKER =====
+    const [password, setPassword] = useState("");
+    const [confirmarPassword, setConfirmarPassword] = useState("");
     const [showEmoji, setShowEmoji] = useState(false);
 
     // ===== USEEFFECT PARA CARGAR DATOS DEL USUARIO =====
     const FOTO_PREDETERMINADA = fotoPredeterminada;
     const PORTADA_PREDETERMINADA = "/portada.jpg";
 
-    const esFotoValida = (foto) =>
-        foto
-
+    const esFotoValida = (foto) => foto
 
     // Estados iniciales
     const [fotoPerfil, setFotoPerfil] = useState(
@@ -58,6 +43,8 @@ export function Perfil() {
         esFotoValida(usuario?.foto_portada) ? usuario.foto_portada : PORTADA_PREDETERMINADA
     );
 
+    const limpiarErrores = () => setErrores({});
+    const fileInputRef = useRef(null);
 
     // ===== ARRAYS PARA FECHA =====
     const days = Array.from({ length: 31 }, (_, i) => i + 1);
@@ -132,30 +119,49 @@ export function Perfil() {
     };
 
 
+    // =================== validaciones de campos vacios y reglas ======================
     const validarFormulario = () => {
         const nuevosErrores = {};
 
         // ================== NOMBRE ==================
-        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-        if (!nombre || !nombreRegex.test(nombre)) {
-            nuevosErrores.nombre =
-                "El nombre solo puede contener letras, espacios, puntos y acentos";
+        const nombreLimpio = nombre.trim();
+
+        if (!nombreLimpio) {
+            nuevosErrores.nombre = "El nombre es obligatorio";
+        } else {
+            const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+            if (!nombreRegex.test(nombreLimpio)) {
+                nuevosErrores.nombre =
+                    "El nombre solo puede contener letras, espacios, puntos y acentos";
+            }
         }
 
         // ================== TELÉFONO ==================
-        const telefonoRegex = /^[0-9]{10}$/;
-        if (telefono && !telefonoRegex.test(telefono)) {
-            nuevosErrores.telefono =
-                "El teléfono debe tener 10 dígitos numéricos";
+        const telefonoLimpio = telefono.trim();
+
+        if (!telefonoLimpio) {
+            nuevosErrores.telefono = "El teléfono es obligatorio";
+        } else {
+            const telefonoRegex = /^[0-9]{10}$/;
+            if (telefono && !telefonoRegex.test(telefono)) {
+                nuevosErrores.telefono =
+                    "El teléfono debe tener 10 dígitos numéricos";
+            }
         }
 
         // ================== CORREO ==================
-        const correoRegex =
-            /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+        const correoLimpio = correo.trim();
 
-        if (!correoRegex.test(correo)) {
-            nuevosErrores.correo =
-                "El correo electrónico no cumple con un formato válido y profesional";
+        if (!correoLimpio) {
+            nuevosErrores.correo = "El correo electrónico es obligatorio";
+        } else {
+            const correoRegex =
+                /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+            if (!correoRegex.test(correo)) {
+                nuevosErrores.correo =
+                    "El correo electrónico no cumple con un formato válido y profesional";
+            }
         }
 
         const parteUsuario = correo.split("@")[0];
@@ -165,7 +171,7 @@ export function Perfil() {
         }
 
         // ================== CONTRASEÑA ==================
-        /*if (password || confirmarPassword) {
+        if (password || confirmarPassword) {
             const passwordRegex =
                 /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
 
@@ -178,57 +184,61 @@ export function Perfil() {
                 nuevosErrores.confirmarPassword =
                     "Las contraseñas no coinciden";
             }
-        }*/
-
-        // ================== FECHA DE NACIMIENTO ==================
-        if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
-            const pad = (n) => String(n).padStart(2, "0");
-            const fecha = `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`;
-            const fechaNacimientoDate = new Date(fecha);
-            const hoy = new Date();
-
-            if (fechaNacimientoDate >= hoy) {
-                nuevosErrores.fecha_nacimiento =
-                    "La fecha de nacimiento no puede ser hoy ni una fecha futura";
-            }
-
-            const edadMinima = 13;
-            const fechaMinima = new Date(
-                hoy.getFullYear() - edadMinima,
-                hoy.getMonth(),
-                hoy.getDate()
-            );
-
-            if (fechaNacimientoDate > fechaMinima) {
-                nuevosErrores.fecha_nacimiento =
-                    `Debes tener al menos ${edadMinima} años`;
-            }
-
-            const edadMaxima = 120;
-            const fechaMaxima = new Date(
-                hoy.getFullYear() - edadMaxima,
-                hoy.getMonth(),
-                hoy.getDate()
-            );
-
-            if (fechaNacimientoDate < fechaMaxima) {
-                nuevosErrores.fecha_nacimiento =
-                    `La edad no puede ser mayor a ${edadMaxima} años`;
-            }
         }
 
-        setErrores(nuevosErrores);
-        return Object.keys(nuevosErrores).length === 0;
-    };
+        // ================== FECHA DE NACIMIENTO ==================
+        if (!fechaNacimiento.day ||
+            !fechaNacimiento.month ||
+            !fechaNacimiento.year) {
+            nuevosErrores.fecha_nacimiento = "La fecha de nacimiento es obligatoria";
+        } else {
+            if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
+                const pad = (n) => String(n).padStart(2, "0");
+                const fecha = `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`;
+                const fechaNacimientoDate = new Date(fecha);
+                const hoy = new Date();
 
+                if (fechaNacimientoDate >= hoy) {
+                    nuevosErrores.fecha_nacimiento =
+                        "La fecha de nacimiento no puede ser hoy ni una fecha futura";
+                }
 
+                const edadMinima = 13;
+                const fechaMinima = new Date(
+                    hoy.getFullYear() - edadMinima,
+                    hoy.getMonth(),
+                    hoy.getDate()
+                );
 
-    // ===== FUNCION GUARDAR PERFIL =====
+                if (fechaNacimientoDate > fechaMinima) {
+                    nuevosErrores.fecha_nacimiento =
+                        `Debes tener al menos ${edadMinima} años`;
+                }
+
+                const edadMaxima = 120;
+                const fechaMaxima = new Date(
+                    hoy.getFullYear() - edadMaxima,
+                    hoy.getMonth(),
+                    hoy.getDate()
+                );
+
+                if (fechaNacimientoDate < fechaMaxima) {
+                    nuevosErrores.fecha_nacimiento =
+                        `La edad no puede ser mayor a ${edadMaxima} años`;
+                }
+            }
+
+            setErrores(nuevosErrores);
+            return Object.keys(nuevosErrores).length === 0;
+        };
+    }
+
+    // ===================== FUNCION ACTUALIZAT PERFIL ===========================
     const handleGuardar = async () => {
         limpiarErrores();
 
         if (!validarFormulario()) {
-            return; // NO ENVÍA AL BACKEND
+            return;
         }
 
         try {
@@ -238,6 +248,7 @@ export function Perfil() {
             formData.append("telefono", telefono);
             formData.append("descripcion", descripcion);
             formData.append("genero", genero);
+            formData.append("password", password);
 
             if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year) {
                 formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
@@ -268,6 +279,9 @@ export function Perfil() {
 
                 // Actualizar contexto global
                 setUsuario(data.usuario);
+
+                bloquearInputs();
+                resetearEdicion();
             } else {
                 alert(data.mensaje || "Error al actualizar perfil");
             }
@@ -277,7 +291,7 @@ export function Perfil() {
         }
     };
 
-    // ===== FUNCION PARA HABILITAR EDICIÓN =====
+    // ==================== FUNCION PARA HABILITAR EDICIÓN DE CAMPOS =======================
     const habilitarEdicion = (e) => {
         const container = e.currentTarget.closest(".input-editable");
         const input = container?.querySelector("input");
@@ -286,6 +300,27 @@ export function Perfil() {
             if (!input.disabled) input.focus();
         }
     };
+
+    // ==================== FUNCION PARA BLOQUEAR EDICIÓN DE CAMPOS =======================
+    const bloquearInputs = () => {
+        const inputs = document.querySelectorAll(
+            ".input-editable input, .input-editable select"
+        );
+
+        inputs.forEach(input => {
+            input.disabled = true;
+        });
+    };
+
+    const resetearEdicion = () => {
+        setEditarFecha(false);
+        setPassword("");
+        setConfirmarPassword("");
+        setMostrarPassword(false);
+        setMostrarConfirmPassword(false);
+    };
+
+
 
     const obtenerFotoPerfil = () => {
         // Si hay archivo seleccionado, mostrar vista previa
@@ -425,6 +460,7 @@ export function Perfil() {
                                 <FiEdit2 />
                             </button>
                         </div>
+                        {errores.fecha_nacimiento && <p className="error-text">{errores.fecha_nacimiento}</p>}
                     </div>
 
                     <div className="campo-usuario">
@@ -436,6 +472,7 @@ export function Perfil() {
                                 <FiEdit2 />
                             </button>
                         </div>
+                        {errores.telefono && <p className="error-text">{errores.telefono}</p>}
                     </div>
                 </div>
 
@@ -487,6 +524,8 @@ export function Perfil() {
                         <div className="input-editable input-password">
                             <input
                                 type={mostrarPassword ? "text" : "password"}
+                                value={password}
+                                onChange={(e) => setPassword(e.target.value)}
                                 disabled
                             />
 
@@ -509,6 +548,7 @@ export function Perfil() {
                                 <FiEdit2 />
                             </button>
                         </div>
+                        {errores.password && <p className="error-text">{errores.password}</p>}
                     </div>
 
 
@@ -518,6 +558,8 @@ export function Perfil() {
                         <div className="input-editable input-password">
                             <input
                                 type={mostrarConfirmPassword ? "text" : "password"}
+                                value={confirmarPassword}
+                                onChange={(e) => setConfirmarPassword(e.target.value)}
                                 disabled
                             />
 
@@ -537,6 +579,7 @@ export function Perfil() {
                                 <FiEdit2 />
                             </button>
                         </div>
+                        {errores.confirmarPassword && <p className="error-text">{errores.confirmarPassword}</p>}
                     </div>
 
                 </div>
