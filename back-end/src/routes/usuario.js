@@ -5,7 +5,7 @@ import { db } from "../config/db.js";
 import bcrypt from "bcryptjs";
 import jwt from "jsonwebtoken";
 import { verificarToken } from "../middlewares/auth.js";
-import cloudinary from "../config/cloudinary.js"; // Asegúrate de la ruta correcta
+import cloudinary from "../config/cloudinary.js";
 import multer from "multer";
 import { transporter } from "../config/mailer.js";
 import PDFDocument from "pdfkit";
@@ -18,7 +18,254 @@ const router = Router();
 /* ====================================================
 --------------- FUNCIONES COMPARTIDAS -----------------
 =====================================================*/
+// nombre
+function validarNombreUsuario(nombre) {
+  const errores = [];
 
+  if (!nombre || !nombre.trim()) {
+    errores.push({
+      path: "nombre_usuario",
+      message: "El nombre es obligatorio",
+    });
+  } else {
+    const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+    if (!nombreRegex.test(nombre)) {
+      errores.push({
+        path: "nombre_usuario",
+        message: "El nombre solo puede contener letras, espacios y acentos",
+      });
+    }
+  }
+
+  return errores;
+}
+
+// correo
+async function validarCorreoElectronico(correo, db) {
+  const errores = [];
+
+  if (!correo || !correo.trim()) {
+    errores.push({
+      path: "correo_electronico",
+      message: "El correo electrónico es obligatorio",
+    });
+  } else {
+    // Formato de correo
+    const correoRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+    if (!correoRegex.test(correo)) {
+      errores.push({
+        path: "correo_electronico",
+        message: "El correo electrónico no cumple con un formato válido",
+      });
+    } else {
+      // Longitud antes del @ (máx 64)
+      const parteUsuario = correo.split("@")[0];
+      if (parteUsuario.length > 64) {
+        errores.push({
+          path: "correo_electronico",
+          message: "El correo no debe superar 64 caracteres antes del @",
+        });
+      } else {
+        // Unicidad en BD
+        const correoExiste = await db.query(
+          "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
+          [correo]
+        );
+
+        if (correoExiste[0].length > 0) {
+          errores.push({
+            path: "correo_electronico",
+            message: "Este correo electrónico ya está registrado",
+          });
+        }
+      }
+    }
+  }
+
+  return errores; // devuelve un arreglo de errores, aunque sea vacío
+}
+
+// rol
+async function validarRol(id_rol, db) {
+  const errores = [];
+
+  if (!id_rol) {
+    errores.push({
+      path: "id_rol",
+      message: "El rol es obligatorio",
+    });
+  } else if (isNaN(id_rol)) {
+    errores.push({
+      path: "id_rol",
+      message: "El rol no es válido",
+    });
+  } else {
+    // Verificar que el rol exista en la base de datos
+    const rolExiste = await db.query(
+      "SELECT id_rol FROM Rol WHERE id_rol = ?",
+      [id_rol]
+    );
+
+    if (rolExiste[0].length === 0) {
+      errores.push({
+        path: "id_rol",
+        message: "El rol seleccionado no existe",
+      });
+    }
+  }
+
+  return errores;
+}
+
+// telefono
+async function validarTelefono(telefono, db) {
+  const errores = [];
+
+  if (!telefono || !telefono.trim()) {
+    errores.push({
+      path: "telefono",
+      message: "El teléfono es obligatorio",
+    });
+  } else {
+    // Formato: exactamente 10 dígitos
+    const telefonoRegex = /^[0-9]{10}$/;
+    if (!telefonoRegex.test(telefono)) {
+      errores.push({
+        path: "telefono",
+        message: "El teléfono debe tener 10 dígitos numéricos",
+      });
+    } else {
+      // Verificar unicidad en la base de datos
+      const telefonoExiste = await db.query(
+        "SELECT id_usuario FROM Usuario WHERE telefono = ?",
+        [telefono]
+      );
+
+      if (telefonoExiste[0].length > 0) {
+        errores.push({
+          path: "telefono",
+          message: "Este número de teléfono ya está registrado",
+        });
+      }
+    }
+  }
+
+  return errores;
+}
+
+// género
+function validarGenero(genero) {
+  const errores = [];
+
+  if (!genero || !genero.trim()) {
+    errores.push({
+      path: "genero",
+      message: "El género es obligatorio",
+    });
+  } else {
+    const generosValidos = ["mujer", "hombre", "Otro"]; // ajusta según tu sistema
+
+    if (!generosValidos.includes(genero)) {
+      errores.push({
+        path: "genero",
+        message: "El género seleccionado no es válido",
+      });
+    }
+  }
+
+  return errores; // devuelve un arreglo de errores (vacío si todo está bien)
+}
+
+// contraseña
+function validarContrasena(contrasena) {
+  const errores = [];
+
+  if (!contrasena || !contrasena.trim()) {
+    errores.push({
+      path: "contrasena",
+      message: "La contraseña es obligatoria",
+    });
+  } else {
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
+
+    if (!passwordRegex.test(contrasena)) {
+      errores.push({
+        path: "contrasena",
+        message:
+          "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)",
+      });
+    }
+  }
+
+  return errores; // devuelve un arreglo de errores (vacío si está bien)
+}
+
+// fecha de nacimiento
+function validarFechaNacimiento(fechaNacimientoInput) {
+  const errores = [];
+  const hoy = new Date();
+
+  if (!fechaNacimientoInput) {
+    errores.push({
+      path: "fecha_nacimiento",
+      message: "La fecha de nacimiento es obligatoria",
+    });
+  } else {
+    const fechaNacimiento = new Date(fechaNacimientoInput);
+
+    // Fecha inválida
+    if (isNaN(fechaNacimiento.getTime())) {
+      errores.push({
+        path: "fecha_nacimiento",
+        message: "La fecha de nacimiento no es válida",
+      });
+    } else {
+      // No hoy ni futura
+      if (fechaNacimiento >= hoy) {
+        errores.push({
+          path: "fecha_nacimiento",
+          message: "La fecha de nacimiento no puede ser hoy ni una fecha futura",
+        });
+      }
+
+      // Edad mínima
+      const edadMinima = 13;
+      const fechaMinima = new Date(
+        hoy.getFullYear() - edadMinima,
+        hoy.getMonth(),
+        hoy.getDate()
+      );
+      if (fechaNacimiento > fechaMinima) {
+        errores.push({
+          path: "fecha_nacimiento",
+          message: `Debes tener al menos ${edadMinima} años`,
+        });
+      }
+
+      // Edad máxima
+      const edadMaxima = 120;
+      const fechaMaxima = new Date(
+        hoy.getFullYear() - edadMaxima,
+        hoy.getMonth(),
+        hoy.getDate()
+      );
+      if (fechaNacimiento < fechaMaxima) {
+        errores.push({
+          path: "fecha_nacimiento",
+          message: `La edad no puede ser mayor a ${edadMaxima} años`,
+        });
+      }
+    }
+  }
+
+  return errores;
+}
+
+/* ====================================================
+--------------------- ENDPOINTS -----------------------
+=====================================================*/
 
 /* ====================================================
 -------------------------- ROLES ----------------------
@@ -40,219 +287,23 @@ router.post("/crear-usuario", async (req, res) => {
     const data = { ...req.body, id_rol: Number(req.body.id_rol) };
     const errores = [];
 
-    // ================== VALIDAR NOMBRE CAMPO Y VACÍO ==================
-    if (!data.nombre_usuario || !data.nombre_usuario.trim()) {
-      errores.push({
-        path: "nombre_usuario",
-        message: "El nombre es obligatorio"
-      });
-    } else {
-      const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-      if (!nombreRegex.test(data.nombre_usuario)) {
-        errores.push({
-          path: "nombre_usuario",
-          message: "El nombre solo puede contener letras, espacios y acentos"
-        });
-      }
-    }
+    errores.push(...validarNombreUsuario(data.nombre_usuario));
+    errores.push(...await validarCorreoElectronico(data.correo_electronico, db));
+    errores.push(...await validarRol(data.id_rol, db));
+    errores.push(...await validarTelefono(data.telefono, db));
+    errores.push(...validarGenero(data.genero));
+    errores.push(...validarContrasena(data.contrasena));
+    errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
-    // ==================== VALIDAR CORREO ELECTRÓNICO CAMPO Y VACÍO ====================
-    if (!data.correo_electronico || !data.correo_electronico.trim()) {
-      errores.push({
-        path: "correo_electronico",
-        message: "El correo electrónico es obligatorio"
-      });
-    } else {
-      // Formato de correo
-      const correoRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-      if (!correoRegex.test(data.correo_electronico)) {
-        errores.push({
-          path: "correo_electronico",
-          message: "El correo electrónico no cumple con un formato válido"
-        });
-      } else {
-        // Longitud antes del @ (máx 64)
-        const parteUsuario = data.correo_electronico.split("@")[0];
-        if (parteUsuario.length > 64) {
-          errores.push({
-            path: "correo_electronico",
-            message: "El correo no debe superar 64 caracteres antes del @"
-          });
-        } else {
-          // Unicidad en BD
-          const correoExiste = await db.query(
-            "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
-            [data.correo_electronico]
-          );
-
-          if (correoExiste[0].length > 0) {
-            errores.push({
-              path: "correo_electronico",
-              message: "Este correo electrónico ya está registrado"
-            });
-          }
-        }
-      }
-    }
-
-    // ==================== VALIDAR ROL CAMPO Y VACÍO ====================
-    if (!data.id_rol) {
-      errores.push({
-        path: "id_rol",
-        message: "El rol es obligatorio"
-      });
-    } else if (isNaN(data.id_rol)) {
-      errores.push({
-        path: "id_rol",
-        message: "El rol no es válido"
-      });
-    } else {
-      const rolExiste = await db.query(
-        "SELECT id_rol FROM Rol WHERE id_rol = ?",
-        [data.id_rol]
-      );
-
-      if (rolExiste[0].length === 0) {
-        errores.push({
-          path: "id_rol",
-          message: "El rol seleccionado no existe"
-        });
-      }
-    }
-
-    // ================== VALIDAR TELÉFONO CAMPO Y VACÍO ====================
-    if (!data.telefono || !data.telefono.trim()) {
-      errores.push({
-        path: "telefono",
-        message: "El teléfono es obligatorio"
-      });
-    } else {
-      // Formato: exactamente 10 dígitos
-      const telefonoRegex = /^[0-9]{10}$/;
-      if (!telefonoRegex.test(data.telefono)) {
-        errores.push({
-          path: "telefono",
-          message: "El teléfono debe tener 10 dígitos numéricos"
-        });
-      } else {
-        // Unicidad
-        const telefonoExiste = await db.query(
-          "SELECT id_usuario FROM Usuario WHERE telefono = ?",
-          [data.telefono]
-        );
-
-        if (telefonoExiste[0].length > 0) {
-          errores.push({
-            path: "telefono",
-            message: "Este número de teléfono ya está registrado"
-          });
-        }
-      }
-    }
-
-    // ================ VALIDAR CONTRASEÑAS CAMPO Y VACÍO =================
-    if (!data.contrasena || !data.contrasena.trim()) {
-      errores.push({
-        path: "contrasena",
-        message: "La contraseña es obligatoria"
-      });
-    } else {
-      const passwordRegex =
-        /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
-
-      if (!passwordRegex.test(data.contrasena)) {
-        errores.push({
-          path: "contrasena",
-          message:
-            "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)"
-        });
-      }
-    }
-
-    // ===================== VALIDAR GENERO CAMPO Y VACÍO ==================
-    if (!data.genero || !data.genero.trim()) {
-      errores.push({
-        path: "genero",
-        message: "El género es obligatorio"
-      });
-    } else {
-      const generosValidos = ["mujer", "hombre", "Otro"]; // ajusta según tu sistema
-
-      if (!generosValidos.includes(data.genero)) {
-        errores.push({
-          path: "genero",
-          message: "El género seleccionado no es válido"
-        });
-      }
-    }
-
-    // ============= VALIDAR FECHA DE NACIMIENTO CAMPO Y VACÍO ============
-    if (!data.fecha_nacimiento) {
-      errores.push({
-        path: "fecha_nacimiento",
-        message: "La fecha de nacimiento es obligatoria"
-      });
-    } else {
-      const fechaNacimiento = new Date(data.fecha_nacimiento);
-      const hoy = new Date();
-
-      // Fecha inválida
-      if (isNaN(fechaNacimiento.getTime())) {
-        errores.push({
-          path: "fecha_nacimiento",
-          message: "La fecha de nacimiento no es válida"
-        });
-      } else {
-        // No hoy ni futura
-        if (fechaNacimiento >= hoy) {
-          errores.push({
-            path: "fecha_nacimiento",
-            message: "La fecha de nacimiento no puede ser hoy ni una fecha futura"
-          });
-        }
-
-        // Edad mínima
-        const edadMinima = 13;
-        const fechaMinima = new Date(
-          hoy.getFullYear() - edadMinima,
-          hoy.getMonth(),
-          hoy.getDate()
-        );
-
-        if (fechaNacimiento > fechaMinima) {
-          errores.push({
-            path: "fecha_nacimiento",
-            message: `Debes tener al menos ${edadMinima} años`
-          });
-        }
-
-        // Edad máxima
-        const edadMaxima = 120;
-        const fechaMaxima = new Date(
-          hoy.getFullYear() - edadMaxima,
-          hoy.getMonth(),
-          hoy.getDate()
-        );
-
-        if (fechaNacimiento < fechaMaxima) {
-          errores.push({
-            path: "fecha_nacimiento",
-            message: `La edad no puede ser mayor a ${edadMaxima} años`
-          });
-        }
-      }
-    }
-
-    // ============================== ERRORES ==============================
     if (errores.length > 0) {
       return res.status(400).json({ errors: errores });
     }
 
-    // ======================== HASHEAR CONTRASEÑA =========================
+    // =============== HASHEAR CONTRASEÑA ===============
     const salt = await bcrypt.genSalt(10);
     data.contrasena = await bcrypt.hash(data.contrasena, salt);
 
+    // =============== GUARDAR USUARIO BD ===============
     const usuario = new Usuario(data);
     await usuario.save();
 
