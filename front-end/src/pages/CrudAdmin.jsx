@@ -11,8 +11,9 @@ import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import logo from "../assets/imagenes/logotipo.png";
 
-import html2pdf from "html2pdf.js";
+
 import { PdfUsuarios } from "../components/PdfUsuarios";
+
 
 export function CrudAdmin() {
     const [modalOpen, setModalOpen] = useState(false);
@@ -28,12 +29,11 @@ export function CrudAdmin() {
     const [busqueda, setBusqueda] = useState("");
     const [paginaActual, setPaginaActual] = useState(1);
     const [registrosPorPagina, setRegistrosPorPagina] = useState(5);
-    
+
     const indiceUltimoUsuario = paginaActual * registrosPorPagina;
     const indicePrimerUsuario = indiceUltimoUsuario - registrosPorPagina;
     const usuariosActuales = usuarios.slice(indicePrimerUsuario, indiceUltimoUsuario);
     const totalPaginas = Math.ceil(usuarios.length / registrosPorPagina);
-    const pdfRef = useRef();
 
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
@@ -162,22 +162,8 @@ export function CrudAdmin() {
         }
     };
 
-    const generarPDF = () => {
-        if (!usuarios.length) return;
+    
 
-        const element = pdfRef.current;
-
-        html2pdf()
-            .from(element)
-            .set({
-                margin: [10, 10, 10, 10],
-                filename: `Usuarios_${new Date().toLocaleDateString()}.pdf`,
-                image: { type: "jpeg", quality: 0.98 },
-                html2canvas: { scale: 2 },
-                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
-            })
-            .save();
-    };
 
     useEffect(() => {
         const cargarUsuarios = async () => {
@@ -215,9 +201,9 @@ export function CrudAdmin() {
         switch (id_rol) {
             case 1:
                 return "Administrador";
-            case 2:
-                return "Tutor";
             case 3:
+                return "Tutor";
+            case 2:
                 return "Estudiante";
             default:
                 return null;
@@ -255,25 +241,25 @@ export function CrudAdmin() {
                             <IoAddCircleOutline /> Nuevo
                         </button>
 
-                        <button className="btn btn-pdf-admin" onClick={generarPDF}>
+                        <button className="btn btn-pdf-admin" onClick={() => PdfUsuarios(usuarios)}>
                             <IoDocumentTextOutline /> Exportar PDF
                         </button>
                     </div>
 
                     <div className="busqueda-con-icono">
                         <IoSearchOutline className="icono-busqueda" />
-                        <input 
-                            type="text" 
-                            placeholder="Buscar usuario..." 
-                            className="input-busqueda" 
+                        <input
+                            type="text"
+                            placeholder="Buscar usuario..."
+                            className="input-busqueda"
                             value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)} 
+                            onChange={(e) => setBusqueda(e.target.value)}
                         />
                     </div>
 
                     <div className="mostrar-resultados">
                         <span>Mostrar</span>
-                        <select 
+                        <select
                             className="select-registros"
                             value={registrosPorPagina}
                             onChange={(e) => {
@@ -314,7 +300,12 @@ export function CrudAdmin() {
                                         <td>{usuario.rol}</td>
                                         <td>{usuario.telefono}</td>
                                         <td>{usuario.genero}</td>
-                                        <td>{usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toLocaleDateString() : "-"}</td>
+                                        <td>{usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toLocaleDateString("es-MX", {
+                                            day: "2-digit",
+                                            month: "2-digit",
+                                            year: "numeric",
+                                        })
+                                            : "-"}</td>
                                         <td className="acciones-tabla">
                                             <button
                                                 className="btn-icono editar"
@@ -400,11 +391,7 @@ export function CrudAdmin() {
                     />
                 )}
 
-                <div style={{ display: "none" }}>
-                    <div ref={pdfRef}>
-                        <PdfUsuarios usuarios={usuarios} />
-                    </div>
-                </div>
+
             </div>
         </div>
     );

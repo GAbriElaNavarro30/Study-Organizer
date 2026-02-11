@@ -312,7 +312,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             });
         }
 
-        // limpiar error de rol
+        // limpiar error de rol si esta ecribiendo
         if (name === "rol") {
             setErrors(prev => {
                 const nuevosErrores = { ...prev };

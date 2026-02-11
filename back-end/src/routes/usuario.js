@@ -868,6 +868,7 @@ router.get("/buscar-informacion", async (req, res) => {
         u.telefono,
         u.genero,
         u.fecha_nacimiento,
+        u.id_rol,
         r.tipo_usuario AS rol
       FROM Usuario u
       JOIN Rol r ON u.id_rol = r.id_rol
@@ -883,11 +884,12 @@ router.get("/buscar-informacion", async (req, res) => {
           OR u.correo_electronico LIKE ?
           OR u.telefono LIKE ?
           OR u.genero LIKE ?
+          OR DATE_FORMAT(u.fecha_nacimiento, '%d/%m/%Y') LIKE ?
           OR r.tipo_usuario LIKE ?
       `;
 
       const like = `%${q}%`;
-      params.push(like, like, like, like, like, like);
+      params.push(like, like, like, like, like, like, like);
     }
 
     const [rows] = await db.query(sql, params);

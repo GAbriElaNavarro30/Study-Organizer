@@ -1,62 +1,160 @@
-import React from "react";
-import "./../styles/pdfUsuarios.css";
+import { jsPDF } from "jspdf";
+import autoTable from "jspdf-autotable";
 import logo from "../assets/imagenes/logo-header.png";
 
-export function PdfUsuarios({ usuarios }) {
-  const fechaActual = new Date();
-  const fechaFormateada = fechaActual.toLocaleString();
+export const PdfUsuarios = (usuarios) => {
+  if (!usuarios || !usuarios.length) return;
 
-  return (
-    <div className="pdf-container pdf-landscape">
-      {/* Header con logo y fecha */}
-      <div className="pdf-header">
-        <img src={logo} alt="Logo" className="pdf-logo" />
+  const doc = new jsPDF("landscape", "mm", "a4");
+  const pageWidth = doc.internal.pageSize.getWidth();
+  const pageHeight = doc.internal.pageSize.getHeight();
+  const fechaActual = new Date().toLocaleString("es-MX");
 
-        {/* Mensaje centrado */}
-        <div className="header-message">
-          Organiza tu estudio, cuida tu bienestar
-        </div>
+  const formatFecha = (fecha) => {
+    if (!fecha) return "-";
+    return new Date(fecha).toLocaleDateString("es-MX", {
+      day: "2-digit",
+      month: "2-digit",
+      year: "numeric"
+    });
+  };
 
-        <div className="fecha">Fecha: {fechaFormateada}</div>
-      </div>
+  const img = new Image();
+  img.src = logo;
 
-      <h1 className="pdf-title">Lista de Usuarios</h1>
+  img.onload = () => {
 
-      {/* Tabla de usuarios */}
-      <table className="pdf-table">
-        <thead>
-          <tr>
-            <th>ID</th>
-            <th>Nombre</th>
-            <th>Correo</th>
-            <th>Rol</th>
-            <th>Teléfono</th>
-            <th>Género</th>
-            <th>Nacimiento</th>
-          </tr>
-        </thead>
-        <tbody>
-          {usuarios.map((u) => (
-            <tr key={u.id}>
-              <td>{u.id}</td>
-              <td>{u.nombre}</td>
-              <td>{u.correo}</td>
-              <td>{u.rol}</td>
-              <td>{u.telefono || "-"}</td>
-              <td>{u.genero || "-"}</td>
-              <td>{u.fechaNacimiento ? new Date(u.fechaNacimiento).toLocaleDateString() : "-"}</td>
-            </tr>
-          ))}
-        </tbody>
-      </table>
+    // ===== HEADER (SOLO PRIMERA PÁGINA) =====
+    const drawHeader = () => {
 
-      {/* Footer profesional */}
-      <div className="pdf-footer">
-        <div className="footer-text">
-          © {fechaActual.getFullYear()} Study Organizer. Todos los derechos reservados.
-        </div>
-        <div className="footer-page">Página 1</div>
-      </div>
-    </div>
-  );
-}
+      // Logo más ancho y proporcional
+      doc.addImage(img, "PNG", 15, 10, 70, 14);
+
+      // Eslogan
+      doc.setFont("helvetica", "italic");
+      doc.setFontSize(12);
+      doc.setTextColor(70, 90, 120); // azul grisáceo suave
+      doc.text(
+        "Organiza tu estudio, cuida tu bienestar",
+        pageWidth / 2,
+        20,
+        { align: "center" }
+      );
+
+      // Fecha
+      doc.setFont("helvetica", "normal");
+      doc.setFontSize(9);
+      doc.setTextColor(120);
+      doc.text(
+        `Fecha: ${fechaActual}`,
+        pageWidth - 15,
+        18,
+        { align: "right" }
+      );
+
+      // Línea elegante debajo
+      doc.setDrawColor(120, 150, 190); // azul suave
+      doc.setLineWidth(0.8);
+      doc.line(15, 32, pageWidth - 15, 32);
+    };
+
+    // ===== FOOTER (TODAS LAS PÁGINAS) =====
+    const drawFooter = (totalPages) => {
+
+      doc.setDrawColor(200);
+      doc.setLineWidth(0.3);
+      doc.line(15, pageHeight - 18, pageWidth - 15, pageHeight - 18);
+
+      doc.setFontSize(8);
+      doc.setTextColor(130);
+
+      doc.text(
+        `© ${new Date().getFullYear()} Study Organizer`,
+        15,
+        pageHeight - 10
+      );
+
+      doc.text(
+        `Página ${doc.internal.getCurrentPageInfo().pageNumber} de ${totalPages}`,
+        pageWidth - 15,
+        pageHeight - 10,
+        { align: "right" }
+      );
+    };
+
+    // Dibujar header SOLO aquí
+    drawHeader();
+
+    // ===== TÍTULO =====
+    doc.setFont("helvetica", "bold");
+    doc.setFontSize(20);
+    doc.setTextColor(50);
+    doc.text("LISTA DE USUARIOS", pageWidth / 2, 45, { align: "center" });
+
+    doc.setFont("helvetica", "normal");
+    doc.setFontSize(11);
+    doc.setTextColor(110);
+    doc.text(
+      "Reporte general de usuarios registrados en el sistema",
+      pageWidth / 2,
+      52,
+      { align: "center" }
+    );
+
+    // ===== TABLA =====
+    autoTable(doc, {
+      startY: 60,
+      margin: { left: 15, right: 15 },
+      theme: "grid",
+      head: [[
+        "ID",
+        "Nombre",
+        "Correo",
+        "Rol",
+        "Teléfono",
+        "Género",
+        "Nacimiento"
+      ]],
+      body: usuarios.map(u => [
+        u.id,
+        u.nombre_usuario,
+        u.correo,
+        u.rol,
+        u.telefono || "-",
+        u.genero || "-",
+        formatFecha(u.fecha_nacimiento)
+      ]),
+      styles: {
+        fontSize: 11,
+        cellPadding: 4,
+        textColor: [0, 0, 0],
+        fillColor: [255, 255, 255], // fondo blanco en todas las celdas
+        lineColor: [210, 210, 210], // líneas gris claro
+        lineWidth: 0.2
+      },
+      headStyles: {
+        fillColor: [68, 120, 189], // azul bebé elegante
+        textColor: [255, 255, 255],
+        fontStyle: "bold",
+        halign: "center"
+      },
+      alternateRowStyles: {
+        fillColor: [255, 255, 255] // evitar beige o gris alternado
+      },
+      columnStyles: {
+        0: { halign: "center" },
+        3: { halign: "center" },
+        4: { halign: "center" },
+        5: { halign: "center" },
+        6: { halign: "center" }
+      },
+      didDrawPage: () => {
+        const totalPages = doc.getNumberOfPages();
+        drawFooter(totalPages);
+      }
+    });
+
+
+    doc.save(`Reporte_Usuarios_${new Date().toLocaleDateString("es-MX")}.pdf`);
+  };
+};
