@@ -41,49 +41,60 @@ function validarNombreUsuario(nombre) {
 }
 
 // correo
-async function validarCorreoElectronico(correo, db) {
+async function validarCorreoElectronico(correo, db, idUsuarioActual = null) {
   const errores = [];
 
-  if (!correo || !correo.trim()) {
+  // Obligatorio
+  if (!correo || correo.trim() === "") {
     errores.push({
       path: "correo_electronico",
       message: "El correo electrónico es obligatorio",
     });
-  } else {
-    // Formato de correo
-    const correoRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-    if (!correoRegex.test(correo)) {
-      errores.push({
-        path: "correo_electronico",
-        message: "El correo electrónico no cumple con un formato válido",
-      });
-    } else {
-      // Longitud antes del @ (máx 64)
-      const parteUsuario = correo.split("@")[0];
-      if (parteUsuario.length > 64) {
-        errores.push({
-          path: "correo_electronico",
-          message: "El correo no debe superar 64 caracteres antes del @",
-        });
-      } else {
-        // Unicidad en BD
-        const correoExiste = await db.query(
-          "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
-          [correo]
-        );
-
-        if (correoExiste[0].length > 0) {
-          errores.push({
-            path: "correo_electronico",
-            message: "Este correo electrónico ya está registrado",
-          });
-        }
-      }
-    }
+    return errores; // cortamos aquí porque no tiene sentido seguir
   }
 
-  return errores; // devuelve un arreglo de errores, aunque sea vacío
+  // Formato de correo
+  const correoRegex =
+    /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+  if (!correoRegex.test(correo)) {
+    errores.push({
+      path: "correo_electronico",
+      message: "El correo electrónico no cumple con un formato válido",
+    });
+    return errores;
+  }
+
+  // Longitud antes del @ (máx 64)
+  const parteUsuario = correo.split("@")[0];
+  if (parteUsuario.length > 64) {
+    errores.push({
+      path: "correo_electronico",
+      message: "El correo no debe superar 64 caracteres antes del @",
+    });
+    return errores;
+  }
+
+  // Unicidad en BD (excluyendo al usuario actual si existe)
+  let query =
+    "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?";
+  const params = [correo];
+
+  if (idUsuarioActual) {
+    query += " AND id_usuario != ?";
+    params.push(idUsuarioActual);
+  }
+
+  const [resultado] = await db.query(query, params);
+
+  if (resultado.length > 0) {
+    errores.push({
+      path: "correo_electronico",
+      message: "Este correo electrónico ya está registrado",
+    });
+  }
+
+  return errores;
 }
 
 // rol
@@ -119,36 +130,45 @@ async function validarRol(id_rol, db) {
 }
 
 // telefono
-async function validarTelefono(telefono, db) {
+async function validarTelefono(telefono, db, idUsuarioActual = null) {
   const errores = [];
 
-  if (!telefono || !telefono.trim()) {
+  // Obligatorio
+  if (!telefono || telefono.trim() === "") {
     errores.push({
       path: "telefono",
       message: "El teléfono es obligatorio",
     });
-  } else {
-    // Formato: exactamente 10 dígitos
-    const telefonoRegex = /^[0-9]{10}$/;
-    if (!telefonoRegex.test(telefono)) {
-      errores.push({
-        path: "telefono",
-        message: "El teléfono debe tener 10 dígitos numéricos",
-      });
-    } else {
-      // Verificar unicidad en la base de datos
-      const telefonoExiste = await db.query(
-        "SELECT id_usuario FROM Usuario WHERE telefono = ?",
-        [telefono]
-      );
+    return errores;
+  }
 
-      if (telefonoExiste[0].length > 0) {
-        errores.push({
-          path: "telefono",
-          message: "Este número de teléfono ya está registrado",
-        });
-      }
-    }
+  // Formato: exactamente 10 dígitos numéricos
+  const telefonoRegex = /^[0-9]{10}$/;
+
+  if (!telefonoRegex.test(telefono)) {
+    errores.push({
+      path: "telefono",
+      message: "El teléfono debe tener 10 dígitos numéricos",
+    });
+    return errores;
+  }
+
+  // Unicidad en BD (excluyendo al usuario actual si existe)
+  let query = "SELECT id_usuario FROM Usuario WHERE telefono = ?";
+  const params = [telefono];
+
+  if (idUsuarioActual) {
+    query += " AND id_usuario != ?";
+    params.push(idUsuarioActual);
+  }
+
+  const [resultado] = await db.query(query, params);
+
+  if (resultado.length > 0) {
+    errores.push({
+      path: "telefono",
+      message: "Este número de teléfono ya está registrado",
+    });
   }
 
   return errores;
@@ -164,7 +184,7 @@ function validarGenero(genero) {
       message: "El género es obligatorio",
     });
   } else {
-    const generosValidos = ["mujer", "hombre", "Otro"]; // ajusta según tu sistema
+    const generosValidos = ["mujer", "hombre", "otro"]; // ajusta según tu sistema
 
     if (!generosValidos.includes(genero)) {
       errores.push({
@@ -177,30 +197,29 @@ function validarGenero(genero) {
   return errores; // devuelve un arreglo de errores (vacío si todo está bien)
 }
 
-// contraseña
+// contraseña (opcional en edicion)
 function validarContrasena(contrasena) {
   const errores = [];
 
-  if (!contrasena || !contrasena.trim()) {
-    errores.push({
-      path: "contrasena",
-      message: "La contraseña es obligatoria",
-    });
-  } else {
-    const passwordRegex =
-      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
-
-    if (!passwordRegex.test(contrasena)) {
-      errores.push({
-        path: "contrasena",
-        message:
-          "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)",
-      });
-    }
+  // Si no viene contraseña, no validar (edición)
+  if (!contrasena || contrasena.trim() === "") {
+    return errores;
   }
 
-  return errores; // devuelve un arreglo de errores (vacío si está bien)
+  const passwordRegex =
+    /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
+
+  if (!passwordRegex.test(contrasena)) {
+    errores.push({
+      path: "contrasena",
+      message:
+        "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)",
+    });
+  }
+
+  return errores;
 }
+
 
 // fecha de nacimiento
 function validarFechaNacimiento(fechaNacimientoInput) {
@@ -270,37 +289,44 @@ function validarFechaNacimiento(fechaNacimientoInput) {
 // ============== VERIFICAR DISPONIBILIDAD DE CORREO ==============
 router.post("/verificar-correo", async (req, res) => {
   try {
-    const { correo_electronico } = req.body;
+    const { correo_electronico, id_usuario } = req.body;
 
     if (!correo_electronico) {
-      return res.status(400).json({ 
-        disponible: false, 
-        message: "El correo es requerido" 
+      return res.status(400).json({
+        disponible: false,
+        message: "El correo es requerido"
       });
     }
 
-    const correoExiste = await db.query(
-      "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
-      [correo_electronico.trim().toLowerCase()]
-    );
+    // ✅ CONSTRUIR QUERY DINÁMICAMENTE
+    let query = "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?";
+    const params = [correo_electronico.trim().toLowerCase()];
+
+    // ✅ SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
+    if (id_usuario) {
+      query += " AND id_usuario != ?";
+      params.push(id_usuario);
+    }
+
+    const correoExiste = await db.query(query, params);
 
     if (correoExiste[0].length > 0) {
-      return res.status(200).json({ 
-        disponible: false, 
-        message: "Este correo electrónico ya está registrado" 
+      return res.status(200).json({
+        disponible: false,
+        message: "Este correo electrónico ya está registrado"
       });
     }
 
-    res.status(200).json({ 
-      disponible: true, 
-      message: "Correo disponible" 
+    res.status(200).json({
+      disponible: true,
+      message: "Correo disponible"
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      disponible: false, 
-      message: "Error al verificar el correo" 
+    res.status(500).json({
+      disponible: false,
+      message: "Error al verificar el correo"
     });
   }
 });
@@ -308,37 +334,44 @@ router.post("/verificar-correo", async (req, res) => {
 // ============== VERIFICAR DISPONIBILIDAD DE TELÉFONO ==============
 router.post("/verificar-telefono", async (req, res) => {
   try {
-    const { telefono } = req.body;
+    const { telefono, id_usuario } = req.body;
 
     if (!telefono) {
-      return res.status(400).json({ 
-        disponible: false, 
-        message: "El teléfono es requerido" 
+      return res.status(400).json({
+        disponible: false,
+        message: "El teléfono es requerido"
       });
     }
 
-    const telefonoExiste = await db.query(
-      "SELECT id_usuario FROM Usuario WHERE telefono = ?",
-      [telefono.trim()]
-    );
+    // ✅ CONSTRUIR QUERY DINÁMICAMENTE
+    let query = "SELECT id_usuario FROM Usuario WHERE telefono = ?";
+    const params = [telefono.trim()];
+
+    // ✅ SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
+    if (id_usuario) {
+      query += " AND id_usuario != ?";
+      params.push(id_usuario);
+    }
+
+    const telefonoExiste = await db.query(query, params);
 
     if (telefonoExiste[0].length > 0) {
-      return res.status(200).json({ 
-        disponible: false, 
-        message: "Este número de teléfono ya está registrado" 
+      return res.status(200).json({
+        disponible: false,
+        message: "Este número de teléfono ya está registrado"
       });
     }
 
-    res.status(200).json({ 
-      disponible: true, 
-      message: "Teléfono disponible" 
+    res.status(200).json({
+      disponible: true,
+      message: "Teléfono disponible"
     });
 
   } catch (error) {
     console.error(error);
-    res.status(500).json({ 
-      disponible: false, 
-      message: "Error al verificar el teléfono" 
+    res.status(500).json({
+      disponible: false,
+      message: "Error al verificar el teléfono"
     });
   }
 });
@@ -369,7 +402,15 @@ router.post("/crear-usuario", async (req, res) => {
     errores.push(...await validarRol(data.id_rol, db));
     errores.push(...await validarTelefono(data.telefono, db));
     errores.push(...validarGenero(data.genero));
-    errores.push(...validarContrasena(data.contrasena));
+    // contraseña obligatoria en registro
+    if (!data.contrasena || data.contrasena.trim() === "") {
+      errores.push({
+        path: "contrasena",
+        message: "La contraseña es obligatoria",
+      });
+    } else {
+      errores.push(...validarContrasena(data.contrasena));
+    }
     errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
     if (errores.length > 0) {
@@ -716,7 +757,15 @@ router.post("/alta-usuario", async (req, res) => {
     errores.push(...await validarRol(data.id_rol, db));
     errores.push(...await validarTelefono(data.telefono, db));
     errores.push(...validarGenero(data.genero));
-    errores.push(...validarContrasena(data.contrasena));
+    // contraseña obligatoria al registrar
+    if (!data.contrasena || data.contrasena.trim() === "") {
+      errores.push({
+        path: "contrasena",
+        message: "La contraseña es obligatoria",
+      });
+    } else {
+      errores.push(...validarContrasena(data.contrasena));
+    }
     errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
     if (errores.length > 0) {
@@ -780,32 +829,21 @@ router.put("/editar-usuario/:id", async (req, res) => {
 
     const errores = [];
 
-    // ================== VALIDAR DUPLICADOS ==================
+    // Validaciones básicas
+    errores.push(...validarNombreUsuario(data.nombre_usuario));
 
-    const correoExiste = await db.query(
-      `SELECT id_usuario FROM Usuario 
-       WHERE correo_electronico = ? AND id_usuario != ?`,
-      [data.correo_electronico, id]
-    );
+    // PASAR EL ID DEL USUARIO para excluirlo de la validación
+    errores.push(...await validarCorreoElectronico(data.correo_electronico, db, id));
+    errores.push(...await validarRol(data.id_rol, db));
 
-    if (correoExiste[0].length > 0) {
-      errores.push({
-        path: "correo",
-        message: "Este correo electrónico ya está registrado",
-      });
-    }
+    // PASAR EL ID DEL USUARIO para excluirlo de la validación
+    errores.push(...await validarTelefono(data.telefono, db, id));
+    errores.push(...validarGenero(data.genero));
+    errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
-    const telefonoExiste = await db.query(
-      `SELECT id_usuario FROM Usuario 
-       WHERE telefono = ? AND id_usuario != ?`,
-      [data.telefono, id]
-    );
-
-    if (telefonoExiste[0].length > 0) {
-      errores.push({
-        path: "telefono",
-        message: "Este número de teléfono ya está registrado",
-      });
+    // SOLO VALIDAR CONTRASEÑA SI VIENE (es opcional en edición)
+    if (data.contrasena && data.contrasena.trim() !== "") {
+      errores.push(...validarContrasena(data.contrasena));
     }
 
     if (errores.length > 0) {
@@ -813,7 +851,6 @@ router.put("/editar-usuario/:id", async (req, res) => {
     }
 
     // ================== UPDATE DINÁMICO ==================
-
     let query = `
       UPDATE Usuario SET
         nombre_usuario = ?,
@@ -833,10 +870,13 @@ router.put("/editar-usuario/:id", async (req, res) => {
       data.id_rol,
     ];
 
-    // 👉 SOLO si viene contraseña
-    if (data.contrasena) {
+    // ⚠️ SOLO HASHEAR Y ACTUALIZAR SI VIENE CONTRASEÑA
+    if (data.contrasena && data.contrasena.trim() !== "") {
+      const salt = await bcrypt.genSalt(10);
+      const hashedPassword = await bcrypt.hash(data.contrasena, salt);
+
       query += `, contrasena = ?`;
-      params.push(data.contrasena); // ya viene hasheada
+      params.push(hashedPassword);
     }
 
     query += ` WHERE id_usuario = ?`;

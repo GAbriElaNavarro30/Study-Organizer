@@ -27,13 +27,13 @@ export const PdfUsuarios = (usuarios) => {
     // ===== HEADER (SOLO PRIMERA PÁGINA) =====
     const drawHeader = () => {
 
-      // Logo más ancho y proporcional
+      // Logo
       doc.addImage(img, "PNG", 15, 10, 70, 14);
 
       // Eslogan
       doc.setFont("helvetica", "italic");
       doc.setFontSize(12);
-      doc.setTextColor(70, 90, 120); // azul grisáceo suave
+      doc.setTextColor(70, 90, 120); 
       doc.text(
         "Organiza tu estudio, cuida tu bienestar",
         pageWidth / 2,
@@ -53,12 +53,12 @@ export const PdfUsuarios = (usuarios) => {
       );
 
       // Línea elegante debajo
-      doc.setDrawColor(120, 150, 190); // azul suave
+      doc.setDrawColor(120, 150, 190); 
       doc.setLineWidth(0.8);
       doc.line(15, 32, pageWidth - 15, 32);
     };
 
-    // ===== FOOTER (TODAS LAS PÁGINAS) =====
+    // ===== FOOTER EN TODAS LAS PÁGINAS =====
     const drawFooter = (totalPages) => {
 
       doc.setDrawColor(200);
@@ -128,18 +128,18 @@ export const PdfUsuarios = (usuarios) => {
         fontSize: 11,
         cellPadding: 4,
         textColor: [0, 0, 0],
-        fillColor: [255, 255, 255], // fondo blanco en todas las celdas
+        fillColor: [255, 255, 255], // blanco en todas las celdas
         lineColor: [210, 210, 210], // líneas gris claro
         lineWidth: 0.2
       },
       headStyles: {
-        fillColor: [68, 120, 189], // azul bebé elegante
+        fillColor: [68, 120, 189], // azul clarito
         textColor: [255, 255, 255],
         fontStyle: "bold",
         halign: "center"
       },
       alternateRowStyles: {
-        fillColor: [255, 255, 255] // evitar beige o gris alternado
+        fillColor: [255, 255, 255]
       },
       columnStyles: {
         0: { halign: "center" },

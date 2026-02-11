@@ -31,15 +31,21 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ============== VERIFICAR CORREO DISPONIBLE ==============
     const verificarCorreoDisponible = async (correo, usuarioId = null) => {
         try {
+            const payload = {
+                correo_electronico: correo
+            };
+
+            // ✅ AGREGAR id_usuario solo si existe
+            if (usuarioId) {
+                payload.id_usuario = usuarioId;
+            }
+
             const response = await fetch(
                 "http://localhost:3000/usuarios/verificar-correo",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        correo_electronico: correo,
-                        id_usuario: usuarioId // Para excluir el propio usuario en edición
-                    }),
+                    body: JSON.stringify(payload),
                 }
             );
 
@@ -54,15 +60,21 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ============== VERIFICAR TELÉFONO DISPONIBLE ==============
     const verificarTelefonoDisponible = async (telefono, usuarioId = null) => {
         try {
+            const payload = {
+                telefono: telefono
+            };
+
+            // ✅ AGREGAR id_usuario solo si existe
+            if (usuarioId) {
+                payload.id_usuario = usuarioId;
+            }
+
             const response = await fetch(
                 "http://localhost:3000/usuarios/verificar-telefono",
                 {
                     method: "POST",
                     headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({
-                        telefono: telefono,
-                        id_usuario: usuarioId // Para excluir el propio usuario en edición
-                    }),
+                    body: JSON.stringify(payload),
                 }
             );
 
@@ -132,7 +144,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
                 if (parteUsuario.length > 64) {
                     nuevosErrores.correo = "El correo no debe superar 64 caracteres antes del @";
                 } else {
-                    // VERIFICAR SI EL CORREO YA EXISTE
+                    // ✅ VERIFICAR SI EL CORREO YA EXISTE (Enviando el ID del usuario en modo editar)
                     const usuarioId = tipo === "editar" ? usuario?.id : null;
                     const resultadoCorreo = await verificarCorreoDisponible(formData.correo, usuarioId);
                     if (!resultadoCorreo.disponible) {
@@ -155,7 +167,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             if (!telefonoRegex.test(formData.telefono)) {
                 nuevosErrores.telefono = "El teléfono debe tener 10 dígitos numéricos";
             } else {
-                // VERIFICAR SI EL TELÉFONO YA EXISTE
+                // ✅ VERIFICAR SI EL TELÉFONO YA EXISTE (Enviando el ID del usuario en modo editar)
                 const usuarioId = tipo === "editar" ? usuario?.id : null;
                 const resultadoTelefono = await verificarTelefonoDisponible(formData.telefono, usuarioId);
                 if (!resultadoTelefono.disponible) {
