@@ -3,44 +3,37 @@ import { IoPencilOutline, IoTrashOutline } from "react-icons/io5";
 import { IoAddCircleOutline, IoDocumentTextOutline } from "react-icons/io5";
 import { IoSearchOutline } from "react-icons/io5";
 
-import { ModalEliminar } from "../components/ModalEliminar"; // importar el modal
+import { ModalEliminar } from "../components/ModalEliminar";
 import { ModalUsuario } from "../components/ModalUsuario";
 import { CustomAlert } from "../components/CustomAlert";
 
-import { useEffect, useState } from "react";
+import { useEffect, useState, useRef } from "react";
 import api from "../services/api";
 import logo from "../assets/imagenes/logotipo.png";
 
 import html2pdf from "html2pdf.js";
 import { PdfUsuarios } from "../components/PdfUsuarios";
-import { useRef } from "react";
 
 export function CrudAdmin() {
-    // Estado de modales
     const [modalOpen, setModalOpen] = useState(false);
     const [modalUsuarioOpen, setModalUsuarioOpen] = useState(false);
-    const [tipoModal, setTipoModal] = useState("crear"); // "crear" o "editar"
+    const [tipoModal, setTipoModal] = useState("crear");
     const [usuarioSeleccionado, setUsuarioSeleccionado] = useState(null);
-
-    // Datos
     const [usuarios, setUsuarios] = useState([]);
     const [erroresBackend, setErroresBackend] = useState({});
-
     const [mostrarAlert, setMostrarAlert] = useState(false);
     const [mensajeAlert, setMensajeAlert] = useState("");
-    const [tipoAlert, setTipoAlert] = useState("success"); // success | error
-    const [tituloAlert, setTituloAlert] = useState(""); // nuevo estado
-
+    const [tipoAlert, setTipoAlert] = useState("success");
+    const [tituloAlert, setTituloAlert] = useState("");
     const [busqueda, setBusqueda] = useState("");
-
     const [paginaActual, setPaginaActual] = useState(1);
-    const [registrosPorPagina, setRegistrosPorPagina] = useState(5); // por defecto
+    const [registrosPorPagina, setRegistrosPorPagina] = useState(5);
+    
     const indiceUltimoUsuario = paginaActual * registrosPorPagina;
     const indicePrimerUsuario = indiceUltimoUsuario - registrosPorPagina;
     const usuariosActuales = usuarios.slice(indicePrimerUsuario, indiceUltimoUsuario);
     const totalPaginas = Math.ceil(usuarios.length / registrosPorPagina);
-
-
+    const pdfRef = useRef();
 
     // --- Modal Eliminar ---
     const abrirModalEliminar = (usuario) => {
@@ -55,11 +48,8 @@ export function CrudAdmin() {
 
     const confirmarEliminacion = async () => {
         try {
-            await api.delete(
-                `/usuarios/eliminar-usuario/${usuarioSeleccionado.id}`
-            );
+            await api.delete(`/usuarios/eliminar-usuario/${usuarioSeleccionado.id}`);
 
-            // ALERT ÉXITO
             setTituloAlert("Éxito");
             setMensajeAlert("Usuario eliminado correctamente");
             setTipoAlert("success");
@@ -67,7 +57,6 @@ export function CrudAdmin() {
 
             cerrarModalEliminar();
             await obtenerUsuarios();
-
         } catch (error) {
             console.error("Error al eliminar usuario:", error);
 
@@ -78,33 +67,43 @@ export function CrudAdmin() {
         }
     };
 
-
     // --- Modal Crear/Editar ---
     const abrirModalUsuario = (tipo, usuario = null) => {
         setTipoModal(tipo);
         setUsuarioSeleccionado(usuario);
-        setErroresBackend({}); // limpia
+        setErroresBackend({});
         setModalUsuarioOpen(true);
     };
 
-    const cerrarModalUsuario = () => setModalUsuarioOpen(false);
+    const cerrarModalUsuario = () => {
+        setModalUsuarioOpen(false);
+        setErroresBackend({});
+    };
 
-    const guardarUsuario = async (usuario) => {
+    // Función para limpiar errores individuales del backend
+    const limpiarErrorBackend = (campo) => {
+        setErroresBackend(prev => {
+            const nuevos = { ...prev };
+            delete nuevos[campo];
+            return nuevos;
+        });
+    };
+
+    const guardarUsuario = async (usuarioData) => {
         try {
             if (tipoModal === "crear") {
                 const payload = {
-                    nombre_usuario: usuario.nombre,
-                    correo_electronico: usuario.correo,
-                    telefono: usuario.telefono,
-                    genero: usuario.genero,
-                    fecha_nacimiento: usuario.fechaNacimiento,
-                    contrasena: usuario.password,
-                    id_rol: convertirRol(usuario.rol),
+                    nombre_usuario: usuarioData.nombre_usuario,
+                    correo_electronico: usuarioData.correo,
+                    telefono: usuarioData.telefono,
+                    genero: usuarioData.genero,
+                    fecha_nacimiento: usuarioData.fecha_nacimiento,
+                    contrasena: usuarioData.contrasena,
+                    id_rol: usuarioData.id_rol,
                 };
 
                 await api.post("/usuarios/alta-usuario", payload);
 
-                // ALERT DE ÉXITO
                 setTituloAlert("Éxito");
                 setMensajeAlert("Usuario registrado correctamente");
                 setTipoAlert("success");
@@ -113,16 +112,16 @@ export function CrudAdmin() {
 
             if (tipoModal === "editar") {
                 const payload = {
-                    nombre_usuario: usuario.nombre,
-                    correo_electronico: usuario.correo,
-                    telefono: usuario.telefono,
-                    genero: usuario.genero,
-                    fecha_nacimiento: usuario.fechaNacimiento,
-                    id_rol: convertirRol(usuario.rol),
+                    nombre_usuario: usuarioData.nombre_usuario,
+                    correo_electronico: usuarioData.correo,
+                    telefono: usuarioData.telefono,
+                    genero: usuarioData.genero,
+                    fecha_nacimiento: usuarioData.fecha_nacimiento,
+                    id_rol: usuarioData.id_rol,
                 };
 
-                if (usuario.password) {
-                    payload.contrasena = usuario.password; // YA va hasheada
+                if (usuarioData.contrasena) {
+                    payload.contrasena = usuarioData.contrasena;
                 }
 
                 await api.put(
@@ -136,15 +135,14 @@ export function CrudAdmin() {
                 setMostrarAlert(true);
             }
 
-
-            await obtenerUsuarios(); // refresca tabla
+            await obtenerUsuarios();
             cerrarModalUsuario();
-
         } catch (error) {
             if (error.response?.data?.errors) {
                 const errores = {};
 
                 error.response.data.errors.forEach(err => {
+                    // Mapear nombres del backend a nombres del frontend
                     if (err.path === "correo_electronico") {
                         errores.correo = err.message;
                     } else {
@@ -153,10 +151,9 @@ export function CrudAdmin() {
                 });
 
                 setErroresBackend(errores);
-                return; // NO cerramos modal
+                return; // NO cerrar modal
             }
 
-            // ERROR GENERAL
             console.error("Error:", error);
             setTituloAlert("Error");
             setMensajeAlert("Error al guardar usuario");
@@ -164,8 +161,6 @@ export function CrudAdmin() {
             setMostrarAlert(true);
         }
     };
-
-    const pdfRef = useRef();
 
     const generarPDF = () => {
         if (!usuarios.length) return;
@@ -175,17 +170,14 @@ export function CrudAdmin() {
         html2pdf()
             .from(element)
             .set({
-                margin: [10, 10, 10, 10], // márgenes en mm [top, left, bottom, right]
+                margin: [10, 10, 10, 10],
                 filename: `Usuarios_${new Date().toLocaleDateString()}.pdf`,
                 image: { type: "jpeg", quality: 0.98 },
                 html2canvas: { scale: 2 },
-                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" }, // <-- cambio aquí
+                jsPDF: { unit: "mm", format: "a4", orientation: "landscape" },
             })
             .save();
     };
-
-
-
 
     useEffect(() => {
         const cargarUsuarios = async () => {
@@ -193,30 +185,24 @@ export function CrudAdmin() {
                 let response;
 
                 if (busqueda.trim() === "") {
-                    // 🔹 SIN búsqueda → traer todos
                     response = await api.get("/usuarios/obtener-usuarios");
                 } else {
-                    // 🔹 CON búsqueda
                     response = await api.get("/usuarios/buscar-informacion", {
                         params: { q: busqueda }
                     });
                 }
 
-                console.log("Respuesta búsqueda:", response.data);
-
-
                 const usuariosFormateados = response.data.map((u) => ({
                     id: u.id_usuario,
-                    nombre: u.nombre_usuario,
+                    nombre_usuario: u.nombre_usuario,
                     correo: u.correo_electronico,
-                    rol: u.rol,
+                    rol: convertirRol(u.id_rol),
                     telefono: u.telefono,
                     genero: u.genero || "",
-                    fechaNacimiento: u.fecha_nacimiento,
+                    fecha_nacimiento: u.fecha_nacimiento,
                 }));
 
                 setUsuarios(usuariosFormateados);
-
             } catch (error) {
                 console.error("Error al cargar usuarios:", error);
             }
@@ -225,17 +211,14 @@ export function CrudAdmin() {
         cargarUsuarios();
     }, [busqueda]);
 
-
-
-
-    const convertirRol = (rol) => {
-        switch (rol) {
-            case "Administrador":
-                return 1;
-            case "Tutor":
-                return 2;
-            case "Estudiante":
-                return 3;
+    const convertirRol = (id_rol) => {
+        switch (id_rol) {
+            case 1:
+                return "Administrador";
+            case 2:
+                return "Tutor";
+            case 3:
+                return "Estudiante";
             default:
                 return null;
         }
@@ -247,12 +230,12 @@ export function CrudAdmin() {
 
             const usuariosFormateados = response.data.map((u) => ({
                 id: u.id_usuario,
-                nombre: u.nombre_usuario,
+                nombre_usuario: u.nombre_usuario,
                 correo: u.correo_electronico,
-                rol: u.rol,
+                rol: convertirRol(u.id_rol),
                 telefono: u.telefono,
                 genero: u.genero || "",
-                fechaNacimiento: u.fecha_nacimiento,
+                fecha_nacimiento: u.fecha_nacimiento,
             }));
 
             setUsuarios(usuariosFormateados);
@@ -261,17 +244,11 @@ export function CrudAdmin() {
         }
     };
 
-
-
-
-
     return (
-
         <div className="contenedor-administrador">
             <div className="contenedor-admin">
                 <h1 className="titulo-admin">Administración de Usuarios</h1>
 
-                {/* Barra superior */}
                 <div className="barra-superior">
                     <div className="botones-superior">
                         <button className="btn btn-nuevo-admin" onClick={() => abrirModalUsuario("crear")}>
@@ -281,22 +258,27 @@ export function CrudAdmin() {
                         <button className="btn btn-pdf-admin" onClick={generarPDF}>
                             <IoDocumentTextOutline /> Exportar PDF
                         </button>
-
                     </div>
 
                     <div className="busqueda-con-icono">
                         <IoSearchOutline className="icono-busqueda" />
-                        <input type="text" placeholder="Buscar usuario..." className="input-busqueda" value={busqueda}
-                            onChange={(e) => setBusqueda(e.target.value)} />
+                        <input 
+                            type="text" 
+                            placeholder="Buscar usuario..." 
+                            className="input-busqueda" 
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)} 
+                        />
                     </div>
 
                     <div className="mostrar-resultados">
                         <span>Mostrar</span>
-                        <select className="select-registros"
+                        <select 
+                            className="select-registros"
                             value={registrosPorPagina}
                             onChange={(e) => {
                                 setRegistrosPorPagina(Number(e.target.value));
-                                setPaginaActual(1); // reiniciar a primera página
+                                setPaginaActual(1);
                             }}
                         >
                             <option value="5">5</option>
@@ -308,7 +290,6 @@ export function CrudAdmin() {
                     </div>
                 </div>
 
-                {/* Tabla */}
                 <div className="tabla-contenedor">
                     <table className="tabla-admin">
                         <thead>
@@ -328,12 +309,12 @@ export function CrudAdmin() {
                                 usuariosActuales.map((usuario) => (
                                     <tr key={usuario.id}>
                                         <td>{usuario.id}</td>
-                                        <td>{usuario.nombre}</td>
+                                        <td>{usuario.nombre_usuario}</td>
                                         <td>{usuario.correo}</td>
                                         <td>{usuario.rol}</td>
                                         <td>{usuario.telefono}</td>
                                         <td>{usuario.genero}</td>
-                                        <td>{usuario.fechaNacimiento ? new Date(usuario.fechaNacimiento).toLocaleDateString() : "-"}</td>
+                                        <td>{usuario.fecha_nacimiento ? new Date(usuario.fecha_nacimiento).toLocaleDateString() : "-"}</td>
                                         <td className="acciones-tabla">
                                             <button
                                                 className="btn-icono editar"
@@ -353,7 +334,7 @@ export function CrudAdmin() {
                             ) : (
                                 <tr>
                                     <td
-                                        colSpan="7"
+                                        colSpan="8"
                                         style={{ textAlign: "center", padding: "1rem", color: "#666" }}
                                     >
                                         Ningún resultado coincide con la búsqueda
@@ -361,14 +342,10 @@ export function CrudAdmin() {
                                 </tr>
                             )}
                         </tbody>
-
-
                     </table>
                 </div>
 
-                {/* Paginación */}
                 <div className="paginacion">
-                    {/* Botón "anterior" */}
                     <button
                         className="pagina"
                         onClick={() => setPaginaActual(paginaActual > 1 ? paginaActual - 1 : 1)}
@@ -377,7 +354,6 @@ export function CrudAdmin() {
                         &laquo;
                     </button>
 
-                    {/* Botones de cada página */}
                     {[...Array(totalPaginas)].map((_, index) => (
                         <button
                             key={index}
@@ -388,7 +364,6 @@ export function CrudAdmin() {
                         </button>
                     ))}
 
-                    {/* Botón "siguiente" */}
                     <button
                         className="pagina"
                         onClick={() => setPaginaActual(paginaActual < totalPaginas ? paginaActual + 1 : totalPaginas)}
@@ -398,12 +373,11 @@ export function CrudAdmin() {
                     </button>
                 </div>
 
-                {/* Modales */}
                 <ModalEliminar
                     isOpen={modalOpen}
                     onClose={cerrarModalEliminar}
                     onConfirm={confirmarEliminacion}
-                    nombreUsuario={usuarioSeleccionado?.nombre}
+                    nombreUsuario={usuarioSeleccionado?.nombre_usuario}
                 />
 
                 <ModalUsuario
@@ -413,6 +387,7 @@ export function CrudAdmin() {
                     tipo={tipoModal}
                     usuario={usuarioSeleccionado}
                     erroresBackend={erroresBackend}
+                    limpiarErrorBackend={limpiarErrorBackend}
                 />
 
                 {mostrarAlert && (
@@ -430,8 +405,6 @@ export function CrudAdmin() {
                         <PdfUsuarios usuarios={usuarios} />
                     </div>
                 </div>
-
-
             </div>
         </div>
     );

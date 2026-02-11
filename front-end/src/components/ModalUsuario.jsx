@@ -1,59 +1,24 @@
-import React, { useState, useEffect } from "react";
 import "../styles/modalUsuario.css";
 import { IoClose } from "react-icons/io5";
-import bcrypt from "bcryptjs";
 import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
+import { useModalUsuario } from "../hooks/useModalUsuario";
 
-export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, erroresBackend = {}, ...props }) {
-    const [formData, setFormData] = useState({
-        nombre: "",
-        correo: "",
-        rol: "",
-        telefono: "",
-        genero: "",
-        fechaNacimiento: {
-            day: "",
-            month: "",
-            year: ""
-        },
-        password: "",
-        confirmarPassword: ""
-    });
-
-    const [showConfirmCancel, setShowConfirmCancel] = useState(false);
-
-    // ===== Detectar si hay cambios en el formulario =====
-    const tieneCambios = () => {
-        if (tipo === "crear") {
-            // si alguno de los campos tiene algo
-            return Object.values(formData).some(value => {
-                if (typeof value === "object") {
-                    return Object.values(value).some(v => v !== "");
-                }
-                return value !== "";
-            });
-        } else if (tipo === "editar" && usuario) {
-            // compara con el usuario original
-            const fecha = usuario.fechaNacimiento?.split("-") || ["", "", ""];
-            const usuarioOriginal = {
-                nombre: usuario.nombre || "",
-                correo: usuario.correo || "",
-                rol: usuario.rol || "",
-                telefono: usuario.telefono || "",
-                genero: usuario.genero || "",
-                fechaNacimiento: {
-                    year: fecha[0],
-                    month: fecha[1],
-                    day: fecha[2]
-                },
-                password: "",
-                confirmarPassword: ""
-            };
-
-            return JSON.stringify(formData) !== JSON.stringify(usuarioOriginal);
-        }
-        return false;
-    };
+export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, erroresBackend = {}, limpiarErrorBackend, ...props }) {
+    const {
+        formData,
+        setFormData,
+        showConfirmCancel,
+        setShowConfirmCancel,
+        errors,
+        days,
+        months,
+        years,
+        tieneCambios,
+        validarFormulario,
+        handleChange,
+        handleFechaChange,
+        prepararDataParaEnviar
+    } = useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend);
 
     const handleCancelar = () => {
         if (tieneCambios()) {
@@ -68,221 +33,33 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         onClose();
     };
 
-    // ===== LISTAS FECHA =====
-    const days = Array.from({ length: 31 }, (_, i) => i + 1);
-    const months = [
-        "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
-        "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre"
-    ];
-    const years = Array.from({ length: 80 }, (_, i) => new Date().getFullYear() - i);
-    const [errors, setErrors] = useState({});
-
-    const validarFormulario = () => {
-        const nuevosErrores = {};
-
-        if (!formData.nombre.trim()) nuevosErrores.nombre = "El campo es obligatorio";
-        if (!formData.rol) nuevosErrores.rol = "El campo es obligatorio";
-        if (!formData.telefono.trim()) nuevosErrores.telefono = "El campo es obligatorio";
-        if (!formData.genero) nuevosErrores.genero = "El campo es obligatorio";
-        if (!formData.correo.trim()) nuevosErrores.correo = "El campo es obligatorio";
-
-        const { day, month, year } = formData.fechaNacimiento;
-        if (!day || !month || !year) {
-            nuevosErrores.fechaNacimiento = "El campo es obligatorio";
-        }
-
-        // ================== VALIDAR FORMATOS ==================
-
-        // Nombre
-        const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-        if (formData.nombre && !nombreRegex.test(formData.nombre)) {
-            nuevosErrores.nombre =
-                "El nombre solo puede contener letras, espacios, puntos y acentos";
-        }
-
-        // Teléfono
-        const telefonoRegex = /^[0-9]{10}$/;
-        if (formData.telefono && !telefonoRegex.test(formData.telefono)) {
-            nuevosErrores.telefono = "El teléfono debe tener 10 dígitos numéricos";
-        }
-
-        // Correo electrónico
-        const correoRegex =
-            /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-        if (formData.correo && !correoRegex.test(formData.correo)) {
-            nuevosErrores.correo =
-                "El correo electrónico no cumple con un formato válido y profesional";
-        }
-
-        const parteUsuario = formData.correo.split("@")[0] || "";
-        if (parteUsuario.length > 64) {
-            nuevosErrores.correo =
-                "El correo no debe superar 64 caracteres antes del @";
-        }
-
-        // ================== PASSWORD (solo crear) ==================
-        // PASSWORD (crear obligatorio / editar opcional)
-        if (tipo === "crear" || (tipo === "editar" && formData.password)) {
-
-            const passwordRegex =
-                /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
-
-            if (!formData.password) {
-                nuevosErrores.password = "El campo es obligatorio";
-            } else if (!passwordRegex.test(formData.password)) {
-                nuevosErrores.password =
-                    "Debe tener mínimo 6 caracteres, mayúscula, minúscula, número y carácter especial (@ # $ ¡ *)";
-            }
-
-            if (!formData.confirmarPassword) {
-                nuevosErrores.confirmarPassword = "El campo es obligatorio";
-            } else if (formData.password !== formData.confirmarPassword) {
-                nuevosErrores.confirmarPassword = "Las contraseñas no coinciden";
-            }
-        }
-
-
-        // ================== FECHA DE NACIMIENTO ==================
-        if (day && month && year) {
-            const pad = (n) => String(n).padStart(2, "0");
-            const fecha = `${year}-${pad(month)}-${pad(day)}`;
-
-            const fechaNacimientoDate = new Date(fecha);
-            const hoy = new Date();
-
-            // No hoy ni futuro
-            if (fechaNacimientoDate >= hoy) {
-                nuevosErrores.fechaNacimiento =
-                    "La fecha de nacimiento no puede ser hoy ni una fecha futura";
-            }
-
-            // Edad mínima
-            const edadMinima = 13;
-            const fechaMinima = new Date(
-                hoy.getFullYear() - edadMinima,
-                hoy.getMonth(),
-                hoy.getDate()
-            );
-
-            if (fechaNacimientoDate > fechaMinima) {
-                nuevosErrores.fechaNacimiento =
-                    `Debes tener al menos ${edadMinima} años`;
-            }
-
-            // Edad máxima
-            const edadMaxima = 120;
-            const fechaMaxima = new Date(
-                hoy.getFullYear() - edadMaxima,
-                hoy.getMonth(),
-                hoy.getDate()
-            );
-
-            if (fechaNacimientoDate < fechaMaxima) {
-                nuevosErrores.fechaNacimiento =
-                    `La edad no puede ser mayor a ${edadMaxima} años`;
-            }
-        }
-
-        setErrors(nuevosErrores);
-        return Object.keys(nuevosErrores).length === 0;
-    };
-
-    const erroresCombinados = {
-        ...erroresBackend,
-        ...errors
-    };
-
-
-    // ===== EDITAR USUARIO =====
-    useEffect(() => {
-        if (tipo === "editar" && usuario) {
-            const [year = "", month = "", day = ""] =
-                usuario.fechaNacimiento?.split("-") || [];
-
-            const normalizarGenero = (g) => {
-                if (!g) return "";
-                if (g.toLowerCase() === "mujer") return "Mujer";
-                if (g.toLowerCase() === "hombre") return "Hombre";
-                if (g.toLowerCase() === "otro") return "Otro";
-                return "";
-            };
-
-
-            setFormData({
-                nombre: usuario.nombre || "",
-                correo: usuario.correo || "",
-                rol: usuario.rol || "",
-                telefono: usuario.telefono || "",
-                genero: normalizarGenero(usuario.genero),
-                fechaNacimiento: {
-                    day: String(parseInt(day)),
-                    month: String(parseInt(month)),
-                    year: String(year),
-                },
-                password: "",
-                confirmarPassword: ""
-            });
+    // ✅ COMBINAR ERRORES CORRECTAMENTE - Mostrar ambos si existen
+    const erroresCombinados = {};
+    
+    // Primero agregar errores del frontend
+    Object.keys(errors).forEach(key => {
+        erroresCombinados[key] = errors[key];
+    });
+    
+    // Luego agregar/combinar errores del backend
+    Object.keys(erroresBackend).forEach(key => {
+        if (erroresCombinados[key]) {
+            // Si ya existe error del frontend, concatenar
+            erroresCombinados[key] = `${erroresCombinados[key]}. ${erroresBackend[key]}`;
         } else {
-            setFormData({
-                nombre: "",
-                correo: "",
-                rol: "",
-                telefono: "",
-                genero: "",
-                fechaNacimiento: { day: "", month: "", year: "" },
-                password: "",
-                confirmarPassword: ""
-            });
+            erroresCombinados[key] = erroresBackend[key];
         }
-    }, [usuario, tipo, isOpen]);
+    });
 
-
-    // ===== INPUT NORMAL =====
-    const handleChange = (e) => {
-        const { name, value } = e.target;
-
-        setFormData(prev => ({ ...prev, [name]: value }));
-
-        setErrors(prev => ({ ...prev, [name]: null }));
-    };
-
-
-    // ===== SUBMIT =====
     const handleSubmit = (e) => {
         e.preventDefault();
 
         if (!validarFormulario()) return;
 
-        const { day, month, year } = formData.fechaNacimiento;
-        const fechaNacimiento =
-            day && month && year ? `${year}-${month}-${day}` : "";
-
-        // Construimos el payload base
-        const dataEnviar = {
-            ...formData,
-            fechaNacimiento
-        };
-
-        // SOLO si escribió contraseña → hashearla y enviarla
-        if (formData.password) {
-            const salt = bcrypt.genSaltSync(10);
-            dataEnviar.password = bcrypt.hashSync(formData.password, salt);
-        } else {
-            // Si no hay contraseña, NO se envía
-            delete dataEnviar.password;
-        }
-
-        // Nunca enviamos confirmarPassword
-        delete dataEnviar.confirmarPassword;
+        const dataEnviar = prepararDataParaEnviar();
 
         onSubmit(dataEnviar);
     };
-
-
-    useEffect(() => {
-        setErrors({});
-    }, [isOpen]);
 
     if (!isOpen) return null;
 
@@ -294,7 +71,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                         <button
                             type="button"
                             className="modal-close-btn"
-                            onClick={handleCancelar}  // cambio aquí
+                            onClick={handleCancelar}
                             aria-label="Cerrar"
                         >
                             <IoClose />
@@ -310,13 +87,13 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                     Nombre
                                     <input
                                         type="text"
-                                        name="nombre"
+                                        name="nombre_usuario"
                                         placeholder="Nombre"
-                                        value={formData.nombre}
+                                        value={formData.nombre_usuario}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.nombre && (
-                                        <span className="error-text">{erroresCombinados.nombre}</span>
+                                    {erroresCombinados.nombre_usuario && (
+                                        <span className="error-text">{erroresCombinados.nombre_usuario}</span>
                                     )}
                                 </label>
                             </div>
@@ -334,12 +111,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         <option value="Tutor">Tutor</option>
                                         <option value="Administrador">Administrador</option>
                                     </select>
-                                    {erroresCombinados.rol && (
-                                        <span className="error-text">{erroresCombinados.rol}</span>
+                                    {erroresCombinados.id_rol && (
+                                        <span className="error-text">{erroresCombinados.id_rol}</span>
                                     )}
-
                                 </label>
-
 
                                 <label>
                                     Teléfono
@@ -353,12 +128,10 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                     {erroresCombinados.telefono && (
                                         <span className="error-text">{erroresCombinados.telefono}</span>
                                     )}
-
                                 </label>
                             </div>
 
-                            {/* 2da fila: Fecha de nacimiento y teléfono */}
-                            {/* FECHA NACIMIENTO (FACEBOOK) */}
+                            {/* FECHA NACIMIENTO */}
                             <div className="fila genero-fb">
                                 <span className="titulo-fila-create-update">
                                     Fecha de nacimiento
@@ -366,16 +139,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
 
                                 <div className="fecha-nacimiento">
                                     <select
-                                        value={formData.fechaNacimiento.day}
-                                        onChange={(e) =>
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                fechaNacimiento: {
-                                                    ...prev.fechaNacimiento,
-                                                    day: e.target.value
-                                                }
-                                            }))
-                                        }
+                                        value={formData.fecha_nacimiento.day}
+                                        onChange={(e) => handleFechaChange('day', e.target.value)}
                                     >
                                         <option value="">Día</option>
                                         {days.map(d => (
@@ -384,16 +149,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                     </select>
 
                                     <select
-                                        value={formData.fechaNacimiento.month}
-                                        onChange={(e) =>
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                fechaNacimiento: {
-                                                    ...prev.fechaNacimiento,
-                                                    month: e.target.value
-                                                }
-                                            }))
-                                        }
+                                        value={formData.fecha_nacimiento.month}
+                                        onChange={(e) => handleFechaChange('month', e.target.value)}
                                     >
                                         <option value="">Mes</option>
                                         {months.map((m, i) => (
@@ -402,16 +159,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                     </select>
 
                                     <select
-                                        value={formData.fechaNacimiento.year}
-                                        onChange={(e) =>
-                                            setFormData(prev => ({
-                                                ...prev,
-                                                fechaNacimiento: {
-                                                    ...prev.fechaNacimiento,
-                                                    year: e.target.value
-                                                }
-                                            }))
-                                        }
+                                        value={formData.fecha_nacimiento.year}
+                                        onChange={(e) => handleFechaChange('year', e.target.value)}
                                     >
                                         <option value="">Año</option>
                                         {years.map(y => (
@@ -419,41 +168,41 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         ))}
                                     </select>
                                 </div>
-                                {erroresCombinados.fechaNacimiento && (
-                                    <span className="error-text">{erroresCombinados.fechaNacimiento}</span>
+                                {erroresCombinados.fecha_nacimiento && (
+                                    <span className="error-text">{erroresCombinados.fecha_nacimiento}</span>
                                 )}
                             </div>
 
-                            {/* 3ra fila: Género estilo Facebook */}
+                            {/* GÉNERO */}
                             <div className="fila genero-fb">
                                 <span className="titulo-fila-create-update">Género</span>
                                 <div className="radios-container">
-                                    <label className={`radio-btn ${formData.genero === "Mujer" ? "activo" : ""}`}>
+                                    <label className={`radio-btn ${formData.genero === "mujer" ? "activo" : ""}`}>
                                         <input
                                             type="radio"
                                             name="genero"
-                                            value="Mujer"
-                                            checked={formData.genero === "Mujer"}
+                                            value="mujer"
+                                            checked={formData.genero === "mujer"}
                                             onChange={handleChange}
                                         />
                                         <span>Mujer</span>
                                     </label>
-                                    <label className={`radio-btn ${formData.genero === "Hombre" ? "activo" : ""}`}>
+                                    <label className={`radio-btn ${formData.genero === "hombre" ? "activo" : ""}`}>
                                         <input
                                             type="radio"
                                             name="genero"
-                                            value="Hombre"
-                                            checked={formData.genero === "Hombre"}
+                                            value="hombre"
+                                            checked={formData.genero === "hombre"}
                                             onChange={handleChange}
                                         />
                                         <span>Hombre</span>
                                     </label>
-                                    <label className={`radio-btn ${formData.genero === "Otro" ? "activo" : ""}`}>
+                                    <label className={`radio-btn ${formData.genero === "otro" ? "activo" : ""}`}>
                                         <input
                                             type="radio"
                                             name="genero"
-                                            value="Otro"
-                                            checked={formData.genero === "Otro"}
+                                            value="otro"
+                                            checked={formData.genero === "otro"}
                                             onChange={handleChange}
                                         />
                                         <span>Otro</span>
@@ -462,11 +211,9 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                 {erroresCombinados.genero && (
                                     <span className="error-text">{erroresCombinados.genero}</span>
                                 )}
-
                             </div>
 
-
-                            {/* 4ta fila: Correo */}
+                            {/* CORREO */}
                             <div className="fila">
                                 <label>
                                     Correo electrónico:
@@ -483,22 +230,20 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                 </label>
                             </div>
 
-                            {/* 5ta fila: Contraseña y confirmar contraseña */}
+                            {/* CONTRASEÑAS */}
                             <div className="fila">
                                 <label>
                                     Contraseña:
                                     <input
                                         type="password"
-                                        name="password"
+                                        name="contrasena"
                                         placeholder="••••••••"
-                                        value={formData.password}
+                                        value={formData.contrasena}
                                         onChange={handleChange}
-
                                     />
-                                    {erroresCombinados.password && (
-                                        <span className="error-text">{erroresCombinados.password}</span>
+                                    {erroresCombinados.contrasena && (
+                                        <span className="error-text">{erroresCombinados.contrasena}</span>
                                     )}
-
                                 </label>
                                 <label>
                                     Confirmar contraseña:
@@ -508,17 +253,14 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         placeholder="••••••••"
                                         value={formData.confirmarPassword}
                                         onChange={handleChange}
-
                                     />
-
                                     {erroresCombinados.confirmarPassword && (
                                         <span className="error-text">{erroresCombinados.confirmarPassword}</span>
                                     )}
-
                                 </label>
                             </div>
 
-                            {/* Botones */}
+                            {/* BOTONES */}
                             <div className="modal-buttons-create-update">
                                 <button type="submit" className="btn btn-nuevo-create-update">
                                     {tipo === "editar" ? "Actualizar" : "Guardar"}
@@ -531,8 +273,6 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                 >
                                     Cancelar
                                 </button>
-
-
                             </div>
                         </form>
                     </div>
@@ -543,12 +283,11 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
             {showConfirmCancel && (
                 <ModalConfirmarCancelar
                     isOpen={showConfirmCancel}
-                    onCancel={() => setShowConfirmCancel(false)} 
+                    onCancel={() => setShowConfirmCancel(false)}
                     onConfirm={handleConfirmarCancelar}
                     mensaje="Tienes cambios sin guardar. ¿Seguro que quieres cancelar?"
                 />
             )}
         </>
     );
-
 }

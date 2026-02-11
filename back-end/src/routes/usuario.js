@@ -267,6 +267,83 @@ function validarFechaNacimiento(fechaNacimientoInput) {
 --------------------- ENDPOINTS -----------------------
 =====================================================*/
 
+// ============== VERIFICAR DISPONIBILIDAD DE CORREO ==============
+router.post("/verificar-correo", async (req, res) => {
+  try {
+    const { correo_electronico } = req.body;
+
+    if (!correo_electronico) {
+      return res.status(400).json({ 
+        disponible: false, 
+        message: "El correo es requerido" 
+      });
+    }
+
+    const correoExiste = await db.query(
+      "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
+      [correo_electronico.trim().toLowerCase()]
+    );
+
+    if (correoExiste[0].length > 0) {
+      return res.status(200).json({ 
+        disponible: false, 
+        message: "Este correo electrónico ya está registrado" 
+      });
+    }
+
+    res.status(200).json({ 
+      disponible: true, 
+      message: "Correo disponible" 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      disponible: false, 
+      message: "Error al verificar el correo" 
+    });
+  }
+});
+
+// ============== VERIFICAR DISPONIBILIDAD DE TELÉFONO ==============
+router.post("/verificar-telefono", async (req, res) => {
+  try {
+    const { telefono } = req.body;
+
+    if (!telefono) {
+      return res.status(400).json({ 
+        disponible: false, 
+        message: "El teléfono es requerido" 
+      });
+    }
+
+    const telefonoExiste = await db.query(
+      "SELECT id_usuario FROM Usuario WHERE telefono = ?",
+      [telefono.trim()]
+    );
+
+    if (telefonoExiste[0].length > 0) {
+      return res.status(200).json({ 
+        disponible: false, 
+        message: "Este número de teléfono ya está registrado" 
+      });
+    }
+
+    res.status(200).json({ 
+      disponible: true, 
+      message: "Teléfono disponible" 
+    });
+
+  } catch (error) {
+    console.error(error);
+    res.status(500).json({ 
+      disponible: false, 
+      message: "Error al verificar el teléfono" 
+    });
+  }
+});
+
+
 /* ====================================================
 -------------------------- ROLES ----------------------
 =====================================================*/
@@ -634,32 +711,23 @@ router.post("/alta-usuario", async (req, res) => {
     const data = { ...req.body, id_rol: Number(req.body.id_rol) };
     const errores = [];
 
-    const correoExiste = await db.query(
-      "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?",
-      [data.correo_electronico]
-    );
-    if (correoExiste[0].length > 0) {
-      errores.push({
-        path: "correo_electronico",
-        message: "Este correo electrónico ya está registrado"
-      });
-    }
-
-    const telefonoExiste = await db.query(
-      "SELECT id_usuario FROM Usuario WHERE telefono = ?",
-      [data.telefono]
-    );
-    if (telefonoExiste[0].length > 0) {
-      errores.push({
-        path: "telefono",
-        message: "Este número de teléfono ya está registrado"
-      });
-    }
+    errores.push(...validarNombreUsuario(data.nombre_usuario));
+    errores.push(...await validarCorreoElectronico(data.correo_electronico, db));
+    errores.push(...await validarRol(data.id_rol, db));
+    errores.push(...await validarTelefono(data.telefono, db));
+    errores.push(...validarGenero(data.genero));
+    errores.push(...validarContrasena(data.contrasena));
+    errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
     if (errores.length > 0) {
       return res.status(400).json({ errors: errores });
     }
 
+    // =============== HASHEAR CONTRASEÑA ===============
+    const salt = await bcrypt.genSalt(10);
+    data.contrasena = await bcrypt.hash(data.contrasena, salt);
+
+    // =============== GUARDAR USUARIO BD ===============
     const usuario = new Usuario(data);
     await usuario.save();
 

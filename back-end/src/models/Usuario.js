@@ -55,6 +55,7 @@ export class Usuario {
       u.telefono,
       u.genero,
       u.fecha_nacimiento,
+      u.id_rol,  
       r.tipo_usuario AS rol
     FROM Usuario u
     LEFT JOIN Rol r ON u.id_rol = r.id_rol
