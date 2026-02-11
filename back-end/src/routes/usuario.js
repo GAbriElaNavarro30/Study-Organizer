@@ -439,15 +439,38 @@ router.post("/recuperar-contrasena", async (req, res) => {
   try {
     const { correo_electronico } = req.body;
 
+    // ===== VALIDACIÓN 1: CAMPO OBLIGATORIO =====
     if (!correo_electronico || !correo_electronico.trim()) {
       return res.status(400).json({
         mensaje: "El campo correo electrónico es obligatorio",
       });
     }
 
+    // ===== VALIDACIÓN 2: FORMATO DE CORREO =====
+    const correoRegex =
+      /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+    if (!correoRegex.test(correo_electronico.trim())) {
+      return res.status(400).json({
+        mensaje: "El correo electrónico no cumple con un formato válido",
+      });
+    }
+
+    // ===== VALIDACIÓN 3: LONGITUD ANTES DEL @ =====
+    const parteUsuario = correo_electronico.split("@")[0];
+    if (parteUsuario.length > 64) {
+      return res.status(400).json({
+        mensaje: "El correo no debe superar 64 caracteres antes del @",
+      });
+    }
+
+    // ===== NORMALIZAR CORREO =====
+    const correoNormalizado = correo_electronico.trim().toLowerCase();
+
+    // ===== BUSCAR EN BD =====
     const [rows] = await db.query(
       "SELECT id_usuario, nombre_usuario FROM Usuario WHERE correo_electronico = ?",
-      [correo_electronico]
+      [correoNormalizado]
     );
 
     if (rows.length === 0) {
@@ -458,20 +481,20 @@ router.post("/recuperar-contrasena", async (req, res) => {
 
     const usuario = rows[0];
 
-    // TOKEN DE RECUPERACIÓN (15 min)
+    // ===== TOKEN DE RECUPERACIÓN (15 min) =====
     const token = jwt.sign(
       { id: usuario.id_usuario },
       process.env.JWT_SECRET,
       { expiresIn: "15m" }
     );
 
-    // LINK
+    // ===== LINK =====
     const link = `${process.env.FRONTEND_URL}/#/recuperar-contrasena?token=${token}`;
 
-    // ENVÍO DE CORREO
+    // ===== ENVÍO DE CORREO =====
     await transporter.sendMail({
       from: `"Soporte Study Organizer" <${process.env.EMAIL_USER}>`,
-      to: correo_electronico,
+      to: correoNormalizado,
       subject: "Solicitud de recuperación de contraseña",
       html: `
         <p>Estimado/a <strong>${usuario.nombre_usuario}</strong>,</p>
@@ -523,43 +546,122 @@ router.post("/resetear-contrasena", async (req, res) => {
   try {
     const { token, nueva_contrasena } = req.body;
 
-    // Validación básica
-    if (!token || !nueva_contrasena) {
+    // ===== VALIDACIÓN 1: CAMPOS OBLIGATORIOS =====
+    if (!token || !token.trim()) {
       return res.status(400).json({
-        mensaje: "Datos incompletos",
+        campo: "token",
+        mensaje: "El token es obligatorio",
       });
     }
 
-    // Verificar token
-    const decoded = jwt.verify(token, process.env.JWT_SECRET);
+    if (!nueva_contrasena || !nueva_contrasena.trim()) {
+      return res.status(400).json({
+        campo: "nueva_contrasena",
+        mensaje: "La nueva contraseña es obligatoria",
+      });
+    }
 
-    // Hashear nueva contraseña
-    const hashed = await bcrypt.hash(nueva_contrasena, 10);
+    // ===== VALIDACIÓN 2: FORMATO DE CONTRASEÑA =====
+    const passwordRegex =
+      /^(?=.*[a-z])(?=.*[A-Z])(?=.*\d)(?=.*[@#$¡*])[A-Za-z\d@#$¡*]{6,}$/;
 
-    // Actualizar contraseña
+    if (!passwordRegex.test(nueva_contrasena)) {
+      return res.status(400).json({
+        campo: "nueva_contrasena",
+        mensaje:
+          "La contraseña debe tener al menos 6 caracteres, incluir una mayúscula, una minúscula, un número y un carácter especial (@ # $ ¡ *)",
+      });
+    }
+
+    // ===== VALIDACIÓN 3: LONGITUD MÁXIMA =====
+    if (nueva_contrasena.length > 128) {
+      return res.status(400).json({
+        campo: "nueva_contrasena",
+        mensaje: "La contraseña no puede superar 128 caracteres",
+      });
+    }
+
+    // ===== VALIDACIÓN 4: VERIFICAR TOKEN =====
+    let decoded;
+    try {
+      decoded = jwt.verify(token, process.env.JWT_SECRET);
+    } catch (error) {
+      // Token expirado
+      if (error.name === "TokenExpiredError") {
+        return res.status(401).json({
+          campo: "token",
+          mensaje:
+            "El enlace ha expirado. Por favor, solicita un nuevo enlace de recuperación.",
+        });
+      }
+
+      // Token inválido
+      if (error.name === "JsonWebTokenError") {
+        return res.status(401).json({
+          campo: "token",
+          mensaje: "El enlace es inválido o ha sido modificado.",
+        });
+      }
+
+      // Otros errores de JWT
+      return res.status(401).json({
+        campo: "token",
+        mensaje: "Error al verificar el enlace de recuperación.",
+      });
+    }
+
+    // ===== VALIDACIÓN 5: VERIFICAR QUE EL USUARIO EXISTA =====
+    const [usuario] = await db.query(
+      "SELECT id_usuario FROM Usuario WHERE id_usuario = ?",
+      [decoded.id]
+    );
+
+    if (usuario.length === 0) {
+      return res.status(404).json({
+        campo: "token",
+        mensaje: "El usuario asociado a este enlace no existe.",
+      });
+    }
+
+    // ===== VALIDACIÓN 6: NO PERMITIR CONTRASEÑA IGUAL A LA ACTUAL =====
+    const [usuarioActual] = await db.query(
+      "SELECT contrasena FROM Usuario WHERE id_usuario = ?",
+      [decoded.id]
+    );
+
+    const contrasenaActual = usuarioActual[0].contrasena;
+    const esLaMisma = await bcrypt.compare(nueva_contrasena, contrasenaActual);
+
+    if (esLaMisma) {
+      return res.status(400).json({
+        campo: "nueva_contrasena",
+        mensaje:
+          "La nueva contraseña no puede ser igual a la contraseña actual.",
+      });
+    }
+
+    // ===== HASHEAR NUEVA CONTRASEÑA =====
+    const salt = await bcrypt.genSalt(10);
+    const hashed = await bcrypt.hash(nueva_contrasena, salt);
+
+    // ===== ACTUALIZAR CONTRASEÑA EN BD =====
     await db.query(
       "UPDATE Usuario SET contrasena = ? WHERE id_usuario = ?",
       [hashed, decoded.id]
     );
 
+    // ===== RESPUESTA EXITOSA =====
     res.json({
-      mensaje: "Contraseña actualizada correctamente",
+      mensaje: "Tu contraseña ha sido actualizada correctamente",
     });
 
   } catch (error) {
     console.error("Error resetear contraseña:", error);
 
-    // 🔹 Token expirado
-    if (error.name === "TokenExpiredError") {
-      return res.status(401).json({
-        mensaje:
-          "El token ha expirado. Vuelva a solicitar un token de recuperación.",
-      });
-    }
-
-    // 🔹 Token inválido
-    return res.status(401).json({
-      mensaje: "El token es inválido.",
+    // Error genérico del servidor
+    return res.status(500).json({
+      campo: "general",
+      mensaje: "Error al procesar la solicitud. Por favor, intenta de nuevo.",
     });
   }
 });

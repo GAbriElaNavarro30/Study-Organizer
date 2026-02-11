@@ -41,7 +41,7 @@ export function AuthProvider({ children }) {
   const normalizarFecha = (fecha) => {
     if (!fecha) return { day: "", month: "", year: "" };
 
-    // ✅ SI YA VIENE COMO OBJETO {day, month, year}
+    // SI YA VIENE COMO OBJETO {day, month, year}
     if (
       typeof fecha === "object" &&
       "day" in fecha &&

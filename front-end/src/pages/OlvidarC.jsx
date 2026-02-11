@@ -1,99 +1,27 @@
 import "../styles/olvidarc.css";
 import { Link } from "react-router-dom";
 import { IoArrowBack } from "react-icons/io5";
-import { useState } from "react";
-import api from "../services/api";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo-footer.png";
-import { useNavigate } from "react-router-dom";
 import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 import { HeaderExtO } from "../components/HeaderExtO";
+import { useOlvidarC } from "../hooks/useOlvidarC";
 
 export function OlvidarC() {
-  const navigate = useNavigate();
-
-  const [email, setEmail] = useState("");
-  const [error, setError] = useState("");
-
-  // ===== Modal confirmar salir =====
-  const [mostrarModal, setMostrarModal] = useState(false);
-  const [rutaDestino, setRutaDestino] = useState("/");
-
-  // ===== Custom Alert =====
-  const [mostrarAlert, setMostrarAlert] = useState(false);
-  const [alertData, setAlertData] = useState({
-    type: "success",
-    title: "",
-    message: "",
-  });
-
-  // ===== INTENTO DE SALIDA (VOLVER / ACCEDER) =====
-  const intentarSalir = (ruta) => {
-    if (email.trim()) {
-      setRutaDestino(ruta);
-      setMostrarModal(true);
-    } else {
-      navigate(ruta);
-    }
-  };
-
-  // ===== SUBMIT =====
-  const handleSubmit = async (e) => {
-    e.preventDefault();
-
-    if (!email.trim()) {
-      setError("El campo es obligatorio");
-      return;
-    }
-
-    const correoRegex =
-      /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
-
-    if (!correoRegex.test(email)) {
-      setError(
-        "El correo electrónico no cumple con un formato válido y profesional"
-      );
-      return;
-    }
-
-    const parteUsuario = email.split("@")[0];
-    if (parteUsuario.length > 64) {
-      setError("El correo no debe superar 64 caracteres antes del @");
-      return;
-    }
-
-    setError("");
-
-    try {
-      const response = await api.post("/usuarios/recuperar-contrasena", {
-        correo_electronico: email,
-      });
-
-      setAlertData({
-        type: "success",
-        title: "Correo enviado",
-        message: response.data.mensaje,
-      });
-      setMostrarAlert(true);
-      setEmail("");
-
-    } catch (err) {
-      const status = err.response?.status;
-      const mensaje = err.response?.data?.mensaje;
-
-      if (status === 404) {
-        setError(mensaje);
-        return;
-      }
-
-      setAlertData({
-        type: "error",
-        title: "Error",
-        message: mensaje || "Error al enviar el enlace de recuperación",
-      });
-      setMostrarAlert(true);
-    }
-  };
+  const {
+    email,
+    error,
+    isSubmitting,
+    mostrarModal,
+    mostrarAlert,
+    alertData,
+    handleEmailChange,
+    handleSubmit,
+    intentarSalir,
+    confirmarSalida,
+    cancelarSalida,
+    cerrarAlert,
+  } = useOlvidarC();
 
   return (
     <>
@@ -118,8 +46,8 @@ export function OlvidarC() {
           <hr className="linea-separadora-o" />
 
           <p>
-            Ingresa tu correo electrónico y te enviaremos
-            un enlace para recuperar tu cuenta.
+            Ingresa tu correo electrónico y te enviaremos un enlace para
+            recuperar tu cuenta.
           </p>
 
           <div className="campo-olvidar">
@@ -129,14 +57,19 @@ export function OlvidarC() {
               id="email"
               placeholder="ejemplo@correo.com"
               value={email}
-              onChange={(e) => setEmail(e.target.value)}
+              onChange={handleEmailChange}
               className={error ? "input-error" : ""}
+              disabled={isSubmitting}
             />
             {error && <p className="mensaje-error">{error}</p>}
           </div>
 
-          <button type="submit" className="btn-recuperar">
-            Enviar enlace
+          <button
+            type="submit"
+            className="btn-recuperar"
+            disabled={isSubmitting}
+          >
+            {isSubmitting ? "Enviando..." : "Enviar enlace"}
           </button>
         </form>
 
@@ -147,18 +80,15 @@ export function OlvidarC() {
             title={alertData.title}
             message={alertData.message}
             logo={logo}
-            onClose={() => setMostrarAlert(false)}
+            onClose={cerrarAlert}
           />
         )}
 
         {/* ===== Modal Confirmar Cancelar ===== */}
         <ModalConfirmarCancelar
           isOpen={mostrarModal}
-          onConfirm={() => {
-            setMostrarModal(false);
-            navigate(rutaDestino);
-          }}
-          onCancel={() => setMostrarModal(false)}
+          onConfirm={confirmarSalida}
+          onCancel={cancelarSalida}
         />
       </div>
     </>

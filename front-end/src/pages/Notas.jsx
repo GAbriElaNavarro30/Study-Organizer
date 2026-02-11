@@ -5,7 +5,7 @@ import logoNotas from "../assets/imagenes/fondo-notas.png";
 import { useState } from "react";
 import { useNavigate } from "react-router-dom";
 
-import { ModalEliminarNota } from "./ModalEliminarNota";
+import { ModalEliminarNota } from "../components/ModalEliminarNota";
 
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
 
