@@ -35,12 +35,12 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
 
     // ✅ COMBINAR ERRORES CORRECTAMENTE - Mostrar ambos si existen
     const erroresCombinados = {};
-    
+
     // Primero agregar errores del frontend
     Object.keys(errors).forEach(key => {
         erroresCombinados[key] = errors[key];
     });
-    
+
     // Luego agregar/combinar errores del backend
     Object.keys(erroresBackend).forEach(key => {
         if (erroresCombinados[key]) {
@@ -51,13 +51,14 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         }
     });
 
-    const handleSubmit = (e) => {
+    // SOLO MOSTRAR ERRORES DEL FRONTEND
+    const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (!validarFormulario()) return;
+        const esValido = await validarFormulario();
+        if (!esValido) return;
 
         const dataEnviar = prepararDataParaEnviar();
-
         onSubmit(dataEnviar);
     };
 
@@ -92,8 +93,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         value={formData.nombre_usuario}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.nombre_usuario && (
-                                        <span className="error-text">{erroresCombinados.nombre_usuario}</span>
+                                    {errors.nombre_usuario && (
+                                        <span className="error-text">{errors.nombre_usuario}</span>
                                     )}
                                 </label>
                             </div>
@@ -111,8 +112,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         <option value="Tutor">Tutor</option>
                                         <option value="Administrador">Administrador</option>
                                     </select>
-                                    {erroresCombinados.id_rol && (
-                                        <span className="error-text">{erroresCombinados.id_rol}</span>
+                                    {errors.id_rol && (
+                                        <span className="error-text">{errors.id_rol}</span>
                                     )}
                                 </label>
 
@@ -125,8 +126,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         value={formData.telefono}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.telefono && (
-                                        <span className="error-text">{erroresCombinados.telefono}</span>
+                                    {errors.telefono && (
+                                        <span className="error-text">{errors.telefono}</span>
                                     )}
                                 </label>
                             </div>
@@ -168,8 +169,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         ))}
                                     </select>
                                 </div>
-                                {erroresCombinados.fecha_nacimiento && (
-                                    <span className="error-text">{erroresCombinados.fecha_nacimiento}</span>
+                                {errors.fecha_nacimiento && (
+                                    <span className="error-text">{errors.fecha_nacimiento}</span>
                                 )}
                             </div>
 
@@ -208,8 +209,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         <span>Otro</span>
                                     </label>
                                 </div>
-                                {erroresCombinados.genero && (
-                                    <span className="error-text">{erroresCombinados.genero}</span>
+                                {errors.genero && (
+                                    <span className="error-text">{errors.genero}</span>
                                 )}
                             </div>
 
@@ -224,8 +225,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         value={formData.correo}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.correo && (
-                                        <span className="error-text">{erroresCombinados.correo}</span>
+                                    {errors.correo && (
+                                        <span className="error-text">{errors.correo}</span>
                                     )}
                                 </label>
                             </div>
@@ -241,8 +242,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         value={formData.contrasena}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.contrasena && (
-                                        <span className="error-text">{erroresCombinados.contrasena}</span>
+                                    {errors.contrasena && (
+                                        <span className="error-text">{errors.contrasena}</span>
                                     )}
                                 </label>
                                 <label>
@@ -254,8 +255,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         value={formData.confirmarPassword}
                                         onChange={handleChange}
                                     />
-                                    {erroresCombinados.confirmarPassword && (
-                                        <span className="error-text">{erroresCombinados.confirmarPassword}</span>
+                                    {errors.confirmarPassword && (
+                                        <span className="error-text">{errors.confirmarPassword}</span>
                                     )}
                                 </label>
                             </div>
