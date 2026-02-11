@@ -8,8 +8,8 @@ export const verificarToken = (req, res, next) => {
   }
 
   try {
-    const decoded = jwt.verify(token, "TU_SECRETO_SUPER_SEGURO");
-    req.usuario = decoded; // { id_usuario, id_rol }
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); // Usar variable de entorno
+    req.usuario = decoded;
     next();
   } catch (error) {
     return res.status(403).json({ mensaje: "Token inválido o expirado" });

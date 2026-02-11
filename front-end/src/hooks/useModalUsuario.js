@@ -35,7 +35,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
                 correo_electronico: correo
             };
 
-            // ✅ AGREGAR id_usuario solo si existe
+            // AGREGAR id_usuario solo si existe
             if (usuarioId) {
                 payload.id_usuario = usuarioId;
             }
@@ -64,7 +64,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
                 telefono: telefono
             };
 
-            // ✅ AGREGAR id_usuario solo si existe
+            // AGREGAR id_usuario solo si existe
             if (usuarioId) {
                 payload.id_usuario = usuarioId;
             }
@@ -144,7 +144,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
                 if (parteUsuario.length > 64) {
                     nuevosErrores.correo = "El correo no debe superar 64 caracteres antes del @";
                 } else {
-                    // ✅ VERIFICAR SI EL CORREO YA EXISTE (Enviando el ID del usuario en modo editar)
+                    // VERIFICAR SI EL CORREO YA EXISTE (Enviando el ID del usuario en modo editar)
                     const usuarioId = tipo === "editar" ? usuario?.id : null;
                     const resultadoCorreo = await verificarCorreoDisponible(formData.correo, usuarioId);
                     if (!resultadoCorreo.disponible) {
@@ -167,7 +167,7 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             if (!telefonoRegex.test(formData.telefono)) {
                 nuevosErrores.telefono = "El teléfono debe tener 10 dígitos numéricos";
             } else {
-                // ✅ VERIFICAR SI EL TELÉFONO YA EXISTE (Enviando el ID del usuario en modo editar)
+                // VERIFICAR SI EL TELÉFONO YA EXISTE (Enviando el ID del usuario en modo editar)
                 const usuarioId = tipo === "editar" ? usuario?.id : null;
                 const resultadoTelefono = await verificarTelefonoDisponible(formData.telefono, usuarioId);
                 if (!resultadoTelefono.disponible) {
@@ -385,8 +385,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
 
         const mapearRolAId = (rol) => {
             if (rol === "Administrador") return 1;
-            if (rol === "Tutor") return 2;
-            if (rol === "Estudiante") return 3;
+            if (rol === "Tutor") return 3;
+            if (rol === "Estudiante") return 2;
             return null;
         };
 

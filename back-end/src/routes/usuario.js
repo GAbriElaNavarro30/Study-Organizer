@@ -184,7 +184,7 @@ function validarGenero(genero) {
       message: "El género es obligatorio",
     });
   } else {
-    const generosValidos = ["mujer", "hombre", "otro"]; // ajusta según tu sistema
+    const generosValidos = ["mujer", "hombre", "otro"];
 
     if (!generosValidos.includes(genero)) {
       errores.push({
@@ -219,7 +219,6 @@ function validarContrasena(contrasena) {
 
   return errores;
 }
-
 
 // fecha de nacimiento
 function validarFechaNacimiento(fechaNacimientoInput) {
@@ -572,42 +571,92 @@ router.post("/login", async (req, res) => {
   const { correo_electronico, contrasena } = req.body;
 
   try {
-    if (!correo_electronico || !contrasena) {
-      return res.status(400).json({ mensaje: "Datos incompletos" });
+    const errores = [];
+
+    // ============== VALIDACIÓN DE CAMPOS OBLIGATORIOS ==============
+    if (!correo_electronico || !correo_electronico.trim()) {
+      errores.push({
+        path: "correo_electronico",
+        message: "El correo electrónico es obligatorio",
+      });
     }
 
+    if (!contrasena || !contrasena.trim()) {
+      errores.push({
+        path: "contrasena",
+        message: "La contraseña es obligatoria",
+      });
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ errors: errores });
+    }
+
+    // ============== VALIDAR FORMATO DE CORREO ==============
+    const correoRegex =
+      /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+    if (!correoRegex.test(correo_electronico)) {
+      errores.push({
+        path: "correo_electronico",
+        message: "El correo electrónico no cumple con un formato válido",
+      });
+    }
+
+    if (errores.length > 0) {
+      return res.status(400).json({ errors: errores });
+    }
+
+    // ============== BUSCAR USUARIO EN BD ==============
     const result = await db.query(
       "SELECT * FROM Usuario WHERE correo_electronico = ?",
-      [correo_electronico]
+      [correo_electronico.trim().toLowerCase()]
     );
 
     if (result[0].length === 0) {
-      return res.status(401).json({ mensaje: "No encontrado" });
+      return res.status(404).json({
+        errors: [
+          {
+            path: "correo_electronico",
+            message: "Correo electrónico incorrecto, no está registrado",
+          },
+        ],
+      });
     }
 
     const usuario = result[0][0];
 
+    // ============== VERIFICAR CONTRASEÑA ==============
     const passwordValida = await bcrypt.compare(contrasena, usuario.contrasena);
+
     if (!passwordValida) {
-      return res.status(401).json({ mensaje: "Contraseña incorrecta" });
+      return res.status(401).json({
+        errors: [
+          {
+            path: "contrasena",
+            message: "Contraseña incorrecta",
+          },
+        ],
+      });
     }
 
-    // Generar token JWT
+    // ============== GENERAR TOKEN JWT ==============
     const token = jwt.sign(
       { id: usuario.id_usuario, id_rol: usuario.id_rol },
-      "TU_SECRETO_SUPER_SEGURO",
+      process.env.JWT_SECRET,
       { expiresIn: "2h" }
     );
 
+    // CONFIGURACIÓN DE LA COOKIE
     res.cookie("token", token, {
       httpOnly: true,
-      secure: false, // true solo en HTTPS
+      secure: false, // cambiar a true solo en producción con HTTPS
       sameSite: "lax",
-      maxAge: 2 * 60 * 60 * 1000
+      maxAge: 2 * 60 * 60 * 1000, // 2 horas
+      path: "/",
     });
 
-    // ===== FOTO PREDETERMINADA =====
-    // ===== FOTO PREDETERMINADA =====
+    // ============== FOTOS PREDETERMINADAS ==============
     const FOTO_PREDETERMINADA = "/perfil-usuario.png";
     const PORTADA_PREDETERMINADA = "/portada.jpg";
 
@@ -621,8 +670,18 @@ router.post("/login", async (req, res) => {
         ? usuario.foto_portada
         : PORTADA_PREDETERMINADA;
 
-    // ===== RESPUESTA =====
+    // ============== NORMALIZAR FECHA DE NACIMIENTO ==============
+    const fechaNacimiento = usuario.fecha_nacimiento
+      ? {
+        day: new Date(usuario.fecha_nacimiento).getDate(),
+        month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
+        year: new Date(usuario.fecha_nacimiento).getFullYear(),
+      }
+      : { day: "", month: "", year: "" };
+
+    // ============== RESPUESTA EXITOSA ==============
     res.json({
+      mensaje: "Inicio de sesión exitoso",
       usuario: {
         id: usuario.id_usuario,
         nombre: usuario.nombre_usuario,
@@ -633,19 +692,20 @@ router.post("/login", async (req, res) => {
         telefono: usuario.telefono,
         descripcion: usuario.descripcion,
         genero: usuario.genero,
-        fecha_nacimiento: usuario.fecha_nacimiento
-          ? {
-            day: new Date(usuario.fecha_nacimiento).getDate(),
-            month: new Date(usuario.fecha_nacimiento).getMonth() + 1,
-            year: new Date(usuario.fecha_nacimiento).getFullYear(),
-          }
-          : { day: "", month: "", year: "" },
+        fecha_nacimiento: fechaNacimiento,
       },
     });
 
   } catch (error) {
-    console.error(error);
-    res.status(500).json({ mensaje: "Error en el login" });
+    console.error("Error en login:", error);
+    res.status(500).json({
+      errors: [
+        {
+          path: "general",
+          message: "Error al iniciar sesión. Por favor, intenta de nuevo.",
+        },
+      ],
+    });
   }
 });
 
@@ -692,7 +752,7 @@ router.get("/me", verificarToken, async (req, res) => {
         ? usuario.foto_portada
         : PORTADA_PREDETERMINADA;
 
-    // ===== 🔥 NORMALIZAR FECHA =====
+    // ===== NORMALIZAR FECHA =====
     const fechaNacimiento = usuario.fecha_nacimiento
       ? {
         day: new Date(usuario.fecha_nacimiento).getDate(),
@@ -713,7 +773,7 @@ router.get("/me", verificarToken, async (req, res) => {
         genero: usuario.genero,
         contrasena: usuario.contrasena,
         descripcion: usuario.descripcion,
-        fecha_nacimiento: fechaNacimiento, // ✅ FORMATO CORRECTO
+        fecha_nacimiento: fechaNacimiento, // FORMATO CORRECTO
       },
     });
   } catch (error) {
@@ -722,12 +782,12 @@ router.get("/me", verificarToken, async (req, res) => {
   }
 });
 
-
 router.post("/logout", (req, res) => {
   res.clearCookie("token", {
     httpOnly: true,
     sameSite: "lax",
-    secure: false, // true solo en https
+    secure: false,
+    path: "/", // Debe coincidir con login
   });
 
   res.json({ mensaje: "Sesión cerrada" });
@@ -993,8 +1053,7 @@ router.get("/exportar-pdf", async (req, res) => {
 ---------------------- Perfil Usuario --------------------
 ========================================================*/
 // Actualizar info usuario
-router.put(
-  "/actualizar-perfil",
+router.put("/actualizar-perfil",
   verificarToken,
   upload.fields([
     { name: "foto_perfil", maxCount: 1 },
@@ -1140,8 +1199,5 @@ router.put(
     }
   }
 );
-
-
-
 
 export default router;
