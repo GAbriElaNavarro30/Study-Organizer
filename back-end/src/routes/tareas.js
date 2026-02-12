@@ -321,6 +321,97 @@ router.delete("/eliminar-tarea/:id", verificarToken, async (req, res) => {
 /* ====================================================
 -------------------- Buscar tarea ---------------------
 =====================================================*/
+router.get("/buscar-tarea", verificarToken, async (req, res) => {
+    try {
+        const { q } = req.query; // q = query de búsqueda
+        const idUsuario = req.usuario.id;
 
+        if (!q || q.trim() === "") {
+            return res.status(400).json({ mensaje: "El parámetro de búsqueda es obligatorio" });
+        }
+
+        const searchTerm = q.trim().toLowerCase();
+
+        // Obtener todas las tareas del usuario
+        const [tareas] = await db.query(
+            `SELECT * FROM Recordatorio 
+             WHERE id_usuario = ?
+             ORDER BY fecha ASC, hora ASC`,
+            [idUsuario]
+        );
+
+        // Filtrar tareas en el backend
+        const resultados = tareas.filter(tarea => {
+            // 1. Buscar en título
+            if (tarea.titulo && tarea.titulo.toLowerCase().includes(searchTerm)) {
+                return true;
+            }
+
+            // 2. Buscar en descripción
+            if (tarea.descripcion && tarea.descripcion.toLowerCase().includes(searchTerm)) {
+                return true;
+            }
+
+            // 3. Buscar en estado
+            if (tarea.estado && tarea.estado.toLowerCase().includes(searchTerm)) {
+                return true;
+            }
+
+            // 4. Buscar en fecha (formato DD-MM-YYYY)
+            if (tarea.fecha) {
+                const dateObj = new Date(tarea.fecha);
+                const day = String(dateObj.getUTCDate()).padStart(2, "0");
+                const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                const year = dateObj.getUTCFullYear();
+                const fechaFormateada = `${day}-${month}-${year}`;
+
+                if (fechaFormateada.includes(searchTerm)) {
+                    return true;
+                }
+            }
+
+            // 5. Buscar en hora (formato 12H con AM/PM)
+            if (tarea.hora) {
+                const [h, min] = tarea.hora.split(":");
+                let hourNum = parseInt(h);
+                let period = "AM";
+                let displayHour = hourNum;
+
+                // Convertir de 24h a 12h
+                if (hourNum === 0) {
+                    displayHour = 12;
+                    period = "AM";
+                } else if (hourNum === 12) {
+                    displayHour = 12;
+                    period = "PM";
+                } else if (hourNum > 12) {
+                    displayHour = hourNum - 12;
+                    period = "PM";
+                } else {
+                    displayHour = hourNum;
+                    period = "AM";
+                }
+
+                const horaFormateada = `${displayHour}:${min} ${period}`.toLowerCase();
+                const horaFormateadaSinEspacios = `${displayHour}:${min}${period}`.toLowerCase();
+
+                if (horaFormateada.includes(searchTerm) || horaFormateadaSinEspacios.includes(searchTerm)) {
+                    return true;
+                }
+            }
+
+            return false;
+        });
+
+        res.json({
+            total: resultados.length,
+            resultados: resultados
+        });
+
+    } catch (error) {
+        console.error("Error al buscar tareas:", error);
+        res.status(500).json({ mensaje: "Error al buscar tareas" });
+    }
+});
 
 export default router;

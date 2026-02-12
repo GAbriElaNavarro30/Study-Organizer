@@ -2,7 +2,8 @@ import { useState, useEffect } from "react";
 import "../styles/modalTarea.css";
 import { IoInformationCircleOutline, IoClose } from "react-icons/io5";
 import logo from "../assets/imagenes/logotipo.png";
-import { CustomAlert } from "./CustomAlert"; // ✅ IMPORTAR
+import { CustomAlert } from "./CustomAlert";
+import { ModalConfirmarCancelar } from "./ModalConfirmarCancelar"; // ✅ IMPORTAR
 
 export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const [title, setTitle] = useState("");
@@ -11,12 +12,23 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     // ===== ERRORES =====
     const [errors, setErrors] = useState({});
 
-    // ===== CUSTOM ALERT ===== ✅ NUEVO
+    // ===== CUSTOM ALERT =====
     const [alert, setAlert] = useState({
         show: false,
         type: "error",
         title: "",
         message: ""
+    });
+
+    // ===== MODAL CONFIRMAR CANCELAR ===== ✅ NUEVO
+    const [showCancelModal, setShowCancelModal] = useState(false);
+
+    // ===== VALORES INICIALES ===== ✅ NUEVO
+    const [initialValues, setInitialValues] = useState({
+        title: "",
+        description: "",
+        fecha: { day: "", month: "", year: "" },
+        hora: { hour: "", minute: "", period: "AM" }
     });
 
     const showAlert = (type, title, message) => {
@@ -60,13 +72,48 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         (_, i) => String(i).padStart(2, "0")
     );
 
+    // ===== VERIFICAR SI HAY CAMBIOS ===== ✅ NUEVO
+    const hasChanges = () => {
+        return (
+            title !== initialValues.title ||
+            description !== initialValues.description ||
+            fecha.day !== initialValues.fecha.day ||
+            fecha.month !== initialValues.fecha.month ||
+            fecha.year !== initialValues.fecha.year ||
+            hora.hour !== initialValues.hora.hour ||
+            hora.minute !== initialValues.hora.minute ||
+            hora.period !== initialValues.hora.period
+        );
+    };
+
+    // ===== MANEJAR CIERRE ===== ✅ MODIFICADO
+    const handleClose = () => {
+        if (hasChanges()) {
+            setShowCancelModal(true);
+        } else {
+            onClose();
+        }
+    };
+
+    // ===== CONFIRMAR CANCELACIÓN ===== ✅ NUEVO
+    const handleConfirmCancel = () => {
+        setShowCancelModal(false);
+        onClose();
+    };
+
     // ===== CARGA EDITAR =====
     useEffect(() => {
         if (task) {
-            setTitle(task.title);
-            setDescription(task.description || "");
+            const taskTitle = task.title || "";
+            const taskDescription = task.description || "";
+
+            setTitle(taskTitle);
+            setDescription(taskDescription);
             setErrors({});
-            setAlert({ show: false, type: "error", title: "", message: "" }); // ✅ LIMPIAR ALERT
+            setAlert({ show: false, type: "error", title: "", message: "" });
+
+            let taskFecha = { day: "", month: "", year: "" };
+            let taskHora = { hour: "", minute: "", period: "AM" };
 
             if (task.dueDateOriginal || task.dueDate) {
                 const dateObj = new Date(task.dueDateOriginal || task.dueDate);
@@ -75,11 +122,8 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                 const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
                 const day = String(dateObj.getUTCDate()).padStart(2, "0");
 
-                setFecha({
-                    day: day,
-                    month: month,
-                    year: String(year)
-                });
+                taskFecha = { day, month, year: String(year) };
+                setFecha(taskFecha);
             }
 
             if (task.dueTime) {
@@ -102,19 +146,37 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                     period = "AM";
                 }
 
-                setHora({
+                taskHora = {
                     hour: String(displayHour),
                     minute: min,
                     period
-                });
+                };
+                setHora(taskHora);
             }
+
+            // ✅ GUARDAR VALORES INICIALES
+            setInitialValues({
+                title: taskTitle,
+                description: taskDescription,
+                fecha: taskFecha,
+                hora: taskHora
+            });
         } else {
+            // CREAR NUEVA TAREA
             setTitle("");
             setDescription("");
             setFecha({ day: "", month: "", year: "" });
             setHora({ hour: "", minute: "", period: "AM" });
             setErrors({});
-            setAlert({ show: false, type: "error", title: "", message: "" }); // ✅ LIMPIAR ALERT
+            setAlert({ show: false, type: "error", title: "", message: "" });
+
+            // ✅ VALORES INICIALES VACÍOS
+            setInitialValues({
+                title: "",
+                description: "",
+                fecha: { day: "", month: "", year: "" },
+                hora: { hour: "", minute: "", period: "AM" }
+            });
         }
     }, [task, isOpen]);
 
@@ -124,7 +186,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const validateForm = () => {
         const newErrors = {};
 
-        // Validar título
         if (!title.trim()) {
             newErrors.titulo = "El título es obligatorio";
         } else if (title.trim().length < 3) {
@@ -135,7 +196,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
             newErrors.titulo = "El título solo puede contener letras, números y signos de puntuación básicos";
         }
 
-        // Validar descripción
         if (!description.trim()) {
             newErrors.descripcion = "La descripción es obligatoria";
         } else if (description.trim().length > 500) {
@@ -144,7 +204,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
             newErrors.descripcion = "La descripción contiene caracteres no permitidos";
         }
 
-        // Validar fecha
         if (!fecha.day || !fecha.month || !fecha.year) {
             newErrors.fecha = "La fecha completa es obligatoria";
         } else {
@@ -159,7 +218,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
             }
         }
 
-        // Validar hora
         if (!hora.hour || !hora.minute) {
             newErrors.hora = "La hora completa es obligatoria";
         } else if (fecha.day && fecha.month && fecha.year) {
@@ -185,10 +243,7 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        // Validar en frontend
         if (!validateForm()) {
-            // ✅ MOSTRAR ALERT DE ERROR DE VALIDACIÓN
-            
             return;
         }
 
@@ -210,7 +265,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
 
             onClose();
         } catch (error) {
-            // ✅ MOSTRAR ALERT SI HAY ERROR DEL BACKEND
             if (error.response?.data?.errores) {
                 setErrors(error.response.data.errores);
                 showAlert(
@@ -242,10 +296,17 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                     />
                 )}
 
+                {/* ===== MODAL CONFIRMAR CANCELAR ===== */}
+                <ModalConfirmarCancelar
+                    isOpen={showCancelModal}
+                    onCancel={() => setShowCancelModal(false)}
+                    onConfirm={handleConfirmCancel}
+                />
+
                 <button
                     type="button"
                     className="modal-close-btn"
-                    onClick={onClose}
+                    onClick={handleClose} // ✅ CAMBIO AQUÍ
                     aria-label="Cerrar"
                 >
                     <IoClose />
@@ -429,7 +490,7 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                         <button
                             type="button"
                             className="btn-cancelar-tarea"
-                            onClick={onClose}
+                            onClick={handleClose} // ✅ CAMBIO AQUÍ
                         >
                             Cancelar
                         </button>

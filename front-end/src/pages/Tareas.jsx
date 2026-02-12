@@ -78,7 +78,7 @@ export function Tareas() {
             setTasks(tasks.filter(task => task.id !== taskToDelete.id));
             setTaskToDelete(null);
             setModalOpen(false);
-            
+
             // ✅ REEMPLAZAR alert() POR showAlert()
             showAlert("success", "¡Tarea eliminada!", "La tarea se ha eliminado correctamente");
         } catch (error) {
@@ -102,20 +102,20 @@ export function Tareas() {
             // Actualizar estado local con el nuevo estado
             setTasks(tasks.map(t =>
                 t.id === taskToFinish.id
-                    ? { 
-                        ...t, 
+                    ? {
+                        ...t,
                         completed: !t.completed,
                         estado: t.completed ? "pendiente" : "completada"
-                      }
+                    }
                     : t
             ));
 
             setTaskToFinish(null);
             setModalFinalizarOpen(false);
-            
+
             // ✅ MOSTRAR ALERT
-            const mensaje = taskToFinish.completed 
-                ? "La tarea se marcó como pendiente" 
+            const mensaje = taskToFinish.completed
+                ? "La tarea se marcó como pendiente"
                 : "La tarea se completó exitosamente";
             showAlert("success", "¡Estado actualizado!", mensaje);
         } catch (error) {
@@ -132,7 +132,8 @@ export function Tareas() {
     const handleEditClick = (task) => {
         const taskForEdit = {
             ...task,
-            dueDate: task.dueDateOriginal || task.dueDate
+            dueDate: task.dueDateOriginal || task.dueDate,
+            dueTime: task.dueTimeOriginal || task.dueTime // ✅ USAR HORA ORIGINAL EN FORMATO 24H
         };
         setTaskToEdit(taskForEdit);
         setModalTareaOpen(true);
@@ -149,7 +150,7 @@ export function Tareas() {
                     hora: tarea.dueTime
                 });
 
-                // Recargar tareas
+                // Recargar tareas con formato
                 const tareasResponse = await api.get("/tareas/obtener-tareas");
                 const tareasFormateadas = tareasResponse.data.map(t => {
                     let fechaFormateada = t.fecha;
@@ -161,9 +162,29 @@ export function Tareas() {
                         fechaFormateada = `${day}-${month}-${year}`;
                     }
 
+                    // ✅ FORMATEAR HORA CON AM/PM
                     let horaFormateada = t.hora;
                     if (t.hora) {
-                        horaFormateada = t.hora.substring(0, 5);
+                        let [h, min] = t.hora.split(":");
+                        let hourNum = parseInt(h);
+                        let period = "AM";
+                        let displayHour = hourNum;
+
+                        if (hourNum === 0) {
+                            displayHour = 12;
+                            period = "AM";
+                        } else if (hourNum === 12) {
+                            displayHour = 12;
+                            period = "PM";
+                        } else if (hourNum > 12) {
+                            displayHour = hourNum - 12;
+                            period = "PM";
+                        } else {
+                            displayHour = hourNum;
+                            period = "AM";
+                        }
+
+                        horaFormateada = `${displayHour}:${min} ${period}`;
                     }
 
                     return {
@@ -173,6 +194,7 @@ export function Tareas() {
                         dueDate: fechaFormateada,
                         dueTime: horaFormateada,
                         dueDateOriginal: t.fecha,
+                        dueTimeOriginal: t.hora,
                         estado: t.estado,
                         completed: t.estado === "completada",
                     };
@@ -200,9 +222,29 @@ export function Tareas() {
                         fechaFormateada = `${day}-${month}-${year}`;
                     }
 
+                    // ✅ FORMATEAR HORA CON AM/PM
                     let horaFormateada = t.hora;
                     if (t.hora) {
-                        horaFormateada = t.hora.substring(0, 5);
+                        let [h, min] = t.hora.split(":");
+                        let hourNum = parseInt(h);
+                        let period = "AM";
+                        let displayHour = hourNum;
+
+                        if (hourNum === 0) {
+                            displayHour = 12;
+                            period = "AM";
+                        } else if (hourNum === 12) {
+                            displayHour = 12;
+                            period = "PM";
+                        } else if (hourNum > 12) {
+                            displayHour = hourNum - 12;
+                            period = "PM";
+                        } else {
+                            displayHour = hourNum;
+                            period = "AM";
+                        }
+
+                        horaFormateada = `${displayHour}:${min} ${period}`;
                     }
 
                     return {
@@ -212,6 +254,7 @@ export function Tareas() {
                         dueDate: fechaFormateada,
                         dueTime: horaFormateada,
                         dueDateOriginal: t.fecha,
+                        dueTimeOriginal: t.hora,
                         estado: t.estado,
                         completed: t.estado === "completada",
                     };
@@ -233,24 +276,123 @@ export function Tareas() {
         }
     };
 
-    // ===== FILTRADO Y BÚSQUEDA =====
-    const filteredTasks = tasks.filter(task => {
-        const match = task.title.toLowerCase().includes(searchQuery.toLowerCase());
+    // ===== ESTADO PARA RESULTADOS DE BÚSQUEDA =====
+    const [searchResults, setSearchResults] = useState([]);
+    const [isSearching, setIsSearching] = useState(false);
 
+    // ===== FUNCIÓN DE BÚSQUEDA CON DEBOUNCE =====
+    useEffect(() => {
+        const buscarTareas = async () => {
+            if (!searchQuery.trim()) {
+                setSearchResults([]);
+                setIsSearching(false);
+                return;
+            }
+
+            setIsSearching(true);
+            try {
+                const response = await api.get(`/tareas/buscar-tarea?q=${encodeURIComponent(searchQuery.trim())}`);
+                
+                // Formatear los resultados de la búsqueda
+                const tareasFormateadas = response.data.resultados.map(t => {
+                    let fechaFormateada = t.fecha;
+                    if (t.fecha) {
+                        const dateObj = new Date(t.fecha);
+                        const day = String(dateObj.getUTCDate()).padStart(2, "0");
+                        const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                        const year = dateObj.getUTCFullYear();
+                        fechaFormateada = `${day}-${month}-${year}`;
+                    }
+
+                    let horaFormateada = t.hora;
+                    if (t.hora) {
+                        let [h, min] = t.hora.split(":");
+                        let hourNum = parseInt(h);
+                        let period = "AM";
+                        let displayHour = hourNum;
+
+                        if (hourNum === 0) {
+                            displayHour = 12;
+                            period = "AM";
+                        } else if (hourNum === 12) {
+                            displayHour = 12;
+                            period = "PM";
+                        } else if (hourNum > 12) {
+                            displayHour = hourNum - 12;
+                            period = "PM";
+                        } else {
+                            displayHour = hourNum;
+                            period = "AM";
+                        }
+
+                        horaFormateada = `${displayHour}:${min} ${period}`;
+                    }
+
+                    return {
+                        id: t.id_recordatorio,
+                        title: t.titulo,
+                        description: t.descripcion,
+                        dueDate: fechaFormateada,
+                        dueTime: horaFormateada,
+                        dueDateOriginal: t.fecha,
+                        dueTimeOriginal: t.hora,
+                        estado: t.estado,
+                        completed: t.estado === "completada",
+                    };
+                });
+
+                setSearchResults(tareasFormateadas);
+            } catch (error) {
+                console.error("Error al buscar tareas:", error);
+                setSearchResults([]);
+            } finally {
+                setIsSearching(false);
+            }
+        };
+
+        // Debounce: esperar 300ms después de que el usuario deje de escribir
+        const timeoutId = setTimeout(buscarTareas);
+        return () => clearTimeout(timeoutId);
+    }, [searchQuery]);
+
+    const handleSearchChange = (e) => {
+        setSearchQuery(e.target.value);
+        setCurrentPage(1);
+    };
+
+    // ===== FILTRADO CON BÚSQUEDA =====
+    const filteredTasks = (() => {
+        // Si hay búsqueda activa, usar los resultados del backend
+        if (searchQuery.trim()) {
+            const results = searchResults;
+            
+            // Aplicar filtro por estado sobre los resultados de búsqueda
+            if (activeFilter === "pending") {
+                return results.filter(task => task.estado === "pendiente");
+            }
+            if (activeFilter === "completed") {
+                return results.filter(task => task.estado === "completada");
+            }
+            if (activeFilter === "expired") {
+                return results.filter(task => task.estado === "vencida");
+            }
+            
+            return results;
+        }
+
+        // Si no hay búsqueda, aplicar solo filtro por estado sobre todas las tareas
         if (activeFilter === "pending") {
-            return match && task.estado === "pendiente";
+            return tasks.filter(task => task.estado === "pendiente");
         }
-
         if (activeFilter === "completed") {
-            return match && task.estado === "completada";
+            return tasks.filter(task => task.estado === "completada");
         }
-
         if (activeFilter === "expired") {
-            return match && task.estado === "vencida";
+            return tasks.filter(task => task.estado === "vencida");
         }
 
-        return match;
-    });
+        return tasks;
+    })();
 
     const pendingTasks = tasks.filter(t => t.estado === "pendiente");
 
@@ -263,6 +405,15 @@ export function Tareas() {
     );
 
     const getEmptyStateContent = () => {
+        // Si hay búsqueda activa y no hay resultados
+        if (searchQuery.trim() !== "") {
+            return {
+                title: "No hay resultados que coincidan con la consulta",
+                message: `No se encontraron tareas para "${searchQuery}"`,
+            };
+        }
+
+        // Mensajes por filtro
         if (activeFilter === "pending") {
             return {
                 title: "Excelente",
@@ -296,6 +447,7 @@ export function Tareas() {
                 const response = await api.get("/tareas/obtener-tareas");
 
                 const tareasFormateadas = response.data.map(t => {
+                    // Formatear fecha a DD-MM-YYYY
                     let fechaFormateada = t.fecha;
                     if (t.fecha) {
                         const dateObj = new Date(t.fecha);
@@ -305,9 +457,30 @@ export function Tareas() {
                         fechaFormateada = `${day}-${month}-${year}`;
                     }
 
+                    // ✅ FORMATEAR HORA A 12H CON AM/PM
                     let horaFormateada = t.hora;
                     if (t.hora) {
-                        horaFormateada = t.hora.substring(0, 5);
+                        let [h, min] = t.hora.split(":");
+                        let hourNum = parseInt(h);
+                        let period = "AM";
+                        let displayHour = hourNum;
+
+                        // Convertir de formato 24h a 12h
+                        if (hourNum === 0) {
+                            displayHour = 12;
+                            period = "AM";
+                        } else if (hourNum === 12) {
+                            displayHour = 12;
+                            period = "PM";
+                        } else if (hourNum > 12) {
+                            displayHour = hourNum - 12;
+                            period = "PM";
+                        } else {
+                            displayHour = hourNum;
+                            period = "AM";
+                        }
+
+                        horaFormateada = `${displayHour}:${min} ${period}`;
                     }
 
                     return {
@@ -317,6 +490,7 @@ export function Tareas() {
                         dueDate: fechaFormateada,
                         dueTime: horaFormateada,
                         dueDateOriginal: t.fecha,
+                        dueTimeOriginal: t.hora, // ✅ GUARDAR HORA ORIGINAL PARA EDITAR
                         estado: t.estado,
                         completed: t.estado === "completada",
                     };
@@ -399,7 +573,7 @@ export function Tareas() {
                                 type="text"
                                 placeholder="Buscar tareas..."
                                 value={searchQuery}
-                                onChange={(e) => setSearchQuery(e.target.value)}
+                                onChange={handleSearchChange}
                             />
                         </div>
 
@@ -502,31 +676,33 @@ export function Tareas() {
                 </div>
 
                 {/* ===== PAGINACIÓN ===== */}
-                <div className="pagination">
-                    <button
-                        className="page-btn"
-                        disabled={currentPage === 1}
-                        onClick={() => setCurrentPage(p => p - 1)}
-                    >
-                        &lt;
-                    </button>
-                    {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                {filteredTasks.length > 0 && (
+                    <div className="pagination">
                         <button
-                            key={page}
-                            className={`page-btn ${currentPage === page ? "active" : ""}`}
-                            onClick={() => setCurrentPage(page)}
+                            className="page-btn"
+                            disabled={currentPage === 1}
+                            onClick={() => setCurrentPage(p => p - 1)}
                         >
-                            {page}
+                            &lt;
                         </button>
-                    ))}
-                    <button
-                        className="page-btn"
-                        disabled={currentPage === totalPages}
-                        onClick={() => setCurrentPage(p => p + 1)}
-                    >
-                        &gt;
-                    </button>
-                </div>
+                        {Array.from({ length: totalPages }, (_, i) => i + 1).map(page => (
+                            <button
+                                key={page}
+                                className={`page-btn ${currentPage === page ? "active" : ""}`}
+                                onClick={() => setCurrentPage(page)}
+                            >
+                                {page}
+                            </button>
+                        ))}
+                        <button
+                            className="page-btn"
+                            disabled={currentPage === totalPages}
+                            onClick={() => setCurrentPage(p => p + 1)}
+                        >
+                            &gt;
+                        </button>
+                    </div>
+                )}
 
                 {/* ===== MODAL ELIMINAR ===== */}
                 <ModalEliminarTarea
