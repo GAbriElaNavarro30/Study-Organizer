@@ -215,3 +215,16 @@
         flex-direction: column;
     }
 }
+
+/* Estilos para errores */
+.error-mensaje {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+.campo-tarea label::after {
+    content: " *";
+    color: #e53935;
+}

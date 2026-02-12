@@ -43,12 +43,12 @@ router.get("/obtener-tareas", verificarToken, async (req, res) => {
             [idUsuario]
         );
 
-        // Obtener tareas actualizadas
+        // Obtener tareas actualizadas ordenadas por fecha/hora más cercana primero
         const [tareas] = await db.query(
             `
       SELECT * FROM Recordatorio
       WHERE id_usuario = ?
-      ORDER BY fecha DESC, hora DESC
+      ORDER BY fecha ASC, hora ASC
       `,
             [idUsuario]
         );
@@ -129,19 +129,80 @@ router.post("/crear-tarea", verificarToken, async (req, res) => {
     try {
         const { titulo, descripcion, fecha, hora } = req.body;
 
+        // Validaciones
+        const errores = {};
+
+        // Validar título
+        if (!titulo || titulo.trim() === "") {
+            errores.titulo = "El título es obligatorio";
+        } else if (titulo.trim().length < 3) {
+            errores.titulo = "El título debe tener al menos 3 caracteres";
+        } else if (titulo.trim().length > 100) {
+            errores.titulo = "El título no puede exceder 100 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!]+$/.test(titulo.trim())) {
+            errores.titulo = "El título solo puede contener letras, números y signos de puntuación básicos";
+        }
+
+        // Validar descripción
+        if (!descripcion || descripcion.trim() === "") {
+            errores.descripcion = "La descripción es obligatoria";
+        } else if (descripcion.trim().length > 500) {
+            errores.descripcion = "La descripción no puede exceder 500 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!\n]+$/.test(descripcion.trim())) {
+            errores.descripcion = "La descripción contiene caracteres no permitidos";
+        }
+
+        // Validar fecha
+        if (!fecha || fecha.trim() === "") {
+            errores.fecha = "La fecha es obligatoria";
+        } else {
+            const fechaSeleccionada = new Date(fecha + 'T00:00:00');
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            if (isNaN(fechaSeleccionada.getTime())) {
+                errores.fecha = "Formato de fecha inválido";
+            } else if (fechaSeleccionada < hoy) {
+                errores.fecha = "La fecha no puede ser anterior a hoy";
+            }
+        }
+
+        // Validar hora
+        if (!hora || hora.trim() === "") {
+            errores.hora = "La hora es obligatoria";
+        } else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(hora)) {
+            errores.hora = "Formato de hora inválido";
+        } else if (fecha) {
+            // Validar que no sea una fecha/hora pasada
+            const fechaHoraSeleccionada = new Date(`${fecha}T${hora}:00`);
+            const ahora = new Date();
+
+            if (fechaHoraSeleccionada < ahora) {
+                errores.hora = "La fecha y hora no pueden ser anteriores a la actual";
+            }
+        }
+
+        // Si hay errores, retornarlos
+        if (Object.keys(errores).length > 0) {
+            return res.status(400).json({
+                mensaje: "Errores de validación",
+                errores
+            });
+        }
+
         const recordatorio = new Recordatorio({
-            titulo,
-            descripcion,
+            titulo: titulo.trim(),
+            descripcion: descripcion.trim(),
             fecha,
             hora,
-            id_usuario: req.usuario.id, // ✅ CAMBIO AQUÍ
+            id_usuario: req.usuario.id,
         });
 
         await recordatorio.save();
 
         res.status(201).json({
             mensaje: "Tarea creada correctamente",
-            recordatorio // Devolver la tarea creada
+            recordatorio
         });
     } catch (error) {
         console.error(error);
@@ -159,13 +220,75 @@ router.put("/actualizar-tarea/:id", verificarToken, async (req, res) => {
         const { titulo, descripcion, fecha, hora } = req.body;
         const { id } = req.params;
 
-        // Resetear flags de envío cuando se actualiza fecha/hora
+        // Validaciones
+        const errores = {};
+
+        // Validar título
+        if (!titulo || titulo.trim() === "") {
+            errores.titulo = "El título es obligatorio";
+        } else if (titulo.trim().length < 3) {
+            errores.titulo = "El título debe tener al menos 3 caracteres";
+        } else if (titulo.trim().length > 100) {
+            errores.titulo = "El título no puede exceder 100 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!]+$/.test(titulo.trim())) {
+            errores.titulo = "El título solo puede contener letras, números y signos de puntuación básicos";
+        }
+
+        // Validar descripción
+        if (!descripcion || descripcion.trim() === "") {
+            errores.descripcion = "La descripción es obligatoria";
+        } else if (descripcion.trim().length > 500) {
+            errores.descripcion = "La descripción no puede exceder 500 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!\n]+$/.test(descripcion.trim())) {
+            errores.descripcion = "La descripción contiene caracteres no permitidos";
+        }
+
+        // Validar fecha
+        if (!fecha || fecha.trim() === "") {
+            errores.fecha = "La fecha es obligatoria";
+        } else {
+            const fechaSeleccionada = new Date(fecha + 'T00:00:00');
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            if (isNaN(fechaSeleccionada.getTime())) {
+                errores.fecha = "Formato de fecha inválido";
+            } else if (fechaSeleccionada < hoy) {
+                errores.fecha = "La fecha no puede ser anterior a hoy";
+            }
+        }
+
+        // Validar hora
+        if (!hora || hora.trim() === "") {
+            errores.hora = "La hora es obligatoria";
+        } else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(hora)) {
+            errores.hora = "Formato de hora inválido";
+        } else if (fecha) {
+            // Validar que no sea una fecha/hora pasada
+            const fechaHoraSeleccionada = new Date(`${fecha}T${hora}:00`);
+            const ahora = new Date();
+
+            if (fechaHoraSeleccionada < ahora) {
+                errores.hora = "La fecha y hora no pueden ser anteriores a la actual";
+            }
+        }
+
+        // Si hay errores, retornarlos
+        if (Object.keys(errores).length > 0) {
+            return res.status(400).json({
+                mensaje: "Errores de validación",
+                errores
+            });
+        }
+
+        // Resetear flags de envío Y ESTADO cuando se actualiza fecha/hora
         await db.query(
             `UPDATE Recordatorio 
        SET titulo = ?, descripcion = ?, fecha = ?, hora = ?,
+           estado = 'pendiente',
            enviado_hora_antes = FALSE, enviado_dia_antes = FALSE
        WHERE id_recordatorio = ? AND id_usuario = ?`,
-            [titulo, descripcion, fecha, hora, id, req.usuario.id] // ✅ CAMBIO AQUÍ
+            [titulo.trim(), descripcion.trim(), fecha, hora, id, req.usuario.id]
         );
 
         res.json({ mensaje: "Tarea actualizada correctamente" });

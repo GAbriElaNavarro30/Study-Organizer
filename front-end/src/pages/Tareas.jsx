@@ -134,36 +134,74 @@ export function Tareas() {
                     hora: tarea.dueTime
                 });
 
-                // Actualiza el estado local
-                setTasks(tasks.map(t =>
-                    t.id === tarea.id
-                        ? { ...t, ...tarea }
-                        : t
-                ));
+                // Recargar tareas
+                const tareasResponse = await api.get("/tareas/obtener-tareas");
+                const tareasFormateadas = tareasResponse.data.map(t => {
+                    let fechaFormateada = t.fecha;
+                    if (t.fecha) {
+                        const dateObj = new Date(t.fecha);
+                        const day = String(dateObj.getUTCDate()).padStart(2, "0");
+                        const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                        const year = dateObj.getUTCFullYear();
+                        fechaFormateada = `${day}-${month}-${year}`;
+                    }
 
+                    let horaFormateada = t.hora;
+                    if (t.hora) {
+                        horaFormateada = t.hora.substring(0, 5);
+                    }
+
+                    return {
+                        id: t.id_recordatorio,
+                        title: t.titulo,
+                        description: t.descripcion,
+                        dueDate: fechaFormateada,
+                        dueTime: horaFormateada,
+                        dueDateOriginal: t.fecha,
+                        estado: t.estado,
+                        completed: t.estado === "completada",
+                    };
+                });
+
+                setTasks(tareasFormateadas);
                 alert("Tarea actualizada correctamente");
             } else {
                 // ===== CREAR NUEVA TAREA =====
-                const response = await api.post("/tareas/crear-tarea", {
+                await api.post("/tareas/crear-tarea", {
                     titulo: tarea.title,
                     descripcion: tarea.description,
                     fecha: tarea.dueDate,
                     hora: tarea.dueTime
                 });
 
-                console.log("Tarea creada:", response.data);
-
                 // Recargar las tareas desde el servidor
                 const tareasResponse = await api.get("/tareas/obtener-tareas");
-                const tareasFormateadas = tareasResponse.data.map(t => ({
-                    id: t.id_recordatorio,
-                    title: t.titulo,
-                    description: t.descripcion,
-                    dueDate: t.fecha,
-                    dueTime: t.hora,
-                    estado: t.estado,
-                    completed: t.estado === "completada",
-                }));
+                const tareasFormateadas = tareasResponse.data.map(t => {
+                    let fechaFormateada = t.fecha;
+                    if (t.fecha) {
+                        const dateObj = new Date(t.fecha);
+                        const day = String(dateObj.getUTCDate()).padStart(2, "0");
+                        const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                        const year = dateObj.getUTCFullYear();
+                        fechaFormateada = `${day}-${month}-${year}`;
+                    }
+
+                    let horaFormateada = t.hora;
+                    if (t.hora) {
+                        horaFormateada = t.hora.substring(0, 5);
+                    }
+
+                    return {
+                        id: t.id_recordatorio,
+                        title: t.titulo,
+                        description: t.descripcion,
+                        dueDate: fechaFormateada,
+                        dueTime: horaFormateada,
+                        dueDateOriginal: t.fecha,
+                        estado: t.estado,
+                        completed: t.estado === "completada",
+                    };
+                });
 
                 setTasks(tareasFormateadas);
                 alert("Tarea creada correctamente");
@@ -172,7 +210,13 @@ export function Tareas() {
             setModalTareaOpen(false);
         } catch (error) {
             console.error("Error al guardar tarea:", error);
-            alert("Error al guardar la tarea");
+
+            // Si hay errores de validación del backend, lanzarlos para que el modal los capture
+            if (error.response?.data?.errores) {
+                throw error;
+            } else {
+                alert("Error al guardar la tarea");
+            }
         }
     };
 
@@ -196,7 +240,7 @@ export function Tareas() {
     });
 
 
-    const pendingTasks = filteredTasks.filter(t => !t.completed);
+    const pendingTasks = tasks.filter(t => t.estado === "pendiente");
 
     // ===== PAGINACIÓN =====
     const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);

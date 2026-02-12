@@ -6,6 +6,9 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
 
+    // ===== ERRORES =====
+    const [errors, setErrors] = useState({});
+
     // ===== FECHA =====
     const [fecha, setFecha] = useState({
         day: "",
@@ -40,85 +43,162 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     );
 
     // ===== CARGA EDITAR =====
-// ===== CARGA EDITAR =====
-useEffect(() => {
-    if (task) {
-        setTitle(task.title);
-        setDescription(task.description || "");
+    useEffect(() => {
+        if (task) {
+            setTitle(task.title);
+            setDescription(task.description || "");
+            setErrors({}); // Limpiar errores
 
-        if (task.dueDate) {
-            // Convertir a objeto Date y extraer componentes
-            const dateObj = new Date(task.dueDate);
-            
-            // Ajustar por zona horaria
-            const year = dateObj.getUTCFullYear();
-            const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
-            const day = String(dateObj.getUTCDate()).padStart(2, "0");
+            if (task.dueDateOriginal || task.dueDate) {
+                const dateObj = new Date(task.dueDateOriginal || task.dueDate);
 
-            console.log("📅 Fecha parseada:", { year, month, day });
+                const year = dateObj.getUTCFullYear();
+                const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                const day = String(dateObj.getUTCDate()).padStart(2, "0");
 
-            setFecha({ 
-                day: day,
-                month: month,
-                year: String(year)
-            });
-        }
-
-        if (task.dueTime) {
-            let [h, min] = task.dueTime.split(":");
-            let period = "AM";
-
-            if (parseInt(h) >= 12) {
-                period = "PM";
-                h = parseInt(h) > 12 ? String(parseInt(h) - 12) : "12";
-            } else if (parseInt(h) === 0) {
-                h = "12"; // Medianoche es 12 AM
+                setFecha({
+                    day: day,
+                    month: month,
+                    year: String(year)
+                });
             }
 
-            setHora({
-                hour: String(h),
-                minute: min,
-                period
-            });
+            if (task.dueTime) {
+                let [h, min] = task.dueTime.split(":");
+                let hourNum = parseInt(h);
+                let period = "AM";
+                let displayHour = hourNum;
+
+                // Convertir de formato 24h a 12h
+                if (hourNum === 0) {
+                    // Medianoche (00:00) → 12 AM
+                    displayHour = 12;
+                    period = "AM";
+                } else if (hourNum === 12) {
+                    // Mediodía (12:00) → 12 PM
+                    displayHour = 12;
+                    period = "PM";
+                } else if (hourNum > 12) {
+                    // Tarde/noche (13:00-23:59) → 1-11 PM
+                    displayHour = hourNum - 12;
+                    period = "PM";
+                } else {
+                    // Mañana (01:00-11:59) → 1-11 AM
+                    displayHour = hourNum;
+                    period = "AM";
+                }
+
+                setHora({
+                    hour: String(displayHour),
+                    minute: min,
+                    period
+                });
+            }
+        } else {
+            setTitle("");
+            setDescription("");
+            setFecha({ day: "", month: "", year: "" });
+            setHora({ hour: "", minute: "", period: "AM" });
+            setErrors({});
         }
-    } else {
-        setTitle("");
-        setDescription("");
-        setFecha({ day: "", month: "", year: "" });
-        setHora({ hour: "", minute: "", period: "AM" });
-    }
-}, [task, isOpen]);
+    }, [task, isOpen]);
 
     if (!isOpen) return null;
 
-    // ===== GUARDAR =====
-    const handleSubmit = (e) => {
-        e.preventDefault();
+    // ===== VALIDACIÓN =====
+    const validateForm = () => {
+        const newErrors = {};
 
-        const formattedDate =
-            fecha.year && fecha.month && fecha.day
-                ? `${fecha.year}-${fecha.month}-${fecha.day}`
-                : "";
+        // Validar título
+        if (!title.trim()) {
+            newErrors.titulo = "El título es obligatorio";
+        } else if (title.trim().length < 3) {
+            newErrors.titulo = "El título debe tener al menos 3 caracteres";
+        } else if (title.trim().length > 100) {
+            newErrors.titulo = "El título no puede exceder 100 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!]+$/.test(title.trim())) {
+            newErrors.titulo = "El título solo puede contener letras, números y signos de puntuación básicos";
+        }
 
-        let formattedTime = "";
-        if (hora.hour && hora.minute) {
+        // Validar descripción
+        if (!description.trim()) {
+            newErrors.descripcion = "La descripción es obligatoria";
+        } else if (description.trim().length > 500) {
+            newErrors.descripcion = "La descripción no puede exceder 500 caracteres";
+        } else if (!/^[a-záéíóúüñA-ZÁÉÍÓÚÜÑ0-9\s.,;:()\-¿?¡!\n]+$/.test(description.trim())) {
+            newErrors.descripcion = "La descripción contiene caracteres no permitidos";
+        }
+
+        // Validar fecha
+        if (!fecha.day || !fecha.month || !fecha.year) {
+            newErrors.fecha = "La fecha completa es obligatoria";
+        } else {
+            const fechaSeleccionada = new Date(`${fecha.year}-${fecha.month}-${fecha.day}T00:00:00`);
+            const hoy = new Date();
+            hoy.setHours(0, 0, 0, 0);
+
+            if (isNaN(fechaSeleccionada.getTime())) {
+                newErrors.fecha = "Formato de fecha inválido";
+            } else if (fechaSeleccionada < hoy) {
+                newErrors.fecha = "La fecha no puede ser anterior a hoy";
+            }
+        }
+
+        // Validar hora
+        if (!hora.hour || !hora.minute) {
+            newErrors.hora = "La hora completa es obligatoria";
+        } else if (fecha.day && fecha.month && fecha.year) {
+            // Convertir a formato 24 horas para validar
             let h = parseInt(hora.hour);
-
             if (hora.period === "PM" && h < 12) h += 12;
             if (hora.period === "AM" && h === 12) h = 0;
 
-            formattedTime = `${String(h).padStart(2, "0")}:${hora.minute}`;
+            const fechaHoraSeleccionada = new Date(
+                `${fecha.year}-${fecha.month}-${fecha.day}T${String(h).padStart(2, "0")}:${hora.minute}:00`
+            );
+            const ahora = new Date();
+
+            if (fechaHoraSeleccionada < ahora) {
+                newErrors.hora = "La fecha y hora no pueden ser anteriores a la actual";
+            }
         }
 
-        onSave({
-            ...task,
-            title,
-            description,
-            dueDate: formattedDate,
-            dueTime: formattedTime
-        });
+        setErrors(newErrors);
+        return Object.keys(newErrors).length === 0;
+    };
 
-        onClose();
+    // ===== GUARDAR =====
+    const handleSubmit = async (e) => {
+        e.preventDefault();
+
+        // Validar en frontend
+        if (!validateForm()) {
+            return;
+        }
+
+        const formattedDate = `${fecha.year}-${fecha.month}-${fecha.day}`;
+
+        let h = parseInt(hora.hour);
+        if (hora.period === "PM" && h < 12) h += 12;
+        if (hora.period === "AM" && h === 12) h = 0;
+        const formattedTime = `${String(h).padStart(2, "0")}:${hora.minute}`;
+
+        try {
+            await onSave({
+                ...task,
+                title: title.trim(),
+                description: description.trim(),
+                dueDate: formattedDate,
+                dueTime: formattedTime
+            });
+
+            onClose();
+        } catch (error) {
+            // Si el backend devuelve errores de validación
+            if (error.response?.data?.errores) {
+                setErrors(error.response.data.errores);
+            }
+        }
     };
 
     return (
@@ -154,10 +234,18 @@ useEffect(() => {
                         <input
                             type="text"
                             value={title}
-                            onChange={(e) => setTitle(e.target.value)}
+                            onChange={(e) => {
+                                setTitle(e.target.value);
+                                if (errors.titulo) {
+                                    setErrors(prev => ({ ...prev, titulo: "" }));
+                                }
+                            }}
                             placeholder="Nombre de la tarea"
-                            required
+                            maxLength={100}
                         />
+                        {errors.titulo && (
+                            <span className="error-mensaje">{errors.titulo}</span>
+                        )}
                     </div>
 
                     {/* DESCRIPCIÓN */}
@@ -165,22 +253,33 @@ useEffect(() => {
                         <label>Descripción</label>
                         <textarea
                             value={description}
-                            onChange={(e) => setDescription(e.target.value)}
-                            placeholder="Descripción opcional"
+                            onChange={(e) => {
+                                setDescription(e.target.value);
+                                if (errors.descripcion) {
+                                    setErrors(prev => ({ ...prev, descripcion: "" }));
+                                }
+                            }}
+                            placeholder="Descripción de la tarea"
+                            maxLength={500}
                         />
+                        {errors.descripcion && (
+                            <span className="error-mensaje">{errors.descripcion}</span>
+                        )}
                     </div>
 
-                    {/* FECHA Y HORA */}
-
+                    {/* FECHA */}
                     <div className="campo-tarea">
                         <label>Fecha</label>
 
                         <div className="fecha-facebook">
                             <select
                                 value={fecha.day}
-                                onChange={(e) =>
-                                    setFecha(prev => ({ ...prev, day: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setFecha(prev => ({ ...prev, day: e.target.value }));
+                                    if (errors.fecha) {
+                                        setErrors(prev => ({ ...prev, fecha: "" }));
+                                    }
+                                }}
                             >
                                 <option value="">Día</option>
                                 {days.map(d => (
@@ -195,9 +294,12 @@ useEffect(() => {
 
                             <select
                                 value={fecha.month}
-                                onChange={(e) =>
-                                    setFecha(prev => ({ ...prev, month: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setFecha(prev => ({ ...prev, month: e.target.value }));
+                                    if (errors.fecha) {
+                                        setErrors(prev => ({ ...prev, fecha: "" }));
+                                    }
+                                }}
                             >
                                 <option value="">Mes</option>
                                 {months.map((m, i) => (
@@ -212,9 +314,12 @@ useEffect(() => {
 
                             <select
                                 value={fecha.year}
-                                onChange={(e) =>
-                                    setFecha(prev => ({ ...prev, year: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setFecha(prev => ({ ...prev, year: e.target.value }));
+                                    if (errors.fecha) {
+                                        setErrors(prev => ({ ...prev, fecha: "" }));
+                                    }
+                                }}
                             >
                                 <option value="">Año</option>
                                 {years.map(y => (
@@ -224,17 +329,23 @@ useEffect(() => {
                                 ))}
                             </select>
                         </div>
+                        {errors.fecha && (
+                            <span className="error-mensaje">{errors.fecha}</span>
+                        )}
                     </div>
 
-                    {/* HORA FACEBOOK */}
+                    {/* HORA */}
                     <div className="campo-tarea">
                         <label>Hora</label>
                         <div className="hora-facebook">
                             <select
                                 value={hora.hour}
-                                onChange={(e) =>
-                                    setHora(prev => ({ ...prev, hour: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setHora(prev => ({ ...prev, hour: e.target.value }));
+                                    if (errors.hora) {
+                                        setErrors(prev => ({ ...prev, hora: "" }));
+                                    }
+                                }}
                             >
                                 <option value="">Hora</option>
                                 {hours.map(h => (
@@ -244,9 +355,12 @@ useEffect(() => {
 
                             <select
                                 value={hora.minute}
-                                onChange={(e) =>
-                                    setHora(prev => ({ ...prev, minute: e.target.value }))
-                                }
+                                onChange={(e) => {
+                                    setHora(prev => ({ ...prev, minute: e.target.value }));
+                                    if (errors.hora) {
+                                        setErrors(prev => ({ ...prev, hora: "" }));
+                                    }
+                                }}
                             >
                                 <option value="">Min</option>
                                 {minutes.map(m => (
@@ -264,8 +378,10 @@ useEffect(() => {
                                 <option value="PM">PM</option>
                             </select>
                         </div>
+                        {errors.hora && (
+                            <span className="error-mensaje">{errors.hora}</span>
+                        )}
                     </div>
-
 
                     {/* BOTONES */}
                     <div className="modal-botones-tarea">
