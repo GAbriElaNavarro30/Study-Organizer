@@ -297,11 +297,11 @@ router.post("/verificar-correo", async (req, res) => {
       });
     }
 
-    // ✅ CONSTRUIR QUERY DINÁMICAMENTE
+    // CONSTRUIR QUERY DINÁMICAMENTE
     let query = "SELECT id_usuario FROM Usuario WHERE correo_electronico = ?";
     const params = [correo_electronico.trim().toLowerCase()];
 
-    // ✅ SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
+    // SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
     if (id_usuario) {
       query += " AND id_usuario != ?";
       params.push(id_usuario);
@@ -342,11 +342,11 @@ router.post("/verificar-telefono", async (req, res) => {
       });
     }
 
-    // ✅ CONSTRUIR QUERY DINÁMICAMENTE
+    // CONSTRUIR QUERY DINÁMICAMENTE
     let query = "SELECT id_usuario FROM Usuario WHERE telefono = ?";
     const params = [telefono.trim()];
 
-    // ✅ SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
+    // SI EXISTE id_usuario, EXCLUIRLO DE LA BÚSQUEDA
     if (id_usuario) {
       query += " AND id_usuario != ?";
       params.push(id_usuario);
@@ -374,7 +374,6 @@ router.post("/verificar-telefono", async (req, res) => {
     });
   }
 });
-
 
 /* ====================================================
 -------------------------- ROLES ----------------------
@@ -1173,28 +1172,63 @@ router.put("/actualizar-perfil",
         password
       } = req.body;
 
-      // Si fechaNacimiento viene como string desde FormData
-      if (typeof fechaNacimiento === "string") {
-        fechaNacimiento = JSON.parse(fechaNacimiento);
-      }
+      const errores = [];
 
-      const campos = [];
-      const valores = [];
-
-      // ===== CAMPOS NORMALES =====
+      // ===== VALIDACIONES =====
       if (nombre) {
-        campos.push("nombre_usuario = ?");
-        valores.push(nombre);
+        errores.push(...validarNombreUsuario(nombre));
       }
 
       if (correo) {
-        campos.push("correo_electronico = ?");
-        valores.push(correo);
+        errores.push(...await validarCorreoElectronico(correo, db, req.usuario.id));
       }
 
       if (telefono) {
+        errores.push(...await validarTelefono(telefono, db, req.usuario.id));
+      }
+
+      if (genero) {
+        errores.push(...validarGenero(genero));
+      }
+
+      if (password && password.trim() !== "") {
+        errores.push(...validarContrasena(password));
+      }
+
+      // Validar fecha de nacimiento
+      if (fechaNacimiento) {
+        if (typeof fechaNacimiento === "string") {
+          fechaNacimiento = JSON.parse(fechaNacimiento);
+        }
+
+        if (fechaNacimiento.year && fechaNacimiento.month && fechaNacimiento.day) {
+          const pad = (n) => String(n).padStart(2, "0");
+          const fechaStr = `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`;
+          errores.push(...validarFechaNacimiento(fechaStr));
+        }
+      }
+
+      if (errores.length > 0) {
+        return res.status(400).json({ errors: errores });
+      }
+
+      // ===== CONSTRUIR UPDATE =====
+      const campos = [];
+      const valores = [];
+
+      if (nombre && nombre.trim() !== "") {
+        campos.push("nombre_usuario = ?");
+        valores.push(nombre.trim());
+      }
+
+      if (correo && correo.trim() !== "") {
+        campos.push("correo_electronico = ?");
+        valores.push(correo.trim().toLowerCase());
+      }
+
+      if (telefono && telefono.trim() !== "") {
         campos.push("telefono = ?");
-        valores.push(telefono);
+        valores.push(telefono.trim());
       }
 
       if (descripcion !== undefined) {
@@ -1207,19 +1241,20 @@ router.put("/actualizar-perfil",
         valores.push(genero);
       }
 
-      if (password) {
-        const hashed = await bcrypt.hash(password, 10);
+      if (password && password.trim() !== "") {
+        const salt = await bcrypt.genSalt(10);
+        const hashed = await bcrypt.hash(password, salt);
         campos.push("contrasena = ?");
         valores.push(hashed);
       }
 
       if (fechaNacimiento?.year && fechaNacimiento?.month && fechaNacimiento?.day) {
-        // Guardar como YYYY-MM-DD
+        const pad = (n) => String(n).padStart(2, "0");
         campos.push("fecha_nacimiento = ?");
-        valores.push(`${fechaNacimiento.year}-${fechaNacimiento.month}-${fechaNacimiento.day}`);
+        valores.push(`${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`);
       }
 
-      // ===== CLOUDINARY (solo sube) =====
+      // ===== CLOUDINARY =====
       const subirArchivoCloudinary = async (file) => {
         const base64 = file.buffer.toString("base64");
         const dataUri = `data:${file.mimetype};base64,${base64}`;
@@ -1277,7 +1312,6 @@ router.put("/actualizar-perfil",
 
       const usuario = rows[0];
 
-      // ===== NORMALIZAR FECHA =====
       const fechaNacimientoNormalizada = usuario.fecha_nacimiento
         ? {
           day: new Date(usuario.fecha_nacimiento).getDate(),

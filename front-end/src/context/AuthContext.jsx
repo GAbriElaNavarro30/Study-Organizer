@@ -17,16 +17,6 @@ const esFotoValida = (foto) => {
   return !invalidas.some(v => foto.includes(v));
 };
 
-// Normaliza el género para que siempre coincida con los radios
-const normalizarGenero = (g) => {
-  if (!g) return "";
-  g = g.toString().toLowerCase();
-
-  if (g === "hombre" || g === "male" || g === "m") return "Hombre";
-  if (g === "mujer" || g === "female" || g === "f") return "Mujer";
-  return "Otro";
-};
-
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
   const [loading, setLoading] = useState(true);
@@ -60,7 +50,6 @@ export function AuthProvider({ children }) {
     };
   };
 
-
   // NORMALIZADOR CENTRAL DEL USUARIO
   const normalizarUsuario = (user) => {
     if (!user) return null;
@@ -69,7 +58,7 @@ export function AuthProvider({ children }) {
       ...user,
       rol: user.rol,
       rol_texto: ROLES_MAP[user.rol] || "Sin rol",
-      genero: normalizarGenero(user.genero), // Género normalizado para los radios
+
       fecha_nacimiento: normalizarFecha(user.fecha_nacimiento),
 
       foto_perfil: esFotoValida(user.foto_perfil)
