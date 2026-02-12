@@ -1,6 +1,8 @@
 import { useState, useEffect } from "react";
 import "../styles/modalTarea.css";
 import { IoInformationCircleOutline, IoClose } from "react-icons/io5";
+import logo from "../assets/imagenes/logotipo.png";
+import { CustomAlert } from "./CustomAlert"; // ✅ IMPORTAR
 
 export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const [title, setTitle] = useState("");
@@ -8,6 +10,22 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
 
     // ===== ERRORES =====
     const [errors, setErrors] = useState({});
+
+    // ===== CUSTOM ALERT ===== ✅ NUEVO
+    const [alert, setAlert] = useState({
+        show: false,
+        type: "error",
+        title: "",
+        message: ""
+    });
+
+    const showAlert = (type, title, message) => {
+        setAlert({ show: true, type, title, message });
+    };
+
+    const closeAlert = () => {
+        setAlert({ ...alert, show: false });
+    };
 
     // ===== FECHA =====
     const [fecha, setFecha] = useState({
@@ -47,7 +65,8 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         if (task) {
             setTitle(task.title);
             setDescription(task.description || "");
-            setErrors({}); // Limpiar errores
+            setErrors({});
+            setAlert({ show: false, type: "error", title: "", message: "" }); // ✅ LIMPIAR ALERT
 
             if (task.dueDateOriginal || task.dueDate) {
                 const dateObj = new Date(task.dueDateOriginal || task.dueDate);
@@ -69,21 +88,16 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                 let period = "AM";
                 let displayHour = hourNum;
 
-                // Convertir de formato 24h a 12h
                 if (hourNum === 0) {
-                    // Medianoche (00:00) → 12 AM
                     displayHour = 12;
                     period = "AM";
                 } else if (hourNum === 12) {
-                    // Mediodía (12:00) → 12 PM
                     displayHour = 12;
                     period = "PM";
                 } else if (hourNum > 12) {
-                    // Tarde/noche (13:00-23:59) → 1-11 PM
                     displayHour = hourNum - 12;
                     period = "PM";
                 } else {
-                    // Mañana (01:00-11:59) → 1-11 AM
                     displayHour = hourNum;
                     period = "AM";
                 }
@@ -100,6 +114,7 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
             setFecha({ day: "", month: "", year: "" });
             setHora({ hour: "", minute: "", period: "AM" });
             setErrors({});
+            setAlert({ show: false, type: "error", title: "", message: "" }); // ✅ LIMPIAR ALERT
         }
     }, [task, isOpen]);
 
@@ -148,7 +163,6 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         if (!hora.hour || !hora.minute) {
             newErrors.hora = "La hora completa es obligatoria";
         } else if (fecha.day && fecha.month && fecha.year) {
-            // Convertir a formato 24 horas para validar
             let h = parseInt(hora.hour);
             if (hora.period === "PM" && h < 12) h += 12;
             if (hora.period === "AM" && h === 12) h = 0;
@@ -173,6 +187,8 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
 
         // Validar en frontend
         if (!validateForm()) {
+            // ✅ MOSTRAR ALERT DE ERROR DE VALIDACIÓN
+            
             return;
         }
 
@@ -194,9 +210,20 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
 
             onClose();
         } catch (error) {
-            // Si el backend devuelve errores de validación
+            // ✅ MOSTRAR ALERT SI HAY ERROR DEL BACKEND
             if (error.response?.data?.errores) {
                 setErrors(error.response.data.errores);
+                showAlert(
+                    "error",
+                    "Error del servidor",
+                    "Por favor, verifica los campos marcados en rojo"
+                );
+            } else {
+                showAlert(
+                    "error",
+                    "Error inesperado",
+                    "Ocurrió un error al guardar la tarea. Por favor, intenta nuevamente."
+                );
             }
         }
     };
@@ -204,6 +231,17 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     return (
         <div className="modal-overlay-tarea">
             <div className="modal-contenedor-tarea">
+                {/* ===== CUSTOM ALERT ===== */}
+                {alert.show && (
+                    <CustomAlert
+                        type={alert.type}
+                        title={alert.title}
+                        message={alert.message}
+                        onClose={closeAlert}
+                        logo={logo}
+                    />
+                )}
+
                 <button
                     type="button"
                     className="modal-close-btn"
