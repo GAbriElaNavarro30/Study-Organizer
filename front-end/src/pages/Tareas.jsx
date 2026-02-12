@@ -1,6 +1,7 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import "../styles/tareas.css";
 import { IoAddCircleOutline } from "react-icons/io5";
+import api from "../services/api";
 
 import {
     CheckCircle2,
@@ -14,47 +15,9 @@ import { ModalEliminarTarea } from "../components/ModalEliminarTarea";
 import { ModalFinalizarTarea } from "../components/ModalFinalizarTarea";
 import { ModalCrearActualizarTarea } from "../components/ModalCrearActualizarTarea";
 
-const initialTasks = [
-    {
-        id: 1,
-        title: "Revisar propuesta del cliente",
-        description: "Analizar los requisitos y preparar respuesta detallada",
-        completed: false,
-        priority: "high",
-        dueDate: "Hoy",
-        category: "Trabajo",
-    },
-    {
-        id: 2,
-        title: "Actualizar documentación del proyecto",
-        description: "Incluir los nuevos endpoints de la API",
-        completed: false,
-        priority: "medium",
-        dueDate: "Mañana",
-        category: "Trabajo",
-    },
-    {
-        id: 3,
-        title: "Reunión con el equipo de diseño",
-        description: "Discutir cambios en la interfaz de usuario",
-        completed: false,
-        priority: "high",
-        dueDate: "Hoy",
-        category: "Reuniones",
-    },
-    {
-        id: 4,
-        title: "Preparar presentación mensual",
-        completed: true,
-        priority: "medium",
-        dueDate: "Completado",
-        category: "Trabajo",
-    },
-];
-
 export function Tareas() {
     // ===== ESTADOS =====
-    const [tasks, setTasks] = useState(initialTasks);
+    const [tasks, setTasks] = useState([]);
     const [activeFilter, setActiveFilter] = useState("all");
     const [searchQuery, setSearchQuery] = useState("");
     const [itemsPerPage, setItemsPerPage] = useState(5);
@@ -88,15 +51,23 @@ export function Tareas() {
         setModalOpen(true);
     };
 
-    const handleConfirmDelete = () => {
-        if (taskToDelete) {
-            deleteTask(taskToDelete.id);
+    const handleConfirmDelete = async () => {
+        if (!taskToDelete) return;
+
+        try {
+            await api.delete(`/tareas/eliminar-tarea/${taskToDelete.id}`);
+
+            // Actualiza el estado local
+            setTasks(tasks.filter(task => task.id !== taskToDelete.id));
+
             setTaskToDelete(null);
             setModalOpen(false);
+            alert("Tarea eliminada correctamente");
+        } catch (error) {
+            console.error("Error al eliminar tarea:", error);
+            alert("Error al eliminar la tarea");
         }
     };
-
-
 
     // Función para abrir modal
     const handleFinishClick = (task) => {
@@ -104,16 +75,37 @@ export function Tareas() {
         setModalFinalizarOpen(true);
     };
 
-    // Función para confirmar finalización
-    const handleConfirmFinish = () => {
-        if (taskToFinish) {
-            toggleTask(taskToFinish.id); // Marca como completada
+    // Función para confirmar finalización/descompletar
+    const handleConfirmFinish = async () => {
+        if (!taskToFinish) return;
+
+        console.log("📌 Tarea a actualizar:", taskToFinish);
+        console.log("📌 ID que se enviará:", taskToFinish.id);
+
+        try {
+            const url = `/tareas/completar-tarea/${taskToFinish.id}`;
+            console.log("📌 URL completa:", url);
+
+            const response = await api.patch(url);
+
+            console.log("✅ Respuesta del servidor:", response.data);
+
+            // Actualiza estado local
+            setTasks(tasks.map(t =>
+                t.id === taskToFinish.id
+                    ? { ...t, completed: !t.completed }
+                    : t
+            ));
+
             setTaskToFinish(null);
             setModalFinalizarOpen(false);
+        } catch (error) {
+            console.error("❌ Error completo:", error);
+            console.error("❌ Respuesta del servidor:", error.response?.data);
+            console.error("❌ Status:", error.response?.status);
+            alert("Error al actualizar la tarea");
         }
     };
-
-
 
 
     const handleCreateClick = () => {
@@ -122,30 +114,87 @@ export function Tareas() {
     };
 
     const handleEditClick = (task) => {
-        setTaskToEdit(task);
+        // Pasar la fecha original para que el modal pueda parsearla correctamente
+        const taskForEdit = {
+            ...task,
+            dueDate: task.dueDateOriginal || task.dueDate
+        };
+        setTaskToEdit(taskForEdit);
         setModalTareaOpen(true);
     };
 
-    const handleSaveTask = (tarea) => {
-        if (tarea.id) {
-            // Editar
-            setTasks(tasks.map(t => t.id === tarea.id ? tarea : t));
-        } else {
-            // Crear nueva
-            const newTask = { ...tarea, id: Date.now(), completed: false };
-            setTasks([newTask, ...tasks]);
+    const handleSaveTask = async (tarea) => {
+        try {
+            if (tarea.id) {
+                // ===== EDITAR TAREA EXISTENTE =====
+                await api.put(`/tareas/actualizar-tarea/${tarea.id}`, {
+                    titulo: tarea.title,
+                    descripcion: tarea.description,
+                    fecha: tarea.dueDate,
+                    hora: tarea.dueTime
+                });
+
+                // Actualiza el estado local
+                setTasks(tasks.map(t =>
+                    t.id === tarea.id
+                        ? { ...t, ...tarea }
+                        : t
+                ));
+
+                alert("Tarea actualizada correctamente");
+            } else {
+                // ===== CREAR NUEVA TAREA =====
+                const response = await api.post("/tareas/crear-tarea", {
+                    titulo: tarea.title,
+                    descripcion: tarea.description,
+                    fecha: tarea.dueDate,
+                    hora: tarea.dueTime
+                });
+
+                console.log("Tarea creada:", response.data);
+
+                // Recargar las tareas desde el servidor
+                const tareasResponse = await api.get("/tareas/obtener-tareas");
+                const tareasFormateadas = tareasResponse.data.map(t => ({
+                    id: t.id_recordatorio,
+                    title: t.titulo,
+                    description: t.descripcion,
+                    dueDate: t.fecha,
+                    dueTime: t.hora,
+                    estado: t.estado,
+                    completed: t.estado === "completada",
+                }));
+
+                setTasks(tareasFormateadas);
+                alert("Tarea creada correctamente");
+            }
+
+            setModalTareaOpen(false);
+        } catch (error) {
+            console.error("Error al guardar tarea:", error);
+            alert("Error al guardar la tarea");
         }
     };
-
-
 
     // ===== FILTRADO Y BÚSQUEDA =====
     const filteredTasks = tasks.filter(task => {
         const match = task.title.toLowerCase().includes(searchQuery.toLowerCase());
-        if (activeFilter === "pending") return match && !task.completed;
-        if (activeFilter === "completed") return match && task.completed;
-        return match;
+
+        if (activeFilter === "pending") {
+            return match && task.estado === "pendiente";
+        }
+
+        if (activeFilter === "completed") {
+            return match && task.estado === "completada";
+        }
+
+        if (activeFilter === "expired") {
+            return match && task.estado === "vencida";
+        }
+
+        return match; // all
     });
+
 
     const pendingTasks = filteredTasks.filter(t => !t.completed);
 
@@ -156,6 +205,85 @@ export function Tareas() {
         startIndex,
         startIndex + itemsPerPage
     );
+
+    const getEmptyStateContent = () => {
+        if (activeFilter === "pending") {
+            return {
+                title: "Excelente",
+                message: "No hay tareas pendientes",
+            };
+        }
+
+        if (activeFilter === "completed") {
+            return {
+                title: "No hay tareas completadas",
+                message: "Finaliza tus tareas pendientes",
+            };
+        }
+
+        if (activeFilter === "expired") {
+            return {
+                title: "No hay tareas expiradas",
+                message: "Finaliza tus tareas pendientes antes de que expiren",
+            };
+        }
+
+        // all y completed
+        return {
+            title: "No hay tareas",
+            message: "Crea una nueva tarea para comenzar",
+        };
+    };
+
+
+    useEffect(() => {
+        const obtenerTareas = async () => {
+            try {
+                const response = await api.get("/tareas/obtener-tareas");
+
+                // 🔁 Mapeo backend → frontend
+                const tareasFormateadas = response.data.map(t => {
+                    // Formatear fecha a DD-MM-YYYY
+                    let fechaFormateada = t.fecha;
+                    if (t.fecha) {
+                        const dateObj = new Date(t.fecha);
+                        const day = String(dateObj.getUTCDate()).padStart(2, "0");
+                        const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+                        const year = dateObj.getUTCFullYear();
+                        fechaFormateada = `${day}-${month}-${year}`;
+                    }
+
+                    // Formatear hora a HH:MM
+                    let horaFormateada = t.hora;
+                    if (t.hora) {
+                        horaFormateada = t.hora.substring(0, 5); // De "14:00:00" a "14:00"
+                    }
+
+                    return {
+                        id: t.id_recordatorio,
+                        title: t.titulo,
+                        description: t.descripcion,
+                        dueDate: fechaFormateada,
+                        dueTime: horaFormateada,
+                        dueDateOriginal: t.fecha, // Guardar original para editar
+                        estado: t.estado,
+                        completed: t.estado === "completada",
+                    };
+                });
+
+                setTasks(tareasFormateadas);
+            } catch (error) {
+                console.error("Error al obtener tareas:", error);
+            }
+        };
+
+        obtenerTareas();
+
+        const interval = setInterval(obtenerTareas, 1000);
+
+        return () => clearInterval(interval);
+    }, []);
+
 
     return (
         <div className="contenedor-tareas-principal">
@@ -196,6 +324,12 @@ export function Tareas() {
                             >
                                 Completadas
                             </button>
+                            <button
+                                className={activeFilter === "expired" ? "active" : ""}
+                                onClick={() => setActiveFilter("expired")}
+                            >
+                                Vencidas
+                            </button>
                         </div>
                     </div>
 
@@ -235,8 +369,8 @@ export function Tareas() {
                     {paginatedTasks.length === 0 ? (
                         <div className="empty-state">
                             <Inbox size={40} />
-                            <h3>No hay tareas</h3>
-                            <p>Crea una nueva tarea para comenzar</p>
+                            <h3>{getEmptyStateContent().title}</h3>
+                            <p>{getEmptyStateContent().message}</p>
                         </div>
                     ) : (
                         <table className="tareas-table">
@@ -258,11 +392,14 @@ export function Tareas() {
                                         <td>{task.title}</td>
                                         <td>{task.description || "-"}</td>
                                         <td>{task.dueDate}</td>
-                                        <td>{task.dueDate}</td>
+                                        <td>{task.dueTime}</td>
                                         <td>
-                                            <span className={`estado ${task.completed ? "completado" : "pendiente"}`}>
-                                                {task.completed ? "Completada" : "Pendiente"}
+                                            <span className={`estado ${task.estado}`}>
+                                                {task.estado === "pendiente" && "Pendiente"}
+                                                {task.estado === "completada" && "Completada"}
+                                                {task.estado === "vencida" && "Vencida"}
                                             </span>
+
                                         </td>
 
                                         {/* Cada acción en su propia celda */}
@@ -277,9 +414,16 @@ export function Tareas() {
 
                                         <td>
                                             <button
-                                                title={task.completed ? "Tarea completada" : "Pendiente"}
+                                                disabled={task.estado === "vencida"}
                                                 onClick={() => handleFinishClick(task)}
-                                                className={`btn-finalizar ${task.completed ? "completada" : "pendiente"}`}
+                                                className={`btn-finalizar ${task.estado}`}
+                                                title={
+                                                    task.estado === "vencida"
+                                                        ? "Tarea vencida"
+                                                        : task.completed
+                                                            ? "Tarea completada"
+                                                            : "Pendiente"
+                                                }
                                             >
                                                 <CheckCircle2 size={20} />
                                             </button>

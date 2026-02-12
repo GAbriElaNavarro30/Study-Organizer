@@ -1031,7 +1031,7 @@ router.put("/editar-usuario/:id", async (req, res) => {
       data.id_rol,
     ];
 
-    // ⚠️ SOLO HASHEAR Y ACTUALIZAR SI VIENE CONTRASEÑA
+    // SOLO HASHEAR Y ACTUALIZAR SI VIENE CONTRASEÑA
     if (data.contrasena && data.contrasena.trim() !== "") {
       const salt = await bcrypt.genSalt(10);
       const hashedPassword = await bcrypt.hash(data.contrasena, salt);

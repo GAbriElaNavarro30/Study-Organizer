@@ -78,7 +78,7 @@ export function Perfil() {
 
             {/* ===== PORTADA ===== */}
             <div className="perfil-portada-usuario">
-                <img src={fotoPortada} alt="Portada" className="imagen-portada-usuario" />
+                <img src={fotoPortada} className="imagen-portada-usuario" />
                 <img src={obtenerFotoPerfil()} alt="Foto de perfil" className="imagen-perfil-usuario" />
             </div>
 

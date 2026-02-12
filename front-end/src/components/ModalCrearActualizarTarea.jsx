@@ -40,38 +40,54 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     );
 
     // ===== CARGA EDITAR =====
-    useEffect(() => {
-        if (task) {
-            setTitle(task.title);
-            setDescription(task.description || "");
+// ===== CARGA EDITAR =====
+useEffect(() => {
+    if (task) {
+        setTitle(task.title);
+        setDescription(task.description || "");
 
-            if (task.dueDate) {
-                const [y, m, d] = task.dueDate.split("-");
-                setFecha({ day: d, month: m, year: y });
-            }
+        if (task.dueDate) {
+            // Convertir a objeto Date y extraer componentes
+            const dateObj = new Date(task.dueDate);
+            
+            // Ajustar por zona horaria
+            const year = dateObj.getUTCFullYear();
+            const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
+            const day = String(dateObj.getUTCDate()).padStart(2, "0");
 
-            if (task.dueTime) {
-                let [h, min] = task.dueTime.split(":");
-                let period = "AM";
+            console.log("📅 Fecha parseada:", { year, month, day });
 
-                if (parseInt(h) >= 12) {
-                    period = "PM";
-                    h = parseInt(h) > 12 ? String(parseInt(h) - 12) : "12";
-                }
-
-                setHora({
-                    hour: h,
-                    minute: min,
-                    period
-                });
-            }
-        } else {
-            setTitle("");
-            setDescription("");
-            setFecha({ day: "", month: "", year: "" });
-            setHora({ hour: "", minute: "", period: "AM" });
+            setFecha({ 
+                day: day,
+                month: month,
+                year: String(year)
+            });
         }
-    }, [task, isOpen]);
+
+        if (task.dueTime) {
+            let [h, min] = task.dueTime.split(":");
+            let period = "AM";
+
+            if (parseInt(h) >= 12) {
+                period = "PM";
+                h = parseInt(h) > 12 ? String(parseInt(h) - 12) : "12";
+            } else if (parseInt(h) === 0) {
+                h = "12"; // Medianoche es 12 AM
+            }
+
+            setHora({
+                hour: String(h),
+                minute: min,
+                period
+            });
+        }
+    } else {
+        setTitle("");
+        setDescription("");
+        setFecha({ day: "", month: "", year: "" });
+        setHora({ hour: "", minute: "", period: "AM" });
+    }
+}, [task, isOpen]);
 
     if (!isOpen) return null;
 

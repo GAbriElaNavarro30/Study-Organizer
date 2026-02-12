@@ -1,15 +1,15 @@
-import React from "react";
 import "../styles/modalFinalizar.css";
 
 export function ModalFinalizarTarea({ isOpen, onClose, onConfirm, tarea }) {
     if (!isOpen || !tarea) return null;
 
     const accion = tarea.completed ? "marcar como pendiente" : "marcar como finalizada";
+    const titulo = tarea.completed ? "¿Marcar como pendiente?" : "¿Completar tarea?";
 
     return (
         <div className="modal-overlay-finalizar">
             <div className="modal-contenedor-finalizar">
-                <h2>Confirmar Acción</h2>
+                <h2>{titulo}</h2>
 
                 <hr className="linea-separadora-finalizar" />
 

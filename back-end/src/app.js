@@ -1,8 +1,10 @@
 import express from "express";
 import usuarioRoutes from "../src/routes/usuario.js";
+import tareasRoutes from "../src/routes/tareas.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
+import "../src/cron/recordatoriosCron.js";
 
 dotenv.config();
 const app = express();
@@ -12,7 +14,7 @@ app.use(express.urlencoded({ extended: true }));
 
 app.use(cors({
   origin: "http://localhost:5173",
-  methods: ["GET", "POST", "PUT", "DELETE"],
+  methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true
 }));
 
@@ -24,6 +26,7 @@ app.get("/", (req, res) => {
 
 // rutas
 app.use("/usuarios", usuarioRoutes);
+app.use("/tareas", tareasRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor corriendo en puerto 3000");
