@@ -30,7 +30,7 @@ cron.schedule("* * * * *", async () => {
                 "UPDATE Recordatorio SET enviado_hora_antes = TRUE WHERE id_recordatorio = ?",
                 [r.id_recordatorio]
             );
-            console.log(`✅ Correo 1 hora antes enviado para: ${r.titulo}`);
+            console.log(`Correo 1 hora antes enviado para: ${r.titulo}`);
         }
 
         /* ================= CORREO 1 DÍA ANTES A LAS 11:59 PM ================= */
@@ -53,12 +53,12 @@ cron.schedule("* * * * *", async () => {
                     "UPDATE Recordatorio SET enviado_dia_antes = TRUE WHERE id_recordatorio = ?",
                     [r.id_recordatorio]
                 );
-                console.log(`✅ Correo 1 día antes enviado para: ${r.titulo}`);
+                console.log(`Correo 1 día antes enviado para: ${r.titulo}`);
             }
         }
 
     } catch (error) {
-        console.error("❌ Error cron recordatorios:", error);
+        console.error("Error cron recordatorios:", error);
     }
 });
 

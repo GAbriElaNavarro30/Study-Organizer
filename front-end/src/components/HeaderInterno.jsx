@@ -45,7 +45,6 @@ export function HeaderInterno() {
         navigate("/login");
     };
 
-
     return (
         <div className="header-interno">
             <div className="logotipo-interno">
@@ -66,7 +65,7 @@ export function HeaderInterno() {
                     onClick={() => setMenuAbierto(!menuAbierto)}
                 >
                     <img
-                        src={usuario?.foto_perfil || "/avatars/perfil-usuario.png"}
+                        src={usuario?.foto_perfil}
                         alt="Foto de perfil"
                     />
                 </div>

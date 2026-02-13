@@ -1,14 +1,19 @@
-import { useState, useEffect } from "react";
+import { useState, useEffect, useContext } from "react";
 import "../styles/dashboard.css";
 import "../styles/bienvenida.css";
 import perfil from "../assets/imagenes/perfil-usuario.png";
 import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
+import { AuthContext } from "../context/AuthContext";
 
 export function Dashboard({
     nombre = "Usuario",
     rol = "Estudiante",
     descripcion = "Este es tu espacio personal dentro de la plataforma."
 }) {
+    const { usuario, refrescarUsuario } = useContext(AuthContext);
+    useEffect(() => {
+        refrescarUsuario();
+    }, []);
 
     /* ================= EMOCIONES ================= */
     const emocionesBase = [
@@ -98,13 +103,13 @@ export function Dashboard({
             {/* ===== PERFIL ===== */}
             <section className="bienvenida-perfil">
                 <div className="perfil-foto">
-                    <img src={perfil} alt="Foto de perfil" />
+                    <img src={usuario?.foto_perfil} alt="Foto de perfil" />
                 </div>
 
                 <div className="perfil-info">
-                    <h2>Bienvenid@, {nombre}</h2>
-                    <span className="perfil-rol">{rol}</span>
-                    <p className="perfil-descripcion">{descripcion}</p>
+                    <h2>Bienvenid@, {usuario?.nombre}</h2>
+                    <span className="perfil-rol">{usuario?.rol_texto}</span>
+                    <p className="perfil-descripcion">{usuario?.descripcion}</p>
                 </div>
             </section>
 

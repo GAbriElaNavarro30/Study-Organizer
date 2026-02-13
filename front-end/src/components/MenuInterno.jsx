@@ -21,9 +21,9 @@ export function MenuInterno() {
 
         2: [ // ESTUDIANTE
             { to: "/dashboard", label: "Dashboard" },
-            { to: "", label: "Estilos Aprendizaje" },
-            { to: "", label: "Métodos de Estudio" },
-            { to: "", label: "Cursos" },
+            { to: "/estilos-aprendizaje", label: "Estilos Aprendizaje" },
+            { to: "/metodos-estudio", label: "Métodos de Estudio" },
+            { to: "/cursos", label: "Cursos" },
             { to: "/notas", label: "Notas" },
             { to: "/tareas", label: "Tareas" },
             { to: "/perfil", label: "Perfil" },
@@ -31,7 +31,7 @@ export function MenuInterno() {
 
         3: [ // TUTOR
             { to: "/home", label: "Bienvenida" },
-            { to: "", label: "Cursos Tutor" },
+            { to: "/cursos-tutor", label: "Cursos Tutor" },
             { to: "/perfil", label: "Perfil" },
         ],
     };

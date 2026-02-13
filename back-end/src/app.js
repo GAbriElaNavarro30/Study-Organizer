@@ -1,6 +1,7 @@
 import express from "express";
 import usuarioRoutes from "../src/routes/usuario.js";
 import tareasRoutes from "../src/routes/tareas.js";
+import notasRoutes from "../src/routes/notas.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -27,6 +28,7 @@ app.get("/", (req, res) => {
 // rutas
 app.use("/usuarios", usuarioRoutes);
 app.use("/tareas", tareasRoutes);
+app.use("/notas", notasRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor corriendo en puerto 3000");

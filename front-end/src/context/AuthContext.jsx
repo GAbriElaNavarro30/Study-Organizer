@@ -23,15 +23,15 @@ export function AuthProvider({ children }) {
 
   const ROLES_MAP = {
     1: "Administrador",
-    2: "Usuario",
+    2: "Estudiante",
     3: "Tutor",
   };
 
-  // Normaliza la fecha a objeto { day, month, year }
+  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
   const normalizarFecha = (fecha) => {
     if (!fecha) return { day: "", month: "", year: "" };
 
-    // SI YA VIENE COMO OBJETO {day, month, year}
     if (
       typeof fecha === "object" &&
       "day" in fecha &&
@@ -41,7 +41,6 @@ export function AuthProvider({ children }) {
       return fecha;
     }
 
-    // Si viene como string o Date
     const d = new Date(fecha);
     return {
       day: d.getDate(),
@@ -50,27 +49,52 @@ export function AuthProvider({ children }) {
     };
   };
 
-  // NORMALIZADOR CENTRAL DEL USUARIO
   const normalizarUsuario = (user) => {
     if (!user) return null;
+
+    // DETECTAR SI LA FOTO YA ES UNA URL COMPLETA (http:// o https://)
+    const esUrlCompleta = (url) => {
+      if (!url) return false;
+      return url.startsWith('http://') || url.startsWith('https://');
+    };
+
+    // Si la foto ya es URL completa (Cloudinary), úsala directamente
+    // Si es ruta relativa (/uploads/...), construye URL completa del servidor
+    // Si no es válida, usa imagen predeterminada
+    const fotoPerfil = esFotoValida(user.foto_perfil)
+      ? (esUrlCompleta(user.foto_perfil)
+        ? user.foto_perfil  // Ya es URL completa (Cloudinary)
+        : `${API_URL}${user.foto_perfil}`)  // Ruta del servidor local
+      : perfilPredeterminado;  // Imagen predeterminada
+
+    const fotoPortada = esFotoValida(user.foto_portada)
+      ? (esUrlCompleta(user.foto_portada)
+        ? user.foto_portada
+        : `${API_URL}${user.foto_portada}`)
+      : "/portada.jpg";
 
     return {
       ...user,
       rol: user.rol,
       rol_texto: ROLES_MAP[user.rol] || "Sin rol",
-
       fecha_nacimiento: normalizarFecha(user.fecha_nacimiento),
-
-      foto_perfil: esFotoValida(user.foto_perfil)
-        ? user.foto_perfil
-        : perfilPredeterminado,
-      foto_portada: esFotoValida(user.foto_portada)
-        ? user.foto_portada
-        : "/portada.jpg",
+      foto_perfil: fotoPerfil,
+      foto_portada: fotoPortada,
     };
   };
 
-  // Verificar sesión al montar
+  // FUNCIÓN PARA RECARGAR EL USUARIO
+  const refrescarUsuario = async () => {
+    try {
+      const res = await api.get("/usuarios/me");
+      setUsuario(normalizarUsuario(res.data.usuario));
+      return res.data.usuario;
+    } catch (error) {
+      setUsuario(null);
+      throw error;
+    }
+  };
+
   useEffect(() => {
     const verificarSesion = async () => {
       try {
@@ -86,7 +110,6 @@ export function AuthProvider({ children }) {
     verificarSesion();
   }, []);
 
-  // LOGOUT
   const logout = async () => {
     try {
       await api.post("/usuarios/logout");
@@ -98,6 +121,10 @@ export function AuthProvider({ children }) {
     }
   };
 
+  if (loading) {
+    return null;
+  }
+
   return (
     <AuthContext.Provider
       value={{
@@ -106,6 +133,7 @@ export function AuthProvider({ children }) {
         loading,
         logout,
         setLoading,
+        refrescarUsuario,
       }}
     >
       {children}

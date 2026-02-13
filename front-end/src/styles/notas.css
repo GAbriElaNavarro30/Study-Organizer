@@ -172,32 +172,34 @@
 
 .note-actions svg {
     cursor: pointer;
-    color: #64748b;
     transition: color 0.2s ease;
     width: 22px;
     height: 22px;
-
 }
 
-
-/* COMPARTIR (1) */
-.note-actions svg:nth-child(1) {
-    color: #0ea5e9; /* azul */
+/* EXPORTAR - Download (verde) */
+.icono-notas-exportar {
+    color: #10b981;
 }
 
-/* EDITAR (2) */
-.note-actions svg:nth-child(2) {
-    color: #8b5cf6; /* morado */
+/* COMPARTIR - Share2 (azul) */
+.icono-notas-compartir {
+    color: #0ea5e9;
 }
 
-/* / RENOMBRAR  (3) */
-.note-actions svg:nth-child(3) {
-    color: #000000; /* azul */
+/* EDITAR - Pencil (morado) */
+.icono-notas-editar {
+    color: #8b5cf6;
 }
 
-/* ELIMINAR (4) */
-.note-actions svg:nth-child(4) {
-    color: #ef4444; /* rojo */
+/* RENOMBRAR - Type (negro) */
+.icono-notas-renombrar {
+    color: #000000;
+}
+
+/* ELIMINAR - Trash2 (rojo) */
+.icono-notas-eliminar {
+    color: #ef4444;
 }
 
 /* ======================================================
@@ -297,6 +299,10 @@
         justify-content: center;
     }
 
+    /* Reducir gap entre iconos */
+    .note-actions {
+        gap: 18px;
+    }
 }
 
 @media (max-width: 768px) {
@@ -328,6 +334,11 @@
     .btn-ghost {
         flex: 1;
         justify-content: center;
+    }
+
+    /* Reducir gap entre iconos */
+    .note-actions {
+        gap: 15px;
     }
 }
 
@@ -395,13 +406,13 @@
     .note-actions {
         grid-column: 2;
         justify-content: flex-start;
+        gap: 12px;
     }
 
-    .icono-notas-compartir,
-    .icono-notas-editar,
-    .icono-notas-eliminar {
-        width: 22px !important;
-        height: 22px !important;
+    /* Ajustar tamaño de iconos manteniendo colores */
+    .note-actions svg {
+        width: 20px !important;
+        height: 20px !important;
     }
 
     .notes-pagination {
@@ -480,13 +491,13 @@
     .note-actions {
         grid-column: 2;
         justify-content: flex-start;
+        gap: 10px;
     }
 
-    .icono-notas-compartir,
-    .icono-notas-editar,
-    .icono-notas-eliminar {
-        width: 20px !important;
-        height: 20px !important;
+    /* Ajustar tamaño de iconos manteniendo colores */
+    .note-actions svg {
+        width: 18px !important;
+        height: 18px !important;
     }
 
     .notes-pagination {
@@ -505,4 +516,109 @@
     .notas-logo {
         height: 85px;
     }
+
+    /* Hacer los iconos aún más pequeños */
+    .note-actions {
+        gap: 8px;
+    }
+
+    /* Ajustar tamaño de iconos manteniendo colores */
+    .note-actions svg {
+        width: 16px !important;
+        height: 16px !important;
+    }
+}
+
+
+
+
+
+
+
+
+
+
+
+
+
+/* Estilos adicionales para Notas.jsx */
+/* Agrega esto a tu archivo notas.css */
+
+/* ===== ESTADOS DE CARGA ===== */
+.notes-loading,
+.notes-error,
+.notes-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.notes-loading p,
+.notes-error p,
+.notes-empty p {
+    margin: 15px 0;
+    font-size: 16px;
+}
+
+.notes-error button,
+.notes-empty button {
+    margin-top: 20px;
+    padding: 10px 20px;
+    background: #2563eb;
+    color: white;
+    border: none;
+    border-radius: 8px;
+    cursor: pointer;
+    font-size: 14px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    transition: background 0.3s;
+}
+
+.notes-error button:hover,
+.notes-empty button:hover {
+    background: #1d4ed8;
+}
+
+/* ===== PAGINACIÓN DESHABILITADA ===== */
+.page-arrow.disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+    pointer-events: none;
+}
+
+/* ===== TOOLTIPS PARA ICONOS ===== */
+.note-actions svg {
+    cursor: pointer;
+    transition: all 0.2s;
+}
+
+.icono-notas-exportar:hover {
+    color: #10b981;
+    transform: scale(1.1);
+}
+
+.icono-notas-compartir:hover {
+    color: #3b82f6;
+    transform: scale(1.1);
+}
+
+.icono-notas-editar:hover {
+    color: #f59e0b;
+    transform: scale(1.1);
+}
+
+.icono-notas-renombrar:hover {
+    color: #8b5cf6;
+    transform: scale(1.1);
+}
+
+.icono-notas-eliminar:hover {
+    color: #ef4444;
+    transform: scale(1.1);
 }

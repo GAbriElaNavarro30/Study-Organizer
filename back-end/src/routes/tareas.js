@@ -31,7 +31,7 @@ router.get("/obtener-tareas", verificarToken, async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
 
-        // Marcar tareas vencidas
+        // Marcar tareas vencidas si el plazo ya se vencio y estaban como pendientes y no como completadas
         await db.query(
             `
       UPDATE Recordatorio
@@ -77,7 +77,7 @@ router.patch("/completar-tarea/:id", verificarToken, async (req, res) => {
             [id]
         );
 
-        console.log("Tarea encontrada en DB:", tareaExistente);
+        //console.log("Tarea encontrada en DB:", tareaExistente);
 
         if (tareaExistente.length === 0) {
             console.log("La tarea no existe en la base de datos");
@@ -308,7 +308,7 @@ router.delete("/eliminar-tarea/:id", verificarToken, async (req, res) => {
         await db.query(
             `DELETE FROM Recordatorio 
        WHERE id_recordatorio = ? AND id_usuario = ?`,
-            [id, req.usuario.id] // ✅ CAMBIO AQUÍ
+            [id, req.usuario.id]
         );
 
         res.json({ mensaje: "Tarea eliminada correctamente" });

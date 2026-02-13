@@ -840,13 +840,13 @@ router.get("/me", verificarToken, async (req, res) => {
     const usuario = rows[0];
 
     // ===== FOTOS PREDETERMINADAS =====
-    const FOTO_PREDETERMINADA = "/perfil-usuario.png";
+    
     const PORTADA_PREDETERMINADA = "/portada.jpg";
 
     const fotoPerfilUrl =
       usuario.foto_perfil && usuario.foto_perfil !== "null" && usuario.foto_perfil !== ""
         ? usuario.foto_perfil
-        : FOTO_PREDETERMINADA;
+        : null;
 
     const fotoPortadaUrl =
       usuario.foto_portada && usuario.foto_portada !== "null" && usuario.foto_portada !== ""

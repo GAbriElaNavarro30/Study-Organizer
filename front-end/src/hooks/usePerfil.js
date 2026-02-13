@@ -27,7 +27,7 @@ export function usePerfil() {
   const PORTADA_PREDETERMINADA = "/portada.jpg";
   const FECHA_VACIA = { day: "", month: "", year: "" };
 
-  const esFotoValida = (foto) => 
+  const esFotoValida = (foto) =>
     foto && foto !== "null" && foto !== "undefined" && foto !== "" && foto !== "/perfil-usuario.png";
 
   // ================== ESTADOS DE DATOS ==================
@@ -76,17 +76,21 @@ export function usePerfil() {
   const limpiarErrores = () => setErrores({});
 
   const obtenerFotoPerfil = () => {
+    // Si hay un archivo seleccionado (upload), úsalo
     if (fotoPerfilFile) {
       return URL.createObjectURL(fotoPerfilFile);
     }
 
+    // Si el usuario tiene foto válida, úsala
     const foto = usuario?.foto_perfil;
-    if (esFotoValida(foto)) {
+    if (foto && esFotoValida(foto)) {
       return foto;
     }
 
+    // Si no hay nada, usar la foto predeterminada
     return fotoPredeterminada;
   };
+
 
   const bloquearInputs = () => {
     const inputs = document.querySelectorAll(

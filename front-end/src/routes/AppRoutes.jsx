@@ -5,6 +5,7 @@ import { LayoutLR } from "../layouts/LayoutLR";
 import { LayoutL } from "../layouts/LayoutL";
 import { LayoutO } from "../layouts/LayoutO";
 import { LayoutInterno } from "../layouts/LayoutInterno";
+import { LayoutNotas } from "../layouts/LayoutNotas";
 
 import { Inicio } from "../pages/Inicio";
 import { ManualUsuario } from "../pages/ManualUsuario";
@@ -20,6 +21,10 @@ import { Notas } from "../pages/Notas";
 import { EditorNota } from "../pages/EditorNota";
 import { Bienvenida } from "../pages/Bienvenida";
 import { Dashboard } from "../pages/Dashboard";
+import { EstilosAprendizaje } from "../pages/EstilosAprendizaje";
+import { MetodosEstudio } from "../pages/MetodosEstudio";
+import { CursosE } from "../pages/CursosE";
+import { CursosT } from "../pages/CursosT";
 
 import { PrivateRoute } from "../components/PrivateRoute";
 
@@ -95,20 +100,64 @@ export function AppRoutes() {
                 />
 
                 <Route path="/notas" element={
-                        <PrivateRoute>
-                            <LayoutInterno>
-                                <Notas />
-                            </LayoutInterno>
-                        </PrivateRoute>
-                    }
+                    <PrivateRoute>
+                        <LayoutInterno>
+                            <Notas />
+                        </LayoutInterno>
+                    </PrivateRoute>
+                }
                 />
 
                 <Route
                     path="/editor-nota"
                     element={
                         <PrivateRoute>
-                            <LayoutInterno>
+                            <LayoutNotas>
                                 <EditorNota />
+                            </LayoutNotas>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/estilos-aprendizaje"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <EstilosAprendizaje />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/metodos-estudio"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <MetodosEstudio />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursosE />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos-tutor"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursosT />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

@@ -1,20 +1,18 @@
 import "../styles/bienvenida.css";
-import perfil from "../assets/imagenes/perfil-usuario.png";
 import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
-import { useContext } from "react";
+import { useContext, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 
-export function Bienvenida({
-    nombre = "Usuario",
-    rol = "Estudiante",
-    descripcion = "Este es tu espacio personal dentro de la plataforma."
-}) {
-    const { usuario } = useContext(AuthContext);
+export function Bienvenida() {
+    const { usuario, refrescarUsuario } = useContext(AuthContext);
+
+    // Refrescar usuario al montar el componente
+    useEffect(() => {
+        refrescarUsuario();
+    }, []);
 
     return (
         <main className="bienvenida-container">
-
-            {/* ===== PERFIL ===== */}
             <section className="bienvenida-perfil">
                 <div className="perfil-foto">
                     <img src={usuario?.foto_perfil} alt="Foto de perfil" />
@@ -31,10 +29,8 @@ export function Bienvenida({
                         {usuario?.descripcion}
                     </p>
                 </div>
-
             </section>
 
-            {/* ===== FRASE INSTITUCIONAL ===== */}
             <section className="bienvenida-frase-principal">
                 <p>
                     Disfruta de tu experiencia con <strong>Study Organizer</strong>,
@@ -42,16 +38,14 @@ export function Bienvenida({
                 </p>
             </section>
 
-            {/* ===== FRASE INSPIRADORA ===== */}
             <section className="bienvenida-inspiracion">
                 <img src={inspiracion} alt="Inspiración" />
                 <div className="inspiracion-overlay">
                     <p>
-                        “La organización es el primer paso hacia la tranquilidad.”
+                        "La organización es el primer paso hacia la tranquilidad."
                     </p>
                 </div>
             </section>
-
         </main>
     );
 }

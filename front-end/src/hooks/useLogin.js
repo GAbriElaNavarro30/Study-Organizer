@@ -17,7 +17,7 @@ export function useLogin() {
   const [redirectPath, setRedirectPath] = useState("");
   
   const navigate = useNavigate();
-  const { setUsuario, setLoading } = useContext(AuthContext);
+  const { refrescarUsuario } = useContext(AuthContext); // Cambiado
 
   // ================== DETERMINAR RUTA SEGÚN ROL ==================
   const determinarRutaPorRol = (rol) => {
@@ -39,13 +39,12 @@ export function useLogin() {
         contrasena: password,
       });
 
+      // 🔥 REFRESCAR USUARIO DESDE /me
+      await refrescarUsuario();
+
       // Determinar ruta según rol
       const ruta = determinarRutaPorRol(res.data.usuario.rol);
       setRedirectPath(ruta);
-      
-      // Actualizar contexto
-      setUsuario(res.data.usuario);
-      setLoading(false);
 
       // Mostrar alerta de éxito
       setAlert({
