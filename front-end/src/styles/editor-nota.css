@@ -451,6 +451,12 @@
     animation: recordingPulse 1s ease-in-out infinite;
 }
 
+.btn-voz.recording:hover {
+    background-color: #f5abab;
+    color: rgb(0, 0, 0);
+    animation: recordingPulse 1s ease-in-out infinite;
+}
+
 @keyframes recordingPulse {
     0%, 100% {
         transform: scale(1);

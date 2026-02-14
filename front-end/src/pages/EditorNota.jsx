@@ -61,6 +61,9 @@ export function EditorNota() {
     const [contenidoInicial, setContenidoInicial] = useState("");
     const [tituloInicial, setTituloInicial] = useState("");
 
+    // ✅ NUEVO: Estado para controlar redirección después de cerrar alerta
+    const [shouldRedirectOnAlertClose, setShouldRedirectOnAlertClose] = useState(false);
+
     /* ===== FUNCIÓN HELPER PARA MOSTRAR ALERTAS ===== */
     const mostrarAlerta = (type, title, message) => {
         setAlertConfig({ type, title, message });
@@ -393,33 +396,47 @@ export function EditorNota() {
 
     // ✅ CORRECCIÓN: handleFontFamily mantiene la selección completa
     const handleFontFamily = (font) => {
-        setFontFamily(font);
         editorRef.current?.focus();
         
         const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+        if (!selection.rangeCount) {
+            // Si no hay selección, solo actualizar el estado para nuevos textos
+            setFontFamily(font);
+            return;
+        }
 
         const range = selection.getRangeAt(0);
 
-        // Si hay texto seleccionado, aplicar la fuente
+        // Si hay texto seleccionado, aplicar la fuente SOLO a la selección
         if (!range.collapsed) {
             applyStyleToSelection('fontFamily', font);
+            // NO actualizar el estado global para no afectar el resto del texto
+        } else {
+            // Si el cursor está en un punto sin selección, actualizar el estado
+            setFontFamily(font);
         }
     };
 
     // ✅ CORRECCIÓN: handleFontSize mantiene la selección completa
     const handleFontSize = (size) => {
-        setFontSize(size);
         editorRef.current?.focus();
         
         const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+        if (!selection.rangeCount) {
+            // Si no hay selección, solo actualizar el estado para nuevos textos
+            setFontSize(size);
+            return;
+        }
 
         const range = selection.getRangeAt(0);
 
-        // Si hay texto seleccionado, aplicar el tamaño
+        // Si hay texto seleccionado, aplicar el tamaño SOLO a la selección
         if (!range.collapsed) {
             applyStyleToSelection('fontSize', `${size}px`);
+            // NO actualizar el estado global para no afectar el resto del texto
+        } else {
+            // Si el cursor está en un punto sin selección, actualizar el estado
+            setFontSize(size);
         }
     };
 
@@ -584,6 +601,7 @@ export function EditorNota() {
         setMostrarModalGuardar(true);
     };
 
+    // ✅ MODIFICADO: Nueva lógica de guardado con redirección controlada
     const handleConfirmarGuardar = async (tituloNota) => {
         try {
             const endpoint = modoGuardar === "crear"
@@ -615,31 +633,28 @@ export function EditorNota() {
             const data = await response.json();
             console.log("Nota guardada:", data);
 
-            if (modoGuardar === "crear") {
-                localStorage.removeItem('editorNota');
+            // Cerrar modal de guardar
+            setMostrarModalGuardar(false);
 
+            // Limpiar localStorage en ambos casos
+            localStorage.removeItem('editorNota');
+
+            if (modoGuardar === "crear") {
+                // ✅ Al CREAR: Mostrar alerta y marcar que debe redirigir al cerrarla
                 mostrarAlerta(
                     "success",
                     "¡Nota creada!",
                     "Tu nota ha sido creada exitosamente."
                 );
-                
-                setMostrarModalGuardar(false);
-
-                setTimeout(() => {
-                    navigate("/notas");
-                }, 1500);
+                setShouldRedirectOnAlertClose(true);
             } else {
+                // ✅ Al EDITAR: Mostrar alerta y marcar que debe redirigir al cerrarla
                 mostrarAlerta(
                     "success",
                     "¡Nota actualizada!",
                     "Los cambios han sido guardados exitosamente."
                 );
-                
-                setMostrarModalGuardar(false);
-
-                setContenidoInicial(editorRef.current?.innerHTML || "");
-                setTituloInicial(titulo);
+                setShouldRedirectOnAlertClose(true);
             }
 
         } catch (error) {
@@ -649,6 +664,17 @@ export function EditorNota() {
                 "Error al guardar",
                 error.message || "No se pudo guardar la nota. Por favor, intenta nuevamente."
             );
+        }
+    };
+
+    // ✅ NUEVO: Handler para cerrar alerta con redirección condicional
+    const handleCloseAlert = () => {
+        setMostrarAlert(false);
+        
+        // Si se debe redirigir, hacerlo después de cerrar la alerta
+        if (shouldRedirectOnAlertClose) {
+            setShouldRedirectOnAlertClose(false);
+            navigate("/notas");
         }
     };
 
@@ -747,7 +773,7 @@ export function EditorNota() {
                     {/* FILA 1: Fuente y Tamaño */}
                     <div className="herramientas-fila">
                         <select
-                            value={fontFamily}
+                            defaultValue="Arial"
                             onChange={(e) => handleFontFamily(e.target.value)}
                             title="Tipo de fuente - Selecciona texto y luego elige la fuente"
                         >
@@ -762,7 +788,7 @@ export function EditorNota() {
                         </select>
 
                         <select
-                            value={fontSize}
+                            defaultValue="16"
                             onChange={(e) => handleFontSize(e.target.value)}
                             title="Tamaño de fuente - Selecciona texto y luego elige el tamaño"
                         >
@@ -886,14 +912,14 @@ export function EditorNota() {
                 notas={notas}
             />
 
-            {/* CUSTOM ALERT */}
+            {/* CUSTOM ALERT - ✅ Usa handleCloseAlert en vez de setState directo */}
             {mostrarAlert && (
                 <CustomAlert
                     type={alertConfig.type}
                     title={alertConfig.title}
                     message={alertConfig.message}
                     logo={logo}
-                    onClose={() => setMostrarAlert(false)}
+                    onClose={handleCloseAlert}
                 />
             )}
         </main>
