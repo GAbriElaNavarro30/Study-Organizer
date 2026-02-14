@@ -268,7 +268,7 @@ export function EditorNota() {
 
     /* ===== FUNCIONES DE FORMATO MEJORADAS ===== */
     
-    // Función auxiliar para aplicar estilos manteniendo el formato existente
+    // ✅ FUNCIÓN CORREGIDA: Mantiene toda la selección al aplicar estilos
     const applyStyleToSelection = (styleProp, styleValue) => {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
@@ -278,17 +278,78 @@ export function EditorNota() {
 
         editorRef.current?.focus();
 
-        const span = document.createElement('span');
-        span.style[styleProp] = styleValue;
-
         try {
-            const fragment = range.extractContents();
-            span.appendChild(fragment);
-            range.insertNode(span);
+            // Guardar los puntos de inicio y fin de la selección original
+            const startContainer = range.startContainer;
+            const startOffset = range.startOffset;
+            const endContainer = range.endContainer;
+            const endOffset = range.endOffset;
 
-            range.selectNodeContents(span);
-            selection.removeAllRanges();
-            selection.addRange(range);
+            // Función recursiva para aplicar estilos a todos los nodos de texto
+            const applyStyleToNode = (node) => {
+                if (node.nodeType === Node.TEXT_NODE && node.textContent.trim() !== '') {
+                    // Si el nodo de texto ya está dentro de un span, aplicar el estilo al span
+                    if (node.parentNode.nodeName === 'SPAN') {
+                        node.parentNode.style[styleProp] = styleValue;
+                    } else {
+                        // Envolver el nodo de texto en un span con el estilo
+                        const span = document.createElement('span');
+                        span.style[styleProp] = styleValue;
+                        const parent = node.parentNode;
+                        parent.insertBefore(span, node);
+                        span.appendChild(node);
+                    }
+                } else if (node.nodeType === Node.ELEMENT_NODE) {
+                    // Si es un elemento (li, div, etc.), aplicar el estilo directamente
+                    if (node.style && (node.nodeName === 'LI' || node.nodeName === 'DIV' || node.nodeName === 'P' || node.nodeName === 'SPAN')) {
+                        node.style[styleProp] = styleValue;
+                    }
+                    // Procesar los hijos del elemento
+                    Array.from(node.childNodes).forEach(child => {
+                        if (range.intersectsNode(child)) {
+                            applyStyleToNode(child);
+                        }
+                    });
+                }
+            };
+
+            // Obtener todos los nodos dentro del rango seleccionado
+            const commonAncestor = range.commonAncestorContainer;
+            
+            if (commonAncestor.nodeType === Node.TEXT_NODE) {
+                // Si es un nodo de texto, aplicar directamente
+                applyStyleToNode(commonAncestor);
+            } else if (commonAncestor.nodeType === Node.ELEMENT_NODE) {
+                // Recorrer todos los hijos del ancestro común
+                const processChildren = (parent) => {
+                    Array.from(parent.childNodes).forEach(child => {
+                        // Solo procesar nodos que intersectan con el rango
+                        if (range.intersectsNode(child)) {
+                            applyStyleToNode(child);
+                        }
+                    });
+                };
+                
+                processChildren(commonAncestor);
+            }
+
+            // ✅ CLAVE: Restaurar la selección original después de aplicar estilos
+            try {
+                const newRange = document.createRange();
+                newRange.setStart(startContainer, startOffset);
+                newRange.setEnd(endContainer, endOffset);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            } catch (e) {
+                // Si no se puede restaurar exactamente, intentar seleccionar el ancestro común
+                console.log('No se pudo restaurar la selección exacta, usando alternativa');
+                const newRange = document.createRange();
+                newRange.selectNodeContents(commonAncestor);
+                selection.removeAllRanges();
+                selection.addRange(newRange);
+            }
+
+            console.log(`✅ Estilo ${styleProp} aplicado correctamente y selección mantenida`);
         } catch (e) {
             console.error(`Error al aplicar ${styleProp}:`, e);
         }
@@ -330,38 +391,36 @@ export function EditorNota() {
         document.execCommand('insertOrderedList');
     };
 
+    // ✅ CORRECCIÓN: handleFontFamily mantiene la selección completa
     const handleFontFamily = (font) => {
         setFontFamily(font);
+        editorRef.current?.focus();
+        
         const selection = window.getSelection();
-        if (!selection.rangeCount) {
-            editorRef.current?.focus();
-            return;
-        }
+        if (!selection.rangeCount) return;
 
         const range = selection.getRangeAt(0);
 
+        // Si hay texto seleccionado, aplicar la fuente
         if (!range.collapsed) {
             applyStyleToSelection('fontFamily', font);
         }
-
-        editorRef.current?.focus();
     };
 
+    // ✅ CORRECCIÓN: handleFontSize mantiene la selección completa
     const handleFontSize = (size) => {
         setFontSize(size);
+        editorRef.current?.focus();
+        
         const selection = window.getSelection();
-        if (!selection.rangeCount) {
-            editorRef.current?.focus();
-            return;
-        }
+        if (!selection.rangeCount) return;
 
         const range = selection.getRangeAt(0);
 
+        // Si hay texto seleccionado, aplicar el tamaño
         if (!range.collapsed) {
             applyStyleToSelection('fontSize', `${size}px`);
         }
-
-        editorRef.current?.focus();
     };
 
     const handleTextColor = (color) => {
@@ -391,7 +450,7 @@ export function EditorNota() {
         const selection = window.getSelection();
         if (!selection.rangeCount) {
             mostrarAlerta(
-                "info",
+                "success",
                 "Selecciona texto",
                 "Selecciona el texto del cual quieres quitar el resaltado"
             );
@@ -402,7 +461,7 @@ export function EditorNota() {
 
         if (range.collapsed) {
             mostrarAlerta(
-                "info",
+                "success",
                 "Selecciona texto",
                 "Selecciona el texto del cual quieres quitar el resaltado"
             );
@@ -412,53 +471,59 @@ export function EditorNota() {
         editorRef.current?.focus();
 
         try {
-            // Obtener el contenido seleccionado
-            const selectedContent = range.cloneContents();
-            
-            // Función recursiva para limpiar el fondo de todos los elementos
-            const clearBackgrounds = (node) => {
-                if (node.nodeType === Node.ELEMENT_NODE) {
-                    if (node.style) {
-                        node.style.backgroundColor = '';
-                        node.style.background = '';
+            // Crear un TreeWalker para recorrer todos los nodos del rango
+            const startContainer = range.startContainer;
+            const endContainer = range.endContainer;
+            const commonAncestor = range.commonAncestorContainer;
+
+            // Función para limpiar el backgroundColor de un elemento
+            const removeBackgroundFromElement = (element) => {
+                if (element.nodeType === Node.ELEMENT_NODE) {
+                    // Solo eliminar backgroundColor, mantener todo lo demás
+                    if (element.style && element.style.backgroundColor) {
+                        element.style.backgroundColor = '';
                     }
-                    
-                    for (let child of node.childNodes) {
-                        clearBackgrounds(child);
+                    // Si el elemento tiene atributo style pero está vacío, eliminarlo
+                    if (element.style && element.getAttribute('style') === '') {
+                        element.removeAttribute('style');
                     }
                 }
             };
 
-            // Limpiar backgrounds
-            clearBackgrounds(selectedContent);
+            // Procesar todos los elementos dentro del rango seleccionado
+            const processNode = (node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    removeBackgroundFromElement(node);
+                    
+                    // Procesar hijos recursivamente
+                    for (let i = 0; i < node.childNodes.length; i++) {
+                        processNode(node.childNodes[i]);
+                    }
+                }
+            };
 
-            // Reemplazar el contenido
-            range.deleteContents();
-            range.insertNode(selectedContent);
+            // Si la selección está dentro de un solo elemento
+            if (commonAncestor.nodeType === Node.ELEMENT_NODE) {
+                processNode(commonAncestor);
+            }
 
-            // Mantener la selección
-            const newRange = document.createRange();
-            newRange.setStartBefore(selectedContent.firstChild || selectedContent);
-            newRange.setEndAfter(selectedContent.lastChild || selectedContent);
-            selection.removeAllRanges();
-            selection.addRange(newRange);
+            // También procesar los contenedores de inicio y fin
+            let node = startContainer;
+            while (node && node !== editorRef.current) {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    removeBackgroundFromElement(node);
+                }
+                node = node.parentNode;
+            }
 
-            console.log('✅ Resaltado removido correctamente');
+            console.log('✅ Resaltado removido correctamente (solo backgroundColor)');
         } catch (e) {
             console.error('❌ Error al remover resaltado:', e);
-            
-            // Fallback
-            try {
-                document.execCommand('removeFormat', false, null);
-                console.log('✅ Resaltado removido con removeFormat');
-            } catch (fallbackError) {
-                console.error('❌ Error en fallback:', fallbackError);
-                mostrarAlerta(
-                    "error",
-                    "Error",
-                    "No se pudo remover el resaltado. Intenta nuevamente."
-                );
-            }
+            mostrarAlerta(
+                "error",
+                "Error",
+                "No se pudo remover el resaltado. Intenta nuevamente."
+            );
         }
     };
 
@@ -684,7 +749,7 @@ export function EditorNota() {
                         <select
                             value={fontFamily}
                             onChange={(e) => handleFontFamily(e.target.value)}
-                            title="Tipo de fuente"
+                            title="Tipo de fuente - Selecciona texto y luego elige la fuente"
                         >
                             <option value="Arial">Arial</option>
                             <option value="'Times New Roman', Times, serif">Times New Roman</option>
@@ -699,7 +764,7 @@ export function EditorNota() {
                         <select
                             value={fontSize}
                             onChange={(e) => handleFontSize(e.target.value)}
-                            title="Tamaño de fuente"
+                            title="Tamaño de fuente - Selecciona texto y luego elige el tamaño"
                         >
                             <option value="10">10</option>
                             <option value="12">12</option>
