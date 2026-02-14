@@ -40,7 +40,7 @@ router.get("/obtener-notas", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
---------------------- Crear Nota ----------------------
+--------------------- Crear Nota ---------------------- LISTO
 =====================================================*/
 router.post("/crear-nota", verificarToken, async (req, res) => {
     try {
@@ -48,7 +48,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
 
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('📄 Creando nota:', { titulo, usuario: id_usuario });
+       // console.log('Creando nota:', { titulo, usuario: id_usuario });
 
         // ===== VALIDACIONES =====
 
@@ -106,7 +106,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
             ]
         );
 
-        console.log('✅ Nota guardada en BD con ID:', result.insertId);
+        // console.log('Nota guardada en BD con ID:', result.insertId);
 
         res.status(201).json({
             mensaje: "Nota creada exitosamente",
@@ -117,7 +117,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error al crear nota:", error);
+        //console.error("Error al crear nota:", error);
         res.status(500).json({
             error: "Error al crear la nota",
             detalles: error.message
@@ -126,7 +126,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
-------------------- Actualizar Nota -------------------
+------------------- Actualizar Nota ------------------- LISTO
 =====================================================*/
 router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -135,7 +135,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
 
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('📝 Actualizando nota:', id);
+        //console.log('Actualizando nota:', id);
 
         // Validaciones
         if (!titulo || !contenido) {
@@ -175,7 +175,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
             ]
         );
 
-        console.log('✅ Nota actualizada en BD');
+        //console.log('Nota actualizada en BD');
 
         res.json({
             mensaje: "Nota actualizada exitosamente",
@@ -186,7 +186,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error al actualizar nota:", error);
+        //console.error("Error al actualizar nota:", error);
         res.status(500).json({
             error: "Error al actualizar la nota",
             detalles: error.message
@@ -321,14 +321,14 @@ router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------------ Obtener una Nota --------------------
+----------------- Obtener una Nota -------------------- LISTO
 =====================================================*/
 router.get("/obtener-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('📖 Obteniendo nota:', id);
+        //console.log('Obteniendo nota:', id);
 
         const [notas] = await db.query(
             `SELECT 
@@ -352,7 +352,7 @@ router.get("/obtener-nota/:id", verificarToken, async (req, res) => {
         res.json(notas[0]);
 
     } catch (error) {
-        console.error("❌ Error al obtener nota:", error);
+        //console.error("Error al obtener nota:", error);
         res.status(500).json({
             error: "Error al obtener la nota",
             detalles: error.message
@@ -445,6 +445,58 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
         console.error("❌ Error al compartir nota:", error);
         res.status(500).json({
             error: "Error al compartir la nota",
+            detalles: error.message
+        });
+    }
+});
+
+/* ====================================================
+------------------- Exportar PDF ----------------------
+=====================================================*/
+router.get("/exportar-pdf/:id", verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        console.log('📄 Exportando PDF de nota:', id);
+
+        // Obtener la nota
+        const [notas] = await db.query(
+            `SELECT 
+                id_nota,
+                titulo,
+                contenido,
+                background_color,
+                font_family,
+                font_size
+            FROM Nota 
+            WHERE id_nota = ? AND id_usuario = ?`,
+            [id, id_usuario]
+        );
+
+        if (notas.length === 0) {
+            return res.status(404).json({ error: "Nota no encontrada" });
+        }
+
+        const nota = notas[0];
+
+        // Devolver los datos de la nota para que el frontend genere el PDF
+        res.json({
+            mensaje: "Datos de nota obtenidos para PDF",
+            nota: {
+                id_nota: nota.id_nota,
+                titulo: nota.titulo,
+                contenido: nota.contenido,
+                background_color: nota.background_color,
+                font_family: nota.font_family,
+                font_size: nota.font_size
+            }
+        });
+
+    } catch (error) {
+        console.error("❌ Error al exportar PDF:", error);
+        res.status(500).json({
+            error: "Error al exportar PDF",
             detalles: error.message
         });
     }

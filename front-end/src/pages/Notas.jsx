@@ -236,6 +236,22 @@ export function Notas() {
     /* ===== DESCARGAR PDF ===== */
     const descargarPDF = async (nota) => {
         try {
+            // Obtener datos actualizados del backend
+            const response = await fetch(
+                `http://localhost:3000/notas/exportar-pdf/${nota.id_nota}`,
+                {
+                    method: "GET",
+                    credentials: "include",
+                }
+            );
+
+            if (!response.ok) {
+                throw new Error("Error al obtener datos de la nota");
+            }
+
+            const data = await response.json();
+            const notaData = data.nota;
+
             // Crear un div temporal con el contenido de la nota
             const pdfContainer = document.createElement("div");
             pdfContainer.style.cssText = `
@@ -243,23 +259,18 @@ export function Notas() {
                 left: -9999px;
                 top: 0;
                 width: 210mm;
+                min-height: 297mm;
                 padding: 20mm;
-                background-color: ${nota.background_color || "#ffffff"};
-                font-family: ${nota.font_family || "Arial"};
-                font-size: ${nota.font_size || "16"}px;
+                box-sizing: border-box;
+                background-color: ${notaData.background_color || "#ffffff"};
+                font-family: ${notaData.font_family || "Arial"};
+                font-size: ${notaData.font_size || "16"}px;
             `;
 
+            // Solo el contenido
             pdfContainer.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <h1 style="color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
-                        ${nota.titulo}
-                    </h1>
-                </div>
-                <div style="margin-top: 20px; line-height: 1.6;">
-                    ${nota.contenido}
-                </div>
-                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-                    Creado: ${formatearFecha(nota.created_at)}
+                <div style="line-height: 1.6;">
+                    ${notaData.contenido}
                 </div>
             `;
 
@@ -272,36 +283,118 @@ export function Notas() {
             const canvas = await html2canvas(pdfContainer, {
                 scale: 2,
                 useCORS: true,
-                backgroundColor: nota.background_color || "#ffffff",
+                backgroundColor: notaData.background_color || "#ffffff",
             });
 
             document.body.removeChild(pdfContainer);
 
+            // Crear PDF con jsPDF
             const pdf = new jsPDF({
                 orientation: "portrait",
                 unit: "mm",
                 format: "a4",
             });
 
+            const backgroundColor = notaData.background_color || "#ffffff";
+
+            // Convertir hex a RGB
+            const hexToRgb = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result ? {
+                    r: parseInt(result[1], 16),
+                    g: parseInt(result[2], 16),
+                    b: parseInt(result[3], 16)
+                } : { r: 255, g: 255, b: 255 };
+            };
+
+            const rgb = hexToRgb(backgroundColor);
+
+            // Dimensiones de la página
+            const pageWidth = pdf.internal.pageSize.getWidth();
+            const pageHeight = pdf.internal.pageSize.getHeight();
+
+            // ✅ Definir márgenes (en mm)
+            const margin = 20; // 20mm de margen en todos los lados
+            const contentWidth = pageWidth - (margin * 2);
+            const contentHeight = pageHeight - (margin * 2);
+
+            // Calcular dimensiones de la imagen
             const imgData = canvas.toDataURL("image/png");
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
+            const imgWidth = contentWidth;
+            const imgHeight = (canvas.height * imgWidth) / canvas.width;
 
-            pdf.addImage(imgData, "PNG", 0, 0, pdfWidth, pdfHeight);
+            // ✅ PRIMERA PÁGINA: Pintar fondo completo
+            pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
 
-            // Descargar
-            pdf.save(`${nota.titulo}.pdf`);
+            // Variables para paginación
+            let heightLeft = imgHeight;
+            let position = margin; // Empezar en el margen superior
 
-            console.log("✅ PDF descargado");
+            // ✅ Agregar contenido con márgenes
+            if (heightLeft <= contentHeight) {
+                // Todo cabe en una página
+                pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
+            } else {
+                // Contenido ocupa múltiples páginas
+                let srcY = 0; // Posición Y en la imagen original
+
+                while (heightLeft > 0) {
+                    // Calcular cuánto contenido cabe en esta página
+                    const pageContentHeight = Math.min(contentHeight, heightLeft);
+
+                    // Si no es la primera página, agregar nueva página
+                    if (srcY > 0) {
+                        pdf.addPage();
+
+                        // Pintar fondo completo de la nueva página
+                        pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+                        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+                    }
+
+                    // Calcular qué porción de la imagen mostrar
+                    const srcHeight = (pageContentHeight * canvas.width) / imgWidth;
+                    const destHeight = pageContentHeight;
+
+                    // ✅ Crear un canvas temporal con solo la porción visible
+                    const tempCanvas = document.createElement('canvas');
+                    const tempCtx = tempCanvas.getContext('2d');
+
+                    tempCanvas.width = canvas.width;
+                    tempCanvas.height = srcHeight;
+
+                    // Dibujar la porción correspondiente
+                    tempCtx.drawImage(
+                        canvas,
+                        0, srcY,                    // Origen en canvas original
+                        canvas.width, srcHeight,    // Tamaño a copiar
+                        0, 0,                       // Destino en canvas temporal
+                        canvas.width, srcHeight     // Tamaño en canvas temporal
+                    );
+
+                    // Convertir a imagen y agregar al PDF
+                    const tempImgData = tempCanvas.toDataURL("image/png");
+                    pdf.addImage(tempImgData, "PNG", margin, margin, imgWidth, destHeight);
+
+                    // Actualizar contadores
+                    srcY += srcHeight;
+                    heightLeft -= pageContentHeight;
+                }
+            }
+
+            // Descargar con el nombre del título
+            pdf.save(`${notaData.titulo}.pdf`);
+
+            console.log("✅ PDF descargado correctamente con márgenes");
 
             // Mostrar alerta de éxito
             mostrarAlerta(
                 "success",
                 "¡PDF descargado!",
-                `El PDF de "${nota.titulo}" se ha descargado correctamente.`
+                `El PDF de "${notaData.titulo}" se ha descargado correctamente.`
             );
         } catch (error) {
-            console.error("Error al generar PDF:", error);
+            console.error("❌ Error al generar PDF:", error);
 
             // Mostrar alerta de error
             mostrarAlerta(
@@ -311,6 +404,7 @@ export function Notas() {
             );
         }
     };
+
 
     /* ===== EDITAR NOTA ===== */
     const editarNota = (nota) => {
