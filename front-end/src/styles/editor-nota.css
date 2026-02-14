@@ -404,3 +404,58 @@
         font-size: 0.875rem;
     }
 }
+
+/* Indicador de dictado en tiempo real */
+.dictado-preview {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+.btn-voz-text {
+    white-space: nowrap;
+}
+
+/* Mejorar el estilo del botón de voz */
+.btn-voz {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-voz.recording {
+    background-color: #ef4444;
+    color: white;
+    animation: recordingPulse 1s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}

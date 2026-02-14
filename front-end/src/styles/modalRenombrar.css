@@ -87,7 +87,8 @@
 
 
 .btn-confirmar-renombrar {
-    background: #2563eb; /* azul limpio */
+    background: #2563eb;
+    /* azul limpio */
     color: #ffffff;
     padding: 9px 16px;
     border-radius: 10px;
@@ -161,3 +162,22 @@
         width: 100%;
     }
 }
+
+/* Contador de caracteres */
+.contador-caracteres {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 0.25rem;
+}
+
+
+.error-item {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+
+

@@ -8,6 +8,8 @@ import { useNavigate } from "react-router-dom";
 import { ModalEliminarNota } from "../components/ModalEliminarNota";
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
 import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
 
 export function Notas() {
     const navigate = useNavigate();
@@ -19,7 +21,7 @@ export function Notas() {
 
     // Estados de búsqueda y filtros
     const [busqueda, setBusqueda] = useState("");
-    const [limit, setLimit] = useState(10);
+    const [limit, setLimit] = useState(5);
     const [paginaActual, setPaginaActual] = useState(1);
 
     // Estados de modales
@@ -31,6 +33,20 @@ export function Notas() {
 
     const [mostrarModalRenombrar, setMostrarModalRenombrar] = useState(false);
     const [notaARenombrar, setNotaARenombrar] = useState(null);
+
+    // Estados para CustomAlert
+    const [mostrarAlert, setMostrarAlert] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        type: "success",
+        title: "",
+        message: ""
+    });
+
+    /* ===== FUNCIÓN HELPER PARA MOSTRAR ALERTAS ===== */
+    const mostrarAlerta = (type, title, message) => {
+        setAlertConfig({ type, title, message });
+        setMostrarAlert(true);
+    };
 
     /* ===== CARGAR NOTAS AL INICIAR ===== */
     useEffect(() => {
@@ -112,10 +128,22 @@ export function Notas() {
 
             // Recargar notas después de eliminar
             await cargarNotas();
-            alert("Nota eliminada exitosamente");
+
+            // Mostrar alerta de éxito
+            mostrarAlerta(
+                "success",
+                "¡Nota eliminada!",
+                `La nota "${notaSeleccionada.titulo}" ha sido eliminada exitosamente.`
+            );
         } catch (error) {
             console.error("Error al eliminar nota:", error);
-            alert("Error al eliminar la nota");
+
+            // Mostrar alerta de error
+            mostrarAlerta(
+                "error",
+                "Error al eliminar",
+                "No se pudo eliminar la nota. Por favor, intenta nuevamente."
+            );
         } finally {
             cerrarModalEliminar();
         }
@@ -134,7 +162,14 @@ export function Notas() {
 
     const confirmarCompartirNota = () => {
         console.log("Compartir nota:", notaACompartir);
-        // Implementar lógica de compartir
+
+        // Mostrar alerta de éxito
+        mostrarAlerta(
+            "success",
+            "¡Nota compartida!",
+            `La nota "${notaACompartir.titulo}" ha sido compartida exitosamente.`
+        );
+
         cerrarModalCompartir();
     };
 
@@ -165,18 +200,36 @@ export function Notas() {
                 }
             );
 
+            const data = await response.json();
+
             if (!response.ok) {
-                throw new Error("Error al renombrar la nota");
+                // Si el backend detecta un error (por si acaso), mostrar alert
+                throw new Error(data.error || "Error al renombrar la nota");
             }
 
             // Recargar notas después de renombrar
             await cargarNotas();
-            alert("Nota renombrada exitosamente");
+
+            // Mostrar alerta de éxito
+            mostrarAlerta(
+                "success",
+                "¡Nota renombrada!",
+                `La nota ha sido renombrada a "${nuevoNombre}" exitosamente.`
+            );
+
+            // Cerrar modal
+            cerrarModalRenombrar();
         } catch (error) {
             console.error("Error al renombrar nota:", error);
-            alert("Error al renombrar la nota");
-        } finally {
-            cerrarModalRenombrar();
+
+            // Solo mostrar alert si es un error inesperado del servidor
+            mostrarAlerta(
+                "error",
+                "Error al renombrar",
+                error.message || "No se pudo renombrar la nota. Por favor, intenta nuevamente."
+            );
+
+            // NO cerrar el modal para que el usuario pueda corregir
         }
     };
 
@@ -240,9 +293,22 @@ export function Notas() {
             pdf.save(`${nota.titulo}.pdf`);
 
             console.log("✅ PDF descargado");
+
+            // Mostrar alerta de éxito
+            mostrarAlerta(
+                "success",
+                "¡PDF descargado!",
+                `El PDF de "${nota.titulo}" se ha descargado correctamente.`
+            );
         } catch (error) {
             console.error("Error al generar PDF:", error);
-            alert("Error al generar el PDF");
+
+            // Mostrar alerta de error
+            mostrarAlerta(
+                "error",
+                "Error al generar PDF",
+                "No se pudo generar el PDF. Por favor, intenta nuevamente."
+            );
         }
     };
 
@@ -268,7 +334,7 @@ export function Notas() {
     const crearNuevaNota = () => {
         // Limpiar completamente el localStorage
         localStorage.removeItem("editorNota");
-        
+
         // Navegar al editor - el useEffect del editor detectará que no hay datos y mostrará un editor limpio
         navigate("/editor-nota");
     };
@@ -332,16 +398,43 @@ export function Notas() {
                 )}
 
                 {/* ===== LISTA DE NOTAS ===== */}
+                {/* ===== LISTA DE NOTAS ===== */}
                 {!loading && !error && (
                     <>
                         {notasPaginadas.length === 0 ? (
                             <div className="notes-empty">
                                 <FileText size={48} style={{ opacity: 0.3 }} />
-                                <p>No hay notas todavía</p>
-                                <button className="btn-new" onClick={crearNuevaNota}>
-                                    <Plus size={16} />
-                                    Crear primera nota
-                                </button>
+
+                                {/* Diferenciar entre "no hay notas" y "búsqueda sin resultados" */}
+                                {busqueda.trim() !== "" ? (
+                                    <>
+                                        <p>No se encontraron resultados de la búsqueda</p>
+                                        <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '8px' }}>
+                                            <button
+                                                onClick={() => setBusqueda("")}
+                                                style={{
+                                                    background: 'none',
+                                                    border: 'none',
+                                                    color: '#2563eb',
+                                                    textDecoration: 'underline',
+                                                    cursor: 'pointer',
+                                                    padding: '0 4px',
+                                                    font: 'inherit'
+                                                }}
+                                            >
+                                                Limpiar búsqueda
+                                            </button>
+                                        </p>
+                                    </>
+                                ) : (
+                                    <>
+                                        <p>No hay notas todavía</p>
+                                        <button className="btn-new" onClick={crearNuevaNota}>
+                                            <Plus size={16} />
+                                            Crear primera nota
+                                        </button>
+                                    </>
+                                )}
                             </div>
                         ) : (
                             <section className="notes-list">
@@ -400,46 +493,32 @@ export function Notas() {
                             </section>
                         )}
 
-                        {/* ===== PAGINACIÓN ===== */}
-                        {totalPaginas > 1 && (
+                        {/* ===== PAGINACIÓN - SIEMPRE VISIBLE CUANDO HAY NOTAS ===== */}
+                        {notasPaginadas.length > 0 && (
                             <footer className="notes-pagination">
                                 <button
-                                    className={`page-arrow ${
-                                        paginaActual === 1 ? "disabled" : ""
-                                    }`}
-                                    onClick={() =>
-                                        setPaginaActual((prev) => Math.max(1, prev - 1))
-                                    }
+                                    className={`page-arrow ${paginaActual === 1 ? "disabled" : ""}`}
+                                    onClick={() => setPaginaActual((prev) => Math.max(1, prev - 1))}
                                     disabled={paginaActual === 1}
                                 >
                                     &laquo;
                                 </button>
 
                                 <div className="page-numbers">
-                                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map(
-                                        (num) => (
-                                            <button
-                                                key={num}
-                                                className={`page-number ${
-                                                    paginaActual === num ? "active" : ""
-                                                }`}
-                                                onClick={() => setPaginaActual(num)}
-                                            >
-                                                {num}
-                                            </button>
-                                        )
-                                    )}
+                                    {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((num) => (
+                                        <button
+                                            key={num}
+                                            className={`page-number ${paginaActual === num ? "active" : ""}`}
+                                            onClick={() => setPaginaActual(num)}
+                                        >
+                                            {num}
+                                        </button>
+                                    ))}
                                 </div>
 
                                 <button
-                                    className={`page-arrow ${
-                                        paginaActual === totalPaginas ? "disabled" : ""
-                                    }`}
-                                    onClick={() =>
-                                        setPaginaActual((prev) =>
-                                            Math.min(totalPaginas, prev + 1)
-                                        )
-                                    }
+                                    className={`page-arrow ${paginaActual === totalPaginas ? "disabled" : ""}`}
+                                    onClick={() => setPaginaActual((prev) => Math.min(totalPaginas, prev + 1))}
                                     disabled={paginaActual === totalPaginas}
                                 >
                                     &raquo;
@@ -470,7 +549,20 @@ export function Notas() {
                 onClose={cerrarModalRenombrar}
                 onConfirm={confirmarRenombrarNota}
                 nombreActual={notaARenombrar?.titulo}
+                notas={notas} // Pasar todas las notas
+                notaActualId={notaARenombrar?.id_nota} // Pasar el ID de la nota actual
             />
+
+            {/* ===== CUSTOM ALERT ===== */}
+            {mostrarAlert && (
+                <CustomAlert
+                    type={alertConfig.type}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    logo={logo}
+                    onClose={() => setMostrarAlert(false)}
+                />
+            )}
         </main>
     );
 }

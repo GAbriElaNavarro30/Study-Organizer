@@ -134,3 +134,22 @@
         transform: scale(1);
     }
 }
+
+
+/* Contador de caracteres */
+.contador-caracteres-guardar {
+    font-size: 0.75rem;
+    color: #6b7280;
+    text-align: right;
+    margin-top: 0.25rem;
+    margin-bottom: 0.5rem;
+}
+
+
+
+.error-item-guardar {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}

@@ -11,8 +11,8 @@ export function ModalEliminarNota({ isOpen, onClose, onConfirm, nombreNota }) {
                 <hr className="linea-separadora-eliminar" />
 
                 <p>
-                    ¿Estás seguro que deseas eliminar la nota:
-                    <strong> {nombreNota}</strong>?
+                    ¿Está seguro que desea eliminar la nota: "
+                    <strong>{nombreNota}</strong>"?
                 </p>
 
                 <div className="modal-botones-eliminar">

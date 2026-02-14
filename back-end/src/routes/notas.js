@@ -5,13 +5,13 @@ import { verificarToken } from "../middlewares/auth.js";
 const router = Router();
 
 /* ====================================================
--------------------- Obtener Notas ---------------------
+-------------------- Obtener Notas -------------------- LISTO
 =====================================================*/
 router.get("/obtener-notas", verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('📋 Obteniendo notas para usuario:', id_usuario);
+        //console.log('Obteniendo notas para usuario:', id_usuario);
 
         const [notas] = await db.query(
             `SELECT 
@@ -31,10 +31,10 @@ router.get("/obtener-notas", verificarToken, async (req, res) => {
 
         res.json(notas);
     } catch (error) {
-        console.error("❌ Error al obtener notas:", error);
-        res.status(500).json({ 
+        //console.error("Error al obtener notas:", error);
+        res.status(500).json({
             error: "Error al obtener las notas",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
@@ -45,19 +45,48 @@ router.get("/obtener-notas", verificarToken, async (req, res) => {
 router.post("/crear-nota", verificarToken, async (req, res) => {
     try {
         const { titulo, contenido, backgroundColor, fontFamily, fontSize } = req.body;
-        
+
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         console.log('📄 Creando nota:', { titulo, usuario: id_usuario });
 
-        // Validaciones
-        if (!titulo || !contenido) {
-            return res.status(400).json({ 
-                error: "El título y el contenido son obligatorios" 
+        // ===== VALIDACIONES =====
+
+        // 1. Verificar que el título existe
+        if (!titulo || titulo.trim() === '') {
+            return res.status(400).json({
+                error: "El título es obligatorio"
             });
         }
 
-        // Guardar en base de datos
+        // 2. Verificar longitud máxima del título
+        if (titulo.trim().length > 100) {
+            return res.status(400).json({
+                error: "El título no puede exceder los 100 caracteres"
+            });
+        }
+
+        // 3. Verificar caracteres válidos en el título
+        const formatoValido = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\_\.\,\:\!\?\(\)]+$/;
+        if (!formatoValido.test(titulo.trim())) {
+            return res.status(400).json({
+                error: "El título contiene caracteres no permitidos"
+            });
+        }
+
+        // 4. Verificar que no exista otra nota con el mismo título para este usuario
+        const [notaDuplicada] = await db.query(
+            "SELECT id_nota FROM Nota WHERE LOWER(titulo) = LOWER(?) AND id_usuario = ?",
+            [titulo.trim(), id_usuario]
+        );
+
+        if (notaDuplicada.length > 0) {
+            return res.status(409).json({
+                error: "Ya tienes una nota con ese título"
+            });
+        }
+
+        // ===== GUARDAR EN BASE DE DATOS =====
         const [result] = await db.query(
             `INSERT INTO Nota (
                 titulo, 
@@ -68,8 +97,8 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
                 id_usuario
             ) VALUES (?, ?, ?, ?, ?, ?)`,
             [
-                titulo,
-                contenido,
+                titulo.trim(),
+                contenido || '', // Permitir contenido vacío
                 backgroundColor || '#ffffff',
                 fontFamily || 'Arial',
                 fontSize || '16',
@@ -83,15 +112,15 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
             mensaje: "Nota creada exitosamente",
             nota: {
                 id_nota: result.insertId,
-                titulo
+                titulo: titulo.trim()
             }
         });
 
     } catch (error) {
         console.error("❌ Error al crear nota:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Error al crear la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
@@ -103,15 +132,15 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { titulo, contenido, backgroundColor, fontFamily, fontSize } = req.body;
-        
+
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         console.log('📝 Actualizando nota:', id);
 
         // Validaciones
         if (!titulo || !contenido) {
-            return res.status(400).json({ 
-                error: "El título y el contenido son obligatorios" 
+            return res.status(400).json({
+                error: "El título y el contenido son obligatorios"
             });
         }
 
@@ -158,23 +187,23 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error al actualizar nota:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Error al actualizar la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
 
 /* ====================================================
-------------------- Eliminar Nota ---------------------
+------------------- Eliminar Nota --------------------- LISTO
 =====================================================*/
 router.delete("/eliminar-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
-        
+
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('🗑️ Eliminando nota:', id);
+        //console.log('Eliminando nota:', id);
 
         // Verificar que la nota pertenece al usuario
         const [nota] = await db.query(
@@ -192,39 +221,56 @@ router.delete("/eliminar-nota/:id", verificarToken, async (req, res) => {
             [id, id_usuario]
         );
 
-        console.log('✅ Nota eliminada de BD');
+        //console.log('Nota eliminada de BD');
 
         res.json({ mensaje: "Nota eliminada exitosamente" });
 
     } catch (error) {
-        console.error("❌ Error al eliminar nota:", error);
-        res.status(500).json({ 
+        //console.error("Error al eliminar nota:", error);
+        res.status(500).json({
             error: "Error al eliminar la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
 
 /* ====================================================
------------------ Renombrar Nota ----------------------
+----------------- Renombrar Nota ---------------------- LISTO
 =====================================================*/
 router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { titulo } = req.body;
-        
+
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('✍️ Renombrando nota:', id, 'nuevo título:', titulo);
+        //console.log('Renombrando nota:', id, 'nuevo título:', titulo);
 
-        // Validación
+        // ===== VALIDACIONES =====
+
+        // 1. Verificar que el título existe
         if (!titulo || titulo.trim() === '') {
-            return res.status(400).json({ 
-                error: "El título es obligatorio" 
+            return res.status(400).json({
+                error: "El título es obligatorio"
             });
         }
 
-        // Verificar que la nota pertenece al usuario
+        // 2. Verificar longitud máxima
+        if (titulo.trim().length > 100) {
+            return res.status(400).json({
+                error: "El título no puede exceder los 100 caracteres"
+            });
+        }
+
+        // 3. Verificar caracteres válidos (letras, números, espacios y algunos caracteres especiales)
+        const formatoValido = /^[a-zA-Z0-9áéíóúÁÉÍÓÚñÑ\s\-\_\.\,\:\!\?\(\)]+$/;
+        if (!formatoValido.test(titulo.trim())) {
+            return res.status(400).json({
+                error: "El título contiene caracteres no permitidos"
+            });
+        }
+
+        // 4. Verificar que la nota pertenece al usuario
         const [notaExistente] = await db.query(
             "SELECT id_nota FROM Nota WHERE id_nota = ? AND id_usuario = ?",
             [id, id_usuario]
@@ -234,30 +280,42 @@ router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
             return res.status(404).json({ error: "Nota no encontrada" });
         }
 
-        // Actualizar solo el título
+        // 5. Verificar que no exista otra nota con el mismo título
+        const [notaDuplicada] = await db.query(
+            "SELECT id_nota FROM Nota WHERE titulo = ? AND id_usuario = ? AND id_nota != ?",
+            [titulo.trim(), id_usuario, id]
+        );
+
+        if (notaDuplicada.length > 0) {
+            return res.status(409).json({
+                error: "Ya tienes una nota con ese título"
+            });
+        }
+
+        // ===== ACTUALIZAR =====
         await db.query(
             `UPDATE Nota 
             SET titulo = ?,
                 updated_at = CURRENT_TIMESTAMP
             WHERE id_nota = ? AND id_usuario = ?`,
-            [titulo, id, id_usuario]
+            [titulo.trim(), id, id_usuario]
         );
 
-        console.log('✅ Nota renombrada');
+        //console.log('Nota renombrada');
 
         res.json({
             mensaje: "Nota renombrada exitosamente",
             nota: {
                 id_nota: id,
-                titulo
+                titulo: titulo.trim()
             }
         });
 
     } catch (error) {
-        console.error("❌ Error al renombrar nota:", error);
-        res.status(500).json({ 
+        //console.error("Error al renombrar nota:", error);
+        res.status(500).json({
             error: "Error al renombrar la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
@@ -295,26 +353,26 @@ router.get("/obtener-nota/:id", verificarToken, async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error al obtener nota:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Error al obtener la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
 
 /* ====================================================
------------------ Buscar Notas ------------------------
+----------------- Buscar Notas ------------------------ LISTO
 =====================================================*/
 router.get("/buscar-notas", verificarToken, async (req, res) => {
     try {
         const { q } = req.query; // query string: ?q=busqueda
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('🔍 Buscando notas:', q);
+        //console.log('Buscando notas:', q);
 
         if (!q || q.trim() === '') {
-            return res.status(400).json({ 
-                error: "El término de búsqueda es obligatorio" 
+            return res.status(400).json({
+                error: "El término de búsqueda es obligatorio"
             });
         }
 
@@ -341,10 +399,10 @@ router.get("/buscar-notas", verificarToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("❌ Error al buscar notas:", error);
-        res.status(500).json({ 
+        //console.error("Error al buscar notas:", error);
+        res.status(500).json({
             error: "Error al buscar notas",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });
@@ -356,7 +414,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
         const { email } = req.body;
-        
+
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         console.log('📤 Compartiendo nota:', id, 'con:', email);
@@ -385,9 +443,9 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
 
     } catch (error) {
         console.error("❌ Error al compartir nota:", error);
-        res.status(500).json({ 
+        res.status(500).json({
             error: "Error al compartir la nota",
-            detalles: error.message 
+            detalles: error.message
         });
     }
 });

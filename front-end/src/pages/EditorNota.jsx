@@ -20,18 +20,19 @@ import {
 
 import { useNavigate } from "react-router-dom";
 import { useState, useRef, useEffect } from "react";
-import jsPDF from 'jspdf';
-import html2canvas from 'html2canvas';
 
 import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
 import { ModalGuardarNota } from "../components/ModalGuardarNota";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
 
 export function EditorNota() {
     const navigate = useNavigate();
     const editorRef = useRef(null);
 
     const [titulo, setTitulo] = useState("");
-    const [notaId, setNotaId] = useState(null); // Para editar notas existentes
+    const [notaId, setNotaId] = useState(null);
+    const [notas, setNotas] = useState([]);
 
     // Estados de formato
     const [fontFamily, setFontFamily] = useState("Arial");
@@ -43,10 +44,28 @@ export function EditorNota() {
     const [mostrarModalGuardar, setMostrarModalGuardar] = useState(false);
     const [modoGuardar, setModoGuardar] = useState("editar");
 
-    // Estados de reconocimiento de voz
+    // Estados para CustomAlert
+    const [mostrarAlert, setMostrarAlert] = useState(false);
+    const [alertConfig, setAlertConfig] = useState({
+        type: "success",
+        title: "",
+        message: ""
+    });
+
+    // Estados de reconocimiento de voz MEJORADOS
     const [isRecording, setIsRecording] = useState(false);
     const [recognition, setRecognition] = useState(null);
-    const interimTextRef = useRef('');
+    const recognitionTimeoutRef = useRef(null);
+
+    // Estado para contenido inicial (para detectar cambios)
+    const [contenidoInicial, setContenidoInicial] = useState("");
+    const [tituloInicial, setTituloInicial] = useState("");
+
+    /* ===== FUNCIÓN HELPER PARA MOSTRAR ALERTAS ===== */
+    const mostrarAlerta = (type, title, message) => {
+        setAlertConfig({ type, title, message });
+        setMostrarAlert(true);
+    };
 
     /* ===== CARGAR DATOS AL INICIAR ===== */
     useEffect(() => {
@@ -59,23 +78,27 @@ export function EditorNota() {
                 if (data.titulo) setTitulo(data.titulo);
                 if (data.contenido && editorRef.current) {
                     editorRef.current.innerHTML = data.contenido;
+                    setContenidoInicial(data.contenido);
                 }
                 if (data.backgroundColor) setEditorBackgroundColor(data.backgroundColor);
                 if (data.fontFamily) setFontFamily(data.fontFamily);
                 if (data.fontSize) setFontSize(data.fontSize);
                 if (data.notaId) setNotaId(data.notaId);
 
+                setTituloInicial(data.titulo || "");
+
                 console.log('Datos cargados desde localStorage');
             } catch (error) {
                 console.error('Error al cargar datos:', error);
             }
         } else {
-            // No hay datos guardados, limpiar todo para nueva nota
             setTitulo("");
             setNotaId(null);
             setFontFamily("Arial");
             setFontSize("16");
             setEditorBackgroundColor("#ffffff");
+            setContenidoInicial("");
+            setTituloInicial("");
             if (editorRef.current) {
                 editorRef.current.innerHTML = "";
             }
@@ -105,20 +128,20 @@ export function EditorNota() {
         return () => clearInterval(autoSaveInterval);
     }, [titulo, editorBackgroundColor, fontFamily, fontSize, notaId]);
 
-    /* ===== RECONOCIMIENTO DE VOZ ===== */
+    /* ===== RECONOCIMIENTO DE VOZ MEJORADO ===== */
     useEffect(() => {
         if ('webkitSpeechRecognition' in window || 'SpeechRecognition' in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
             const recognitionInstance = new SpeechRecognition();
 
+            // Configuración optimizada
             recognitionInstance.continuous = true;
             recognitionInstance.interimResults = true;
             recognitionInstance.lang = 'es-ES';
             recognitionInstance.maxAlternatives = 1;
 
             recognitionInstance.onstart = () => {
-                console.log('Reconocimiento de voz iniciado');
-                interimTextRef.current = '';
+                console.log('🎤 Reconocimiento de voz iniciado');
             };
 
             recognitionInstance.onresult = (event) => {
@@ -126,14 +149,16 @@ export function EditorNota() {
 
                 let finalTranscript = '';
 
+                // Solo procesar resultados finales
                 for (let i = event.resultIndex; i < event.results.length; i++) {
                     const transcript = event.results[i][0].transcript;
 
                     if (event.results[i].isFinal) {
-                        finalTranscript += transcript;
+                        finalTranscript += transcript + ' ';
                     }
                 }
 
+                // Insertar transcripción final
                 if (finalTranscript) {
                     editorRef.current.focus();
 
@@ -144,40 +169,47 @@ export function EditorNota() {
                     selection.removeAllRanges();
                     selection.addRange(range);
 
-                    document.execCommand('insertText', false, finalTranscript + ' ');
+                    document.execCommand('insertText', false, finalTranscript);
+                }
 
-                    interimTextRef.current = '';
+                // Resetear timeout de silencio
+                if (recognitionTimeoutRef.current) {
+                    clearTimeout(recognitionTimeoutRef.current);
                 }
             };
 
             recognitionInstance.onerror = (event) => {
-                console.error('Error en reconocimiento de voz:', event.error);
+                console.error('❌ Error en reconocimiento de voz:', event.error);
 
                 if (event.error === 'no-speech') {
-                    console.log('No se detectó voz, continuando...');
+                    console.log('⏸️ No se detectó voz, continuando...');
                     return;
                 }
 
                 if (event.error === 'aborted') {
-                    console.log('Reconocimiento abortado');
+                    console.log('🛑 Reconocimiento abortado');
                     setIsRecording(false);
                 }
 
                 if (event.error === 'network') {
-                    alert('Error de red. Verifica tu conexión a internet.');
+                    mostrarAlerta(
+                        "error",
+                        "Error de red",
+                        "Verifica tu conexión a internet."
+                    );
                     setIsRecording(false);
                 }
             };
 
             recognitionInstance.onend = () => {
-                console.log('Reconocimiento de voz finalizado');
+                console.log('🔴 Reconocimiento de voz finalizado');
 
                 if (isRecording) {
                     try {
                         recognitionInstance.start();
-                        console.log('Reconocimiento reiniciado automáticamente');
+                        console.log('🔄 Reconocimiento reiniciado automáticamente');
                     } catch (e) {
-                        console.log('No se pudo reiniciar:', e);
+                        console.log('❌ No se pudo reiniciar:', e);
                         setIsRecording(false);
                     }
                 } else {
@@ -196,82 +228,72 @@ export function EditorNota() {
                     console.log('Error al detener reconocimiento:', e);
                 }
             }
+            if (recognitionTimeoutRef.current) {
+                clearTimeout(recognitionTimeoutRef.current);
+            }
         };
     }, [isRecording]);
 
-    /* ===== GENERAR PDF CON jsPDF ===== */
-    const generatePDF = async () => {
+    /* ===== CARGAR NOTAS AL INICIAR ===== */
+    useEffect(() => {
+        cargarNotas();
+    }, []);
+
+    const cargarNotas = async () => {
         try {
-            const element = editorRef.current;
-            
-            // Crear contenedor temporal con estilos
-            const pdfContainer = document.createElement('div');
-            pdfContainer.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: 0;
-                width: 210mm;
-                padding: 20mm;
-                background-color: ${editorBackgroundColor};
-                font-family: ${fontFamily};
-                font-size: ${fontSize}px;
-            `;
-            
-            pdfContainer.innerHTML = `
-                <div style="margin-bottom: 20px;">
-                    <h1 style="color: #2563eb; border-bottom: 2px solid #e5e7eb; padding-bottom: 10px;">
-                        ${titulo}
-                    </h1>
-                </div>
-                <div style="margin-top: 20px; line-height: 1.6;">
-                    ${element.innerHTML}
-                </div>
-                <div style="margin-top: 40px; padding-top: 20px; border-top: 1px solid #e5e7eb; font-size: 12px; color: #6b7280;">
-                    Creado: ${new Date().toLocaleDateString('es-ES', {
-                        day: '2-digit',
-                        month: 'long',
-                        year: 'numeric',
-                        hour: '2-digit',
-                        minute: '2-digit'
-                    })}
-                </div>
-            `;
-            
-            document.body.appendChild(pdfContainer);
-
-            // Convertir a canvas
-            const canvas = await html2canvas(pdfContainer, {
-                scale: 2,
-                useCORS: true,
-                backgroundColor: editorBackgroundColor
+            const response = await fetch("http://localhost:3000/notas/obtener-notas", {
+                method: "GET",
+                credentials: "include",
             });
 
-            document.body.removeChild(pdfContainer);
-
-            // Crear PDF
-            const pdf = new jsPDF({
-                orientation: 'portrait',
-                unit: 'mm',
-                format: 'a4'
-            });
-
-            const imgData = canvas.toDataURL('image/png');
-            const pdfWidth = pdf.internal.pageSize.getWidth();
-            const pdfHeight = (canvas.height * pdfWidth) / canvas.width;
-
-            pdf.addImage(imgData, 'PNG', 0, 0, pdfWidth, pdfHeight);
-
-            // Convertir a Blob
-            const pdfBlob = pdf.output('blob');
-            return pdfBlob;
-
+            if (response.ok) {
+                const data = await response.json();
+                setNotas(data);
+            }
         } catch (error) {
-            console.error('Error al generar PDF:', error);
-            throw error;
+            console.error("Error al cargar notas:", error);
         }
     };
 
-    /* ===== FUNCIONES DE FORMATO ===== */
+    /* ===== DETECTAR SI HAY CAMBIOS ===== */
+    const hayaCambios = () => {
+        const contenidoActual = editorRef.current?.innerHTML || "";
+        const tituloActual = titulo;
+
+        return (
+            contenidoActual.trim() !== contenidoInicial.trim() ||
+            tituloActual.trim() !== tituloInicial.trim()
+        );
+    };
+
+    /* ===== FUNCIONES DE FORMATO MEJORADAS ===== */
+    
+    // Función auxiliar para aplicar estilos manteniendo el formato existente
+    const applyStyleToSelection = (styleProp, styleValue) => {
+        const selection = window.getSelection();
+        if (!selection.rangeCount) return;
+
+        const range = selection.getRangeAt(0);
+        if (range.collapsed) return;
+
+        editorRef.current?.focus();
+
+        const span = document.createElement('span');
+        span.style[styleProp] = styleValue;
+
+        try {
+            const fragment = range.extractContents();
+            span.appendChild(fragment);
+            range.insertNode(span);
+
+            range.selectNodeContents(span);
+            selection.removeAllRanges();
+            selection.addRange(range);
+        } catch (e) {
+            console.error(`Error al aplicar ${styleProp}:`, e);
+        }
+    };
+
     const toggleBold = () => {
         editorRef.current?.focus();
         document.execCommand('bold');
@@ -319,20 +341,7 @@ export function EditorNota() {
         const range = selection.getRangeAt(0);
 
         if (!range.collapsed) {
-            const span = document.createElement('span');
-            span.style.fontFamily = font;
-
-            try {
-                const fragment = range.extractContents();
-                span.appendChild(fragment);
-                range.insertNode(span);
-
-                range.selectNodeContents(span);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            } catch (e) {
-                console.error('Error al aplicar fuente:', e);
-            }
+            applyStyleToSelection('fontFamily', font);
         }
 
         editorRef.current?.focus();
@@ -349,20 +358,7 @@ export function EditorNota() {
         const range = selection.getRangeAt(0);
 
         if (!range.collapsed) {
-            const span = document.createElement('span');
-            span.style.fontSize = `${size}px`;
-
-            try {
-                const fragment = range.extractContents();
-                span.appendChild(fragment);
-                range.insertNode(span);
-
-                range.selectNodeContents(span);
-                selection.removeAllRanges();
-                selection.addRange(range);
-            } catch (e) {
-                console.error('Error al aplicar tamaño:', e);
-            }
+            applyStyleToSelection('fontSize', `${size}px`);
         }
 
         editorRef.current?.focus();
@@ -370,7 +366,11 @@ export function EditorNota() {
 
     const handleTextColor = (color) => {
         editorRef.current?.focus();
-        document.execCommand('foreColor', false, color);
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount && !selection.getRangeAt(0).collapsed) {
+            applyStyleToSelection('color', color);
+        }
     };
 
     const handleBackgroundColor = (color) => {
@@ -379,27 +379,96 @@ export function EditorNota() {
 
     const handleHighlightColor = (color) => {
         editorRef.current?.focus();
-        document.execCommand('hiliteColor', false, color);
+        const selection = window.getSelection();
+        
+        if (selection.rangeCount && !selection.getRangeAt(0).collapsed) {
+            applyStyleToSelection('backgroundColor', color);
+        }
     };
 
+    // FUNCIÓN MEJORADA PARA REMOVER RESALTADO
     const removeHighlight = () => {
         const selection = window.getSelection();
-        if (!selection.rangeCount) return;
+        if (!selection.rangeCount) {
+            mostrarAlerta(
+                "info",
+                "Selecciona texto",
+                "Selecciona el texto del cual quieres quitar el resaltado"
+            );
+            return;
+        }
 
         const range = selection.getRangeAt(0);
 
-        if (!range.collapsed) {
-            editorRef.current?.focus();
-            document.execCommand('hiliteColor', false, 'transparent');
-            document.execCommand('backColor', false, 'transparent');
-        } else {
-            alert('Selecciona el texto del cual quieres quitar el resaltado');
+        if (range.collapsed) {
+            mostrarAlerta(
+                "info",
+                "Selecciona texto",
+                "Selecciona el texto del cual quieres quitar el resaltado"
+            );
+            return;
+        }
+
+        editorRef.current?.focus();
+
+        try {
+            // Obtener el contenido seleccionado
+            const selectedContent = range.cloneContents();
+            
+            // Función recursiva para limpiar el fondo de todos los elementos
+            const clearBackgrounds = (node) => {
+                if (node.nodeType === Node.ELEMENT_NODE) {
+                    if (node.style) {
+                        node.style.backgroundColor = '';
+                        node.style.background = '';
+                    }
+                    
+                    for (let child of node.childNodes) {
+                        clearBackgrounds(child);
+                    }
+                }
+            };
+
+            // Limpiar backgrounds
+            clearBackgrounds(selectedContent);
+
+            // Reemplazar el contenido
+            range.deleteContents();
+            range.insertNode(selectedContent);
+
+            // Mantener la selección
+            const newRange = document.createRange();
+            newRange.setStartBefore(selectedContent.firstChild || selectedContent);
+            newRange.setEndAfter(selectedContent.lastChild || selectedContent);
+            selection.removeAllRanges();
+            selection.addRange(newRange);
+
+            console.log('✅ Resaltado removido correctamente');
+        } catch (e) {
+            console.error('❌ Error al remover resaltado:', e);
+            
+            // Fallback
+            try {
+                document.execCommand('removeFormat', false, null);
+                console.log('✅ Resaltado removido con removeFormat');
+            } catch (fallbackError) {
+                console.error('❌ Error en fallback:', fallbackError);
+                mostrarAlerta(
+                    "error",
+                    "Error",
+                    "No se pudo remover el resaltado. Intenta nuevamente."
+                );
+            }
         }
     };
 
     const handleVoiceInput = () => {
         if (!recognition) {
-            alert('Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.');
+            mostrarAlerta(
+                "error",
+                "No disponible",
+                "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge."
+            );
             return;
         }
 
@@ -407,27 +476,41 @@ export function EditorNota() {
             try {
                 recognition.stop();
                 setIsRecording(false);
-                console.log('Dictado detenido por el usuario');
+                console.log('🛑 Dictado detenido por el usuario');
             } catch (e) {
                 console.error('Error al detener:', e);
                 setIsRecording(false);
             }
         } else {
             try {
-                interimTextRef.current = '';
                 recognition.start();
                 setIsRecording(true);
-                console.log('Dictado iniciado');
+                console.log('🎤 Dictado iniciado');
                 editorRef.current?.focus();
             } catch (e) {
                 console.error('Error al iniciar:', e);
-                alert('No se pudo iniciar el dictado. Intenta nuevamente.');
+                mostrarAlerta(
+                    "error",
+                    "Error al iniciar",
+                    "No se pudo iniciar el dictado. Intenta nuevamente."
+                );
             }
         }
     };
 
     /* ===== HANDLERS DE GUARDADO ===== */
     const handleGuardarClick = () => {
+        const contenidoTexto = editorRef.current?.innerText?.trim() || "";
+
+        if (!contenidoTexto) {
+            mostrarAlerta(
+                "error",
+                "Contenido vacío",
+                "El contenido de la nota es obligatorio. Por favor, escribe algo antes de guardar."
+            );
+            return;
+        }
+
         if (titulo.trim() === "") {
             setModoGuardar("crear");
         } else {
@@ -438,7 +521,7 @@ export function EditorNota() {
 
     const handleConfirmarGuardar = async (tituloNota) => {
         try {
-            const endpoint = modoGuardar === "crear" 
+            const endpoint = modoGuardar === "crear"
                 ? "http://localhost:3000/notas/crear-nota"
                 : `http://localhost:3000/notas/actualizar-nota/${notaId}`;
 
@@ -461,23 +544,59 @@ export function EditorNota() {
 
             if (!response.ok) {
                 const errorData = await response.json();
-                throw new Error(errorData.mensaje || "Error al guardar la nota");
+                throw new Error(errorData.error || "Error al guardar la nota");
             }
 
             const data = await response.json();
             console.log("Nota guardada:", data);
 
             if (modoGuardar === "crear") {
-                setTitulo(tituloNota);
-                setNotaId(data.nota.id_nota);
-            }
+                localStorage.removeItem('editorNota');
 
-            alert("¡Nota guardada exitosamente!");
-            setMostrarModalGuardar(false);
+                mostrarAlerta(
+                    "success",
+                    "¡Nota creada!",
+                    "Tu nota ha sido creada exitosamente."
+                );
+                
+                setMostrarModalGuardar(false);
+
+                setTimeout(() => {
+                    navigate("/notas");
+                }, 1500);
+            } else {
+                mostrarAlerta(
+                    "success",
+                    "¡Nota actualizada!",
+                    "Los cambios han sido guardados exitosamente."
+                );
+                
+                setMostrarModalGuardar(false);
+
+                setContenidoInicial(editorRef.current?.innerHTML || "");
+                setTituloInicial(titulo);
+            }
 
         } catch (error) {
             console.error("Error al guardar nota:", error);
-            alert(error.message || "Error al guardar la nota. Intenta nuevamente.");
+            mostrarAlerta(
+                "error",
+                "Error al guardar",
+                error.message || "No se pudo guardar la nota. Por favor, intenta nuevamente."
+            );
+        }
+    };
+
+    /* ===== HANDLER DE VOLVER ===== */
+    const handleVolverClick = () => {
+        if (hayaCambios()) {
+            setMostrarModalSalir(true);
+        } else {
+            if (isRecording && recognition) {
+                recognition.stop();
+                setIsRecording(false);
+            }
+            navigate(-1);
         }
     };
 
@@ -491,6 +610,31 @@ export function EditorNota() {
         navigate(-1);
     };
 
+    /* ===== ATAJOS DE TECLADO ===== */
+    useEffect(() => {
+        const handleKeyDown = (e) => {
+            if ((e.ctrlKey || e.metaKey) && e.key === 'b') {
+                e.preventDefault();
+                toggleBold();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'i') {
+                e.preventDefault();
+                toggleItalic();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 'u') {
+                e.preventDefault();
+                toggleUnderline();
+            }
+            if ((e.ctrlKey || e.metaKey) && e.key === 's') {
+                e.preventDefault();
+                handleGuardarClick();
+            }
+        };
+
+        document.addEventListener('keydown', handleKeyDown);
+        return () => document.removeEventListener('keydown', handleKeyDown);
+    }, [titulo, notaId]);
+
     /* ===== RENDER ===== */
     return (
         <main className="editor-nota">
@@ -498,7 +642,7 @@ export function EditorNota() {
             <header className="editor-header">
                 <button
                     className="btn-volver-editor"
-                    onClick={() => setMostrarModalSalir(true)}
+                    onClick={handleVolverClick}
                 >
                     <ArrowLeft size={18} />
                     Volver
@@ -540,6 +684,7 @@ export function EditorNota() {
                         <select
                             value={fontFamily}
                             onChange={(e) => handleFontFamily(e.target.value)}
+                            title="Tipo de fuente"
                         >
                             <option value="Arial">Arial</option>
                             <option value="'Times New Roman', Times, serif">Times New Roman</option>
@@ -547,12 +692,16 @@ export function EditorNota() {
                             <option value="'Courier New', Courier, monospace">Courier New</option>
                             <option value="Verdana, Geneva, sans-serif">Verdana</option>
                             <option value="'Comic Sans MS', cursive">Comic Sans MS</option>
+                            <option value="'Trebuchet MS', sans-serif">Trebuchet MS</option>
+                            <option value="'Lucida Console', monospace">Lucida Console</option>
                         </select>
 
                         <select
                             value={fontSize}
                             onChange={(e) => handleFontSize(e.target.value)}
+                            title="Tamaño de fuente"
                         >
+                            <option value="10">10</option>
                             <option value="12">12</option>
                             <option value="14">14</option>
                             <option value="16">16</option>
@@ -561,6 +710,8 @@ export function EditorNota() {
                             <option value="24">24</option>
                             <option value="28">28</option>
                             <option value="32">32</option>
+                            <option value="36">36</option>
+                            <option value="48">48</option>
                         </select>
                     </div>
 
@@ -667,7 +818,19 @@ export function EditorNota() {
                 modo={modoGuardar}
                 onCancel={() => setMostrarModalGuardar(false)}
                 onConfirm={handleConfirmarGuardar}
+                notas={notas}
             />
+
+            {/* CUSTOM ALERT */}
+            {mostrarAlert && (
+                <CustomAlert
+                    type={alertConfig.type}
+                    title={alertConfig.title}
+                    message={alertConfig.message}
+                    logo={logo}
+                    onClose={() => setMostrarAlert(false)}
+                />
+            )}
         </main>
     );
 }

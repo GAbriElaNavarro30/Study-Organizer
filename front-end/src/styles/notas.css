@@ -119,6 +119,33 @@
 }
 
 /* ======================================================
+   ESTADOS DE CARGA
+====================================================== */
+.notes-loading,
+.notes-error,
+.notes-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    padding: 60px 20px;
+    text-align: center;
+    color: #6b7280;
+}
+
+.notes-loading p,
+.notes-error p,
+.notes-empty p {
+    margin: 15px 0;
+    font-size: 16px;
+}
+
+.notes-error button,
+.notes-empty button {
+    margin-top: 20px;
+}
+
+/* ======================================================
    LIST
 ====================================================== */
 .notes-list {
@@ -166,13 +193,9 @@
     gap: 25px;
 }
 
-.note-row:hover .note-actions {
-    opacity: 1;
-}
-
 .note-actions svg {
     cursor: pointer;
-    transition: color 0.2s ease;
+    transition: all 0.2s;
     width: 22px;
     height: 22px;
 }
@@ -182,9 +205,19 @@
     color: #10b981;
 }
 
+.icono-notas-exportar:hover {
+    color: #059669;
+    transform: scale(1.1);
+}
+
 /* COMPARTIR - Share2 (azul) */
 .icono-notas-compartir {
     color: #0ea5e9;
+}
+
+.icono-notas-compartir:hover {
+    color: #0284c7;
+    transform: scale(1.1);
 }
 
 /* EDITAR - Pencil (morado) */
@@ -192,9 +225,19 @@
     color: #8b5cf6;
 }
 
+.icono-notas-editar:hover {
+    color: #7c3aed;
+    transform: scale(1.1);
+}
+
 /* RENOMBRAR - Type (negro) */
 .icono-notas-renombrar {
     color: #000000;
+}
+
+.icono-notas-renombrar:hover {
+    color: #374151;
+    transform: scale(1.1);
 }
 
 /* ELIMINAR - Trash2 (rojo) */
@@ -202,15 +245,21 @@
     color: #ef4444;
 }
 
+.icono-notas-eliminar:hover {
+    color: #dc2626;
+    transform: scale(1.1);
+}
+
 /* ======================================================
-   PAGINACIÓN
+   PAGINACIÓN - CORREGIDO
 ====================================================== */
 .notes-pagination {
-    display: flex;
+    display: flex !important; /* Forzar visualización */
     justify-content: center;
     align-items: center;
     gap: 14px;
     margin-top: 28px;
+    padding: 20px 0;
 }
 
 .page-arrow {
@@ -226,15 +275,16 @@
     transition: all 0.2s ease;
 }
 
-.page-arrow:hover {
+.page-arrow:hover:not(.disabled) {
     background: #2563eb;
     color: #ffffff;
     border-color: #2563eb;
 }
 
 .page-arrow.disabled {
-    opacity: 0.4;
+    opacity: 0.3;
     cursor: not-allowed;
+    pointer-events: none;
 }
 
 .page-numbers {
@@ -243,8 +293,9 @@
 }
 
 .page-number {
-    width: 36px;
+    min-width: 36px;
     height: 36px;
+    padding: 0 8px;
     border-radius: 10px;
     border: 1px solid #e2e8f0;
     background: #ffffff;
@@ -254,7 +305,7 @@
     transition: all 0.2s ease;
 }
 
-.page-number:hover {
+.page-number:hover:not(.active) {
     background: #f1f5f9;
 }
 
@@ -274,14 +325,12 @@
         gap: 16px 12px;
     }
 
-    /* Acciones ocupan toda la fila */
     .notes-header-actions {
         grid-column: 1 / -1;
         display: flex;
         gap: 12px;
     }
 
-    /* Buscar y limit en la MISMA fila */
     .notes-search {
         grid-column: 1;
         width: 100%;
@@ -299,7 +348,6 @@
         justify-content: center;
     }
 
-    /* Reducir gap entre iconos */
     .note-actions {
         gap: 18px;
     }
@@ -336,9 +384,20 @@
         justify-content: center;
     }
 
-    /* Reducir gap entre iconos */
     .note-actions {
         gap: 15px;
+    }
+
+    /* Paginación en móvil */
+    .notes-pagination {
+        gap: 10px;
+    }
+
+    .page-number,
+    .page-arrow {
+        min-width: 36px;
+        height: 36px;
+        font-size: 0.85rem;
     }
 }
 
@@ -390,8 +449,6 @@
     .icono-notas {
         width: 22px;
         height: 22px;
-        flex-shrink: 0;
-        color: #475569;
         margin-top: -30px;
     }
 
@@ -409,12 +466,12 @@
         gap: 12px;
     }
 
-    /* Ajustar tamaño de iconos manteniendo colores */
     .note-actions svg {
         width: 20px !important;
         height: 20px !important;
     }
 
+    /* Paginación responsive */
     .notes-pagination {
         gap: 8px;
     }
@@ -475,8 +532,6 @@
     .icono-notas {
         width: 22px;
         height: 22px;
-        flex-shrink: 0;
-        color: #475569;
         margin-top: -30px;
     }
 
@@ -494,7 +549,6 @@
         gap: 10px;
     }
 
-    /* Ajustar tamaño de iconos manteniendo colores */
     .note-actions svg {
         width: 18px !important;
         height: 18px !important;
@@ -506,9 +560,9 @@
 
     .page-number,
     .page-arrow {
-        min-width: 34px;
-        height: 34px;
-        font-size: 0.85rem;
+        min-width: 32px;
+        height: 32px;
+        font-size: 0.8rem;
     }
 }
 
@@ -517,108 +571,23 @@
         height: 85px;
     }
 
-    /* Hacer los iconos aún más pequeños */
     .note-actions {
         gap: 8px;
     }
 
-    /* Ajustar tamaño de iconos manteniendo colores */
     .note-actions svg {
         width: 16px !important;
         height: 16px !important;
     }
-}
 
+    .notes-pagination {
+        gap: 6px;
+    }
 
-
-
-
-
-
-
-
-
-
-
-
-/* Estilos adicionales para Notas.jsx */
-/* Agrega esto a tu archivo notas.css */
-
-/* ===== ESTADOS DE CARGA ===== */
-.notes-loading,
-.notes-error,
-.notes-empty {
-    display: flex;
-    flex-direction: column;
-    align-items: center;
-    justify-content: center;
-    padding: 60px 20px;
-    text-align: center;
-    color: #6b7280;
-}
-
-.notes-loading p,
-.notes-error p,
-.notes-empty p {
-    margin: 15px 0;
-    font-size: 16px;
-}
-
-.notes-error button,
-.notes-empty button {
-    margin-top: 20px;
-    padding: 10px 20px;
-    background: #2563eb;
-    color: white;
-    border: none;
-    border-radius: 8px;
-    cursor: pointer;
-    font-size: 14px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    transition: background 0.3s;
-}
-
-.notes-error button:hover,
-.notes-empty button:hover {
-    background: #1d4ed8;
-}
-
-/* ===== PAGINACIÓN DESHABILITADA ===== */
-.page-arrow.disabled {
-    opacity: 0.3;
-    cursor: not-allowed;
-    pointer-events: none;
-}
-
-/* ===== TOOLTIPS PARA ICONOS ===== */
-.note-actions svg {
-    cursor: pointer;
-    transition: all 0.2s;
-}
-
-.icono-notas-exportar:hover {
-    color: #10b981;
-    transform: scale(1.1);
-}
-
-.icono-notas-compartir:hover {
-    color: #3b82f6;
-    transform: scale(1.1);
-}
-
-.icono-notas-editar:hover {
-    color: #f59e0b;
-    transform: scale(1.1);
-}
-
-.icono-notas-renombrar:hover {
-    color: #8b5cf6;
-    transform: scale(1.1);
-}
-
-.icono-notas-eliminar:hover {
-    color: #ef4444;
-    transform: scale(1.1);
+    .page-number,
+    .page-arrow {
+        min-width: 30px;
+        height: 30px;
+        font-size: 0.75rem;
+    }
 }
