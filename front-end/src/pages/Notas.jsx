@@ -34,6 +34,7 @@ export function Notas() {
     const [mostrarModalRenombrar, setMostrarModalRenombrar] = useState(false);
     const [notaARenombrar, setNotaARenombrar] = useState(null);
 
+
     // Estados para CustomAlert
     const [mostrarAlert, setMostrarAlert] = useState(false);
     const [alertConfig, setAlertConfig] = useState({
@@ -236,172 +237,184 @@ export function Notas() {
     /* ===== DESCARGAR PDF ===== */
     const descargarPDF = async (nota) => {
         try {
-            // Obtener datos actualizados del backend
+            mostrarAlerta("success", "Generando PDF...", "Por favor espera un momento.");
+
             const response = await fetch(
                 `http://localhost:3000/notas/exportar-pdf/${nota.id_nota}`,
-                {
-                    method: "GET",
-                    credentials: "include",
-                }
+                { method: "GET", credentials: "include" }
             );
 
-            if (!response.ok) {
-                throw new Error("Error al obtener datos de la nota");
-            }
+            if (!response.ok) throw new Error("Error al obtener datos de la nota");
 
             const data = await response.json();
             const notaData = data.nota;
 
-            // Crear un div temporal con el contenido de la nota
+            const [html2canvasLib, { default: jsPDF }] = await Promise.all([
+                import("html2canvas").then(m => m.default),
+                import("jspdf")
+            ]);
+
+            // ✅ Contenedor con padding lateral únicamente, sin padding vertical
             const pdfContainer = document.createElement("div");
             pdfContainer.style.cssText = `
-                position: absolute;
-                left: -9999px;
-                top: 0;
-                width: 210mm;
-                min-height: 297mm;
-                padding: 20mm;
-                box-sizing: border-box;
-                background-color: ${notaData.background_color || "#ffffff"};
-                font-family: ${notaData.font_family || "Arial"};
-                font-size: ${notaData.font_size || "16"}px;
-            `;
+            position: fixed;
+            left: -9999px;
+            top: 0;
+            width: 816px;
+            padding: 0 40px;
+            margin: 0;
+            box-sizing: border-box;
+            background-color: ${notaData.background_color || "#ffffff"};
+            font-family: ${notaData.font_family || "Arial"}, sans-serif;
+            font-size: ${notaData.font_size || "16"}px;
+            line-height: 1.6;
+            color: #000000;
+        `;
 
-            // Solo el contenido
-            pdfContainer.innerHTML = `
-                <div style="line-height: 1.6;">
-                    ${notaData.contenido}
-                </div>
-            `;
-
+            pdfContainer.innerHTML = notaData.contenido || "<p>Sin contenido</p>";
             document.body.appendChild(pdfContainer);
 
-            // Importar dinámicamente html2canvas y jsPDF
-            const html2canvas = (await import("html2canvas")).default;
-            const jsPDF = (await import("jspdf")).default;
+            // ✅ Obtener posiciones de cada elemento hijo para smart breaks
+            const childElements = Array.from(pdfContainer.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div, blockquote, pre, table, img"));
 
-            const canvas = await html2canvas(pdfContainer, {
-                scale: 2,
+            const canvas = await html2canvasLib(pdfContainer, {
+                scale: 1.5,
                 useCORS: true,
+                logging: false,
                 backgroundColor: notaData.background_color || "#ffffff",
+                windowWidth: 816,
+            });
+
+            // Guardar alturas de los elementos ANTES de remover el contenedor
+            const elementBreakpoints = childElements.map(el => {
+                const rect = el.getBoundingClientRect();
+                const containerRect = pdfContainer.getBoundingClientRect();
+                return {
+                    top: rect.top - containerRect.top,       // px desde el top del contenedor
+                    bottom: rect.bottom - containerRect.top,  // px hasta el bottom del elemento
+                };
             });
 
             document.body.removeChild(pdfContainer);
 
-            // Crear PDF con jsPDF
-            const pdf = new jsPDF({
-                orientation: "portrait",
-                unit: "mm",
-                format: "a4",
-            });
+            // ✅ Carta: 215.9 × 279.4 mm
+            const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
 
-            const backgroundColor = notaData.background_color || "#ffffff";
-
-            // Convertir hex a RGB
-            const hexToRgb = (hex) => {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result ? {
-                    r: parseInt(result[1], 16),
-                    g: parseInt(result[2], 16),
-                    b: parseInt(result[3], 16)
-                } : { r: 255, g: 255, b: 255 };
-            };
-
-            const rgb = hexToRgb(backgroundColor);
-
-            // Dimensiones de la página
             const pageWidth = pdf.internal.pageSize.getWidth();
             const pageHeight = pdf.internal.pageSize.getHeight();
+            const margin = 20;
+            const contentWidth = pageWidth - margin * 2;
+            const contentAreaHeight = pageHeight - margin * 2;
 
-            // ✅ Definir márgenes (en mm)
-            const margin = 20; // 20mm de margen en todos los lados
-            const contentWidth = pageWidth - (margin * 2);
-            const contentHeight = pageHeight - (margin * 2);
+            const hexToRgb = (hex) => {
+                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+                return result
+                    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+                    : { r: 255, g: 255, b: 255 };
+            };
+            const rgb = hexToRgb(notaData.background_color || "#ffffff");
 
-            // Calcular dimensiones de la imagen
-            const imgData = canvas.toDataURL("image/png");
-            const imgWidth = contentWidth;
-            const imgHeight = (canvas.height * imgWidth) / canvas.width;
+            // Conversión px → mm (basado en el canvas sin escalar)
+            const canvasHeightPx = canvas.height / 1.5; // canvas.height incluye el scale de 1.5
+            const totalContentHeightMM = (canvasHeightPx * contentWidth) / (816 - 80); // 816px - 80px padding lateral
+            const pxPerMM = canvasHeightPx / totalContentHeightMM;
 
-            // ✅ PRIMERA PÁGINA: Pintar fondo completo
-            pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-            pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+            // ✅ Calcular breakpoints en MM para evitar cortar elementos
+            const breakpointsMM = elementBreakpoints.map(bp => ({
+                top: bp.top / pxPerMM,
+                bottom: bp.bottom / pxPerMM,
+            }));
 
-            // Variables para paginación
-            let heightLeft = imgHeight;
-            let position = margin; // Empezar en el margen superior
-
-            // ✅ Agregar contenido con márgenes
-            if (heightLeft <= contentHeight) {
-                // Todo cabe en una página
-                pdf.addImage(imgData, "PNG", margin, position, imgWidth, imgHeight);
-            } else {
-                // Contenido ocupa múltiples páginas
-                let srcY = 0; // Posición Y en la imagen original
-
-                while (heightLeft > 0) {
-                    // Calcular cuánto contenido cabe en esta página
-                    const pageContentHeight = Math.min(contentHeight, heightLeft);
-
-                    // Si no es la primera página, agregar nueva página
-                    if (srcY > 0) {
-                        pdf.addPage();
-
-                        // Pintar fondo completo de la nueva página
-                        pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-                        pdf.rect(0, 0, pageWidth, pageHeight, 'F');
+            // ✅ Función: dado un punto de corte propuesto (en MM), 
+            // busca el breakpoint más cercano hacia ARRIBA que no corte ningún elemento
+            const findSafeBreak = (proposedBreakMM, pageStartMM) => {
+                // Buscar elementos que se cortarían en este punto
+                for (let i = breakpointsMM.length - 1; i >= 0; i--) {
+                    const bp = breakpointsMM[i];
+                    // Si el elemento cruza el punto de corte propuesto
+                    if (bp.top < proposedBreakMM && bp.bottom > proposedBreakMM) {
+                        // Retroceder al top del elemento (saltar antes del elemento)
+                        const safeBreak = bp.top;
+                        // Asegurarse que no retrocedemos hasta el inicio de la página
+                        if (safeBreak > pageStartMM + 10) {
+                            return safeBreak;
+                        }
+                        // Si el elemento es muy grande, cortar después de él
+                        return bp.bottom;
                     }
-
-                    // Calcular qué porción de la imagen mostrar
-                    const srcHeight = (pageContentHeight * canvas.width) / imgWidth;
-                    const destHeight = pageContentHeight;
-
-                    // ✅ Crear un canvas temporal con solo la porción visible
-                    const tempCanvas = document.createElement('canvas');
-                    const tempCtx = tempCanvas.getContext('2d');
-
-                    tempCanvas.width = canvas.width;
-                    tempCanvas.height = srcHeight;
-
-                    // Dibujar la porción correspondiente
-                    tempCtx.drawImage(
-                        canvas,
-                        0, srcY,                    // Origen en canvas original
-                        canvas.width, srcHeight,    // Tamaño a copiar
-                        0, 0,                       // Destino en canvas temporal
-                        canvas.width, srcHeight     // Tamaño en canvas temporal
-                    );
-
-                    // Convertir a imagen y agregar al PDF
-                    const tempImgData = tempCanvas.toDataURL("image/png");
-                    pdf.addImage(tempImgData, "PNG", margin, margin, imgWidth, destHeight);
-
-                    // Actualizar contadores
-                    srcY += srcHeight;
-                    heightLeft -= pageContentHeight;
                 }
+                return proposedBreakMM; // sin conflicto, usar el punto propuesto
+            };
+
+            // ✅ Generar páginas con smart breaks
+            let pageStartMM = 0;
+            let isFirstPage = true;
+
+            const drawPage = (startMM, heightMM) => {
+                if (!isFirstPage) pdf.addPage();
+
+                // Fondo completo de la página
+                pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+                pdf.rect(0, 0, pageWidth, pageHeight, "F");
+
+                const srcYpx = Math.round(startMM * pxPerMM * 1.5); // ×1.5 por el scale del canvas
+                const slicePXraw = Math.round(heightMM * pxPerMM * 1.5);
+                const slicePX = Math.min(slicePXraw, canvas.height - srcYpx);
+
+                if (slicePX <= 0) return;
+
+                const tempCanvas = document.createElement("canvas");
+                tempCanvas.width = canvas.width;
+                tempCanvas.height = slicePX;
+                const ctx = tempCanvas.getContext("2d");
+
+                ctx.fillStyle = notaData.background_color || "#ffffff";
+                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+
+                ctx.drawImage(
+                    canvas,
+                    0, srcYpx,
+                    canvas.width, slicePX,
+                    0, 0,
+                    canvas.width, slicePX
+                );
+
+                pdf.addImage(
+                    tempCanvas.toDataURL("image/jpeg", 0.85),
+                    "JPEG",
+                    margin,
+                    margin,
+                    contentWidth,
+                    heightMM
+                );
+
+                isFirstPage = false;
+            };
+
+            while (pageStartMM < totalContentHeightMM) {
+                const remainingMM = totalContentHeightMM - pageStartMM;
+
+                if (remainingMM <= contentAreaHeight) {
+                    // Último pedazo — todo cabe en esta página
+                    drawPage(pageStartMM, remainingMM);
+                    break;
+                }
+
+                // ✅ Proponer corte al final del área útil, luego ajustar para no cortar líneas
+                const proposedBreak = pageStartMM + contentAreaHeight;
+                const safeBreak = findSafeBreak(proposedBreak, pageStartMM);
+                const actualPageHeight = safeBreak - pageStartMM;
+
+                drawPage(pageStartMM, actualPageHeight);
+                pageStartMM = safeBreak;
             }
 
-            // Descargar con el nombre del título
             pdf.save(`${notaData.titulo}.pdf`);
+            mostrarAlerta("success", "¡PDF descargado!", `El PDF de "${notaData.titulo}" se ha descargado correctamente.`);
 
-            console.log("✅ PDF descargado correctamente con márgenes");
-
-            // Mostrar alerta de éxito
-            mostrarAlerta(
-                "success",
-                "¡PDF descargado!",
-                `El PDF de "${notaData.titulo}" se ha descargado correctamente.`
-            );
         } catch (error) {
-            console.error("❌ Error al generar PDF:", error);
-
-            // Mostrar alerta de error
-            mostrarAlerta(
-                "error",
-                "Error al generar PDF",
-                "No se pudo generar el PDF. Por favor, intenta nuevamente."
-            );
+            console.error("Error al generar PDF:", error);
+            mostrarAlerta("error", "Error al generar PDF", "No se pudo generar el PDF. Por favor, intenta nuevamente.");
         }
     };
 
