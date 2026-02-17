@@ -1,8 +1,27 @@
 import { Router } from "express";
 import { db } from "../config/db.js";
 import { verificarToken } from "../middlewares/auth.js";
+import sanitizeHtml from "sanitize-html";
 
 const router = Router();
+
+/* ====================================================
+-------------------- Sanitizar PDF --------------------
+=====================================================*/
+const sanitizeOpciones = {
+    allowedTags: [
+        "p", "br", "b", "i", "u", "strong", "em",
+        "h1", "h2", "h3", "h4", "h5", "h6",
+        "ul", "ol", "li", "span", "div",
+        "blockquote", "pre", "table",
+        "thead", "tbody", "tr", "th", "td", "img"
+    ],
+    allowedAttributes: {
+        "*": ["style", "class"],
+        "img": ["src", "alt", "width", "height"]
+    },
+    allowedSchemes: ["data", "http", "https"]
+};
 
 /* ====================================================
 -------------------- Obtener Notas -------------------- LISTO
@@ -87,6 +106,8 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
         }
 
         // ===== GUARDAR EN BASE DE DATOS =====
+        const contenidoLimpio = sanitizeHtml(contenido || "", sanitizeOpciones);  // SANITIZAR
+
         const [result] = await db.query(
             `INSERT INTO Nota (
                 titulo, 
@@ -98,7 +119,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 titulo.trim(),
-                contenido || '', // Permitir contenido vacío
+                contenidoLimpio || '', // Permitir contenido vacío
                 backgroundColor || '#ffffff',
                 fontFamily || 'Arial',
                 fontSize || '16',
@@ -155,6 +176,8 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
         }
 
         // Actualizar en base de datos
+        const contenidoLimpio = sanitizeHtml(contenido || "", sanitizeOpciones); // sanitiza
+
         await db.query(
             `UPDATE Nota 
             SET titulo = ?, 
@@ -166,7 +189,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
             WHERE id_nota = ? AND id_usuario = ?`,
             [
                 titulo,
-                contenido,
+                contenidoLimpio,
                 backgroundColor || '#ffffff',
                 fontFamily || 'Arial',
                 fontSize || '16',

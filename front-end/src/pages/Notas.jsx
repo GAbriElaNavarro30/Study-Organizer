@@ -11,6 +11,7 @@ import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
 
+
 export function Notas() {
     const navigate = useNavigate();
 
