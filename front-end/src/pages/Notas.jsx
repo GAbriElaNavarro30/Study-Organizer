@@ -162,18 +162,46 @@ export function Notas() {
         setNotaACompartir(null);
     };
 
-    const confirmarCompartirNota = () => {
-        console.log("Compartir nota:", notaACompartir);
+    // ===== En confirmarCompartirNota =====
+    const confirmarCompartirNota = async ({ tipo, email }) => {
+        try {
+            if (tipo === "email") {
+                // 1. Obtener datos de la nota
+                const response = await fetch(
+                    `http://localhost:3000/notas/exportar-pdf/${notaACompartir.id_nota}`,
+                    { method: "GET", credentials: "include" }
+                );
+                if (!response.ok) throw new Error("Error al obtener la nota");
+                const data = await response.json();
 
-        // Mostrar alerta de éxito
-        mostrarAlerta(
-            "success",
-            "¡Nota compartida!",
-            `La nota "${notaACompartir.titulo}" ha sido compartida exitosamente.`
-        );
+                // 2. Generar PDF en el frontend
+                mostrarAlerta("success", "Preparando PDF...", "Por favor espera un momento.");
+                const pdfBase64 = await generarPDFBase64(data.nota);
 
-        cerrarModalCompartir();
+                // 3. Enviar al backend con el PDF adjunto
+                const res = await fetch(
+                    `http://localhost:3000/notas/compartir-nota/${notaACompartir.id_nota}`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ email, pdfBase64, titulo: data.nota.titulo }),
+                    }
+                );
+
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || "Error al compartir");
+
+                mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado a ${email}`);
+                cerrarModalCompartir();
+            }
+        } catch (error) {
+            mostrarAlerta("error", "Error al compartir", error.message);
+        }
     };
+
+    // ===== En el JSX, reemplaza el ModalCompartirNota =====
+
 
     /* ===== MODAL RENOMBRAR ===== */
     const abrirModalRenombrar = (nota) => {
@@ -447,6 +475,133 @@ export function Notas() {
         navigate("/editor-nota");
     };
 
+    /* ===== GENERAR PDF COMO BASE64 (para compartir) ===== */
+    const generarPDFBase64 = async (notaData) => {
+        const [html2canvasLib, { default: jsPDF }] = await Promise.all([
+            import("html2canvas").then(m => m.default),
+            import("jspdf")
+        ]);
+
+        const pdfContainer = document.createElement("div");
+        pdfContainer.style.cssText = `
+        position: fixed;
+        left: -9999px;
+        top: 0;
+        width: 816px;
+        padding: 0 40px;
+        margin: 0;
+        box-sizing: border-box;
+        background-color: ${notaData.background_color || "#ffffff"};
+        font-family: ${notaData.font_family || "Arial"}, sans-serif;
+        font-size: ${notaData.font_size || "16"}px;
+        line-height: 1.6;
+        color: #000000;
+    `;
+
+        pdfContainer.innerHTML = notaData.contenido || "<p>Sin contenido</p>";
+        document.body.appendChild(pdfContainer);
+
+        const childElements = Array.from(pdfContainer.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div, blockquote, pre, table, img"));
+
+        const canvas = await html2canvasLib(pdfContainer, {
+            scale: 1.5,
+            useCORS: true,
+            logging: false,
+            backgroundColor: notaData.background_color || "#ffffff",
+            windowWidth: 816,
+        });
+
+        const elementBreakpoints = childElements.map(el => {
+            const rect = el.getBoundingClientRect();
+            const containerRect = pdfContainer.getBoundingClientRect();
+            return {
+                top: rect.top - containerRect.top,
+                bottom: rect.bottom - containerRect.top,
+            };
+        });
+
+        document.body.removeChild(pdfContainer);
+
+        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
+        const pageWidth = pdf.internal.pageSize.getWidth();
+        const pageHeight = pdf.internal.pageSize.getHeight();
+        const margin = 20;
+        const contentWidth = pageWidth - margin * 2;
+        const contentAreaHeight = pageHeight - margin * 2;
+
+        const hexToRgb = (hex) => {
+            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
+            return result
+                ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
+                : { r: 255, g: 255, b: 255 };
+        };
+        const rgb = hexToRgb(notaData.background_color || "#ffffff");
+
+        const canvasHeightPx = canvas.height / 1.5;
+        const totalContentHeightMM = (canvasHeightPx * contentWidth) / (816 - 80);
+        const pxPerMM = canvasHeightPx / totalContentHeightMM;
+
+        const breakpointsMM = elementBreakpoints.map(bp => ({
+            top: bp.top / pxPerMM,
+            bottom: bp.bottom / pxPerMM,
+        }));
+
+        const findSafeBreak = (proposedBreakMM, pageStartMM) => {
+            for (let i = breakpointsMM.length - 1; i >= 0; i--) {
+                const bp = breakpointsMM[i];
+                if (bp.top < proposedBreakMM && bp.bottom > proposedBreakMM) {
+                    const safeBreak = bp.top;
+                    if (safeBreak > pageStartMM + 10) return safeBreak;
+                    return bp.bottom;
+                }
+            }
+            return proposedBreakMM;
+        };
+
+        let pageStartMM = 0;
+        let isFirstPage = true;
+
+        const drawPage = (startMM, heightMM) => {
+            if (!isFirstPage) pdf.addPage();
+
+            pdf.setFillColor(rgb.r, rgb.g, rgb.b);
+            pdf.rect(0, 0, pageWidth, pageHeight, "F");
+
+            const srcYpx = Math.round(startMM * pxPerMM * 1.5);
+            const slicePXraw = Math.round(heightMM * pxPerMM * 1.5);
+            const slicePX = Math.min(slicePXraw, canvas.height - srcYpx);
+
+            if (slicePX <= 0) return;
+
+            const tempCanvas = document.createElement("canvas");
+            tempCanvas.width = canvas.width;
+            tempCanvas.height = slicePX;
+            const ctx = tempCanvas.getContext("2d");
+
+            ctx.fillStyle = notaData.background_color || "#ffffff";
+            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
+            ctx.drawImage(canvas, 0, srcYpx, canvas.width, slicePX, 0, 0, canvas.width, slicePX);
+
+            pdf.addImage(tempCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, contentWidth, heightMM);
+            isFirstPage = false;
+        };
+
+        while (pageStartMM < totalContentHeightMM) {
+            const remainingMM = totalContentHeightMM - pageStartMM;
+            if (remainingMM <= contentAreaHeight) {
+                drawPage(pageStartMM, remainingMM);
+                break;
+            }
+            const proposedBreak = pageStartMM + contentAreaHeight;
+            const safeBreak = findSafeBreak(proposedBreak, pageStartMM);
+            drawPage(pageStartMM, safeBreak - pageStartMM);
+            pageStartMM = safeBreak;
+        }
+
+        // ✅ Retorna base64 en lugar de descargar
+        return pdf.output("datauristring").split(",")[1];
+    };
+
     /* ===== RENDER ===== */
     return (
         <main className="notes-app">
@@ -650,6 +805,7 @@ export function Notas() {
                 onClose={cerrarModalCompartir}
                 onConfirm={confirmarCompartirNota}
                 nombreNota={notaACompartir?.titulo}
+                contenidoTexto={notaACompartir?.contenido?.replace(/<[^>]*>/g, "") || ""}
             />
 
             <ModalRenombrarNota
