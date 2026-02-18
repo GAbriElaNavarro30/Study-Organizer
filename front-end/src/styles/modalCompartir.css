@@ -177,3 +177,10 @@
         transform: scale(1);
     }
 }
+
+.opcion-compartir.whatsapp:hover,
+.opcion-compartir.whatsapp.activa {
+    background-color: #dcfce7;
+    border-color: #22c55e;
+    color: #15803d;
+}

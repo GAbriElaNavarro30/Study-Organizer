@@ -163,7 +163,7 @@ export function Notas() {
     };
 
     // ===== En confirmarCompartirNota =====
-    const confirmarCompartirNota = async ({ tipo, email, chatId }) => {
+    const confirmarCompartirNota = async ({ tipo, email, chatId, telefono }) => {
         try {
             const htmlCompleto = construirHTMLNota(notaACompartir);
 
@@ -196,7 +196,23 @@ export function Notas() {
                 if (!res.ok) throw new Error(result.error || "Error al compartir por Telegram");
                 mostrarAlerta("success", "¡Nota compartida!", "El PDF fue enviado por Telegram");
                 cerrarModalCompartir();
+
+            } else if (tipo === "whatsapp") {
+                const res = await fetch(
+                    `http://localhost:3000/notas/compartir-whatsapp/${notaACompartir.id_nota}`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ telefono, html: htmlCompleto }),
+                    }
+                );
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || "Error al compartir por WhatsApp");
+                mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado por WhatsApp a ${telefono}`);
+                cerrarModalCompartir();
             }
+
         } catch (error) {
             mostrarAlerta("error", "Error al compartir", error.message);
         }

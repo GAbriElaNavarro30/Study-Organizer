@@ -3,9 +3,8 @@ import { db } from "../config/db.js";
 import { verificarToken } from "../middlewares/auth.js";
 import sanitizeHtml from "sanitize-html";
 import nodemailer from "nodemailer";
-
-
 import puppeteer from "puppeteer";
+import twilio from "twilio";
 
 const router = Router();
 
@@ -30,24 +29,21 @@ const sanitizeOpciones = {
     allowedSchemes: ["data", "http", "https"],
     allowedStyles: {                    // ← ESTO ES LO MÁS IMPORTANTE
         "*": {
-            "color":            [/.*/],
+            "color": [/.*/],
             "background-color": [/.*/],
-            "font-size":        [/.*/],
-            "font-family":      [/.*/],
-            "font-weight":      [/.*/],
-            "text-align":       [/.*/],
-            "text-decoration":  [/.*/],
-            "list-style-type":  [/.*/],  // ← para bullets personalizados
-            "padding-left":     [/.*/],  // ← para indentación de listas
-            "margin":           [/.*/],
-            "margin-left":      [/.*/],
+            "font-size": [/.*/],
+            "font-family": [/.*/],
+            "font-weight": [/.*/],
+            "text-align": [/.*/],
+            "text-decoration": [/.*/],
+            "list-style-type": [/.*/],  // ← para bullets personalizados
+            "padding-left": [/.*/],  // ← para indentación de listas
+            "margin": [/.*/],
+            "margin-left": [/.*/],
         }
     }
 };
 
-/* ====================================================
--------------- Helper: Generar PDF Buffer -------------
-=====================================================*/
 /* ====================================================
 ---------- Singleton: Navegador compartido ------------
 =====================================================*/
@@ -530,7 +526,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
 
         const nombreNota = resultado[0].titulo;
         const nombreRemite = resultado[0].nombre_usuario; // ← nombre del usuario
-        const correoRemite  = resultado[0].correo_electronico;
+        const correoRemite = resultado[0].correo_electronico;
         const pdfBuffer = await generarPDFBuffer(html);
 
         const transporter = nodemailer.createTransport({
@@ -560,7 +556,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
             </body></html>`;
 
         await transporter.sendMail({
-             from: `"${nombreRemite} (vía Study Organizer)" <${process.env.MAIL_USER}>`,
+            from: `"${nombreRemite} (vía Study Organizer)" <${process.env.MAIL_USER}>`,
             replyTo: `"${nombreRemite}" <${correoRemite}>`,
             to: email,
             subject: `📝 Nota compartida: ${nombreNota}`,
@@ -581,7 +577,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------- Compartir Nota por Telegram --------------
+------------ Compartir Nota por Telegram -------------- LISTO
 =====================================================*/
 router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
     try {
@@ -676,6 +672,111 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
         }
 
         res.status(500).json({ error: "No se pudo enviar por Telegram.", detalles: error.message });
+    }
+});
+
+/* ====================================================
+------------ Compartir Nota por WhatsApp --------------
+=====================================================*/
+router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { telefono, html } = req.body;
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        if (!telefono || !/^\+\d{10,15}$/.test(telefono.trim())) {
+            return res.status(400).json({
+                error: "El número debe incluir código de país. Ej: +521234567890"
+            });
+        }
+
+        if (!html) {
+            return res.status(400).json({ error: "HTML no recibido" });
+        }
+
+        const [resultado] = await db.query(
+            `SELECT n.titulo, u.nombre_usuario
+             FROM Nota n
+             INNER JOIN Usuario u ON u.id_usuario = n.id_usuario
+             WHERE n.id_nota = ? AND n.id_usuario = ?`,
+            [id, id_usuario]
+        );
+
+        if (resultado.length === 0) {
+            return res.status(404).json({ error: "Nota no encontrada" });
+        }
+
+        const nombreNota = resultado[0].titulo;
+        const nombreRemite = resultado[0].nombre_usuario;
+
+        const pdfBuffer = await generarPDFBuffer(html);
+
+        const { v2: cloudinary } = await import("cloudinary");
+
+        const uploadResult = await new Promise((resolve, reject) => {
+            const uploadStream = cloudinary.uploader.upload_stream(
+                {
+                    resource_type: "raw",
+                    folder: "notas_pdf",
+                    public_id: `nota_${id}_${Date.now()}`,
+                    format: "pdf",
+                },
+                (error, result) => {
+                    if (error) reject(error);
+                    else resolve(result);
+                }
+            );
+            uploadStream.end(pdfBuffer);
+        });
+
+        const pdfUrl = uploadResult.secure_url;
+
+        // ← LOG TEMPORAL
+        console.log("PDF subido a Cloudinary:", pdfUrl);
+
+        const client = twilio(
+            process.env.TWILIO_ACCOUNT_SID,
+            process.env.TWILIO_AUTH_TOKEN
+        );
+
+        const mensaje = await client.messages.create({
+            from: process.env.TWILIO_WHATSAPP_FROM,
+            to: `whatsapp:${telefono.trim()}`,
+            body: `📝 *${nombreNota}*\n\n${nombreRemite} te compartió esta nota desde Study Organizer.\n\nEncuentra el PDF adjunto 👇`,
+            mediaUrl: [pdfUrl],
+        });
+
+        // ← LOG TEMPORAL
+        console.log("Twilio WhatsApp response:", {
+            sid: mensaje.sid,
+            status: mensaje.status,
+            to: mensaje.to,
+            from: mensaje.from,
+            errorCode: mensaje.errorCode,
+            errorMessage: mensaje.errorMessage,
+        });
+
+        res.json({ mensaje: "Nota compartida exitosamente por WhatsApp" });
+
+    } catch (error) {
+        console.error("Error al compartir por WhatsApp:", error);
+
+        // ← LOG TEMPORAL detallado
+        console.log("Twilio error detallado:", {
+            code: error.code,
+            status: error.status,
+            message: error.message,
+            moreInfo: error.moreInfo,
+        });
+
+        if (error.code === 21211) {
+            return res.status(400).json({ error: "Número de teléfono inválido." });
+        }
+        if (error.code === 21408) {
+            return res.status(400).json({ error: "Este número no tiene WhatsApp o no está en el sandbox de Twilio." });
+        }
+
+        res.status(500).json({ error: "No se pudo enviar por WhatsApp.", detalles: error.message });
     }
 });
 

@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../styles/modalCompartir.css";
-import { Mail, Send, Share2, Info } from "lucide-react";
+import { Mail, Send, Share2, Info, MessageCircle } from "lucide-react";
 
 export function ModalCompartirNota({
     isOpen,
@@ -14,6 +14,8 @@ export function ModalCompartirNota({
     const [emailError, setEmailError] = useState("");
     const [chatId, setChatId] = useState("");
     const [chatIdError, setChatIdError] = useState("");
+    const [telefono, setTelefono] = useState("");
+    const [telefonoError, setTelefonoError] = useState("");
     const [enviando, setEnviando] = useState(false);
 
     useEffect(() => {
@@ -23,6 +25,8 @@ export function ModalCompartirNota({
             setEmailError("");
             setChatId("");
             setChatIdError("");
+            setTelefono("");
+            setTelefonoError("");
             setEnviando(false);
         }
     }, [isOpen]);
@@ -41,32 +45,48 @@ export function ModalCompartirNota({
         return "";
     };
 
+    const validarTelefono = (valor) => {
+        if (!valor.trim()) return "El número de teléfono es obligatorio";
+        if (!/^\+\d{10,15}$/.test(valor.trim()))
+            return "Incluye el código de país. Ej: +521234567890";
+        return "";
+    };
+
     const enviarCorreo = async () => {
         const error = validarEmail(email);
         if (error) { setEmailError(error); return; }
         setEnviando(true);
-        try {
-            await onConfirm({ tipo: "email", email: email.trim() });
-        } finally {
-            setEnviando(false);
-        }
+        try { await onConfirm({ tipo: "email", email: email.trim() }); }
+        finally { setEnviando(false); }
     };
 
     const enviarTelegram = async () => {
         const error = validarChatId(chatId);
         if (error) { setChatIdError(error); return; }
         setEnviando(true);
-        try {
-            await onConfirm({ tipo: "telegram", chatId: chatId.trim() });
-        } finally {
-            setEnviando(false);
-        }
+        try { await onConfirm({ tipo: "telegram", chatId: chatId.trim() }); }
+        finally { setEnviando(false); }
+    };
+
+    const enviarWhatsApp = async () => {
+        const error = validarTelefono(telefono);
+        if (error) { setTelefonoError(error); return; }
+        setEnviando(true);
+        try { await onConfirm({ tipo: "whatsapp", telefono: telefono.trim() }); }
+        finally { setEnviando(false); }
+    };
+
+    const cambiarModo = (nuevoModo) => {
+        setModo(nuevoModo);
+        setEmailError("");
+        setChatIdError("");
+        setTelefonoError("");
     };
 
     return (
         <div className="modal-overlay-compartir-nota">
             <div className="modal-contenedor-compartir-nota">
-                {/* HEADER */}
+
                 <div className="modal-header-compartir-nota">
                     <Share2 size={20} />
                     <h2>Compartir nota</h2>
@@ -80,27 +100,33 @@ export function ModalCompartirNota({
 
                 <div className="alerta-info-compartir-nota">
                     <Info size={18} />
-                    <span>
-                        La nota se enviará automáticamente en formato <strong>.PDF</strong>
-                    </span>
+                    <span>La nota se enviará automáticamente en formato <strong>.PDF</strong></span>
                 </div>
 
                 {/* OPCIONES */}
                 <div className="opciones-compartir-nota">
                     <button
                         className={`opcion-compartir ${modo === "correo" ? "activa" : ""}`}
-                        onClick={() => { setModo("correo"); setChatIdError(""); setEmailError(""); }}
+                        onClick={() => cambiarModo("correo")}
                     >
                         <Mail size={20} />
-                        <span>Correo electrónico</span>
+                        <span>Correo</span>
                     </button>
 
                     <button
                         className={`opcion-compartir telegram ${modo === "telegram" ? "activa" : ""}`}
-                        onClick={() => { setModo("telegram"); setEmailError(""); setChatIdError(""); }}
+                        onClick={() => cambiarModo("telegram")}
                     >
                         <Send size={20} />
                         <span>Telegram</span>
+                    </button>
+
+                    <button
+                        className={`opcion-compartir whatsapp ${modo === "whatsapp" ? "activa" : ""}`}
+                        onClick={() => cambiarModo("whatsapp")}
+                    >
+                        <MessageCircle size={20} />
+                        <span>WhatsApp</span>
                     </button>
                 </div>
 
@@ -141,21 +167,46 @@ export function ModalCompartirNota({
                                 {chatIdError}
                             </span>
                         )}
-                        {/* Instrucciones para obtener el Chat ID */}
                         <div style={{
-                            marginTop: "10px",
-                            padding: "10px 12px",
-                            background: "#f0f9ff",
-                            borderRadius: "8px",
-                            border: "1px solid #bae6fd",
-                            fontSize: "12px",
-                            color: "#0369a1",
-                            lineHeight: "1.6"
+                            marginTop: "10px", padding: "10px 12px",
+                            background: "#f0f9ff", borderRadius: "8px",
+                            border: "1px solid #bae6fd", fontSize: "12px",
+                            color: "#0369a1", lineHeight: "1.6"
                         }}>
-                            <strong>¿Cómo obtener tu Chat ID?</strong><br />
-                            1. Busca <strong>@StudyOrganizerBot</strong> en Telegram<br />
+                            <strong>¿Cómo obtener el Chat ID?</strong><br />
+                            1. Busca <strong>@study_organizer_so_bot</strong> en Telegram<br />
                             2. Presiona <strong>Iniciar / Start</strong><br />
-                            3. Escribe <strong>/id</strong> y el bot te responderá con tu Chat ID
+                            3. El bot responderá con el Chat ID automáticamente
+                        </div>
+                    </div>
+                )}
+
+                {/* CAMPO WHATSAPP */}
+                {modo === "whatsapp" && (
+                    <div className="campo-compartir-nota">
+                        <label>Número de WhatsApp del destinatario</label>
+                        <input
+                            type="tel"
+                            placeholder="+521234567890"
+                            value={telefono}
+                            onChange={(e) => { setTelefono(e.target.value); setTelefonoError(""); }}
+                            onKeyDown={(e) => e.key === "Enter" && enviarWhatsApp()}
+                            disabled={enviando}
+                        />
+                        {telefonoError && (
+                            <span style={{ fontSize: "12px", color: "#ef4444", marginTop: "4px" }}>
+                                {telefonoError}
+                            </span>
+                        )}
+                        <div style={{
+                            marginTop: "10px", padding: "10px 12px",
+                            background: "#f0fff4", borderRadius: "8px",
+                            border: "1px solid #86efac", fontSize: "12px",
+                            color: "#15803d", lineHeight: "1.6"
+                        }}>
+                            <strong>Formato requerido:</strong> incluye el código de país<br />
+                            🇲🇽 México: <strong>+52</strong>1234567890<br />
+                            🇺🇸 EE.UU: <strong>+1</strong>2345678900
                         </div>
                     </div>
                 )}
@@ -163,25 +214,20 @@ export function ModalCompartirNota({
                 {/* BOTONES */}
                 <div className="modal-botones-compartir-nota">
                     {modo === "correo" && (
-                        <button
-                            className="btn btn-confirmar-compartir-nota"
-                            onClick={enviarCorreo}
-                            disabled={enviando}
-                        >
+                        <button className="btn btn-confirmar-compartir-nota" onClick={enviarCorreo} disabled={enviando}>
                             {enviando ? "Enviando..." : "Enviar correo"}
                         </button>
                     )}
-
                     {modo === "telegram" && (
-                        <button
-                            className="btn btn-confirmar-compartir-nota"
-                            onClick={enviarTelegram}
-                            disabled={enviando}
-                        >
+                        <button className="btn btn-confirmar-compartir-nota" onClick={enviarTelegram} disabled={enviando}>
                             {enviando ? "Enviando..." : "Enviar por Telegram"}
                         </button>
                     )}
-
+                    {modo === "whatsapp" && (
+                        <button className="btn btn-confirmar-compartir-nota" onClick={enviarWhatsApp} disabled={enviando}>
+                            {enviando ? "Enviando..." : "Enviar por WhatsApp"}
+                        </button>
+                    )}
                     <button className="btn btn-cancelar-compartir-nota" onClick={onClose}>
                         Cancelar
                     </button>
