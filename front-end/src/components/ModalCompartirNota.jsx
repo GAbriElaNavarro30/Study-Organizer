@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import "../styles/modalCompartir.css";
-import { Mail, Send, Share2, Info, MessageCircle } from "lucide-react";
+import { Mail, Send, Share2, Info, MessageCircle, Clock } from "lucide-react";
 
 export function ModalCompartirNota({
     isOpen,
@@ -18,6 +18,10 @@ export function ModalCompartirNota({
     const [telefonoError, setTelefonoError] = useState("");
     const [enviando, setEnviando] = useState(false);
 
+    // ← NUEVO: lista de destinatarios previos
+    const [destinatariosPrevios, setDestinatariosPrevios] = useState([]);
+    const [cargandoDestinatarios, setCargandoDestinatarios] = useState(false);
+
     useEffect(() => {
         if (!isOpen) {
             setModo(null);
@@ -28,8 +32,34 @@ export function ModalCompartirNota({
             setTelefono("");
             setTelefonoError("");
             setEnviando(false);
+            setDestinatariosPrevios([]);
         }
     }, [isOpen]);
+
+    // ← NUEVO: cargar destinatarios cuando se selecciona Telegram
+    useEffect(() => {
+        if (modo === "telegram") {
+            cargarDestinatarios();
+        }
+    }, [modo]);
+
+    const cargarDestinatarios = async () => {
+        setCargandoDestinatarios(true);
+        try {
+            const res = await fetch(
+                "http://localhost:3000/notas/telegram-destinatarios",
+                { credentials: "include" }
+            );
+            if (res.ok) {
+                const data = await res.json();
+                setDestinatariosPrevios(data);
+            }
+        } catch (error) {
+            console.error("Error al cargar destinatarios:", error);
+        } finally {
+            setCargandoDestinatarios(false);
+        }
+    };
 
     if (!isOpen) return null;
 
@@ -81,6 +111,12 @@ export function ModalCompartirNota({
         setEmailError("");
         setChatIdError("");
         setTelefonoError("");
+    };
+
+    // ← NUEVO: seleccionar destinatario de la lista
+    const seleccionarDestinatario = (dest) => {
+        setChatId(dest.chat_id.toString());
+        setChatIdError("");
     };
 
     return (
@@ -167,6 +203,58 @@ export function ModalCompartirNota({
                                 {chatIdError}
                             </span>
                         )}
+
+                        {/* ← NUEVO: Lista de destinatarios previos */}
+                        {cargandoDestinatarios && (
+                            <p style={{ fontSize: "12px", color: "#6b7280", marginTop: "8px" }}>
+                                Cargando destinatarios...
+                            </p>
+                        )}
+
+                        {!cargandoDestinatarios && destinatariosPrevios.length > 0 && (
+                            <div style={{ marginTop: "10px" }}>
+                                <p style={{
+                                    fontSize: "12px", fontWeight: "bold",
+                                    color: "#374151", marginBottom: "6px",
+                                    display: "flex", alignItems: "center", gap: "4px"
+                                }}>
+                                    <Clock size={12} />
+                                    Destinatarios recientes:
+                                </p>
+                                <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
+                                    {destinatariosPrevios.map((dest) => (
+                                        <button
+                                            key={dest.id}
+                                            onClick={() => seleccionarDestinatario(dest)}
+                                            disabled={enviando}
+                                            style={{
+                                                display: "flex",
+                                                justifyContent: "space-between",
+                                                alignItems: "center",
+                                                padding: "8px 12px",
+                                                background: chatId === dest.chat_id.toString() ? "#eff6ff" : "#f9fafb",
+                                                border: chatId === dest.chat_id.toString() ? "1px solid #93c5fd" : "1px solid #e5e7eb",
+                                                borderRadius: "6px",
+                                                cursor: "pointer",
+                                                textAlign: "left",
+                                                fontSize: "13px",
+                                                color: "#374151",
+                                                transition: "all 0.15s"
+                                            }}
+                                        >
+                                            <span>
+                                                <Send size={12} style={{ marginRight: "6px", color: "#0088cc" }} />
+                                                {dest.nombre}
+                                            </span>
+                                            <span style={{ fontSize: "11px", color: "#9ca3af" }}>
+                                                {dest.chat_id}
+                                            </span>
+                                        </button>
+                                    ))}
+                                </div>
+                            </div>
+                        )}
+
                         <div style={{
                             marginTop: "10px", padding: "10px 12px",
                             background: "#f0f9ff", borderRadius: "8px",

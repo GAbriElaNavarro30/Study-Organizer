@@ -659,6 +659,14 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
             throw new Error(`Telegram (PDF): ${dataDoc.description}`);
         }
 
+        // ← NUEVO: Guardar/actualizar el destinatario en BD
+        await db.query(
+            `INSERT INTO TelegramDestinatario (id_usuario, chat_id, nombre)
+     VALUES (?, ?, ?)
+     ON DUPLICATE KEY UPDATE nombre = VALUES(nombre)`,
+            [id_usuario, chatId.trim(), `Chat ${chatId.trim()}`]
+        );
+
         res.json({ mensaje: "Nota compartida exitosamente por Telegram" });
 
     } catch (error) {
@@ -672,6 +680,28 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
         }
 
         res.status(500).json({ error: "No se pudo enviar por Telegram.", detalles: error.message });
+    }
+});
+
+/* ====================================================
+-------- Obtener Destinatarios Telegram del usuario ---
+=====================================================*/
+router.get("/telegram-destinatarios", verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        const [destinatarios] = await db.query(
+            `SELECT id, chat_id, nombre, created_at
+             FROM TelegramDestinatario
+             WHERE id_usuario = ?
+             ORDER BY created_at DESC`,
+            [id_usuario]
+        );
+
+        res.json(destinatarios);
+    } catch (error) {
+        console.error("Error al obtener destinatarios:", error);
+        res.status(500).json({ error: "Error al obtener destinatarios" });
     }
 });
 
