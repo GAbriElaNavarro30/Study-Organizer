@@ -166,26 +166,15 @@ export function Notas() {
     const confirmarCompartirNota = async ({ tipo, email }) => {
         try {
             if (tipo === "email") {
-                // 1. Obtener datos de la nota
-                const response = await fetch(
-                    `http://localhost:3000/notas/exportar-pdf/${notaACompartir.id_nota}`,
-                    { method: "GET", credentials: "include" }
-                );
-                if (!response.ok) throw new Error("Error al obtener la nota");
-                const data = await response.json();
+                const htmlCompleto = construirHTMLNota(notaACompartir);
 
-                // 2. Generar PDF en el frontend
-                mostrarAlerta("success", "Preparando PDF...", "Por favor espera un momento.");
-                const pdfBase64 = await generarPDFBase64(data.nota);
-
-                // 3. Enviar al backend con el PDF adjunto
                 const res = await fetch(
                     `http://localhost:3000/notas/compartir-nota/${notaACompartir.id_nota}`,
                     {
                         method: "POST",
                         credentials: "include",
                         headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, pdfBase64, titulo: data.nota.titulo }),
+                        body: JSON.stringify({ email, html: htmlCompleto }),
                     }
                 );
 
@@ -263,186 +252,88 @@ export function Notas() {
         }
     };
 
+    const construirHTMLNota = (nota) => {
+        const bg = nota.background_color || "#ffffff";
+        return `<!DOCTYPE html>
+<html lang="es">
+<head>
+    <meta charset="UTF-8">
+    <title>${nota.titulo}</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        @page {
+            size: Letter;
+            margin: 2.54cm;         /* ← márgenes reales de página, cubren todo */
+            background: ${bg};      /* ← fondo en la página, no en el body */
+        }
+
+        body {
+            background-color: ${bg};
+            font-family: ${nota.font_family || "Arial"}, sans-serif;
+            font-size: ${nota.font_size || 16}px;
+            color: #111111;
+            line-height: 1.6;
+        }
+
+                /* ← ESTILOS PARA LISTAS (Puppeteer no los incluye por defecto) */
+        ul {
+            list-style-type: disc;
+            padding-left: 2em;
+            margin: 0.5em 0;
+        }
+
+        ol {
+            list-style-type: decimal;
+            padding-left: 2em;
+            margin: 0.5em 0;
+        }
+
+        li {
+            margin: 0.2em 0;
+            display: list-item;
+        }
+
+        ul ul { list-style-type: circle; }
+        ul ul ul { list-style-type: square; }
+    </style>
+</head>
+<body>
+    ${nota.contenido || "<p>Sin contenido</p>"}
+</body>
+</html>`;
+    };
+
     /* ===== DESCARGAR PDF ===== */
     const descargarPDF = async (nota) => {
         try {
             mostrarAlerta("success", "Generando PDF...", "Por favor espera un momento.");
 
+            const htmlCompleto = construirHTMLNota(nota);
+
             const response = await fetch(
                 `http://localhost:3000/notas/exportar-pdf/${nota.id_nota}`,
-                { method: "GET", credentials: "include" }
+                {
+                    method: "POST",                          // ← cambia a POST
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ html: htmlCompleto }),
+                }
             );
 
-            if (!response.ok) throw new Error("Error al obtener datos de la nota");
+            if (!response.ok) throw new Error("Error al generar el PDF");
 
-            const data = await response.json();
-            const notaData = data.nota;
+            const blob = await response.blob();
+            const url = URL.createObjectURL(blob);
+            const a = document.createElement("a");
+            a.href = url;
+            a.download = `${nota.titulo}.pdf`;
+            a.click();
+            URL.revokeObjectURL(url);
 
-            const [html2canvasLib, { default: jsPDF }] = await Promise.all([
-                import("html2canvas").then(m => m.default),
-                import("jspdf")
-            ]);
-
-            // ✅ Contenedor con padding lateral únicamente, sin padding vertical
-            const pdfContainer = document.createElement("div");
-            pdfContainer.style.cssText = `
-            position: fixed;
-            left: -9999px;
-            top: 0;
-            width: 816px;
-            padding: 0 40px;
-            margin: 0;
-            box-sizing: border-box;
-            background-color: ${notaData.background_color || "#ffffff"};
-            font-family: ${notaData.font_family || "Arial"}, sans-serif;
-            font-size: ${notaData.font_size || "16"}px;
-            line-height: 1.6;
-            color: #000000;
-        `;
-
-            pdfContainer.innerHTML = notaData.contenido || "<p>Sin contenido</p>";
-            document.body.appendChild(pdfContainer);
-
-            // ✅ Obtener posiciones de cada elemento hijo para smart breaks
-            const childElements = Array.from(pdfContainer.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div, blockquote, pre, table, img"));
-
-            const canvas = await html2canvasLib(pdfContainer, {
-                scale: 1.5,
-                useCORS: true,
-                logging: false,
-                backgroundColor: notaData.background_color || "#ffffff",
-                windowWidth: 816,
-            });
-
-            // Guardar alturas de los elementos ANTES de remover el contenedor
-            const elementBreakpoints = childElements.map(el => {
-                const rect = el.getBoundingClientRect();
-                const containerRect = pdfContainer.getBoundingClientRect();
-                return {
-                    top: rect.top - containerRect.top,       // px desde el top del contenedor
-                    bottom: rect.bottom - containerRect.top,  // px hasta el bottom del elemento
-                };
-            });
-
-            document.body.removeChild(pdfContainer);
-
-            // ✅ Carta: 215.9 × 279.4 mm
-            const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-
-            const pageWidth = pdf.internal.pageSize.getWidth();
-            const pageHeight = pdf.internal.pageSize.getHeight();
-            const margin = 20;
-            const contentWidth = pageWidth - margin * 2;
-            const contentAreaHeight = pageHeight - margin * 2;
-
-            const hexToRgb = (hex) => {
-                const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-                return result
-                    ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
-                    : { r: 255, g: 255, b: 255 };
-            };
-            const rgb = hexToRgb(notaData.background_color || "#ffffff");
-
-            // Conversión px → mm (basado en el canvas sin escalar)
-            const canvasHeightPx = canvas.height / 1.5; // canvas.height incluye el scale de 1.5
-            const totalContentHeightMM = (canvasHeightPx * contentWidth) / (816 - 80); // 816px - 80px padding lateral
-            const pxPerMM = canvasHeightPx / totalContentHeightMM;
-
-            // ✅ Calcular breakpoints en MM para evitar cortar elementos
-            const breakpointsMM = elementBreakpoints.map(bp => ({
-                top: bp.top / pxPerMM,
-                bottom: bp.bottom / pxPerMM,
-            }));
-
-            // ✅ Función: dado un punto de corte propuesto (en MM), 
-            // busca el breakpoint más cercano hacia ARRIBA que no corte ningún elemento
-            const findSafeBreak = (proposedBreakMM, pageStartMM) => {
-                // Buscar elementos que se cortarían en este punto
-                for (let i = breakpointsMM.length - 1; i >= 0; i--) {
-                    const bp = breakpointsMM[i];
-                    // Si el elemento cruza el punto de corte propuesto
-                    if (bp.top < proposedBreakMM && bp.bottom > proposedBreakMM) {
-                        // Retroceder al top del elemento (saltar antes del elemento)
-                        const safeBreak = bp.top;
-                        // Asegurarse que no retrocedemos hasta el inicio de la página
-                        if (safeBreak > pageStartMM + 10) {
-                            return safeBreak;
-                        }
-                        // Si el elemento es muy grande, cortar después de él
-                        return bp.bottom;
-                    }
-                }
-                return proposedBreakMM; // sin conflicto, usar el punto propuesto
-            };
-
-            // ✅ Generar páginas con smart breaks
-            let pageStartMM = 0;
-            let isFirstPage = true;
-
-            const drawPage = (startMM, heightMM) => {
-                if (!isFirstPage) pdf.addPage();
-
-                // Fondo completo de la página
-                pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-                pdf.rect(0, 0, pageWidth, pageHeight, "F");
-
-                const srcYpx = Math.round(startMM * pxPerMM * 1.5); // ×1.5 por el scale del canvas
-                const slicePXraw = Math.round(heightMM * pxPerMM * 1.5);
-                const slicePX = Math.min(slicePXraw, canvas.height - srcYpx);
-
-                if (slicePX <= 0) return;
-
-                const tempCanvas = document.createElement("canvas");
-                tempCanvas.width = canvas.width;
-                tempCanvas.height = slicePX;
-                const ctx = tempCanvas.getContext("2d");
-
-                ctx.fillStyle = notaData.background_color || "#ffffff";
-                ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-
-                ctx.drawImage(
-                    canvas,
-                    0, srcYpx,
-                    canvas.width, slicePX,
-                    0, 0,
-                    canvas.width, slicePX
-                );
-
-                pdf.addImage(
-                    tempCanvas.toDataURL("image/jpeg", 0.85),
-                    "JPEG",
-                    margin,
-                    margin,
-                    contentWidth,
-                    heightMM
-                );
-
-                isFirstPage = false;
-            };
-
-            while (pageStartMM < totalContentHeightMM) {
-                const remainingMM = totalContentHeightMM - pageStartMM;
-
-                if (remainingMM <= contentAreaHeight) {
-                    // Último pedazo — todo cabe en esta página
-                    drawPage(pageStartMM, remainingMM);
-                    break;
-                }
-
-                // ✅ Proponer corte al final del área útil, luego ajustar para no cortar líneas
-                const proposedBreak = pageStartMM + contentAreaHeight;
-                const safeBreak = findSafeBreak(proposedBreak, pageStartMM);
-                const actualPageHeight = safeBreak - pageStartMM;
-
-                drawPage(pageStartMM, actualPageHeight);
-                pageStartMM = safeBreak;
-            }
-
-            pdf.save(`${notaData.titulo}.pdf`);
-            mostrarAlerta("success", "¡PDF descargado!", `El PDF de "${notaData.titulo}" se ha descargado correctamente.`);
-
+            mostrarAlerta("success", "¡PDF descargado!", `El PDF de "${nota.titulo}" se ha descargado correctamente.`);
         } catch (error) {
-            console.error("Error al generar PDF:", error);
+            console.error("Error al descargar PDF:", error);
             mostrarAlerta("error", "Error al generar PDF", "No se pudo generar el PDF. Por favor, intenta nuevamente.");
         }
     };
@@ -476,131 +367,7 @@ export function Notas() {
     };
 
     /* ===== GENERAR PDF COMO BASE64 (para compartir) ===== */
-    const generarPDFBase64 = async (notaData) => {
-        const [html2canvasLib, { default: jsPDF }] = await Promise.all([
-            import("html2canvas").then(m => m.default),
-            import("jspdf")
-        ]);
 
-        const pdfContainer = document.createElement("div");
-        pdfContainer.style.cssText = `
-        position: fixed;
-        left: -9999px;
-        top: 0;
-        width: 816px;
-        padding: 0 40px;
-        margin: 0;
-        box-sizing: border-box;
-        background-color: ${notaData.background_color || "#ffffff"};
-        font-family: ${notaData.font_family || "Arial"}, sans-serif;
-        font-size: ${notaData.font_size || "16"}px;
-        line-height: 1.6;
-        color: #000000;
-    `;
-
-        pdfContainer.innerHTML = notaData.contenido || "<p>Sin contenido</p>";
-        document.body.appendChild(pdfContainer);
-
-        const childElements = Array.from(pdfContainer.querySelectorAll("p, h1, h2, h3, h4, h5, h6, li, div, blockquote, pre, table, img"));
-
-        const canvas = await html2canvasLib(pdfContainer, {
-            scale: 1.5,
-            useCORS: true,
-            logging: false,
-            backgroundColor: notaData.background_color || "#ffffff",
-            windowWidth: 816,
-        });
-
-        const elementBreakpoints = childElements.map(el => {
-            const rect = el.getBoundingClientRect();
-            const containerRect = pdfContainer.getBoundingClientRect();
-            return {
-                top: rect.top - containerRect.top,
-                bottom: rect.bottom - containerRect.top,
-            };
-        });
-
-        document.body.removeChild(pdfContainer);
-
-        const pdf = new jsPDF({ orientation: "portrait", unit: "mm", format: "letter" });
-        const pageWidth = pdf.internal.pageSize.getWidth();
-        const pageHeight = pdf.internal.pageSize.getHeight();
-        const margin = 20;
-        const contentWidth = pageWidth - margin * 2;
-        const contentAreaHeight = pageHeight - margin * 2;
-
-        const hexToRgb = (hex) => {
-            const result = /^#?([a-f\d]{2})([a-f\d]{2})([a-f\d]{2})$/i.exec(hex);
-            return result
-                ? { r: parseInt(result[1], 16), g: parseInt(result[2], 16), b: parseInt(result[3], 16) }
-                : { r: 255, g: 255, b: 255 };
-        };
-        const rgb = hexToRgb(notaData.background_color || "#ffffff");
-
-        const canvasHeightPx = canvas.height / 1.5;
-        const totalContentHeightMM = (canvasHeightPx * contentWidth) / (816 - 80);
-        const pxPerMM = canvasHeightPx / totalContentHeightMM;
-
-        const breakpointsMM = elementBreakpoints.map(bp => ({
-            top: bp.top / pxPerMM,
-            bottom: bp.bottom / pxPerMM,
-        }));
-
-        const findSafeBreak = (proposedBreakMM, pageStartMM) => {
-            for (let i = breakpointsMM.length - 1; i >= 0; i--) {
-                const bp = breakpointsMM[i];
-                if (bp.top < proposedBreakMM && bp.bottom > proposedBreakMM) {
-                    const safeBreak = bp.top;
-                    if (safeBreak > pageStartMM + 10) return safeBreak;
-                    return bp.bottom;
-                }
-            }
-            return proposedBreakMM;
-        };
-
-        let pageStartMM = 0;
-        let isFirstPage = true;
-
-        const drawPage = (startMM, heightMM) => {
-            if (!isFirstPage) pdf.addPage();
-
-            pdf.setFillColor(rgb.r, rgb.g, rgb.b);
-            pdf.rect(0, 0, pageWidth, pageHeight, "F");
-
-            const srcYpx = Math.round(startMM * pxPerMM * 1.5);
-            const slicePXraw = Math.round(heightMM * pxPerMM * 1.5);
-            const slicePX = Math.min(slicePXraw, canvas.height - srcYpx);
-
-            if (slicePX <= 0) return;
-
-            const tempCanvas = document.createElement("canvas");
-            tempCanvas.width = canvas.width;
-            tempCanvas.height = slicePX;
-            const ctx = tempCanvas.getContext("2d");
-
-            ctx.fillStyle = notaData.background_color || "#ffffff";
-            ctx.fillRect(0, 0, tempCanvas.width, tempCanvas.height);
-            ctx.drawImage(canvas, 0, srcYpx, canvas.width, slicePX, 0, 0, canvas.width, slicePX);
-
-            pdf.addImage(tempCanvas.toDataURL("image/jpeg", 0.85), "JPEG", margin, margin, contentWidth, heightMM);
-            isFirstPage = false;
-        };
-
-        while (pageStartMM < totalContentHeightMM) {
-            const remainingMM = totalContentHeightMM - pageStartMM;
-            if (remainingMM <= contentAreaHeight) {
-                drawPage(pageStartMM, remainingMM);
-                break;
-            }
-            const proposedBreak = pageStartMM + contentAreaHeight;
-            const safeBreak = findSafeBreak(proposedBreak, pageStartMM);
-            drawPage(pageStartMM, safeBreak - pageStartMM);
-            pageStartMM = safeBreak;
-        }
-
-        // ✅ Retorna base64 en lugar de descargar
-        return pdf.output("datauristring").split(",")[1];
-    };
 
     /* ===== RENDER ===== */
     return (

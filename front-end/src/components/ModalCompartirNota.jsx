@@ -29,8 +29,8 @@ export function ModalCompartirNota({
        VALIDAR EMAIL
     ============================ */
     const validarEmail = (valor) => {
-        if (!valor.trim()) return "El correo es obligatorio";
-        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)) return "El correo no es válido";
+        if (!valor.trim()) return "El correo electrónico es obligatorio";
+        if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(valor)) return "El correo electrónico no es válido";
         return "";
     };
 
@@ -38,8 +38,9 @@ export function ModalCompartirNota({
        TELEGRAM
     ============================ */
     const compartirPorTelegram = () => {
-        const texto = `📝 *${nombreNota}*\n\n${contenidoTexto || ""}`;
-        const url = `https://t.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(texto)}`;
+        // Usar web.telegram.org en lugar de t.me (funciona aunque t.me esté bloqueado)
+        const texto = `📝 ${nombreNota}\n\n${contenidoTexto || ""}`;
+        const url = `https://telegram.me/share/url?url=${encodeURIComponent(window.location.href)}&text=${encodeURIComponent(texto)}`;
         window.open(url, "_blank");
         onClose();
     };

@@ -4,6 +4,9 @@ import { verificarToken } from "../middlewares/auth.js";
 import sanitizeHtml from "sanitize-html";
 import nodemailer from "nodemailer";
 
+
+import puppeteer from "puppeteer";
+
 const router = Router();
 
 /* ====================================================
@@ -19,10 +22,79 @@ const sanitizeOpciones = {
     ],
     allowedAttributes: {
         "*": ["style", "class"],
-        "img": ["src", "alt", "width", "height"]
+        "img": ["src", "alt", "width", "height"],
+        "ul": ["style", "class"],       // ← agregar explícitamente
+        "ol": ["style", "class"],       // ← agregar explícitamente
+        "li": ["style", "class"],       // ← agregar explícitamente
     },
-    allowedSchemes: ["data", "http", "https"]
+    allowedSchemes: ["data", "http", "https"],
+    allowedStyles: {                    // ← ESTO ES LO MÁS IMPORTANTE
+        "*": {
+            "color":            [/.*/],
+            "background-color": [/.*/],
+            "font-size":        [/.*/],
+            "font-family":      [/.*/],
+            "font-weight":      [/.*/],
+            "text-align":       [/.*/],
+            "text-decoration":  [/.*/],
+            "list-style-type":  [/.*/],  // ← para bullets personalizados
+            "padding-left":     [/.*/],  // ← para indentación de listas
+            "margin":           [/.*/],
+            "margin-left":      [/.*/],
+        }
+    }
 };
+
+/* ====================================================
+-------------- Helper: Generar PDF Buffer -------------
+=====================================================*/
+/* ====================================================
+---------- Singleton: Navegador compartido ------------
+=====================================================*/
+let browserInstance = null;
+
+async function getBrowser() {
+    if (!browserInstance || !browserInstance.connected) {
+        browserInstance = await puppeteer.launch({
+            headless: "new",
+            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
+            args: [
+                "--no-sandbox",
+                "--disable-setuid-sandbox",
+                "--disable-dev-shm-usage",
+                "--disable-gpu",
+            ],
+        });
+    }
+    return browserInstance;
+}
+
+/* ====================================================
+-------------- Helper: Generar PDF Buffer -------------
+=====================================================*/
+async function generarPDFBuffer(html, bgColor = "#ffffff") {
+    const browser = await getBrowser();
+    const page = await browser.newPage();
+
+    try {
+        await page.setContent(html, { waitUntil: "domcontentloaded" }); // ← más rápido que networkidle0
+
+        const pdfBuffer = await page.pdf({
+            format: "Letter",
+            printBackground: true,
+            margin: {
+                top: "0",
+                bottom: "0",
+                left: "0",
+                right: "0",
+            },
+        });
+
+        return Buffer.from(pdfBuffer);
+    } finally {
+        await page.close(); // cerrar solo la página, no el navegador
+    }
+}
 
 /* ====================================================
 -------------------- Obtener Notas -------------------- LISTO
@@ -437,180 +509,111 @@ router.get("/buscar-notas", verificarToken, async (req, res) => {
 router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { email, pdfBase64, titulo } = req.body;
+        const { email, html } = req.body;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        if (!email || !email.includes("@")) {
+        if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: "El correo electrónico no es válido" });
-        }
 
-        if (!pdfBase64) {
-            return res.status(400).json({ error: "No se recibió el PDF" });
-        }
+        if (!html)
+            return res.status(400).json({ error: "HTML no recibido" });
 
-        // Verificar que la nota pertenece al usuario
-        const [notas] = await db.query(
-            "SELECT titulo FROM Nota WHERE id_nota = ? AND id_usuario = ?",
+        // Trae la nota Y el nombre del usuario en una sola query
+        const [resultado] = await db.query(
+            `SELECT n.titulo, u.nombre_usuario, u.correo_electronico
+     FROM Nota n
+     INNER JOIN Usuario u ON u.id_usuario = n.id_usuario
+     WHERE n.id_nota = ? AND n.id_usuario = ?`,
             [id, id_usuario]
         );
+        if (resultado.length === 0) return res.status(404).json({ error: "Nota no encontrada" });
 
-        if (notas.length === 0) {
-            return res.status(404).json({ error: "Nota no encontrada" });
-        }
+        const nombreNota = resultado[0].titulo;
+        const nombreRemite = resultado[0].nombre_usuario; // ← nombre del usuario
+        const correoRemite  = resultado[0].correo_electronico;
+        const pdfBuffer = await generarPDFBuffer(html);
 
-        const nombreNota = titulo || notas[0].titulo;
-
-        // Configurar transporter
         const transporter = nodemailer.createTransport({
             service: "gmail",
-            auth: {
-                user: process.env.MAIL_USER,
-                pass: process.env.MAIL_PASSWORD,
-            },
+            auth: { user: process.env.MAIL_USER, pass: process.env.MAIL_PASSWORD },
         });
 
-        // HTML del correo (simple, el contenido va en el PDF adjunto)
         const htmlCorreo = `
-            <!DOCTYPE html>
-            <html>
-            <head><meta charset="UTF-8"></head>
-            <body style="font-family: Arial, sans-serif; margin: 0; padding: 20px; background-color: #f5f5f5;">
-                <div style="max-width: 600px; margin: 0 auto; background: white; border-radius: 10px; overflow: hidden; box-shadow: 0 2px 10px rgba(0,0,0,0.1);">
-                    <div style="background: linear-gradient(135deg, #1e3a5f, #2563eb); padding: 24px; text-align: center;">
-                        <h1 style="color: white; margin: 0; font-size: 20px;">📝 Study Organizer</h1>
-                        <p style="color: rgba(255,255,255,0.8); margin: 6px 0 0; font-size: 13px;">Te han compartido una nota</p>
+            <!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+            <body style="font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5;">
+                <div style="max-width:600px;margin:0 auto;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+                    <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:24px;text-align:center;">
+                        <h1 style="color:white;margin:0;font-size:20px;">📝 Study Organizer</h1>
+                        <p style="color:rgba(255,255,255,.8);margin:6px 0 0;font-size:13px;">Te han compartido una nota</p>
                     </div>
-                    <div style="padding: 24px;">
-                        <p style="color: #374151; font-size: 15px; margin: 0 0 12px;">Alguien compartió contigo la siguiente nota:</p>
-                        <div style="background: #f3f4f6; border-left: 4px solid #2563eb; padding: 12px 16px; border-radius: 0 8px 8px 0; font-weight: bold; color: #1e3a5f; font-size: 16px;">
+                    <div style="padding:24px;">
+                        <p style="color:#374151;font-size:15px;margin:0 0 12px;"><strong>${nombreRemite}</strong> compartió contigo la siguiente nota:</p>
+                        <div style="background:#f3f4f6;border-left:4px solid #2563eb;padding:12px 16px;border-radius:0 8px 8px 0;font-weight:bold;color:#1e3a5f;font-size:16px;">
                             📄 ${nombreNota}
                         </div>
-                        <p style="color: #6b7280; font-size: 13px; margin: 16px 0 0;">Encuentra el contenido completo en el archivo PDF adjunto.</p>
+                        <p style="color:#6b7280;font-size:13px;margin:16px 0 0;">Encuentra el contenido completo en el archivo PDF adjunto.</p>
                     </div>
-                    <div style="padding: 16px 24px; background: #f9fafb; text-align: center; font-size: 12px; color: #9ca3af; border-top: 1px solid #e5e7eb;">
+                    <div style="padding:16px 24px;background:#f9fafb;text-align:center;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;">
                         Este correo fue enviado desde Study Organizer
                     </div>
                 </div>
-            </body>
-            </html>
-        `;
+            </body></html>`;
 
-        // Enviar con PDF adjunto
         await transporter.sendMail({
-            from: `"Study Organizer" <${process.env.MAIL_USER}>`,
+             from: `"${nombreRemite} (vía Study Organizer)" <${process.env.MAIL_USER}>`,
+            replyTo: `"${nombreRemite}" <${correoRemite}>`,
             to: email,
             subject: `📝 Nota compartida: ${nombreNota}`,
             html: htmlCorreo,
-            attachments: [
-                {
-                    filename: `${nombreNota}.pdf`,
-                    content: pdfBase64,
-                    encoding: "base64",
-                    contentType: "application/pdf",
-                },
-            ],
+            attachments: [{
+                filename: `${nombreNota}.pdf`,
+                content: pdfBuffer,
+                contentType: "application/pdf",
+            }],
         });
 
         res.json({ mensaje: "Nota compartida exitosamente por correo", compartido_con: email });
 
     } catch (error) {
-        console.error("❌ Error al compartir nota por email:", error);
-        res.status(500).json({
-            error: "No se pudo enviar el correo.",
-            detalles: error.message
-        });
+        console.error("Error al compartir nota:", error);
+        res.status(500).json({ error: "No se pudo enviar el correo.", detalles: error.message });
     }
 });
-
-/*router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
-    try {
-        const { id } = req.params;
-        const { email } = req.body;
-
-        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
-
-        console.log('📤 Compartiendo nota:', id, 'con:', email);
-
-        // Verificar que la nota pertenece al usuario
-        const [nota] = await db.query(
-            "SELECT titulo FROM Nota WHERE id_nota = ? AND id_usuario = ?",
-            [id, id_usuario]
-        );
-
-        if (nota.length === 0) {
-            return res.status(404).json({ error: "Nota no encontrada" });
-        }
-
-        // TODO: Implementar lógica de compartir
-        // Por ejemplo: enviar email, crear enlace compartido, etc.
-
-        res.json({
-            mensaje: "Nota compartida exitosamente",
-            nota: {
-                id_nota: id,
-                titulo: nota[0].titulo,
-                compartido_con: email
-            }
-        });
-
-    } catch (error) {
-        console.error("❌ Error al compartir nota:", error);
-        res.status(500).json({
-            error: "Error al compartir la nota",
-            detalles: error.message
-        });
-    }
-});*/
 
 /* ====================================================
 ------------------- Exportar PDF ---------------------- LISTO
 =====================================================*/
-router.get("/exportar-pdf/:id", verificarToken, async (req, res) => {
+router.post("/exportar-pdf/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
+        const { html } = req.body;                    // ← viene del frontend
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        console.log('📄 Exportando PDF de nota:', id);
+        if (!html) return res.status(400).json({ error: "HTML no recibido" });
 
-        // Obtener la nota
+        // Solo verificar que la nota pertenece al usuario
         const [notas] = await db.query(
-            `SELECT 
-                id_nota,
-                titulo,
-                contenido,
-                background_color,
-                font_family,
-                font_size
-            FROM Nota 
-            WHERE id_nota = ? AND id_usuario = ?`,
+            "SELECT titulo FROM Nota WHERE id_nota = ? AND id_usuario = ?",
             [id, id_usuario]
         );
 
-        if (notas.length === 0) {
-            return res.status(404).json({ error: "Nota no encontrada" });
-        }
+        if (notas.length === 0) return res.status(404).json({ error: "Nota no encontrada" });
 
-        const nota = notas[0];
+        const pdfBuffer = await generarPDFBuffer(html);
 
-        // Devolver los datos de la nota para que el frontend genere el PDF
-        res.json({
-            mensaje: "Datos de nota obtenidos para PDF",
-            nota: {
-                id_nota: nota.id_nota,
-                titulo: nota.titulo,
-                contenido: nota.contenido,
-                background_color: nota.background_color,
-                font_family: nota.font_family,
-                font_size: nota.font_size
-            }
-        });
+        res.setHeader("Content-Type", "application/pdf");
+        res.setHeader(
+            "Content-Disposition",
+            //`attachment; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
+            //`attachment; filename="${notas[0].titulo}.pdf"; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
+            `attachment; filename="${notas[0].titulo}.pdf"; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
+        );
+        res.setHeader("Content-Length", pdfBuffer.length);
+        res.send(pdfBuffer);
 
     } catch (error) {
-        console.error("❌ Error al exportar PDF:", error);
-        res.status(500).json({
-            error: "Error al exportar PDF",
-            detalles: error.message
-        });
+        console.error("Error al exportar PDF:", error);
+        res.status(500).json({ error: "Error al exportar PDF", detalles: error.message });
     }
 });
 
