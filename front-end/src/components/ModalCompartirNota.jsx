@@ -22,6 +22,11 @@ export function ModalCompartirNota({
     const [destinatariosPrevios, setDestinatariosPrevios] = useState([]);
     const [cargandoDestinatarios, setCargandoDestinatarios] = useState(false);
 
+    // ← NUEVO: edición inline de nombre
+    const [editandoId, setEditandoId] = useState(null);
+    const [editandoNombre, setEditandoNombre] = useState("");
+    const [guardandoNombre, setGuardandoNombre] = useState(false);
+
     useEffect(() => {
         if (!isOpen) {
             setModo(null);
@@ -117,6 +122,34 @@ export function ModalCompartirNota({
     const seleccionarDestinatario = (dest) => {
         setChatId(dest.chat_id.toString());
         setChatIdError("");
+    };
+
+    const guardarNombreDestinatario = async (dest) => {
+        if (!editandoNombre.trim()) return;
+        setGuardandoNombre(true);
+        try {
+            const res = await fetch(
+                `http://localhost:3000/notas/telegram-destinatario/${dest.id}`,
+                {
+                    method: "PATCH",
+                    credentials: "include",
+                    headers: { "Content-Type": "application/json" },
+                    body: JSON.stringify({ nombre: editandoNombre.trim() }),
+                }
+            );
+            if (res.ok) {
+                // Actualizar la lista local sin recargar
+                setDestinatariosPrevios(prev =>
+                    prev.map(d => d.id === dest.id ? { ...d, nombre: editandoNombre.trim() } : d)
+                );
+                setEditandoId(null);
+                setEditandoNombre("");
+            }
+        } catch (error) {
+            console.error("Error al renombrar destinatario:", error);
+        } finally {
+            setGuardandoNombre(false);
+        }
     };
 
     return (
@@ -223,33 +256,95 @@ export function ModalCompartirNota({
                                 </p>
                                 <div style={{ display: "flex", flexDirection: "column", gap: "4px" }}>
                                     {destinatariosPrevios.map((dest) => (
-                                        <button
+                                        <div
                                             key={dest.id}
-                                            onClick={() => seleccionarDestinatario(dest)}
-                                            disabled={enviando}
                                             style={{
-                                                display: "flex",
-                                                justifyContent: "space-between",
-                                                alignItems: "center",
                                                 padding: "8px 12px",
                                                 background: chatId === dest.chat_id.toString() ? "#eff6ff" : "#f9fafb",
                                                 border: chatId === dest.chat_id.toString() ? "1px solid #93c5fd" : "1px solid #e5e7eb",
                                                 borderRadius: "6px",
-                                                cursor: "pointer",
-                                                textAlign: "left",
                                                 fontSize: "13px",
                                                 color: "#374151",
-                                                transition: "all 0.15s"
                                             }}
                                         >
-                                            <span>
-                                                <Send size={12} style={{ marginRight: "6px", color: "#0088cc" }} />
-                                                {dest.nombre}
-                                            </span>
-                                            <span style={{ fontSize: "11px", color: "#9ca3af" }}>
-                                                {dest.chat_id}
-                                            </span>
-                                        </button>
+                                            {/* Fila principal: nombre + chat_id + botón editar */}
+                                            <div style={{ display: "flex", justifyContent: "space-between", alignItems: "center" }}>
+                                                <button
+                                                    onClick={() => seleccionarDestinatario(dest)}
+                                                    disabled={enviando}
+                                                    style={{
+                                                        background: "none", border: "none", cursor: "pointer",
+                                                        display: "flex", alignItems: "center", gap: "6px",
+                                                        fontSize: "13px", color: "#374151", padding: 0,
+                                                    }}
+                                                >
+                                                    <Send size={12} style={{ color: "#0088cc" }} />
+                                                    <span style={{ fontWeight: "500" }}>{dest.nombre}</span>
+                                                </button>
+                                                <div style={{ display: "flex", alignItems: "center", gap: "8px" }}>
+                                                    <span style={{ fontSize: "11px", color: "#9ca3af" }}>{dest.chat_id}</span>
+                                                    {/* Botón editar nombre */}
+                                                    <button
+                                                        onClick={() => {
+                                                            setEditandoId(dest.id);
+                                                            setEditandoNombre(dest.nombre);
+                                                        }}
+                                                        disabled={enviando}
+                                                        title="Renombrar"
+                                                        style={{
+                                                            background: "none", border: "none", cursor: "pointer",
+                                                            color: "#6b7280", padding: "2px", display: "flex",
+                                                            alignItems: "center"
+                                                        }}
+                                                    >
+                                                        ✏️
+                                                    </button>
+                                                </div>
+                                            </div>
+
+                                            {/* Input inline de edición — solo aparece al hacer clic en ✏️ */}
+                                            {editandoId === dest.id && (
+                                                <div style={{ marginTop: "8px", display: "flex", gap: "6px" }}>
+                                                    <input
+                                                        type="text"
+                                                        value={editandoNombre}
+                                                        onChange={(e) => setEditandoNombre(e.target.value)}
+                                                        onKeyDown={(e) => {
+                                                            if (e.key === "Enter") guardarNombreDestinatario(dest);
+                                                            if (e.key === "Escape") { setEditandoId(null); setEditandoNombre(""); }
+                                                        }}
+                                                        placeholder="Nombre del destinatario"
+                                                        autoFocus
+                                                        style={{
+                                                            flex: 1, padding: "4px 8px", fontSize: "12px",
+                                                            border: "1px solid #93c5fd", borderRadius: "4px",
+                                                            outline: "none"
+                                                        }}
+                                                    />
+                                                    <button
+                                                        onClick={() => guardarNombreDestinatario(dest)}
+                                                        disabled={guardandoNombre || !editandoNombre.trim()}
+                                                        style={{
+                                                            padding: "4px 10px", fontSize: "12px",
+                                                            background: "#2563eb", color: "white",
+                                                            border: "none", borderRadius: "4px", cursor: "pointer"
+                                                        }}
+                                                    >
+                                                        {guardandoNombre ? "..." : "Guardar"}
+                                                    </button>
+                                                    <button
+                                                        onClick={() => { setEditandoId(null); setEditandoNombre(""); }}
+                                                        style={{
+                                                            padding: "4px 8px", fontSize: "12px",
+                                                            background: "#f3f4f6", color: "#374151",
+                                                            border: "1px solid #e5e7eb", borderRadius: "4px", cursor: "pointer"
+                                                        }}
+                                                    >
+                                                        ✕
+                                                    </button>
+                                                </div>
+                                            )}
+                                        </div>
                                     ))}
                                 </div>
                             </div>

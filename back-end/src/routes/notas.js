@@ -684,7 +684,7 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
--------- Obtener Destinatarios Telegram del usuario ---
+-------- Obtener Destinatarios Telegram del usuario --- LISTO
 =====================================================*/
 router.get("/telegram-destinatarios", verificarToken, async (req, res) => {
     try {
@@ -702,6 +702,46 @@ router.get("/telegram-destinatarios", verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al obtener destinatarios:", error);
         res.status(500).json({ error: "Error al obtener destinatarios" });
+    }
+});
+
+/* ====================================================
+-------- Renombrar Destinatario Telegram -------------
+=====================================================*/
+router.patch("/telegram-destinatario/:id", verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { nombre } = req.body;
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        if (!nombre || nombre.trim() === "") {
+            return res.status(400).json({ error: "El nombre es obligatorio" });
+        }
+
+        if (nombre.trim().length > 100) {
+            return res.status(400).json({ error: "El nombre no puede exceder 100 caracteres" });
+        }
+
+        // Verificar que el destinatario pertenece al usuario
+        const [existente] = await db.query(
+            "SELECT id FROM TelegramDestinatario WHERE id = ? AND id_usuario = ?",
+            [id, id_usuario]
+        );
+
+        if (existente.length === 0) {
+            return res.status(404).json({ error: "Destinatario no encontrado" });
+        }
+
+        await db.query(
+            "UPDATE TelegramDestinatario SET nombre = ? WHERE id = ? AND id_usuario = ?",
+            [nombre.trim(), id, id_usuario]
+        );
+
+        res.json({ mensaje: "Destinatario renombrado exitosamente" });
+
+    } catch (error) {
+        console.error("Error al renombrar destinatario:", error);
+        res.status(500).json({ error: "Error al renombrar destinatario" });
     }
 });
 
