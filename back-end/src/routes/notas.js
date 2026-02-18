@@ -504,7 +504,7 @@ router.get("/buscar-notas", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------------ Compartir Nota ----------------------
+------------- Compartir Nota por Correo --------------- LISTO
 =====================================================*/
 router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -577,6 +577,105 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al compartir nota:", error);
         res.status(500).json({ error: "No se pudo enviar el correo.", detalles: error.message });
+    }
+});
+
+/* ====================================================
+------------ Compartir Nota por Telegram --------------
+=====================================================*/
+router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
+    try {
+        const { id } = req.params;
+        const { chatId, html } = req.body;
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        if (!chatId || chatId.trim() === "") {
+            return res.status(400).json({ error: "El Chat ID de Telegram es obligatorio" });
+        }
+
+        if (!html) {
+            return res.status(400).json({ error: "HTML no recibido" });
+        }
+
+        // Verificar que la nota pertenece al usuario
+        const [resultado] = await db.query(
+            `SELECT n.titulo, u.nombre_usuario
+             FROM Nota n
+             INNER JOIN Usuario u ON u.id_usuario = n.id_usuario
+             WHERE n.id_nota = ? AND n.id_usuario = ?`,
+            [id, id_usuario]
+        );
+
+        if (resultado.length === 0) {
+            return res.status(404).json({ error: "Nota no encontrada" });
+        }
+
+        const nombreNota = resultado[0].titulo;
+        const nombreRemite = resultado[0].nombre_usuario;
+
+        // Generar PDF
+        const pdfBuffer = await generarPDFBuffer(html);
+
+        // Enviar mensaje de texto primero
+        const mensajeTexto = `📝 *${nombreNota}*\n\nTe comparte esta nota: *${nombreRemite}*\n\n_Adjunto encontrarás el PDF con el contenido completo._`;
+
+        const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
+
+        // 1. Enviar mensaje de texto
+        const resMensaje = await fetch(
+            `https://api.telegram.org/bot${telegramToken}/sendMessage`,
+            {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify({
+                    chat_id: chatId.trim(),
+                    text: mensajeTexto,
+                    parse_mode: "Markdown",
+                }),
+            }
+        );
+
+        const dataMensaje = await resMensaje.json();
+        if (!dataMensaje.ok) {
+            throw new Error(`Telegram: ${dataMensaje.description}`);
+        }
+
+        // 2. Enviar el PDF como documento
+        const formData = new FormData();
+        formData.append("chat_id", chatId.trim());
+        formData.append(
+            "document",
+            new Blob([pdfBuffer], { type: "application/pdf" }),
+            `${nombreNota}.pdf`
+        );
+        formData.append("caption", `📄 ${nombreNota}.pdf`);
+
+        const resDoc = await fetch(
+            `https://api.telegram.org/bot${telegramToken}/sendDocument`,
+            {
+                method: "POST",
+                body: formData,
+            }
+        );
+
+        const dataDoc = await resDoc.json();
+        if (!dataDoc.ok) {
+            throw new Error(`Telegram (PDF): ${dataDoc.description}`);
+        }
+
+        res.json({ mensaje: "Nota compartida exitosamente por Telegram" });
+
+    } catch (error) {
+        console.error("Error al compartir por Telegram:", error);
+
+        // Error específico de chat no encontrado
+        if (error.message.includes("chat not found")) {
+            return res.status(404).json({
+                error: "Chat ID no encontrado. Asegúrate de haber iniciado el bot primero."
+            });
+        }
+
+        res.status(500).json({ error: "No se pudo enviar por Telegram.", detalles: error.message });
     }
 });
 

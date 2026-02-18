@@ -163,11 +163,11 @@ export function Notas() {
     };
 
     // ===== En confirmarCompartirNota =====
-    const confirmarCompartirNota = async ({ tipo, email }) => {
+    const confirmarCompartirNota = async ({ tipo, email, chatId }) => {
         try {
-            if (tipo === "email") {
-                const htmlCompleto = construirHTMLNota(notaACompartir);
+            const htmlCompleto = construirHTMLNota(notaACompartir);
 
+            if (tipo === "email") {
                 const res = await fetch(
                     `http://localhost:3000/notas/compartir-nota/${notaACompartir.id_nota}`,
                     {
@@ -177,11 +177,24 @@ export function Notas() {
                         body: JSON.stringify({ email, html: htmlCompleto }),
                     }
                 );
-
                 const result = await res.json();
                 if (!res.ok) throw new Error(result.error || "Error al compartir");
-
                 mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado a ${email}`);
+                cerrarModalCompartir();
+
+            } else if (tipo === "telegram") {
+                const res = await fetch(
+                    `http://localhost:3000/notas/compartir-telegram/${notaACompartir.id_nota}`,
+                    {
+                        method: "POST",
+                        credentials: "include",
+                        headers: { "Content-Type": "application/json" },
+                        body: JSON.stringify({ chatId, html: htmlCompleto }),
+                    }
+                );
+                const result = await res.json();
+                if (!res.ok) throw new Error(result.error || "Error al compartir por Telegram");
+                mostrarAlerta("success", "¡Nota compartida!", "El PDF fue enviado por Telegram");
                 cerrarModalCompartir();
             }
         } catch (error) {
