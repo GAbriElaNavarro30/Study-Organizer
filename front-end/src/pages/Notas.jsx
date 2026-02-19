@@ -218,9 +218,6 @@ export function Notas() {
         }
     };
 
-    // ===== En el JSX, reemplaza el ModalCompartirNota =====
-
-
     /* ===== MODAL RENOMBRAR ===== */
     const abrirModalRenombrar = (nota) => {
         setNotaARenombrar(nota);

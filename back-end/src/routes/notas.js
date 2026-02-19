@@ -9,7 +9,7 @@ import twilio from "twilio";
 const router = Router();
 
 /* ====================================================
--------------------- Sanitizar PDF -------------------- LISTO
+-------------------- Sanitizar PDF --------------------
 =====================================================*/
 const sanitizeOpciones = {
     allowedTags: [
@@ -22,12 +22,12 @@ const sanitizeOpciones = {
     allowedAttributes: {
         "*": ["style", "class"],
         "img": ["src", "alt", "width", "height"],
-        "ul": ["style", "class"],       // ← agregar explícitamente
-        "ol": ["style", "class"],       // ← agregar explícitamente
-        "li": ["style", "class"],       // ← agregar explícitamente
+        "ul": ["style", "class"],
+        "ol": ["style", "class"],
+        "li": ["style", "class"],
     },
     allowedSchemes: ["data", "http", "https"],
-    allowedStyles: {                    // ← ESTO ES LO MÁS IMPORTANTE
+    allowedStyles: {
         "*": {
             "color": [/.*/],
             "background-color": [/.*/],
@@ -36,8 +36,8 @@ const sanitizeOpciones = {
             "font-weight": [/.*/],
             "text-align": [/.*/],
             "text-decoration": [/.*/],
-            "list-style-type": [/.*/],  // ← para bullets personalizados
-            "padding-left": [/.*/],  // ← para indentación de listas
+            "list-style-type": [/.*/],
+            "padding-left": [/.*/],
             "margin": [/.*/],
             "margin-left": [/.*/],
         }
@@ -66,14 +66,14 @@ async function getBrowser() {
 }
 
 /* ====================================================
--------------- Helper: Generar PDF Buffer -------------
+------------------ Generar PDF Buffer -----------------
 =====================================================*/
 async function generarPDFBuffer(html, bgColor = "#ffffff") {
     const browser = await getBrowser();
     const page = await browser.newPage();
 
     try {
-        await page.setContent(html, { waitUntil: "domcontentloaded" }); // ← más rápido que networkidle0
+        await page.setContent(html, { waitUntil: "domcontentloaded" });
 
         const pdfBuffer = await page.pdf({
             format: "Letter",
@@ -88,12 +88,12 @@ async function generarPDFBuffer(html, bgColor = "#ffffff") {
 
         return Buffer.from(pdfBuffer);
     } finally {
-        await page.close(); // cerrar solo la página, no el navegador
+        await page.close();
     }
 }
 
 /* ====================================================
--------------------- Obtener Notas -------------------- LISTO
+-------------------- Obtener Notas --------------------
 =====================================================*/
 router.get("/obtener-notas", verificarToken, async (req, res) => {
     try {
@@ -128,7 +128,7 @@ router.get("/obtener-notas", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
---------------------- Crear Nota ---------------------- LISTO
+--------------------- Crear Nota ----------------------
 =====================================================*/
 router.post("/crear-nota", verificarToken, async (req, res) => {
     try {
@@ -188,7 +188,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
             ) VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 titulo.trim(),
-                contenidoLimpio || '', // Permitir contenido vacío
+                contenidoLimpio || '',
                 backgroundColor || '#ffffff',
                 fontFamily || 'Arial',
                 fontSize || '16',
@@ -216,7 +216,7 @@ router.post("/crear-nota", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
-------------------- Actualizar Nota ------------------- LISTO
+------------------- Actualizar Nota -------------------
 =====================================================*/
 router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -245,7 +245,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
         }
 
         // Actualizar en base de datos
-        const contenidoLimpio = sanitizeHtml(contenido || "", sanitizeOpciones); // sanitiza
+        const contenidoLimpio = sanitizeHtml(contenido || "", sanitizeOpciones);
 
         await db.query(
             `UPDATE Nota 
@@ -287,7 +287,7 @@ router.put("/actualizar-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
-------------------- Eliminar Nota --------------------- LISTO
+------------------- Eliminar Nota ---------------------
 =====================================================*/
 router.delete("/eliminar-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -327,7 +327,7 @@ router.delete("/eliminar-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------------ Renombrar Nota ---------------------- LISTO
+----------------- Renombrar Nota ----------------------
 =====================================================*/
 router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -340,7 +340,7 @@ router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
 
         // ===== VALIDACIONES =====
 
-        // 1. Verificar que el título existe
+        // 1. No acepta vacio, campo oibligatorio
         if (!titulo || titulo.trim() === '') {
             return res.status(400).json({
                 error: "El título es obligatorio"
@@ -413,7 +413,7 @@ router.patch("/renombrar-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------------ Obtener una Nota -------------------- LISTO
+----------------- Obtener una Nota --------------------
 =====================================================*/
 router.get("/obtener-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -453,11 +453,11 @@ router.get("/obtener-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------------ Buscar Notas ------------------------ LISTO
+----------------- Buscar Notas ------------------------
 =====================================================*/
 router.get("/buscar-notas", verificarToken, async (req, res) => {
     try {
-        const { q } = req.query; // query string: ?q=busqueda
+        const { q } = req.query;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         //console.log('Buscando notas:', q);
@@ -500,7 +500,7 @@ router.get("/buscar-notas", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
-------------- Compartir Nota por Correo --------------- LISTO
+------------- Compartir Nota por Correo ---------------
 =====================================================*/
 router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
     try {
@@ -514,7 +514,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
         if (!html)
             return res.status(400).json({ error: "HTML no recibido" });
 
-        // Trae la nota Y el nombre del usuario en una sola query
+        // nombre de la nota, remitente: nombre y correo
         const [resultado] = await db.query(
             `SELECT n.titulo, u.nombre_usuario, u.correo_electronico
      FROM Nota n
@@ -525,7 +525,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
         if (resultado.length === 0) return res.status(404).json({ error: "Nota no encontrada" });
 
         const nombreNota = resultado[0].titulo;
-        const nombreRemite = resultado[0].nombre_usuario; // ← nombre del usuario
+        const nombreRemite = resultado[0].nombre_usuario;
         const correoRemite = resultado[0].correo_electronico;
         const pdfBuffer = await generarPDFBuffer(html);
 
@@ -559,7 +559,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
             from: `"${nombreRemite} (vía Study Organizer)" <${process.env.MAIL_USER}>`,
             replyTo: `"${nombreRemite}" <${correoRemite}>`,
             to: email,
-            subject: `📝 Nota compartida: ${nombreNota}`,
+            subject: `Nota compartida: ${nombreNota}`,
             html: htmlCorreo,
             attachments: [{
                 filename: `${nombreNota}.pdf`,
@@ -577,7 +577,7 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
------------- Compartir Nota por Telegram -------------- LISTO
+------------ Compartir Nota por Telegram --------------
 =====================================================*/
 router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
     try {
@@ -644,7 +644,7 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
             new Blob([pdfBuffer], { type: "application/pdf" }),
             `${nombreNota}.pdf`
         );
-        formData.append("caption", `📄 ${nombreNota}.pdf`);
+        //formData.append("caption", `📄 ${nombreNota}.pdf`);
 
         const resDoc = await fetch(
             `https://api.telegram.org/bot${telegramToken}/sendDocument`,
@@ -659,11 +659,11 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
             throw new Error(`Telegram (PDF): ${dataDoc.description}`);
         }
 
-        // ← NUEVO: Guardar/actualizar el destinatario en BD
+        // Solo inserta si no existe, no toca el nombre si ya hay un registro
         await db.query(
             `INSERT INTO TelegramDestinatario (id_usuario, chat_id, nombre)
      VALUES (?, ?, ?)
-     ON DUPLICATE KEY UPDATE nombre = VALUES(nombre)`,
+     ON DUPLICATE KEY UPDATE chat_id = VALUES(chat_id)`,
             [id_usuario, chatId.trim(), `Chat ${chatId.trim()}`]
         );
 
@@ -672,7 +672,7 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al compartir por Telegram:", error);
 
-        // Error específico de chat no encontrado
+        // Error de chat no encontrado
         if (error.message.includes("chat not found")) {
             return res.status(404).json({
                 error: "Chat ID no encontrado. Asegúrate de haber iniciado el bot primero."
@@ -684,7 +684,7 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
--------- Obtener Destinatarios Telegram del usuario --- LISTO
+-------- Obtener Destinatarios Telegram del usuario ---
 =====================================================*/
 router.get("/telegram-destinatarios", verificarToken, async (req, res) => {
     try {
@@ -801,8 +801,7 @@ router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
 
         const pdfUrl = uploadResult.secure_url;
 
-        // ← LOG TEMPORAL
-        console.log("PDF subido a Cloudinary:", pdfUrl);
+        //console.log("PDF subido a Cloudinary:", pdfUrl);
 
         const client = twilio(
             process.env.TWILIO_ACCOUNT_SID,
@@ -816,7 +815,7 @@ router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
             mediaUrl: [pdfUrl],
         });
 
-        // ← LOG TEMPORAL
+        // LOG TEMPORAL
         console.log("Twilio WhatsApp response:", {
             sid: mensaje.sid,
             status: mensaje.status,
@@ -831,7 +830,6 @@ router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
     } catch (error) {
         console.error("Error al compartir por WhatsApp:", error);
 
-        // ← LOG TEMPORAL detallado
         console.log("Twilio error detallado:", {
             code: error.code,
             status: error.status,
@@ -851,12 +849,12 @@ router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
 });
 
 /* ====================================================
-------------------- Exportar PDF ---------------------- LISTO
+------------------- Exportar PDF ---------------------- 
 =====================================================*/
 router.post("/exportar-pdf/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { html } = req.body;                    // ← viene del frontend
+        const { html } = req.body;              
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         if (!html) return res.status(400).json({ error: "HTML no recibido" });
@@ -874,8 +872,6 @@ router.post("/exportar-pdf/:id", verificarToken, async (req, res) => {
         res.setHeader("Content-Type", "application/pdf");
         res.setHeader(
             "Content-Disposition",
-            //`attachment; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
-            //`attachment; filename="${notas[0].titulo}.pdf"; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
             `attachment; filename="${notas[0].titulo}.pdf"; filename*=UTF-8''${encodeURIComponent(notas[0].titulo)}.pdf`
         );
         res.setHeader("Content-Length", pdfBuffer.length);

@@ -70,7 +70,6 @@
     opacity: 0.8;
 }
 
-/* Botones del Header */
 .btn-volver-editor,
 .btn-guardar-editor {
     display: flex;
@@ -103,10 +102,6 @@
 .btn-guardar-editor:hover {
     background: #1d4ed8;
 }
-
-/* ===============================================
-   BODY (ÁREA DE TRABAJO)
-=============================================== */
 
 .editor-body {
     flex: 1;
@@ -144,7 +139,6 @@
     box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.1);
 }
 
-/* Placeholder para contentEditable */
 .editor-contenteditable:empty:before {
     content: attr(data-placeholder);
     color: #9ca3af;
@@ -170,7 +164,6 @@
     flex-wrap: wrap;
 }
 
-/* Selectores y Botones */
 .herramientas-fila select,
 .herramientas-fila button {
     padding: 8px 10px;
@@ -192,15 +185,10 @@
     min-width: 80px;
 }
 
-/* Botones Activos */
 .herramientas-fila button.active {
     background-color: #2563eb;
     color: white;
 }
-
-/* ===============================================
-   SELECTORES DE COLOR
-=============================================== */
 
 .color-picker-wrapper {
     position: relative;
@@ -227,11 +215,6 @@
     cursor: pointer;
 }
 
-/* ===============================================
-   BOTONES ESPECIALES
-=============================================== */
-
-/* Botón de Voz */
 .btn-voz {
     width: 100%;
     display: flex;
@@ -258,7 +241,6 @@
     animation: pulse 1.5s infinite;
 }
 
-/* Botón Borrador */
 .btn-eraser {
     width: 40px;
     height: 40px;
@@ -281,11 +263,69 @@
     color: #ef4444;
 }
 
+.dictado-preview {
+    position: absolute;
+    top: 10px;
+    right: 10px;
+    background: #3b82f6;
+    color: white;
+    padding: 8px 16px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 0.875rem;
+    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    animation: pulse 1.5s ease-in-out infinite;
+}
+
+.btn-voz-text {
+    white-space: nowrap;
+}
+
+.btn-voz {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    padding: 10px 16px;
+    transition: all 0.3s ease;
+}
+
+.btn-voz.recording {
+    background-color: #ef4444;
+    color: white;
+    animation: recordingPulse 1s ease-in-out infinite;
+}
+
+.btn-voz.recording:hover {
+    background-color: #f5abab;
+    color: rgb(0, 0, 0);
+    animation: recordingPulse 1s ease-in-out infinite;
+}
+
+@keyframes recordingPulse {
+    0%, 100% {
+        transform: scale(1);
+    }
+    50% {
+        transform: scale(1.05);
+    }
+}
+
+@keyframes pulse {
+    0%, 100% {
+        opacity: 1;
+    }
+    50% {
+        opacity: 0.7;
+    }
+}
+
+
 /* ===============================================
    RESPONSIVIDAD
 =============================================== */
-
-/* Tablets (900px) */
 @media (max-width: 900px) {
     .editor-body {
         grid-template-columns: 1fr 260px;
@@ -296,7 +336,6 @@
     }
 }
 
-/* Tablets pequeñas y móviles grandes (768px) */
 @media (max-width: 768px) {
     .editor-body {
         grid-template-columns: 1fr;
@@ -332,7 +371,6 @@
     }
 }
 
-/* Móviles (540px) */
 @media (max-width: 540px) {
     .editor-header {
         flex-wrap: wrap;
@@ -379,7 +417,6 @@
     }
 }
 
-/* Móviles pequeños (380px) */
 @media (max-width: 380px) {
     .editor-header {
         padding: 10px 12px;
@@ -405,63 +442,4 @@
     }
 }
 
-/* Indicador de dictado en tiempo real */
-.dictado-preview {
-    position: absolute;
-    top: 10px;
-    right: 10px;
-    background: #3b82f6;
-    color: white;
-    padding: 8px 16px;
-    border-radius: 20px;
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    font-size: 0.875rem;
-    box-shadow: 0 4px 6px rgba(0, 0, 0, 0.1);
-    z-index: 1000;
-    animation: pulse 1.5s ease-in-out infinite;
-}
 
-@keyframes pulse {
-    0%, 100% {
-        opacity: 1;
-    }
-    50% {
-        opacity: 0.7;
-    }
-}
-
-.btn-voz-text {
-    white-space: nowrap;
-}
-
-/* Mejorar el estilo del botón de voz */
-.btn-voz {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-    padding: 10px 16px;
-    transition: all 0.3s ease;
-}
-
-.btn-voz.recording {
-    background-color: #ef4444;
-    color: white;
-    animation: recordingPulse 1s ease-in-out infinite;
-}
-
-.btn-voz.recording:hover {
-    background-color: #f5abab;
-    color: rgb(0, 0, 0);
-    animation: recordingPulse 1s ease-in-out infinite;
-}
-
-@keyframes recordingPulse {
-    0%, 100% {
-        transform: scale(1);
-    }
-    50% {
-        transform: scale(1.05);
-    }
-}

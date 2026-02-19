@@ -1,6 +1,6 @@
-// telegram-bot.js  — ejecutar con: node telegram-bot.js
+// ejecutar bot de telegram con: node telegram-bot.js
 import { config } from "dotenv";
-config(); // ← carga el .env
+config(); // carga el .env
 
 const TOKEN = process.env.TELEGRAM_BOT_TOKEN;
 
@@ -23,7 +23,7 @@ async function sendMessage(chatId, text) {
 }
 
 async function main() {
-    console.log("🤖 Bot iniciado, esperando mensajes...");
+    console.log("Bot de telegram iniciado, esperando mensajes...");
     while (true) {
         const updates = await getUpdates();
         for (const update of updates) {
@@ -33,11 +33,11 @@ async function main() {
 
             if (msg.text === "/start") {
                 await sendMessage(msg.chat.id,
-                    `👋 Hola ${msg.from.first_name}!\n\nSoy el bot de Study Organizer.\n\nEscribe /id para obtener tu Chat ID y poder recibir notas compartidas.`
+                    `Hola ${msg.from.first_name}!\n\nSoy el bot de Study Organizer.\n\nEscribe /id para obtener tu Chat ID y poder recibir notas compartidas.`
                 );
             } else if (msg.text === "/id") {
                 await sendMessage(msg.chat.id,
-                    `🆔 Tu Chat ID es:\n\n<code>${msg.chat.id}</code>\n\nCópialo y pégalo en Study Organizer para recibir notas.`
+                    `Tu Chat ID es:\n\n<code>${msg.chat.id}</code>\n\nCópialo y pégalo en Study Organizer para recibir notas.`
                 );
                 // Nota: para que <code> funcione necesitas parse_mode HTML
             }

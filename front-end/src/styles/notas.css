@@ -186,7 +186,7 @@
 }
 
 /* ======================================================
-   NOTE ACTIONS (ICONOS)
+   ICONOS ACCIONES
 ====================================================== */
 .note-actions {
     display: flex;
@@ -200,7 +200,7 @@
     height: 22px;
 }
 
-/* EXPORTAR - Download (verde) */
+/* EXPORTAR - Download */
 .icono-notas-exportar {
     color: #10b981;
 }
@@ -210,7 +210,7 @@
     transform: scale(1.1);
 }
 
-/* COMPARTIR - Share2 (azul) */
+/* COMPARTIR */
 .icono-notas-compartir {
     color: #0ea5e9;
 }
@@ -220,7 +220,7 @@
     transform: scale(1.1);
 }
 
-/* EDITAR - Pencil (morado) */
+/* EDITAR */
 .icono-notas-editar {
     color: #8b5cf6;
 }
@@ -230,7 +230,7 @@
     transform: scale(1.1);
 }
 
-/* RENOMBRAR - Type (negro) */
+/* RENOMBRAR */
 .icono-notas-renombrar {
     color: #000000;
 }
@@ -240,7 +240,7 @@
     transform: scale(1.1);
 }
 
-/* ELIMINAR - Trash2 (rojo) */
+/* ELIMINAR */
 .icono-notas-eliminar {
     color: #ef4444;
 }
@@ -251,10 +251,10 @@
 }
 
 /* ======================================================
-   PAGINACIÓN - CORREGIDO
+   PAGINACIÓN
 ====================================================== */
 .notes-pagination {
-    display: flex !important; /* Forzar visualización */
+    display: flex !important;
     justify-content: center;
     align-items: center;
     gap: 14px;
@@ -316,7 +316,7 @@
 }
 
 /* ======================================================
-   RESPONSIVIDAD (Móviles y Tablets)
+   RESPONSIVIDAD
 ====================================================== */
 @media (max-width: 900px) {
     .notes-header {
@@ -388,7 +388,6 @@
         gap: 15px;
     }
 
-    /* Paginación en móvil */
     .notes-pagination {
         gap: 10px;
     }
@@ -471,7 +470,6 @@
         height: 20px !important;
     }
 
-    /* Paginación responsive */
     .notes-pagination {
         gap: 8px;
     }
