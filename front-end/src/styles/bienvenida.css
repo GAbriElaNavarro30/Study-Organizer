@@ -21,8 +21,8 @@
 }
 
 .perfil-foto img {
-    width: 110px;
-    height: 110px;
+    width: 130px;
+    height: 130px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid #53eb25;

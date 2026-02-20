@@ -34,17 +34,17 @@ export function useEditorNota() {
     const [contenidoInicial, setContenidoInicial] = useState("");
     const [tituloInicial, setTituloInicial] = useState("");
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        HELPER ALERTAS
-    ──────────────────────────────────────────── */
+    ============================================ */
     const mostrarAlerta = (type, title, message) => {
         setAlertConfig({ type, title, message });
         setMostrarAlert(true);
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        CARGAR DATOS AL INICIAR
-    ──────────────────────────────────────────── */
+    ============================================ */
     useEffect(() => {
         const savedData = localStorage.getItem("editorNota");
 
@@ -76,9 +76,9 @@ export function useEditorNota() {
         }
     }, []);
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        AUTOGUARDADO CADA 2 SEGUNDOS
-    ──────────────────────────────────────────── */
+    ============================================ */
     useEffect(() => {
         const autoSaveInterval = setInterval(() => {
             if (editorRef.current) {
@@ -98,9 +98,9 @@ export function useEditorNota() {
         return () => clearInterval(autoSaveInterval);
     }, [titulo, editorBackgroundColor, fontFamily, fontSize, notaId]);
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        RECONOCIMIENTO DE VOZ
-    ──────────────────────────────────────────── */
+    ============================================ */
     useEffect(() => {
         if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
             const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
@@ -139,7 +139,7 @@ export function useEditorNota() {
             };
 
             recognitionInstance.onerror = (event) => {
-                console.error("❌ Error en reconocimiento de voz:", event.error);
+                console.error("Error en reconocimiento de voz:", event.error);
                 if (event.error === "no-speech") return;
                 if (event.error === "aborted") { setIsRecording(false); return; }
                 if (event.error === "network") {
@@ -165,15 +165,15 @@ export function useEditorNota() {
 
         return () => {
             if (recognition) {
-                try { recognition.stop(); } catch (e) { /* ignore */ }
+                try { recognition.stop(); } catch (e) { }
             }
             if (recognitionTimeoutRef.current) clearTimeout(recognitionTimeoutRef.current);
         };
     }, [isRecording]);
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        CARGAR NOTAS
-    ──────────────────────────────────────────── */
+    ============================================ */
     useEffect(() => {
         cargarNotas();
     }, []);
@@ -193,9 +193,9 @@ export function useEditorNota() {
         }
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        DETECCIÓN DE CAMBIOS
-    ──────────────────────────────────────────── */
+    ============================================ */
     const hayaCambios = () => {
         const contenidoActual = editorRef.current?.innerHTML || "";
         return (
@@ -204,9 +204,9 @@ export function useEditorNota() {
         );
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        APLICAR ESTILOS A SELECCIÓN
-    ──────────────────────────────────────────── */
+    ============================================ */
     const applyStyleToSelection = (styleProp, styleValue) => {
         const selection = window.getSelection();
         if (!selection.rangeCount) return;
@@ -271,9 +271,9 @@ export function useEditorNota() {
         }
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        FUNCIONES DE FORMATO
-    ──────────────────────────────────────────── */
+    ============================================ */
     const toggleBold = () => {
         editorRef.current?.focus();
         document.execCommand("bold");
@@ -396,14 +396,14 @@ export function useEditorNota() {
                 node = node.parentNode;
             }
         } catch (e) {
-            console.error("❌ Error al remover resaltado:", e);
+            console.error("Error al remover resaltado:", e);
             mostrarAlerta("error", "Error", "No se pudo remover el resaltado. Intenta nuevamente.");
         }
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        VOZ
-    ──────────────────────────────────────────── */
+    ============================================ */
     const handleVoiceInput = () => {
         if (!recognition) {
             mostrarAlerta("error", "No disponible", "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.");
@@ -429,9 +429,9 @@ export function useEditorNota() {
         }
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        GUARDADO
-    ──────────────────────────────────────────── */
+    ============================================ */
     const handleGuardarClick = () => {
         const contenidoTexto = editorRef.current?.innerText?.trim() || "";
         if (!contenidoTexto) {
@@ -492,9 +492,9 @@ export function useEditorNota() {
         }
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        VOLVER
-    ──────────────────────────────────────────── */
+    ============================================ */
     const handleVolverClick = () => {
         if (hayaCambios()) {
             setMostrarModalSalir(true);
@@ -510,9 +510,9 @@ export function useEditorNota() {
         navigate(-1);
     };
 
-    /* ────────────────────────────────────────────
+    /* ============================================
        ATAJOS DE TECLADO
-    ──────────────────────────────────────────── */
+    ============================================ */
     useEffect(() => {
         const handleKeyDown = (e) => {
             if ((e.ctrlKey || e.metaKey) && e.key === "b") { e.preventDefault(); toggleBold(); }
@@ -524,9 +524,6 @@ export function useEditorNota() {
         return () => document.removeEventListener("keydown", handleKeyDown);
     }, [titulo, notaId]);
 
-    /* ────────────────────────────────────────────
-       API PÚBLICA
-    ──────────────────────────────────────────── */
     return {
         // Refs
         editorRef,

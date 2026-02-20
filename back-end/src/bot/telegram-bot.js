@@ -1,4 +1,4 @@
-// ejecutar bot de telegram con: node telegram-bot.js
+// ejecutar bot de telegram con: /src/bot/ y despues ejecutar: node telegram-bot.js
 import { config } from "dotenv";
 config(); // carga el .env
 

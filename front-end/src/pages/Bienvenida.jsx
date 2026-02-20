@@ -1,15 +1,28 @@
 import "../styles/bienvenida.css";
 import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
-import { useContext, useEffect } from "react";
+import { useContext, useEffect, useState } from "react";
 import { AuthContext } from "../context/AuthContext";
 
 export function Bienvenida() {
     const { usuario, refrescarUsuario } = useContext(AuthContext);
+    const [frase, setFrase] = useState("");
 
-    // Refrescar usuario al montar el componente
     useEffect(() => {
         refrescarUsuario();
+        obtenerTipDiario();
     }, []);
+
+    const obtenerTipDiario = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/dashboard/tip-diario", {
+                credentials: "include", // ← esto envía las cookies automáticamente
+            });
+            const data = await res.json();
+            setFrase(data.texto);
+        } catch (error) {
+            console.error("Error al obtener el tip diario:", error);
+        }
+    };
 
     return (
         <main className="bienvenida-container">
@@ -17,17 +30,12 @@ export function Bienvenida() {
                 <div className="perfil-foto">
                     <img src={usuario?.foto_perfil} alt="Foto de perfil" />
                 </div>
-
                 <div className="perfil-info">
                     <div className="perfil-saludo-bienvenida">
                         <h2>Bienvenid@, {usuario?.nombre}</h2>
                     </div>
-
                     <span className="perfil-rol">{usuario?.rol_texto}</span>
-
-                    <p className="perfil-descripcion">
-                        {usuario?.descripcion}
-                    </p>
+                    <p className="perfil-descripcion">{usuario?.descripcion}</p>
                 </div>
             </section>
 
@@ -41,9 +49,7 @@ export function Bienvenida() {
             <section className="bienvenida-inspiracion">
                 <img src={inspiracion} alt="Inspiración" />
                 <div className="inspiracion-overlay">
-                    <p>
-                        "La organización es el primer paso hacia la tranquilidad."
-                    </p>
+                    <p>"{frase || "Cargando frase del día..."}"</p>
                 </div>
             </section>
         </main>

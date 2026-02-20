@@ -2,400 +2,64 @@ import "../styles/notas.css";
 import { FileText, Plus, Search, Download, Share2, Pencil, Trash2, Type } from "lucide-react";
 import logoNotas from "../assets/imagenes/fondo-notas.png";
 
-import { useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
-
 import { ModalEliminarNota } from "../components/ModalEliminarNota";
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
 import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
-
+import { useNotas } from "../hooks/useNotas";
 
 export function Notas() {
-    const navigate = useNavigate();
+    const {
+        // Estado de notas
+        loading,
+        error,
+        cargarNotas,
 
-    // Estados de notas
-    const [notas, setNotas] = useState([]);
-    const [loading, setLoading] = useState(true);
-    const [error, setError] = useState(null);
+        // Búsqueda y paginación
+        busqueda, setBusqueda,
+        limit,
+        paginaActual, setPaginaActual,
+        notasPaginadas,
+        totalPaginas,
+        handleCambiarLimit,
+        handleLimpiarBusqueda,
 
-    // Estados de búsqueda y filtros
-    const [busqueda, setBusqueda] = useState("");
-    const [limit, setLimit] = useState(5);
-    const [paginaActual, setPaginaActual] = useState(1);
+        // Utilidades
+        formatearFecha,
 
-    // Estados de modales
-    const [mostrarModalEliminar, setMostrarModalEliminar] = useState(false);
-    const [notaSeleccionada, setNotaSeleccionada] = useState(null);
+        // Modal eliminar
+        mostrarModalEliminar,
+        notaSeleccionada,
+        abrirModalEliminar,
+        cerrarModalEliminar,
+        confirmarEliminarNota,
 
-    const [mostrarModalCompartir, setMostrarModalCompartir] = useState(false);
-    const [notaACompartir, setNotaACompartir] = useState(null);
+        // Modal compartir
+        mostrarModalCompartir,
+        notaACompartir,
+        abrirModalCompartir,
+        cerrarModalCompartir,
+        confirmarCompartirNota,
 
-    const [mostrarModalRenombrar, setMostrarModalRenombrar] = useState(false);
-    const [notaARenombrar, setNotaARenombrar] = useState(null);
+        // Modal renombrar
+        mostrarModalRenombrar,
+        notaARenombrar,
+        notas,
+        abrirModalRenombrar,
+        cerrarModalRenombrar,
+        confirmarRenombrarNota,
 
+        // Alertas
+        mostrarAlert, setMostrarAlert,
+        alertConfig,
 
-    // Estados para CustomAlert
-    const [mostrarAlert, setMostrarAlert] = useState(false);
-    const [alertConfig, setAlertConfig] = useState({
-        type: "success",
-        title: "",
-        message: ""
-    });
+        // Acciones
+        descargarPDF,
+        editarNota,
+        crearNuevaNota,
+    } = useNotas();
 
-    /* ===== FUNCIÓN HELPER PARA MOSTRAR ALERTAS ===== */
-    const mostrarAlerta = (type, title, message) => {
-        setAlertConfig({ type, title, message });
-        setMostrarAlert(true);
-    };
-
-    /* ===== CARGAR NOTAS AL INICIAR ===== */
-    useEffect(() => {
-        cargarNotas();
-    }, []);
-
-    const cargarNotas = async () => {
-        try {
-            setLoading(true);
-            const response = await fetch("http://localhost:3000/notas/obtener-notas", {
-                method: "GET",
-                credentials: "include", // Importante: envía las cookies
-            });
-
-            if (!response.ok) {
-                throw new Error("Error al cargar las notas");
-            }
-
-            const data = await response.json();
-            setNotas(data);
-            setError(null);
-        } catch (error) {
-            console.error("Error al cargar notas:", error);
-            setError("No se pudieron cargar las notas");
-        } finally {
-            setLoading(false);
-        }
-    };
-
-    /* ===== FORMATEAR FECHA ===== */
-    const formatearFecha = (fecha) => {
-        if (!fecha) return "Sin fecha";
-        const date = new Date(fecha);
-        return date.toLocaleDateString("es-MX", {
-            day: "2-digit",
-            month: "2-digit",
-            year: "numeric",
-            hour: "2-digit",
-            minute: "2-digit",
-        });
-    };
-
-    /* ===== FILTRAR NOTAS ===== */
-    const notasFiltradas = notas.filter((nota) =>
-        nota.titulo.toLowerCase().includes(busqueda.toLowerCase())
-    );
-
-    /* ===== PAGINACIÓN ===== */
-    const totalPaginas = Math.ceil(notasFiltradas.length / limit);
-    const notasPaginadas = notasFiltradas.slice(
-        (paginaActual - 1) * limit,
-        paginaActual * limit
-    );
-
-    /* ===== MODAL ELIMINAR ===== */
-    const abrirModalEliminar = (nota) => {
-        setNotaSeleccionada(nota);
-        setMostrarModalEliminar(true);
-    };
-
-    const cerrarModalEliminar = () => {
-        setMostrarModalEliminar(false);
-        setNotaSeleccionada(null);
-    };
-
-    const confirmarEliminarNota = async () => {
-        try {
-            const response = await fetch(
-                `http://localhost:3000/notas/eliminar-nota/${notaSeleccionada.id_nota}`,
-                {
-                    method: "DELETE",
-                    credentials: "include",
-                }
-            );
-
-            if (!response.ok) {
-                throw new Error("Error al eliminar la nota");
-            }
-
-            // Recargar notas después de eliminar
-            await cargarNotas();
-
-            // Mostrar alerta de éxito
-            mostrarAlerta(
-                "success",
-                "¡Nota eliminada!",
-                `La nota "${notaSeleccionada.titulo}" ha sido eliminada exitosamente.`
-            );
-        } catch (error) {
-            console.error("Error al eliminar nota:", error);
-
-            // Mostrar alerta de error
-            mostrarAlerta(
-                "error",
-                "Error al eliminar",
-                "No se pudo eliminar la nota. Por favor, intenta nuevamente."
-            );
-        } finally {
-            cerrarModalEliminar();
-        }
-    };
-
-    /* ===== MODAL COMPARTIR ===== */
-    const abrirModalCompartir = (nota) => {
-        setNotaACompartir(nota);
-        setMostrarModalCompartir(true);
-    };
-
-    const cerrarModalCompartir = () => {
-        setMostrarModalCompartir(false);
-        setNotaACompartir(null);
-    };
-
-    // ===== En confirmarCompartirNota =====
-    const confirmarCompartirNota = async ({ tipo, email, chatId, telefono }) => {
-        try {
-            const htmlCompleto = construirHTMLNota(notaACompartir);
-
-            if (tipo === "email") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-nota/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir");
-                mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado a ${email}`);
-                cerrarModalCompartir();
-
-            } else if (tipo === "telegram") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-telegram/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ chatId, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir por Telegram");
-                mostrarAlerta("success", "¡Nota compartida!", "El PDF fue enviado por Telegram");
-                cerrarModalCompartir();
-
-            } else if (tipo === "whatsapp") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-whatsapp/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ telefono, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir por WhatsApp");
-                mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado por WhatsApp a ${telefono}`);
-                cerrarModalCompartir();
-            }
-
-        } catch (error) {
-            mostrarAlerta("error", "Error al compartir", error.message);
-        }
-    };
-
-    /* ===== MODAL RENOMBRAR ===== */
-    const abrirModalRenombrar = (nota) => {
-        setNotaARenombrar(nota);
-        setMostrarModalRenombrar(true);
-    };
-
-    const cerrarModalRenombrar = () => {
-        setMostrarModalRenombrar(false);
-        setNotaARenombrar(null);
-    };
-
-    const confirmarRenombrarNota = async (nuevoNombre) => {
-        try {
-            const response = await fetch(
-                `http://localhost:3000/notas/renombrar-nota/${notaARenombrar.id_nota}`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: {
-                        "Content-Type": "application/json",
-                    },
-                    body: JSON.stringify({
-                        titulo: nuevoNombre
-                    }),
-                }
-            );
-
-            const data = await response.json();
-
-            if (!response.ok) {
-                // Si el backend detecta un error (por si acaso), mostrar alert
-                throw new Error(data.error || "Error al renombrar la nota");
-            }
-
-            // Recargar notas después de renombrar
-            await cargarNotas();
-
-            // Mostrar alerta de éxito
-            mostrarAlerta(
-                "success",
-                "¡Nota renombrada!",
-                `La nota ha sido renombrada a "${nuevoNombre}" exitosamente.`
-            );
-
-            // Cerrar modal
-            cerrarModalRenombrar();
-        } catch (error) {
-            console.error("Error al renombrar nota:", error);
-
-            // Solo mostrar alert si es un error inesperado del servidor
-            mostrarAlerta(
-                "error",
-                "Error al renombrar",
-                error.message || "No se pudo renombrar la nota. Por favor, intenta nuevamente."
-            );
-
-            // NO cerrar el modal para que el usuario pueda corregir
-        }
-    };
-
-    const construirHTMLNota = (nota) => {
-        const bg = nota.background_color || "#ffffff";
-        return `<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>${nota.titulo}</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-
-        @page {
-            size: Letter;
-            margin: 2.54cm;         /* ← márgenes reales de página, cubren todo */
-            background: ${bg};      /* ← fondo en la página, no en el body */
-        }
-
-        body {
-            background-color: ${bg};
-            font-family: ${nota.font_family || "Arial"}, sans-serif;
-            font-size: ${nota.font_size || 16}px;
-            color: #111111;
-            line-height: 1.6;
-        }
-
-                /* ← ESTILOS PARA LISTAS (Puppeteer no los incluye por defecto) */
-        ul {
-            list-style-type: disc;
-            padding-left: 2em;
-            margin: 0.5em 0;
-        }
-
-        ol {
-            list-style-type: decimal;
-            padding-left: 2em;
-            margin: 0.5em 0;
-        }
-
-        li {
-            margin: 0.2em 0;
-            display: list-item;
-        }
-
-        ul ul { list-style-type: circle; }
-        ul ul ul { list-style-type: square; }
-    </style>
-</head>
-<body>
-    ${nota.contenido || "<p>Sin contenido</p>"}
-</body>
-</html>`;
-    };
-
-    /* ===== DESCARGAR PDF ===== */
-    const descargarPDF = async (nota) => {
-        try {
-            mostrarAlerta("success", "Generando PDF...", "Por favor espera un momento.");
-
-            const htmlCompleto = construirHTMLNota(nota);
-
-            const response = await fetch(
-                `http://localhost:3000/notas/exportar-pdf/${nota.id_nota}`,
-                {
-                    method: "POST",                          // ← cambia a POST
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ html: htmlCompleto }),
-                }
-            );
-
-            if (!response.ok) throw new Error("Error al generar el PDF");
-
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${nota.titulo}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
-
-            mostrarAlerta("success", "¡PDF descargado!", `El PDF de "${nota.titulo}" se ha descargado correctamente.`);
-        } catch (error) {
-            console.error("Error al descargar PDF:", error);
-            mostrarAlerta("error", "Error al generar PDF", "No se pudo generar el PDF. Por favor, intenta nuevamente.");
-        }
-    };
-
-
-    /* ===== EDITAR NOTA ===== */
-    const editarNota = (nota) => {
-        // Guardar la nota en localStorage para cargarla en el editor
-        localStorage.setItem(
-            "editorNota",
-            JSON.stringify({
-                notaId: nota.id_nota,
-                titulo: nota.titulo,
-                contenido: nota.contenido,
-                backgroundColor: nota.background_color,
-                fontFamily: nota.font_family,
-                fontSize: nota.font_size,
-            })
-        );
-
-        navigate("/editor-nota");
-    };
-
-    /* ===== CREAR NUEVA NOTA ===== */
-    const crearNuevaNota = () => {
-        // Limpiar completamente el localStorage
-        localStorage.removeItem("editorNota");
-
-        // Navegar al editor - el useEffect del editor detectará que no hay datos y mostrará un editor limpio
-        navigate("/editor-nota");
-    };
-
-    /* ===== GENERAR PDF COMO BASE64 (para compartir) ===== */
-
-
-    /* ===== RENDER ===== */
     return (
         <main className="notes-app">
             <div className="notas-contenedor">
@@ -403,7 +67,8 @@ export function Notas() {
             </div>
 
             <div className="contenedor-notas-almacenadas">
-                {/* ===== TOP ===== */}
+
+                {/* ── HEADER ── */}
                 <header className="notes-header">
                     <div className="notes-header-actions">
                         <button className="btn-new" onClick={crearNuevaNota}>
@@ -425,10 +90,7 @@ export function Notas() {
                         <span>Mostrar</span>
                         <select
                             value={limit}
-                            onChange={(e) => {
-                                setLimit(Number(e.target.value));
-                                setPaginaActual(1);
-                            }}
+                            onChange={(e) => handleCambiarLimit(Number(e.target.value))}
                         >
                             <option value={5}>5</option>
                             <option value={10}>10</option>
@@ -439,7 +101,7 @@ export function Notas() {
                     </div>
                 </header>
 
-                {/* ===== ESTADOS DE CARGA ===== */}
+                {/* ── CARGA ── */}
                 {loading && (
                     <div className="notes-loading">
                         <p>Cargando notas...</p>
@@ -453,29 +115,27 @@ export function Notas() {
                     </div>
                 )}
 
-                {/* ===== LISTA DE NOTAS ===== */}
-                {/* ===== LISTA DE NOTAS ===== */}
+                {/* ── LISTA DE NOTAS ── */}
                 {!loading && !error && (
                     <>
                         {notasPaginadas.length === 0 ? (
                             <div className="notes-empty">
                                 <FileText size={48} style={{ opacity: 0.3 }} />
 
-                                {/* Diferenciar entre "no hay notas" y "búsqueda sin resultados" */}
                                 {busqueda.trim() !== "" ? (
                                     <>
                                         <p>No se encontraron resultados de la búsqueda</p>
-                                        <p style={{ fontSize: '0.9rem', color: '#6b7280', marginTop: '8px' }}>
+                                        <p style={{ fontSize: "0.9rem", color: "#6b7280", marginTop: "8px" }}>
                                             <button
-                                                onClick={() => setBusqueda("")}
+                                                onClick={handleLimpiarBusqueda}
                                                 style={{
-                                                    background: 'none',
-                                                    border: 'none',
-                                                    color: '#2563eb',
-                                                    textDecoration: 'underline',
-                                                    cursor: 'pointer',
-                                                    padding: '0 4px',
-                                                    font: 'inherit'
+                                                    background: "none",
+                                                    border: "none",
+                                                    color: "#2563eb",
+                                                    textDecoration: "underline",
+                                                    cursor: "pointer",
+                                                    padding: "0 4px",
+                                                    font: "inherit",
                                                 }}
                                             >
                                                 Limpiar búsqueda
@@ -500,12 +160,8 @@ export function Notas() {
 
                                         <div className="note-content">
                                             <h3>{nota.titulo}</h3>
-                                            <span>
-                                                Creada: {formatearFecha(nota.created_at)}
-                                            </span>
-                                            <span>
-                                                Modificada: {formatearFecha(nota.updated_at)}
-                                            </span>
+                                            <span>Creada: {formatearFecha(nota.created_at)}</span>
+                                            <span>Modificada: {formatearFecha(nota.updated_at)}</span>
                                         </div>
 
                                         <div className="note-actions">
@@ -515,28 +171,24 @@ export function Notas() {
                                                 onClick={() => descargarPDF(nota)}
                                                 title="Descargar PDF"
                                             />
-
                                             <Share2
                                                 size={16}
                                                 className="icono-notas-compartir"
                                                 onClick={() => abrirModalCompartir(nota)}
                                                 title="Compartir"
                                             />
-
                                             <Pencil
                                                 size={16}
                                                 className="icono-notas-editar"
                                                 onClick={() => editarNota(nota)}
                                                 title="Editar"
                                             />
-
                                             <Type
                                                 size={16}
                                                 className="icono-notas-renombrar"
                                                 onClick={() => abrirModalRenombrar(nota)}
                                                 title="Renombrar"
                                             />
-
                                             <Trash2
                                                 size={16}
                                                 className="icono-notas-eliminar"
@@ -549,7 +201,7 @@ export function Notas() {
                             </section>
                         )}
 
-                        {/* ===== PAGINACIÓN - SIEMPRE VISIBLE CUANDO HAY NOTAS ===== */}
+                        {/* ── PAGINACIÓN ── */}
                         {notasPaginadas.length > 0 && (
                             <footer className="notes-pagination">
                                 <button
@@ -585,7 +237,7 @@ export function Notas() {
                 )}
             </div>
 
-            {/* ===== MODALES ===== */}
+            {/* ── MODALES ── */}
             <ModalEliminarNota
                 isOpen={mostrarModalEliminar}
                 onClose={cerrarModalEliminar}
@@ -606,11 +258,11 @@ export function Notas() {
                 onClose={cerrarModalRenombrar}
                 onConfirm={confirmarRenombrarNota}
                 nombreActual={notaARenombrar?.titulo}
-                notas={notas} // Pasar todas las notas
-                notaActualId={notaARenombrar?.id_nota} // Pasar el ID de la nota actual
+                notas={notas}
+                notaActualId={notaARenombrar?.id_nota}
             />
 
-            {/* ===== CUSTOM ALERT ===== */}
+            {/* ── ALERTA ── */}
             {mostrarAlert && (
                 <CustomAlert
                     type={alertConfig.type}

@@ -29,6 +29,7 @@ export function Dashboard({
     const [emocionSeleccionada, setEmocionSeleccionada] = useState(null);
     const [mostrarInput, setMostrarInput] = useState(false);
     const [emocionNueva, setEmocionNueva] = useState("");
+    const [frase, setFrase] = useState("");
 
     const agregarEmocion = () => {
         if (emocionNueva.trim() === "") return;
@@ -84,6 +85,23 @@ export function Dashboard({
             aprendizaje: [nuevoResultado, ...prev.aprendizaje]
         }));
     };
+
+    // frases random
+    useEffect(() => {
+        const obtenerTipDiario = async () => {
+            try {
+                const res = await fetch("http://localhost:3000/dashboard/tip-diario", {
+                    credentials: "include",
+                });
+                const data = await res.json();
+                setFrase(data.texto);
+            } catch (error) {
+                console.error("Error al obtener el tip diario:", error);
+            }
+        };
+
+        obtenerTipDiario();
+    }, []);
 
     const simularResultadoEstudio = () => {
         const nuevoResultado = {
@@ -239,9 +257,7 @@ export function Dashboard({
             <section className="bienvenida-inspiracion">
                 <img src={inspiracion} alt="Inspiración" />
                 <div className="inspiracion-overlay">
-                    <p>
-                        “La organización es el primer paso hacia la tranquilidad.”
-                    </p>
+                    <p>"{frase || "Cargando frase del día..."}"</p>
                 </div>
             </section>
 
