@@ -1,3 +1,4 @@
+// para el dhasboard
 import { db } from "../config/db.js";
 
 export class TipDiario {

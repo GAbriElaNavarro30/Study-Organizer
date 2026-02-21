@@ -73,4 +73,11 @@ router.get("/tip-diario", verificarToken, async (req, res) => {
     }
 });
 
+// ===================== Como se siente hoy ========================
+
+// =================== Emociones predominantes =====================
+
+// ========= Resultados de test de estilos de aprendizaje ==========
+// =========== Resultados de test de métodos de estudio ============
+
 export default router;

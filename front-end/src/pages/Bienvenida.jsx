@@ -15,7 +15,7 @@ export function Bienvenida() {
     const obtenerTipDiario = async () => {
         try {
             const res = await fetch("http://localhost:3000/dashboard/tip-diario", {
-                credentials: "include", // ← esto envía las cookies automáticamente
+                credentials: "include", // para enviar las cookies
             });
             const data = await res.json();
             setFrase(data.texto);

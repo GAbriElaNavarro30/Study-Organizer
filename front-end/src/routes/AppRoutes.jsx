@@ -25,6 +25,7 @@ import { EstilosAprendizaje } from "../pages/EstilosAprendizaje";
 import { MetodosEstudio } from "../pages/MetodosEstudio";
 import { CursosE } from "../pages/CursosE";
 import { CursosT } from "../pages/CursosT";
+import { TestEA } from "../pages/TestEA";
 
 import { PrivateRoute } from "../components/PrivateRoute";
 
@@ -125,6 +126,17 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <EstilosAprendizaje />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/test-estilos-aprendizaje"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <TestEA />
                             </LayoutInterno>
                         </PrivateRoute>
                     }
