@@ -3,6 +3,7 @@ import usuarioRoutes from "../src/routes/usuario.js";
 import tareasRoutes from "../src/routes/tareas.js";
 import notasRoutes from "../src/routes/notas.js";
 import dashboardRoutes from "../src/routes/dashboard.js";
+import estilosAprendizajeRoutes from "../src/routes/estilos-aprendizaje.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 import dotenv from "dotenv";
@@ -34,6 +35,7 @@ app.use("/usuarios", usuarioRoutes);
 app.use("/tareas", tareasRoutes);
 app.use("/notas", notasRoutes);
 app.use("/dashboard", dashboardRoutes);
+app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
 
 app.listen(3000, () => {
   console.log("Servidor corriendo en puerto 3000");

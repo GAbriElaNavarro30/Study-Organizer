@@ -39,7 +39,7 @@ export function useLogin() {
         contrasena: password,
       });
 
-      // 🔥 REFRESCAR USUARIO DESDE /me
+      // REFRESCAR USUARIO DESDE /me
       await refrescarUsuario();
 
       // Determinar ruta según rol

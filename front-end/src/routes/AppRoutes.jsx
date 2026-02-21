@@ -26,6 +26,7 @@ import { MetodosEstudio } from "../pages/MetodosEstudio";
 import { CursosE } from "../pages/CursosE";
 import { CursosT } from "../pages/CursosT";
 import { TestEA } from "../pages/TestEA";
+import { ResultadosTestEA } from "../pages/ResultadosTestEA";
 
 import { PrivateRoute } from "../components/PrivateRoute";
 
@@ -137,6 +138,17 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <TestEA />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/resultados-test-estilos-aprendizaje"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <ResultadosTestEA />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

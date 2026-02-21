@@ -28,8 +28,8 @@ router.post("/responder", verificarToken, async (req, res) => {
         }
 
         // 1. Eliminar respuestas y resultado anteriores (si repite el test)
-        await VarkRespuestaUsuario.deleteByUsuario(id_usuario);
-        await VarkResultado.deleteByUsuario(id_usuario);
+        //await VarkRespuestaUsuario.deleteByUsuario(id_usuario);
+        //await VarkResultado.deleteByUsuario(id_usuario);
 
         // 2. Guardar las 16 respuestas
         await VarkRespuestaUsuario.saveMany(id_usuario, respuestas);

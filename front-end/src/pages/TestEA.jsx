@@ -178,10 +178,8 @@ const PREGUNTAS = [
     },
 ];
 
-// Color azul único para todas las selecciones
 const SELECTED_COLOR = "#1C5A90";
-const SELECTED_BG    = "#E0EEF9";
-
+const SELECTED_BG = "#E0EEF9";
 const LETRAS = ["A", "B", "C", "D"];
 
 // ─── COMPONENTE ───────────────────────────────────────────────────────────────
@@ -192,6 +190,8 @@ export function TestEA() {
     const [actual, setActual] = useState(0);
     const [muted, setMuted] = useState(true);
     const [mostrarModal, setMostrarModal] = useState(false);
+    const [enviando, setEnviando] = useState(false);
+    const [errorEnvio, setErrorEnvio] = useState(null);
     const iframeRef = useRef(null);
     const mainRef = useRef(null);
 
@@ -225,25 +225,57 @@ export function TestEA() {
     };
 
     const siguiente = () => { if (actual < totalPreguntas - 1) irA(actual + 1); };
-    const anterior  = () => { if (actual > 0) irA(actual - 1); };
+    const anterior = () => { if (actual > 0) irA(actual - 1); };
 
-    // ── Enviar ──
-    const enviar = () => {
-        console.log("Respuestas:", respuestas);
-        // navigate("/resultados-vark");
+    // ── Enviar al backend ──
+    const enviar = async () => {
+        setEnviando(true);
+        setErrorEnvio(null);
+
+        try {
+            const respuestasArray = PREGUNTAS.map((pregunta) => {
+                const opcionIndex = respuestas[pregunta.id];
+                const opcion = pregunta.opciones[opcionIndex];
+                return {
+                    id_pregunta: pregunta.id,
+                    id_opcion: opcionIndex + 1,
+                    categoria: opcion.cat,
+                };
+            });
+
+            // ✅ POST a /responder, no GET a /resultado
+            const response = await fetch("http://localhost:3000/estilosaprendizaje/responder", {
+                method: "POST",                          // ✅ POST
+                headers: { "Content-Type": "application/json" },
+                credentials: "include",                  // ✅ envía la cookie
+                body: JSON.stringify({ respuestas: respuestasArray }),
+            });
+
+            if (!response.ok) {
+                const data = await response.json();
+                throw new Error(data.error || "Error al procesar el test");
+            }
+
+            const resultado = await response.json();
+            navigate("/resultados-test-estilos-aprendizaje", { state: resultado });
+
+        } catch (err) {
+            setErrorEnvio(err.message || "Ocurrió un error al enviar el test. Intenta de nuevo.");
+        } finally {
+            setEnviando(false);
+        }
     };
 
     // ── Abandonar ──
     const handleAbandonar = () => {
         setMostrarModal(false);
-        navigate(-1); // o navigate("/") según tu router
+        navigate(-1);
     };
 
     const todasRespondidas = respondidas === totalPreguntas;
 
     return (
         <div className="test-app">
-            {/* Modal abandonar */}
             {mostrarModal && (
                 <ModalAbandonarTest
                     respondidas={respondidas}
@@ -252,7 +284,6 @@ export function TestEA() {
                 />
             )}
 
-            {/* Música */}
             <iframe
                 ref={iframeRef}
                 src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
@@ -267,7 +298,6 @@ export function TestEA() {
             {/* ── HEADER ── */}
             <div className="test-header">
                 <div className="test-header-left">
-                    {/* Botón volver */}
                     <button className="test-back-btn" onClick={() => setMostrarModal(true)}>
                         <IoArrowBackCircleOutline size={18} />
                         Volver
@@ -295,15 +325,12 @@ export function TestEA() {
 
             {/* ── LAYOUT ── */}
             <div className="test-layout">
-
-                {/* SIDEBAR */}
                 <aside className="test-sidebar">
                     <div className="sidebar-label">Preguntas</div>
                     <nav className="test-sidebar-nav">
                         {PREGUNTAS.map((p, i) => {
                             const respondida = respuestas[p.id] !== undefined;
                             const esActual = i === actual;
-
                             return (
                                 <div
                                     key={p.id}
@@ -328,19 +355,14 @@ export function TestEA() {
                     </nav>
                 </aside>
 
-                {/* MAIN */}
                 <main className="test-main" ref={mainRef}>
-
-                    {/* Indicador de pregunta */}
                     <div className="test-pregunta-header">
                         <span className="test-pregunta-num">Pregunta {actual + 1} de {totalPreguntas}</span>
                     </div>
 
-                    {/* Card de pregunta */}
                     <div className="test-card fade-in" key={actual}>
                         <div className="test-card-body">
                             <h2 className="test-pregunta-texto">{preguntaActual.texto}</h2>
-
                             <div className="test-opciones">
                                 {preguntaActual.opciones.map((op, i) => {
                                     const seleccionada = seleccionActual === i;
@@ -378,38 +400,44 @@ export function TestEA() {
                         </div>
                     </div>
 
+                    {/* Error de envío */}
+                    {errorEnvio && (
+                        <div className="test-aviso" style={{ borderColor: "#e53e3e", background: "#fff5f5", color: "#c53030" }}>
+                            ⚠️ {errorEnvio}
+                        </div>
+                    )}
+
                     {/* Navegación */}
                     <div className="test-nav-btns">
                         <button
                             className="test-nav-btn secondary"
                             onClick={anterior}
-                            disabled={actual === 0}
+                            disabled={actual === 0 || enviando}
                         >
                             <IoArrowBackOutline size={16} /> Anterior
                         </button>
 
                         {actual < totalPreguntas - 1 ? (
-                            <button className="test-nav-btn primary" onClick={siguiente}>
+                            <button className="test-nav-btn primary" onClick={siguiente} disabled={enviando}>
                                 Siguiente <IoArrowForwardOutline size={16} />
                             </button>
                         ) : (
                             <button
                                 className={`test-nav-btn submit ${todasRespondidas ? "ready" : ""}`}
-                                onClick={todasRespondidas ? enviar : null}
-                                disabled={!todasRespondidas}
+                                onClick={todasRespondidas && !enviando ? enviar : null}
+                                disabled={!todasRespondidas || enviando}
                                 title={!todasRespondidas ? `Faltan ${totalPreguntas - respondidas} preguntas por responder` : ""}
                             >
-                                Ver resultados <IoArrowForwardOutline size={16} />
+                                {enviando ? (
+                                    <>Analizando... <span className="spinner" /></>
+                                ) : (
+                                    <>Ver resultados <IoArrowForwardOutline size={16} /></>
+                                )}
                             </button>
                         )}
                     </div>
 
-                    {/* Aviso si faltan preguntas al final */}
-                    {actual === totalPreguntas - 1 && !todasRespondidas && (
-                        <div className="test-aviso">
-                            Aún faltan <strong>{totalPreguntas - respondidas} pregunta{totalPreguntas - respondidas !== 1 ? "s" : ""}</strong> por responder. Puedes navegar por el panel izquierdo para completarlas.
-                        </div>
-                    )}
+
                 </main>
             </div>
         </div>

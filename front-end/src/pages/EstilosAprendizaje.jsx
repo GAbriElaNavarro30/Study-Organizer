@@ -48,10 +48,10 @@ const VARK_DATA = {
 
 const NAV_SECTIONS = [
     { label: "¿Qué son los estilos?", id: "seccion-fundamentos" },
-    { label: "El Modelo VARK",        id: "seccion-modelo" },
-    { label: "Historia",              id: "seccion-historia" },
-    { label: "Las 4 modalidades",     id: "seccion-modalidades" },
-    { label: "Sobre el test",         id: "seccion-test" },
+    { label: "El Modelo VARK", id: "seccion-modelo" },
+    { label: "Historia", id: "seccion-historia" },
+    { label: "Las 4 modalidades", id: "seccion-modalidades" },
+    { label: "Sobre el test", id: "seccion-test" },
 ];
 
 export function EstilosAprendizaje() {
@@ -134,6 +134,23 @@ export function EstilosAprendizaje() {
     const iniciarTest = () => {
         navigate("/test-estilos-aprendizaje");
     };
+
+    // ver so el usuario ya tiene algun resultado del test y mostrarlo
+    const [tieneResultado, setTieneResultado] = useState(false);
+
+    useEffect(() => {
+        const verificar = async () => {
+            try {
+                const res = await fetch("http://localhost:3000/estilosaprendizaje/resultado", {
+                    credentials: "include",
+                });
+                if (res.ok) setTieneResultado(true);
+            } catch {
+                setTieneResultado(false);
+            }
+        };
+        verificar();
+    }, []);
 
     return (
         <div className="vark-app">
@@ -336,6 +353,25 @@ export function EstilosAprendizaje() {
                                         <IoBarChartOutline size={16} />
                                         <span>Los resultados mostrarán un gráfico de barras con la puntuación obtenida en cada una de las cuatro categorías (V, A, R, K).</span>
                                     </div>
+
+                                    {tieneResultado && (
+                                        <div className="author-card" style={{ marginTop: 20 }}>
+                                            <div className="author-avatar" style={{ background: "linear-gradient(135deg, #3D8A5E, #1E6A42)" }}>
+                                                <IoBarChartOutline size={28} color="white" />
+                                            </div>
+                                            <div className="author-info">
+                                                <h4>Ya realizaste este test</h4>
+                                                <p>Tienes un resultado guardado. Puedes consultarlo sin necesidad de repetir el cuestionario.</p>
+                                                <button
+                                                    className="start-btn"
+                                                    style={{ marginTop: 12, padding: "10px 24px", fontSize: 13 }}
+                                                    onClick={() => navigate("/resultados-test-estilos-aprendizaje")}
+                                                >
+                                                    Ver mis resultados <IoBarChartOutline size={14} />
+                                                </button>
+                                            </div>
+                                        </div>
+                                    )}
                                 </div>
                                 <div className="card-image-side">
                                     <img src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80" alt="Persona estudiando" />
