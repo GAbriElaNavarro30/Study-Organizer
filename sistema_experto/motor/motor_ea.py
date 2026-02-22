@@ -1,10 +1,8 @@
 # motor.py
-# Motor de inferencia, equivalente al motor de Prolog que aplica las reglas sobre los hechos
-
 from reglas.reglas_ea import determinar_perfil, obtener_recomendaciones
 from hechos.hechos_ea import PERFILES
 
-
+# aqui se procesa las rspuestas y contara los puntajes para pasarselos a las reglas
 def procesar_respuestas(categorias: list) -> dict:
     """
     Recibe lista de categorías respondidas por el usuario.
@@ -14,6 +12,7 @@ def procesar_respuestas(categorias: list) -> dict:
 
     # Paso 1: Contar puntajes (hechos derivados)
     puntajes = {"V": 0, "A": 0, "R": 0, "K": 0}
+    
     for categoria in categorias:
         if categoria in puntajes:
             puntajes[categoria] += 1

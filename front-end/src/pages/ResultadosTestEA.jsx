@@ -82,9 +82,9 @@ const NOMBRES_PERFILES = {
 };
 
 const NAV_SECTIONS = [
-    { label: "Tu perfil",       id: "sec-perfil" },
-    { label: "Puntajes",        id: "sec-puntajes" },
-    { label: "Desglose",        id: "sec-desglose" },
+    { label: "Tu perfil", id: "sec-perfil" },
+    { label: "Puntajes", id: "sec-puntajes" },
+    { label: "Desglose", id: "sec-desglose" },
     { label: "Recomendaciones", id: "sec-recomendaciones" },
 ];
 
@@ -127,16 +127,16 @@ function BarraSimple({ cfg, value, animado }) {
 // ─── RADAR ────────────────────────────────────────────────────────────────────
 
 function RadarChart({ puntajes, primaryColor }) {
-    const size = 224;
+    const size = 260;
     const cx = size / 2;
     const cy = size / 2;
-    const r = 80;
+    const r = 88;
 
     const datos = [
-        { label: "Visual",      key: "v", angle: -90 },
-        { label: "Auditivo",    key: "a", angle:   0 },
-        { label: "Kinestésico", key: "k", angle:  90 },
-        { label: "Lector",      key: "r", angle: 180 },
+        { label: "Visual", key: "v", angle: -90 },
+        { label: "Auditivo", key: "a", angle: 0 },
+        { label: "Kinestésico", key: "k", angle: 90 },
+        { label: "Lector", key: "r", angle: 180 },
     ];
 
     const getPoint = (angle, radius) => {
@@ -193,11 +193,11 @@ function LoadingState() {
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 
 export function ResultadosTestEA() {
-    const location  = useLocation();
-    const navigate  = useNavigate();
-    const [datos, setDatos]               = useState(null);
-    const [cargando, setCargando]         = useState(true);
-    const [animado, setAnimado]           = useState(false);
+    const location = useLocation();
+    const navigate = useNavigate();
+    const [datos, setDatos] = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [animado, setAnimado] = useState(false);
     const [activeSection, setActiveSection] = useState(0);
 
     // ── Cargar datos ──
@@ -248,6 +248,10 @@ export function ResultadosTestEA() {
         return () => observers.forEach((o) => o.disconnect());
     }, [animado]);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     const irA = (i) => {
         setActiveSection(i);
         document.getElementById(NAV_SECTIONS[i].id)?.scrollIntoView({ behavior: "smooth", block: "start" });
@@ -271,12 +275,12 @@ export function ResultadosTestEA() {
     }
 
     const { perfil_dominante, puntajes, recomendaciones } = datos;
-    const letras       = getLetras(perfil_dominante);
-    const primary      = getPrimary(letras);
+    const letras = getLetras(perfil_dominante);
+    const primary = getPrimary(letras);
     const nombrePerfil = NOMBRES_PERFILES[perfil_dominante] || "Multimodal";
     const esMultimodal = perfil_dominante === "VARK";
-    const tieneRecs    = recomendaciones && recomendaciones.length > 0;
-    const navVisible   = tieneRecs ? NAV_SECTIONS : NAV_SECTIONS.filter(s => s.id !== "sec-recomendaciones");
+    const tieneRecs = recomendaciones && recomendaciones.length > 0;
+    const navVisible = tieneRecs ? NAV_SECTIONS : NAV_SECTIONS.filter(s => s.id !== "sec-recomendaciones");
 
     return (
         <div className={`res-app ${animado ? "res-animated" : ""}`}>
@@ -284,7 +288,7 @@ export function ResultadosTestEA() {
             {/* ── HEADER ── */}
             <div className="res-header">
                 <div className="res-header-left">
-                    <button className="res-back-btn" onClick={() => navigate(-1)}>
+                    <button className="res-back-btn" onClick={() => navigate("/estilos-aprendizaje")}>
                         <IoArrowBackOutline size={14} /> Volver
                     </button>
                     <h1 className="res-header-title">
@@ -342,7 +346,7 @@ export function ResultadosTestEA() {
                         <button className="res-action-btn" onClick={() => navigate("/test-estilos-aprendizaje")}>
                             <IoRefreshOutline size={13} /> Repetir test
                         </button>
-                        <button className="res-action-btn res-action-btn--ghost" onClick={() => navigate("/")}>
+                        <button className="res-action-btn res-action-btn--ghost" onClick={() => navigate("/estilos-aprendizaje")}>
                             <IoHomeOutline size={13} /> Inicio
                         </button>
                     </div>
@@ -468,9 +472,9 @@ export function ResultadosTestEA() {
 
                             <div className="res-score-grid">
                                 {["V", "A", "R", "K"].map((l) => {
-                                    const cfg    = PERFIL_CONFIG[l];
-                                    const val    = puntajes[l.toLowerCase()];
-                                    const isDom  = letras.includes(l);
+                                    const cfg = PERFIL_CONFIG[l];
+                                    const val = puntajes[l.toLowerCase()];
+                                    const isDom = letras.includes(l);
                                     return (
                                         <div key={l}
                                             className={`res-score-card res-score-${cfg.cssKey} ${isDom ? "dominant" : ""}`}>
@@ -524,7 +528,7 @@ export function ResultadosTestEA() {
                             <IoRefreshOutline size={15} /> Repetir el test
                         </button>
                         <button className="res-start-btn res-start-btn--outline"
-                            onClick={() => navigate("/")}>
+                            onClick={() => navigate("/estilos-aprendizaje")}>
                             <IoHomeOutline size={15} /> Ir al inicio
                         </button>
                     </div>

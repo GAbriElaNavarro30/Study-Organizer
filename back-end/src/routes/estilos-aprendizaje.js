@@ -5,7 +5,7 @@ import axios from "axios";
 
 const router = Router();
 
-// GET /vark/preguntas — obtener las 16 preguntas con sus opciones
+// Obtener todas las oreguntas con sus opciones
 router.get("/preguntas", verificarToken, async (req, res) => {
     try {
         const preguntas = await VarkPregunta.getAll();
@@ -16,7 +16,7 @@ router.get("/preguntas", verificarToken, async (req, res) => {
     }
 });
 
-// POST /vark/responder — guardar respuestas y obtener resultado del sistema experto
+// guardar respuestas y obtener resultado del sistema experto
 router.post("/responder", verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;

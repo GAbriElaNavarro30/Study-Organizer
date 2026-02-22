@@ -1,6 +1,4 @@
 # hechos.py
-# Aquí defines los hechos base del sistema, equivalente a los hechos en Prolog
-
 PERFILES = {
     "V": "Visual",
     "A": "Auditivo",
@@ -51,5 +49,5 @@ RECOMENDACIONES = {
 }
 
 # Umbral mínimo para considerar una categoría como dominante
-UMBRAL_DOMINANTE = 4   # de 16 preguntas
-UMBRAL_MULTIMODAL = 3  # si varias categorías tienen puntaje similar
+#UMBRAL_DOMINANTE = 4   # de 16 preguntas
+#UMBRAL_MULTIMODAL = 3  # si varias categorías tienen puntaje similar

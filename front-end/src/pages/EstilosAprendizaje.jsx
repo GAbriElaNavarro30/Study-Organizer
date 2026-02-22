@@ -18,6 +18,7 @@ import {
 } from "react-icons/io5";
 
 import neilFleming from "../assets/imagenes/neil-fleming.jpg";
+import { ResultadoPrevio } from "../components/Resultadoprevio";
 
 const VARK_DATA = {
     V: {
@@ -48,10 +49,10 @@ const VARK_DATA = {
 
 const NAV_SECTIONS = [
     { label: "¿Qué son los estilos?", id: "seccion-fundamentos" },
-    { label: "El Modelo VARK", id: "seccion-modelo" },
-    { label: "Historia", id: "seccion-historia" },
-    { label: "Las 4 modalidades", id: "seccion-modalidades" },
-    { label: "Sobre el test", id: "seccion-test" },
+    { label: "El Modelo VARK",        id: "seccion-modelo" },
+    { label: "Historia",              id: "seccion-historia" },
+    { label: "Las 4 modalidades",     id: "seccion-modalidades" },
+    { label: "Sobre el test",         id: "seccion-test" },
 ];
 
 export function EstilosAprendizaje() {
@@ -77,7 +78,6 @@ export function EstilosAprendizaje() {
                     entries.forEach((entry) => {
                         if (entry.isIntersecting && !scrollingRef.current) {
                             setActiveSection(index);
-                            // Scroll automático del nav móvil al item activo
                             scrollMobileNavToIndex(index);
                         }
                     });
@@ -92,18 +92,14 @@ export function EstilosAprendizaje() {
         return () => observers.forEach((obs) => obs.disconnect());
     }, [phase]);
 
-    // Centra el item activo en el nav horizontal móvil
     const scrollMobileNavToIndex = (index) => {
         if (!mobileNavRef.current) return;
         const navEl = mobileNavRef.current;
         const items = navEl.querySelectorAll(".mobile-nav-item");
         if (items[index]) {
             const item = items[index];
-            const itemLeft = item.offsetLeft;
-            const itemWidth = item.offsetWidth;
-            const navWidth = navEl.offsetWidth;
             navEl.scrollTo({
-                left: itemLeft - navWidth / 2 + itemWidth / 2,
+                left: item.offsetLeft - navEl.offsetWidth / 2 + item.offsetWidth / 2,
                 behavior: "smooth",
             });
         }
@@ -124,33 +120,14 @@ export function EstilosAprendizaje() {
         scrollingRef.current = true;
         setActiveSection(index);
         scrollMobileNavToIndex(index);
-
         const el = document.getElementById(NAV_SECTIONS[index].id);
         if (el) el.scrollIntoView({ behavior: "smooth", block: "start" });
-
         setTimeout(() => { scrollingRef.current = false; }, 900);
     };
 
     const iniciarTest = () => {
         navigate("/test-estilos-aprendizaje");
     };
-
-    // ver so el usuario ya tiene algun resultado del test y mostrarlo
-    const [tieneResultado, setTieneResultado] = useState(false);
-
-    useEffect(() => {
-        const verificar = async () => {
-            try {
-                const res = await fetch("http://localhost:3000/estilosaprendizaje/resultado", {
-                    credentials: "include",
-                });
-                if (res.ok) setTieneResultado(true);
-            } catch {
-                setTieneResultado(false);
-            }
-        };
-        verificar();
-    }, []);
 
     return (
         <div className="vark-app">
@@ -183,7 +160,7 @@ export function EstilosAprendizaje() {
                 </div>
             </div>
 
-            {/* ─── NAV HORIZONTAL (solo visible en tablet/móvil) ─── */}
+            {/* NAV HORIZONTAL MÓVIL */}
             {phase === "info" && (
                 <nav className="mobile-nav" ref={mobileNavRef}>
                     {NAV_SECTIONS.map((s, i) => (
@@ -198,11 +175,11 @@ export function EstilosAprendizaje() {
                 </nav>
             )}
 
-            {/* ─── INFO PHASE ─── */}
+            {/* INFO PHASE */}
             {phase === "info" && (
                 <div className="info-layout fade-in">
 
-                    {/* SIDEBAR — solo visible en desktop */}
+                    {/* SIDEBAR */}
                     <aside className="info-sidebar">
                         <div className="sidebar-label">Contenido</div>
                         <nav className="sidebar-nav">
@@ -244,6 +221,7 @@ export function EstilosAprendizaje() {
                             <div className="info-chip"><IoAnalyticsOutline size={16} /><span>Modelo VARK</span></div>
                         </div>
 
+                        {/* SECCIÓN: FUNDAMENTOS */}
                         <div id="seccion-fundamentos" className="card">
                             <div className="card-inner">
                                 <div className="card-body">
@@ -268,6 +246,7 @@ export function EstilosAprendizaje() {
                             </div>
                         </div>
 
+                        {/* SECCIÓN: MODELO */}
                         <div id="seccion-modelo" className="card">
                             <div className="card-inner reverse">
                                 <div className="card-image-side">
@@ -288,6 +267,7 @@ export function EstilosAprendizaje() {
                             </div>
                         </div>
 
+                        {/* SECCIÓN: HISTORIA */}
                         <div id="seccion-historia" className="card">
                             <div className="card-body" style={{ padding: "40px" }}>
                                 <div className="card-tag">Historia</div>
@@ -314,6 +294,7 @@ export function EstilosAprendizaje() {
                             </div>
                         </div>
 
+                        {/* SECCIÓN: MODALIDADES */}
                         <div id="seccion-modalidades" className="card">
                             <div className="card-body" style={{ padding: "40px" }}>
                                 <div className="card-tag">Clasificación</div>
@@ -337,6 +318,7 @@ export function EstilosAprendizaje() {
                             </div>
                         </div>
 
+                        {/* SECCIÓN: SOBRE EL TEST */}
                         <div id="seccion-test" className="card">
                             <div className="card-inner">
                                 <div className="card-body">
@@ -354,24 +336,9 @@ export function EstilosAprendizaje() {
                                         <span>Los resultados mostrarán un gráfico de barras con la puntuación obtenida en cada una de las cuatro categorías (V, A, R, K).</span>
                                     </div>
 
-                                    {tieneResultado && (
-                                        <div className="author-card" style={{ marginTop: 20 }}>
-                                            <div className="author-avatar" style={{ background: "linear-gradient(135deg, #3D8A5E, #1E6A42)" }}>
-                                                <IoBarChartOutline size={28} color="white" />
-                                            </div>
-                                            <div className="author-info">
-                                                <h4>Ya realizaste este test</h4>
-                                                <p>Tienes un resultado guardado. Puedes consultarlo sin necesidad de repetir el cuestionario.</p>
-                                                <button
-                                                    className="start-btn"
-                                                    style={{ marginTop: 12, padding: "10px 24px", fontSize: 13 }}
-                                                    onClick={() => navigate("/resultados-test-estilos-aprendizaje")}
-                                                >
-                                                    Ver mis resultados <IoBarChartOutline size={14} />
-                                                </button>
-                                            </div>
-                                        </div>
-                                    )}
+                                    {/* ── Bloque resultado previo ── */}
+                                    <ResultadoPrevio />
+
                                 </div>
                                 <div className="card-image-side">
                                     <img src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80" alt="Persona estudiando" />
@@ -380,6 +347,7 @@ export function EstilosAprendizaje() {
                             </div>
                         </div>
 
+                        {/* BOTÓN COMENZAR */}
                         <div className="start-btn-wrapper">
                             <button className="start-btn" onClick={iniciarTest}>
                                 Comenzar evaluación <IoArrowForwardOutline size={16} />

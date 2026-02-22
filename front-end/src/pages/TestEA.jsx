@@ -1,4 +1,4 @@
-import { useState, useRef } from "react";
+import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/testea.css";
 import { ModalAbandonarTest } from "../components/ModalAbandonarTest";
@@ -269,10 +269,14 @@ export function TestEA() {
     // ── Abandonar ──
     const handleAbandonar = () => {
         setMostrarModal(false);
-        navigate(-1);
+        navigate("/estilos-aprendizaje");  // siempre va a la página correcta
     };
 
     const todasRespondidas = respondidas === totalPreguntas;
+
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
 
     return (
         <div className="test-app">
