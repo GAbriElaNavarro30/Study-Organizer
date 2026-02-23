@@ -219,7 +219,7 @@ export function ResultadosTestEA() {
                 setDatos({
                     perfil_dominante: r.perfil_dominante,
                     puntajes: { v: r.puntaje_v, a: r.puntaje_a, r: r.puntaje_r, k: r.puntaje_k },
-                    recomendaciones: [],
+                    recomendaciones: r.recomendaciones || [],
                 });
             } catch {
                 setDatos(null);

@@ -47,10 +47,3 @@ RECOMENDACIONES = {
         "Trabaja en laboratorios, talleres o actividades manuales"
     ]
 }
-
-#TOTAL_PREGUNTAS = 16
-#TOTAL_OPCIONES = 4
-
-# Umbral mínimo para considerar una categoría como dominante
-#UMBRAL_DOMINANTE = 4   # de 16 preguntas
-#UMBRAL_MULTIMODAL = 3  # si varias categorías tienen puntaje similar

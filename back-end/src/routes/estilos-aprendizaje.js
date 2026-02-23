@@ -75,7 +75,12 @@ router.get("/resultado", verificarToken, async (req, res) => {
             return res.status(404).json({ mensaje: "El usuario aún no ha realizado el test" });
         }
 
-        res.json({ resultado });
+        // Pedir recomendaciones al sistema experto según el perfil guardado
+        const pythonRes = await axios.get(`http://localhost:8000/recomendaciones/${resultado.perfil_dominante}`);
+        const recomendaciones = pythonRes.data.recomendaciones;
+
+        res.json({ resultado: { ...resultado, recomendaciones } });
+
     } catch (error) {
         console.error("Error al obtener resultado:", error);
         res.status(500).json({ error: "Error interno del servidor" });
