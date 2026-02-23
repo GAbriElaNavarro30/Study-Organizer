@@ -1,11 +1,18 @@
 import cron from "node-cron";
 import { db } from "../config/db.js";
 
+import dayjs from "dayjs";
+import utc from "dayjs/plugin/utc.js";
+import timezone from "dayjs/plugin/timezone.js";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
 export function iniciarCronTipDiario() {
     // Se ejecuta todos los días a las 00:00
     cron.schedule("0 0 * * *", async () => {
         try {
-            const hoy = new Date().toISOString().split("T")[0];
+            const hoy = dayjs().tz("America/Mexico_City").format("YYYY-MM-DD");
             const [totalResult] = await db.query(`SELECT COUNT(*) as total FROM frases`);
             const total = totalResult[0].total;
 

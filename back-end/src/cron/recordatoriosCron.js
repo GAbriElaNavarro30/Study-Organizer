@@ -9,69 +9,75 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 cron.schedule("* * * * *", async () => {
-    try {
-        const ahora = dayjs().tz("America/Mexico_City");
 
-        /* ================= CORREO 1 HORA ANTES ================= */
-        const unaHoraAntes = ahora.add(1, "hour").format("YYYY-MM-DD HH:mm:00");
+  //console.time("cron-recordatorios");
 
-        const [horaAntes] = await db.query(`
-            SELECT r.*, u.correo_electronico, u.nombre_usuario
-            FROM Recordatorio r
-            JOIN Usuario u ON r.id_usuario = u.id_usuario
-            WHERE CONCAT(r.fecha, ' ', r.hora) = ?
-            AND r.estado = 'pendiente'
-            AND r.enviado_hora_antes = FALSE
-        `, [unaHoraAntes]);
+  try {
+    const ahora = dayjs().tz("America/Mexico_City");
 
-        for (const r of horaAntes) {
-            await enviarCorreo(r, "Recordatorio próximo", "1 hora");
-            await db.query(
-                "UPDATE Recordatorio SET enviado_hora_antes = TRUE WHERE id_recordatorio = ?",
-                [r.id_recordatorio]
-            );
-            console.log(`Correo 1 hora antes enviado para: ${r.titulo}`);
-        }
+    /* ================= CORREO 1 HORA ANTES ================= */
+    const unaHoraAntes = ahora.add(1, "hour").format("YYYY-MM-DD HH:mm:00");
 
-        /* ================= CORREO 1 DÍA ANTES A LAS 11:59 PM ================= */
-        // Solo ejecutar a las 23:59
-        if (ahora.format("HH:mm") === "23:59") {
-            const manana = ahora.add(1, "day").format("YYYY-MM-DD");
+    const [horaAntes] = await db.query(`
+      SELECT r.*, u.correo_electronico, u.nombre_usuario
+      FROM Recordatorio r
+      JOIN Usuario u ON r.id_usuario = u.id_usuario
+      WHERE CONCAT(r.fecha, ' ', r.hora) = ?
+      AND r.estado = 'pendiente'
+      AND r.enviado_hora_antes = FALSE
+    `, [unaHoraAntes]);
 
-            const [diaAntesRows] = await db.query(`
-                SELECT r.*, u.correo_electronico, u.nombre_usuario
-                FROM Recordatorio r
-                JOIN Usuario u ON r.id_usuario = u.id_usuario
-                WHERE DATE(r.fecha) = ?
-                AND r.estado = 'pendiente'
-                AND r.enviado_dia_antes = FALSE
-            `, [manana]);
-
-            for (const r of diaAntesRows) {
-                await enviarCorreo(r, "Recordatorio importante", "24 horas");
-                await db.query(
-                    "UPDATE Recordatorio SET enviado_dia_antes = TRUE WHERE id_recordatorio = ?",
-                    [r.id_recordatorio]
-                );
-                console.log(`Correo 1 día antes enviado para: ${r.titulo}`);
-            }
-        }
-
-    } catch (error) {
-        console.error("Error cron recordatorios:", error);
+    for (const r of horaAntes) {
+      await enviarCorreo(r, "Recordatorio próximo", "1 hora");
+      await db.query(
+        "UPDATE Recordatorio SET enviado_hora_antes = TRUE WHERE id_recordatorio = ?",
+        [r.id_recordatorio]
+      );
+      console.log(`Correo 1 hora antes enviado para: ${r.titulo}`);
     }
+
+    /* ================= CORREO 1 DÍA ANTES ================= */
+    if (ahora.format("HH:mm") === "23:59") {
+
+      const manana = ahora.add(1, "day").format("YYYY-MM-DD");
+
+      const [diaAntesRows] = await db.query(`
+        SELECT r.*, u.correo_electronico, u.nombre_usuario
+        FROM Recordatorio r
+        JOIN Usuario u ON r.id_usuario = u.id_usuario
+        WHERE DATE(r.fecha) = ?
+        AND r.estado = 'pendiente'
+        AND r.enviado_dia_antes = FALSE
+      `, [manana]);
+
+      for (const r of diaAntesRows) {
+        await enviarCorreo(r, "Recordatorio importante", "24 horas");
+        await db.query(
+          "UPDATE Recordatorio SET enviado_dia_antes = TRUE WHERE id_recordatorio = ?",
+          [r.id_recordatorio]
+        );
+        console.log(`Correo 1 día antes enviado para: ${r.titulo}`);
+      }
+    }
+
+  } catch (error) {
+    console.error("Error cron recordatorios:", error);
+  } finally {
+    //console.timeEnd("cron-recordatorios");
+  }
+
 });
 
 async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
-    const fechaFormateada = dayjs(recordatorio.fecha).format("DD/MM/YYYY");
-    const horaFormateada = recordatorio.hora.substring(0, 5);
+  const fechaFormateada = dayjs(recordatorio.fecha).format("DD/MM/YYYY");
+  const horaFormateada = recordatorio.hora.substring(0, 5);
 
-    const icono = tipoRecordatorio === "1 hora" ? "🕒" : "📅";
+  const icono = tipoRecordatorio === "1 hora" ? "🕒" : "📅";
 
-    await transporter.sendMail({
-        to: recordatorio.correo_electronico,
-        subject: asunto,
-        html: `
+  await transporter.sendMail({
+    to: recordatorio.correo_electronico,
+    subject: asunto,
+    html: `
 <!DOCTYPE html>
 <html>
 <body style="margin:0; background:#f2f4f7; font-family:Arial, sans-serif;">
@@ -105,8 +111,8 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
                 </p>
 
                 ${recordatorio.descripcion ?
-                `<p style="margin:0 0 10px 0;">${recordatorio.descripcion}</p>`
-                : ""}
+        `<p style="margin:0 0 10px 0;">${recordatorio.descripcion}</p>`
+        : ""}
 
                 <p style="margin:0;"><strong>Fecha:</strong> ${fechaFormateada}</p>
                 <p style="margin:5px 0 0 0;"><strong>Hora:</strong> ${horaFormateada}</p>
@@ -130,7 +136,7 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
 </body>
 </html>
     `,
-    });
+  });
 }
 
 console.log("Cron de recordatorios iniciado");

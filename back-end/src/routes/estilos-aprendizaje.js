@@ -5,7 +5,7 @@ import axios from "axios";
 
 const router = Router();
 
-// Obtener todas las oreguntas con sus opciones
+// ============== Obtener todas las preguntas con sus opciones para mostrar ===============
 router.get("/preguntas", verificarToken, async (req, res) => {
     try {
         const preguntas = await VarkPregunta.getAll();
@@ -16,7 +16,7 @@ router.get("/preguntas", verificarToken, async (req, res) => {
     }
 });
 
-// guardar respuestas y obtener resultado del sistema experto
+// ======== guardar respuestas y obtener resultado del puntaje del sistema experto una vez que respondio el test =======
 router.post("/responder", verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -66,7 +66,7 @@ router.post("/responder", verificarToken, async (req, res) => {
     }
 });
 
-// GET /vark/resultado — obtener el último resultado del usuario
+// ====  obtener el último resultado del perfil de aprendizaje de las respuestas del usuario sin hacer de nuevo el test ====
 router.get("/resultado", verificarToken, async (req, res) => {
     try {
         const resultado = await VarkResultado.getUltimoByUsuario(req.usuario.id);
@@ -75,7 +75,7 @@ router.get("/resultado", verificarToken, async (req, res) => {
             return res.status(404).json({ mensaje: "El usuario aún no ha realizado el test" });
         }
 
-        // Pedir recomendaciones al sistema experto según el perfil guardado
+        // Obtener recomendaciones al sistema experto según el perfil guardado
         const pythonRes = await axios.get(`http://localhost:8000/recomendaciones/${resultado.perfil_dominante}`);
         const recomendaciones = pythonRes.data.recomendaciones;
 
@@ -87,7 +87,7 @@ router.get("/resultado", verificarToken, async (req, res) => {
     }
 });
 
-// GET /vark/historial — historial de todos los tests del usuario
+// =================== Obtener todo historial de todos los tests de todos los usuarios ====================
 router.get("/historial", verificarToken, async (req, res) => {
     try {
         const historial = await VarkResultado.getHistorialByUsuario(req.usuario.id);

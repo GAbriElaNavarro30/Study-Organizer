@@ -24,7 +24,7 @@ def procesar_respuestas(categorias: list) -> dict:
     recomendaciones = obtener_recomendaciones(perfil_dominante)
 
     # Paso 4: Obtener nombre legible del perfil
-    nombre_perfil = PERFILES.get(perfil_dominante, "Multimodal")
+    nombre_perfil = PERFILES.get[perfil_dominante]
 
     return {
         "puntaje_v": puntajes["V"],

@@ -10,6 +10,12 @@ app = FastAPI(title="Sistema Experto VARK")
 class RespuestasInput(BaseModel):
     categorias: list[str]
 
+# ============================ endpoint de prueba para ver si funciona =================================
+@app.get("/")
+def health_check():
+    return {"status": "Sistema Experto VARK activo"}
+
+# ==================== analiza las respuests obtenidas del test con react y node js ====================
 @app.post("/analizar")
 def analizar_vark(data: RespuestasInput):
     if len(data.categorias) != 16:
@@ -23,11 +29,8 @@ def analizar_vark(data: RespuestasInput):
     resultado = procesar_respuestas(data.categorias)
     return resultado
 
+# =========== en base al perfil obtenido por mayor puntaje de respuestas da recomendaciones ============
 @app.get("/recomendaciones/{perfil}")
 def obtener_recomendaciones_perfil(perfil: str):
-    recomendaciones = obtener_recomendaciones(perfil)  # ← ahora sí está importada
+    recomendaciones = obtener_recomendaciones(perfil)
     return {"recomendaciones": recomendaciones}
-
-@app.get("/")
-def health_check():
-    return {"status": "Sistema Experto VARK activo"}
