@@ -1,18 +1,13 @@
-// para los estilos de aprendizaje
 import { db } from "../config/db.js";
 
 export class VarkPregunta {
-    // Obtener todas las preguntas con sus opciones
     static async getAll() {
         const [preguntas] = await db.query(
             `SELECT * FROM vark_preguntas ORDER BY orden`
         );
-
         const [opciones] = await db.query(
             `SELECT * FROM vark_opciones`
         );
-
-        // Agrupar opciones por pregunta
         return preguntas.map(pregunta => ({
             ...pregunta,
             opciones: opciones.filter(o => o.id_pregunta === pregunta.id)
@@ -24,6 +19,27 @@ export class VarkPregunta {
             `SELECT * FROM vark_preguntas WHERE id = ?`, [id]
         );
         return rows[0];
+    }
+}
+
+
+// ✅ Nueva clase para manejar los intentos
+export class VarkIntento {
+    // Crea un nuevo intento y devuelve el id generado (1, 2, 3...)
+    static async crear(id_usuario) {
+        const [result] = await db.query(
+            `INSERT INTO vark_intentos (id_usuario) VALUES (?)`,
+            [id_usuario]
+        );
+        return result.insertId; // ← BD genera el número en orden
+    }
+
+    static async getByUsuario(id_usuario) {
+        const [rows] = await db.query(
+            `SELECT * FROM vark_intentos WHERE id_usuario = ? ORDER BY fecha DESC`,
+            [id_usuario]
+        );
+        return rows;
     }
 }
 
@@ -43,22 +59,36 @@ export class VarkRespuestaUsuario {
         );
     }
 
-    // Guardar las 16 respuestas de golpe
-    static async saveMany(id_usuario, respuestas) {
-        // respuestas = [{ id_pregunta, id_opcion }, ...]
-        const valores = respuestas.map(r => [id_usuario, r.id_pregunta, r.id_opcion]);
+    static async saveMany(id_usuario, respuestas, id_intento) {
+        const valores = respuestas.map(r => [
+            id_usuario,
+            r.id_pregunta,
+            r.id_opcion,
+            id_intento
+        ]);
 
         return await db.query(
-            `INSERT INTO vark_respuestas_usuario (id_usuario, id_pregunta, id_opcion)
+            `INSERT INTO vark_respuestas_usuario (id_usuario, id_pregunta, id_opcion, id_intento)
              VALUES ?`,
             [valores]
         );
     }
 
-    // Obtener respuestas de un usuario en su último intento
-    static async getByUsuario(id_usuario) {
+    static async getByIntento(id_usuario, id_intento) {
         const [rows] = await db.query(
             `SELECT vru.id_pregunta, vru.id_opcion, vo.categoria, vo.texto
+             FROM vark_respuestas_usuario vru
+             JOIN vark_opciones vo ON vru.id_opcion = vo.id
+             WHERE vru.id_usuario = ? AND vru.id_intento = ?
+             ORDER BY vru.id_pregunta ASC`,
+            [id_usuario, id_intento]
+        );
+        return rows;
+    }
+
+    static async getByUsuario(id_usuario) {
+        const [rows] = await db.query(
+            `SELECT vru.id_pregunta, vru.id_opcion, vo.categoria, vo.texto, vru.id_intento, vru.fecha
              FROM vark_respuestas_usuario vru
              JOIN vark_opciones vo ON vru.id_opcion = vo.id
              WHERE vru.id_usuario = ?
@@ -68,7 +98,6 @@ export class VarkRespuestaUsuario {
         return rows;
     }
 
-    // Eliminar respuestas anteriores del usuario (para cuando repita el test)
     static async deleteByUsuario(id_usuario) {
         return await db.query(
             `DELETE FROM vark_respuestas_usuario WHERE id_usuario = ?`,
@@ -103,7 +132,6 @@ export class VarkResultado {
         );
     }
 
-    // Obtener el resultado más reciente del usuario
     static async getUltimoByUsuario(id_usuario) {
         const [rows] = await db.query(
             `SELECT * FROM vark_resultados
@@ -115,7 +143,6 @@ export class VarkResultado {
         return rows[0];
     }
 
-    // Obtener historial completo de resultados del usuario
     static async getHistorialByUsuario(id_usuario) {
         const [rows] = await db.query(
             `SELECT * FROM vark_resultados
@@ -126,7 +153,6 @@ export class VarkResultado {
         return rows;
     }
 
-    // Eliminar resultado anterior (para cuando repita el test)
     static async deleteByUsuario(id_usuario) {
         return await db.query(
             `DELETE FROM vark_resultados WHERE id_usuario = ?`,

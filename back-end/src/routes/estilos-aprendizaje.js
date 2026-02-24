@@ -1,6 +1,7 @@
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
-import { VarkPregunta, VarkRespuestaUsuario, VarkResultado } from "../models/Vark.js";
+import { VarkPregunta, VarkRespuestaUsuario, VarkResultado, VarkIntento } from "../models/Vark.js";
+
 import axios from "axios";
 
 const router = Router();
@@ -16,34 +17,51 @@ router.get("/preguntas", verificarToken, async (req, res) => {
     }
 });
 
-// ======== guardar respuestas y obtener resultado del puntaje del sistema experto una vez que respondio el test =======
+// ======== Solo guarda las respuestas del usuario ========
 router.post("/responder", verificarToken, async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
         const { respuestas } = req.body;
-        // respuestas = [{ id_pregunta, id_opcion, categoria }, ...]
 
         if (!respuestas || respuestas.length !== 16) {
             return res.status(400).json({ error: "Debes responder las 16 preguntas" });
         }
 
-        // 1. Eliminar respuestas y resultado anteriores (si repite el test)
-        //await VarkRespuestaUsuario.deleteByUsuario(id_usuario);
-        //await VarkResultado.deleteByUsuario(id_usuario);
+        // ✅ La BD genera el id automáticamente (1, 2, 3...)
+        const id_intento = await VarkIntento.crear(id_usuario);
 
-        // 2. Guardar las 16 respuestas
-        await VarkRespuestaUsuario.saveMany(id_usuario, respuestas);
+        await VarkRespuestaUsuario.saveMany(id_usuario, respuestas, id_intento);
 
-        // 3. Mandar respuestas al sistema experto en Python
+        res.json({ mensaje: "Respuestas guardadas correctamente", id_intento });
+
+    } catch (error) {
+        console.error("Error al guardar respuestas VARK:", error);
+        res.status(500).json({ error: "Error interno del servidor" });
+    }
+});
+
+
+router.get("/resultado", verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_intento } = req.query; // ← viene del frontend como query param
+
+        if (!id_intento) {
+            return res.status(400).json({ error: "Falta el id_intento" });
+        }
+
+        // ✅ Solo trae las respuestas de ese intento específico
+        const respuestas = await VarkRespuestaUsuario.getByIntento(id_usuario, id_intento);
+
+        if (!respuestas || respuestas.length !== 16) {
+            return res.status(404).json({ mensaje: "No se encontraron las 16 respuestas del intento" });
+        }
+
         const categorias = respuestas.map(r => r.categoria);
 
-        const pythonRes = await axios.post("http://localhost:8000/analizar", {
-            categorias
-        });
-
+        const pythonRes = await axios.post("http://localhost:8000/analizar", { categorias });
         const { puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante, recomendaciones } = pythonRes.data;
 
-        // 4. Guardar resultado
         const resultado = new VarkResultado({
             id_usuario,
             puntaje_v,
@@ -61,13 +79,13 @@ router.post("/responder", verificarToken, async (req, res) => {
         });
 
     } catch (error) {
-        console.error("Error al procesar respuestas VARK:", error);
+        console.error("Error al obtener resultado VARK:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 });
 
-// ====  obtener el último resultado del perfil de aprendizaje de las respuestas del usuario sin hacer de nuevo el test ====
-router.get("/resultado", verificarToken, async (req, res) => {
+// ======== Consultar el último resultado guardado (sin recalcular) ========
+router.get("/resultado-guardado", verificarToken, async (req, res) => {
     try {
         const resultado = await VarkResultado.getUltimoByUsuario(req.usuario.id);
 
@@ -75,14 +93,23 @@ router.get("/resultado", verificarToken, async (req, res) => {
             return res.status(404).json({ mensaje: "El usuario aún no ha realizado el test" });
         }
 
-        // Obtener recomendaciones al sistema experto según el perfil guardado
+        // Obtener recomendaciones del sistema experto según el perfil ya guardado
         const pythonRes = await axios.get(`http://localhost:8000/recomendaciones/${resultado.perfil_dominante}`);
         const recomendaciones = pythonRes.data.recomendaciones;
 
-        res.json({ resultado: { ...resultado, recomendaciones } });
+        res.json({
+            perfil_dominante: resultado.perfil_dominante,
+            puntajes: {
+                v: resultado.puntaje_v,
+                a: resultado.puntaje_a,
+                r: resultado.puntaje_r,
+                k: resultado.puntaje_k
+            },
+            recomendaciones
+        });
 
     } catch (error) {
-        console.error("Error al obtener resultado:", error);
+        console.error("Error al obtener resultado guardado:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
 });

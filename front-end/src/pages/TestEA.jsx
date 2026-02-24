@@ -2,6 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/testea.css";
 import { ModalAbandonarTest } from "../components/ModalAbandonarTest";
+import { CustomAlert } from "../components/CustomAlert"; // ← IMPORTADO
 import {
     IoVolumeMuteOutline,
     IoMusicalNotesOutline,
@@ -12,6 +13,7 @@ import {
     IoListOutline,
     IoArrowBackCircleOutline,
 } from "react-icons/io5";
+import logo from "../assets/imagenes/logotipo.png";
 
 // ─── DATOS ───────────────────────────────────────────────────────────────────
 
@@ -192,6 +194,11 @@ export function TestEA() {
     const [mostrarModal, setMostrarModal] = useState(false);
     const [enviando, setEnviando] = useState(false);
     const [errorEnvio, setErrorEnvio] = useState(null);
+
+    // ── Estados para el CustomAlert ──
+    const [mostrarAlertExito, setMostrarAlertExito] = useState(false);
+    const [resultadoPendiente, setResultadoPendiente] = useState(null);
+
     const iframeRef = useRef(null);
     const mainRef = useRef(null);
 
@@ -243,21 +250,41 @@ export function TestEA() {
                 };
             });
 
-            // ✅ POST a /responder, no GET a /resultado
-            const response = await fetch("http://localhost:3000/estilosaprendizaje/responder", {
-                method: "POST",                          // ✅ POST
+            // 1. Guardar respuestas y recibir el id_intento generado
+            const saveRes = await fetch("http://localhost:3000/estilosaprendizaje/responder", {
+                method: "POST",
                 headers: { "Content-Type": "application/json" },
-                credentials: "include",                  // ✅ envía la cookie
+                credentials: "include",
                 body: JSON.stringify({ respuestas: respuestasArray }),
             });
 
-            if (!response.ok) {
-                const data = await response.json();
-                throw new Error(data.error || "Error al procesar el test");
+            if (!saveRes.ok) {
+                const data = await saveRes.json();
+                throw new Error(data.error || "Error al guardar las respuestas");
             }
 
-            const resultado = await response.json();
-            navigate("/resultados-test-estilos-aprendizaje", { state: resultado });
+            // ✅ Extraemos el id_intento que devuelve el backend
+            const { id_intento } = await saveRes.json();
+
+            // 2. Obtener resultado pasando el id_intento como query param
+            const resultRes = await fetch(
+                `http://localhost:3000/estilosaprendizaje/resultado?id_intento=${id_intento}`,
+                {
+                    method: "GET",
+                    credentials: "include",
+                }
+            );
+
+            if (!resultRes.ok) {
+                const data = await resultRes.json();
+                throw new Error(data.error || "Error al obtener el resultado");
+            }
+
+            const resultado = await resultRes.json();
+
+            // 3. Mostrar CustomAlert y guardar resultado para navegar después
+            setResultadoPendiente(resultado);
+            setMostrarAlertExito(true);
 
         } catch (err) {
             setErrorEnvio(err.message || "Ocurrió un error al enviar el test. Intenta de nuevo.");
@@ -266,10 +293,16 @@ export function TestEA() {
         }
     };
 
+    // ── Al aceptar el CustomAlert → navegar a resultados ──
+    const handleCerrarAlertExito = () => {
+        setMostrarAlertExito(false);
+        navigate("/resultados-test-estilos-aprendizaje", { state: resultadoPendiente });
+    };
+
     // ── Abandonar ──
     const handleAbandonar = () => {
         setMostrarModal(false);
-        navigate("/estilos-aprendizaje");  // siempre va a la página correcta
+        navigate("/estilos-aprendizaje");
     };
 
     const todasRespondidas = respondidas === totalPreguntas;
@@ -280,11 +313,24 @@ export function TestEA() {
 
     return (
         <div className="test-app">
+
+            {/* ── Modal abandonar ── */}
             {mostrarModal && (
                 <ModalAbandonarTest
                     respondidas={respondidas}
                     onContinuar={() => setMostrarModal(false)}
                     onAbandonar={handleAbandonar}
+                />
+            )}
+
+            {/* ── CustomAlert éxito ── */}
+            {mostrarAlertExito && (
+                <CustomAlert
+                    type="success"
+                    title="¡Test completado!"
+                    logo={logo}
+                    message="Has respondido todas las preguntas exitosamente. Haz clic en Aceptar para ver tus resultados."
+                    onClose={handleCerrarAlertExito}
                 />
             )}
 
@@ -440,8 +486,6 @@ export function TestEA() {
                             </button>
                         )}
                     </div>
-
-
                 </main>
             </div>
         </div>
