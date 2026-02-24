@@ -41,15 +41,11 @@ def determinar_perfil(puntajes: dict) -> str:
         return dominantes[0]
     
 # de acuerdo al perfil obtener recomendaciones    
-def obtener_recomendaciones(perfil: str) -> list:
-    """
-    Devuelve las recomendaciones según el perfil.
-    Si es multimodal, combina las recomendaciones de cada letra.
-    """
-    recomendaciones_finales = []
+def obtener_recomendaciones(perfil: str) -> dict:
+    recomendaciones_por_perfil = {}
 
     for letra in perfil:
         if letra in RECOMENDACIONES:
-            recomendaciones_finales.extend(RECOMENDACIONES[letra])
+            recomendaciones_por_perfil[letra] = RECOMENDACIONES[letra]
 
-    return recomendaciones_finales
+    return recomendaciones_por_perfil

@@ -279,7 +279,7 @@ export function ResultadosTestEA() {
     const primary = getPrimary(letras);
     const nombrePerfil = NOMBRES_PERFILES[perfil_dominante] || "Multimodal";
     const esMultimodal = perfil_dominante === "VARK";
-    const tieneRecs = recomendaciones && recomendaciones.length > 0;
+    const tieneRecs = recomendaciones && typeof recomendaciones === "object" && Object.keys(recomendaciones).length > 0;
     const navVisible = tieneRecs ? NAV_SECTIONS : NAV_SECTIONS.filter(s => s.id !== "sec-recomendaciones");
 
     return (
@@ -503,19 +503,37 @@ export function ResultadosTestEA() {
                                 <div className="res-card-tag">
                                     <IoBulbOutline size={11} /> Recomendaciones personalizadas
                                 </div>
-                                <h2 className="res-card-title">Estrategias para tu perfil</h2>
+                                <h2 className="res-card-title">Recomendaciones para tu perfil</h2>
                                 <p className="res-card-text" style={{ marginBottom: 28 }}>
-                                    El sistema experto generó estas recomendaciones basadas en tu perfil <strong>{nombrePerfil}</strong>:
+                                    Te sugerimos estas recomendaciones basadas en tu perfil <strong>{nombrePerfil}</strong>:
                                 </p>
+
                                 <div className="res-recs">
-                                    {recomendaciones.map((rec, i) => (
-                                        <div key={i} className="res-rec-item"
-                                            style={{ "--rec-color": primary.colorMid }}>
-                                            <span className="res-rec-num"
-                                                style={{ background: primary.colorMid }}>{i + 1}</span>
-                                            <span className="res-rec-text">{rec}</span>
-                                        </div>
-                                    ))}
+                                    {Object.entries(recomendaciones).map(([letra, recs]) => {
+                                        const cfg = PERFIL_CONFIG[letra];
+                                        if (!cfg) return null;
+                                        return (
+                                            <div key={letra} className="res-rec-group" style={{ marginBottom: 28 }}>
+                                                {/* Encabezado del grupo */}
+                                                <div className="res-rec-group-header" style={{
+                                                    display: "flex", alignItems: "center", gap: 8,
+                                                    marginBottom: 12, color: cfg.colorMid
+                                                }}>
+                                                    <cfg.Icon size={16} />
+                                                    <strong>{cfg.nombre}</strong>
+                                                </div>
+                                                {/* Recomendaciones del grupo */}
+                                                {recs.map((rec, i) => (
+                                                    <div key={i} className="res-rec-item"
+                                                        style={{ "--rec-color": cfg.colorMid }}>
+                                                        <span className="res-rec-num"
+                                                            style={{ background: cfg.colorMid }}>{i + 1}</span>
+                                                        <span className="res-rec-text">{rec}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        );
+                                    })}
                                 </div>
                             </div>
                         </div>
