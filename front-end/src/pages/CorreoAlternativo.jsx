@@ -141,6 +141,11 @@ export function CorreoAlternativo() {
                                     {enviando ? "Reenviando..." : "Reenviar"}
                                 </button>
                             </p>
+
+                            <div className="recomendacion-alt">
+                                <strong>Importante:</strong> Al iniciar sesión vaya a su perfil y
+                                actualice su correo principal y alternativo, para mejorar el acceso a su cuenta. Gracias.
+                            </div>
                         </>
                     )}
 
