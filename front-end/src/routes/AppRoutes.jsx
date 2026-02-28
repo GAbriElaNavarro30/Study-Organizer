@@ -27,6 +27,7 @@ import { CursosE } from "../pages/CursosE";
 import { CursosT } from "../pages/CursosT";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
+import { CorreoAlternativo } from "../pages/CorreoAlternativo";
 
 import { PrivateRoute } from "../components/PrivateRoute";
 
@@ -42,6 +43,7 @@ export function AppRoutes() {
                 <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>} />
                 <Route path="/login" element={<LayoutL><Login /></LayoutL>} />
                 <Route path="/olvidar-contrasena" element={<LayoutO><OlvidarC /></LayoutO>} />
+                <Route path="/correo-alternativo" element={<LayoutO><CorreoAlternativo /></LayoutO>} />
                 <Route path="/recuperar-contrasena" element={<LayoutO><RecuperarC /></LayoutO>} />
 
                 {/* ===================== RUTAS PROTEGIDAS ===================== */}

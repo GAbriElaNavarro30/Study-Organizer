@@ -1,18 +1,17 @@
 import "../styles/modal-confirmar.css";
 
-export function ModalConfirmarCancelar({ isOpen, onCancel, onConfirm }) {
+export function ModalConfirmarCancelar({ isOpen, onCancel, onConfirm, titulo, mensaje }) {
     if (!isOpen) return null;
 
     return (
         <div className="modal-overlay-volver">
             <div className="modal-confirmar-volver">
-                <h3>¿Desea salir?</h3>
+                <h3>{titulo || "¿Desea salir?"}</h3>
 
                 <hr className="modal-divider" />
 
                 <p>
-                    Los cambios que haya realizado se perderán.
-                    ¿Desea continuar?
+                    {mensaje || "Los cambios que haya realizado se perderán. ¿Desea continuar?"}
                 </p>
 
                 <div className="modal-acciones-volver">

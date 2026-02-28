@@ -15,6 +15,7 @@ export function OlvidarC() {
     mostrarModal,
     mostrarAlert,
     alertData,
+    enviado,
     handleEmailChange,
     handleSubmit,
     intentarSalir,
@@ -25,18 +26,16 @@ export function OlvidarC() {
 
   return (
     <>
-      {/* ===== HEADER ===== */}
       <HeaderExtO onAcceder={() => intentarSalir("/login")} />
 
       <div className="contenedor-olvidar">
         <form className="form-olvidar" onSubmit={handleSubmit}>
-          {/* ===== VOLVER ===== */}
           <Link
-            to="/"
+            to="/login"
             className="btn-volver"
             onClick={(e) => {
               e.preventDefault();
-              intentarSalir("/");
+              intentarSalir("/login");
             }}
           >
             <IoArrowBack />
@@ -45,35 +44,64 @@ export function OlvidarC() {
           <h2>Recupera tu cuenta</h2>
           <hr className="linea-separadora-o" />
 
-          <p>
-            Ingresa tu correo electrónico y te enviaremos un enlace para
-            recuperar tu cuenta.
-          </p>
+          {/* ===== VISTA SEGÚN ESTADO ===== */}
+          {enviado ? (
+            <>
+              <p className="texto-confirmacion">
+                Se ha enviado el enlace de recuperación a tu correo electrónico,
+                revisa tu bandeja de entrada.
+              </p>
 
-          <div className="campo-olvidar">
-            <label htmlFor="email">Correo electrónico</label>
-            <input
-              type="email"
-              id="email"
-              placeholder="ejemplo@correo.com"
-              value={email}
-              onChange={handleEmailChange}
-              className={error ? "input-error" : ""}
-              disabled={isSubmitting}
-            />
-            {error && <p className="mensaje-error">{error}</p>}
-          </div>
+              <p className="texto-reenviar">
+                ¿No recibiste el enlace?{" "}
+                <button
+                  type="button"
+                  className="link-reenviar"
+                  onClick={handleSubmit}
+                  disabled={isSubmitting}
+                >
+                  {isSubmitting ? "Reenviando..." : "Reenviar"}
+                </button>
+              </p>
+            </>
+          ) : (
+            <>
+              <p>
+                Ingresa tu correo electrónico y te enviaremos un enlace para
+                recuperar tu cuenta.
+              </p>
 
-          <button
-            type="submit"
-            className="btn-recuperar"
-            disabled={isSubmitting}
-          >
-            {isSubmitting ? "Enviando..." : "Enviar enlace"}
-          </button>
+              <div className="campo-olvidar">
+                <label htmlFor="email">Correo electrónico</label>
+                <input
+                  type="email"
+                  id="email"
+                  placeholder="ejemplo@correo.com"
+                  value={email}
+                  onChange={handleEmailChange}
+                  className={error ? "input-error" : ""}
+                  disabled={isSubmitting}
+                />
+                {error && <p className="mensaje-error">{error}</p>}
+              </div>
+
+              <button
+                type="submit"
+                className="btn-recuperar"
+                disabled={isSubmitting}
+              >
+                {isSubmitting ? "Enviando..." : "Enviar enlace"}
+              </button>
+
+              <div className="link-alternativo-wrapper">
+                <Link to="/correo-alternativo" className="link-alternativo">
+                  Usar otro método de recuperación
+                </Link>
+              </div>
+            </>
+          )}
         </form>
 
-        {/* ===== Custom Alert ===== */}
         {mostrarAlert && (
           <CustomAlert
             type={alertData.type}
@@ -84,7 +112,6 @@ export function OlvidarC() {
           />
         )}
 
-        {/* ===== Modal Confirmar Cancelar ===== */}
         <ModalConfirmarCancelar
           isOpen={mostrarModal}
           onConfirm={confirmarSalida}

@@ -376,3 +376,93 @@
 .input-error {
   border: 1px solid #e53935;
 }
+
+.link-alternativo-wrapper {
+    text-align: center;
+    margin-top: 4px;
+}
+
+.mensaje-sin-alternativo {
+    background-color: #fef3f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.mensaje-sin-alternativo p {
+    color: #b91c1c;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0;
+    text-align: left;
+}
+
+.link-alternativo {
+    font-size: 0.85rem;
+    color: #2563EB;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link-alternativo:hover {
+    color: #1E40AF;
+    text-decoration: underline;
+}
+
+/* ============================= enviado / reenviar =============================== */
+.texto-confirmacion {
+    background-color: #eff6ff;
+    border: 1px solid #bfdbfe;
+    border-radius: 8px;
+    padding: 18px 20px;
+    font-size: 0.9rem;
+    color: #1e3a5f;
+    font-weight: 400;
+    text-align: center;
+    line-height: 1.7;
+}
+
+.texto-reenviar {
+    font-size: 0.85rem;
+    color: #6b7280;
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 4px;
+}
+
+.link-reenviar {
+    background: none;
+    border: none;
+    color: #2563EB;
+    font-size: 0.85rem;
+    cursor: pointer;
+    padding: 0;
+    font-weight: 500;
+    text-decoration: none;
+    transition: color 0.2s;
+}
+
+.link-reenviar:hover {
+    color: #1E40AF;
+    text-decoration: underline;
+}
+
+.link-reenviar:disabled {
+    color: #9ca3af;
+    cursor: not-allowed;
+    text-decoration: none;
+}
+
+@media (max-width: 768px) {
+    .texto-confirmacion { font-size: 0.85rem; }
+    .texto-reenviar { font-size: 0.82rem; }
+    .link-reenviar { font-size: 0.82rem; }
+}
+
+@media (max-width: 480px) {
+    .texto-confirmacion { font-size: 0.8rem; padding: 14px; }
+    .texto-reenviar { font-size: 0.8rem; }
+    .link-reenviar { font-size: 0.8rem; }
+}

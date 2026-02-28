@@ -32,6 +32,7 @@ export function Perfil() {
         // Estados de datos
         nombre,
         correo,
+        correo_alternativo,
         telefono,
         descripcion,
         genero,
@@ -61,6 +62,7 @@ export function Perfil() {
         habilitarEdicion,
         handleNombreChange,
         handleCorreoChange,
+        handleCorreoAlternativoChange,
         handleTelefonoChange,
         handlePasswordChange,
         handleConfirmarPasswordChange,
@@ -115,12 +117,12 @@ export function Perfil() {
                         <div className="campo-usuario">
                             <label>Nombre</label>
                             <div className="input-editable">
-                                <input 
-                                    type="text" 
-                                    placeholder="Nombre completo" 
+                                <input
+                                    type="text"
+                                    placeholder="Nombre completo"
                                     value={nombre}
                                     onChange={handleNombreChange}
-                                    disabled 
+                                    disabled
                                 />
                                 <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                     <FiEdit2 />
@@ -132,18 +134,35 @@ export function Perfil() {
                         <div className="campo-usuario">
                             <label>Correo electrónico</label>
                             <div className="input-editable">
-                                <input 
-                                    type="email" 
-                                    placeholder="Correo electrónico" 
+                                <input
+                                    type="email"
+                                    placeholder="Correo electrónico"
                                     value={correo}
                                     onChange={handleCorreoChange}
-                                    disabled 
+                                    disabled
                                 />
                                 <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                     <FiEdit2 />
                                 </button>
                             </div>
                             {errores.correo && <p className="error-text">{errores.correo}</p>}
+                        </div>
+
+                        <div className="campo-usuario">
+                            <label>Correo electrónico alternativo (Opcional) </label>
+                            <div className="input-editable">
+                                <input
+                                    type="email"
+                                    placeholder="Correo electrónico alternativo"
+                                    value={correo_alternativo}
+                                    onChange={handleCorreoAlternativoChange}
+                                    disabled
+                                />
+                                <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                                    <FiEdit2 />
+                                </button>
+                            </div>
+                            {errores.correo_alternativo && <p className="error-text">{errores.correo_alternativo}</p>}
                         </div>
                     </div>
                 </div>
@@ -194,12 +213,12 @@ export function Perfil() {
                     <div className="campo-usuario">
                         <label>Teléfono</label>
                         <div className="input-editable">
-                            <input 
-                                type="tel" 
-                                placeholder="Ej. 5512345678" 
+                            <input
+                                type="tel"
+                                placeholder="Ej. 5512345678"
                                 value={telefono}
                                 onChange={handleTelefonoChange}
-                                disabled 
+                                disabled
                             />
                             <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                 <FiEdit2 />

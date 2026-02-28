@@ -5,6 +5,9 @@
     justify-content: space-between;
     align-items: center;
     background-color: #f7f7f2;
+    /* AÑADIR: evita desbordamiento */
+    box-sizing: border-box;
+    width: 100%;
 }
 
 .logo-e {
@@ -13,6 +16,8 @@
     align-items: center;
     justify-content: flex-start;
     padding-left: 20px;
+    /* AÑADIR: evita que el logo empuje los botones */
+    min-width: 0;
 }
 
 .botones-e {
@@ -22,11 +27,17 @@
     justify-content: flex-end;
     padding-right: 20px;
     gap: 12px;
+    /* AÑADIR: evita que los botones se encojan de más */
+    flex-shrink: 0;
+    white-space: nowrap;
 }
 
 .logo-header-e {
     width: 300px;
     height: auto;
+    /* AÑADIR: el logo nunca desborda su contenedor */
+    max-width: 100%;
+    display: block;
 }
 
 .btn-singup-e {
@@ -39,6 +50,8 @@
     font-weight: 500;
     margin-right: 10px;
     transition: background-color 0.3s, transform 0.2s;
+    /* AÑADIR */
+    box-sizing: border-box;
 }
 
 .btn-singup-e:hover {
@@ -54,6 +67,8 @@
     cursor: pointer;
     font-weight: 500;
     transition: background-color 0.3s, color 0.3s, transform 0.2s;
+    /* AÑADIR */
+    box-sizing: border-box;
 }
 
 .btn-login-e:hover {
@@ -102,13 +117,15 @@
 
     .botones-e {
         padding-right: 5px !important;
-        gap: 8px;
+        gap: 6px;
     }
 
     .btn-login-e,
     .btn-singup-e {
         padding: 9px 10px;
         font-size: 11px;
+        /* AÑADIR: quita el margen extra en móvil */
+        margin-right: 0;
     }
 }
 
@@ -122,19 +139,20 @@
     }
 
     .logo-header-e {
-        width: 160px !important;
+        width: 140px !important;
     }
 
     .botones-e {
         padding-right: 5px !important;
-        gap: 8px;
+        gap: 5px;
     }
 
     .btn-login-e,
     .btn-singup-e {
-        padding: 8px 10px !important;
+        padding: 7px 8px !important;
         font-size: 10px !important;
         border-radius: 5px !important;
+        margin-right: 0 !important;
     }
 }
 

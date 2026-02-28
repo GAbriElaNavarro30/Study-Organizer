@@ -1,0 +1,387 @@
+/* ===================================== CORREO ALTERNATIVO ======================================= */
+
+.contenedor-olvidar-alt {
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    background: -webkit-linear-gradient(90deg, #f0f0f4, #d9def3, #a6c2d7);
+    padding: 80px 20px;
+}
+
+.form-olvidar-alt {
+    background: white;
+    padding: 20px;
+    width: 100%;
+    max-width: 480px;
+    border-radius: 10px;
+    box-shadow: 0 8px 20px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    position: relative;
+}
+
+.form-olvidar-alt h2 {
+    color: #393939;
+    text-align: center;
+    font-weight: 600;
+    font-size: 22px;
+    padding: 0 32px;
+}
+
+.linea-separadora-o-alt {
+    border: none;
+    height: 1px;
+    background-color: #dbdee2;
+    margin: 0;
+}
+
+.form-olvidar-alt p {
+    font-size: 0.9rem;
+    text-align: start;
+    color: #000000;
+    margin: 0;
+    line-height: 1.5;
+}
+
+/* ===== Campo ===== */
+
+.campo-olvidar-alt {
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+}
+
+.campo-olvidar-alt label {
+    font-size: 0.85rem;
+    color: #374151;
+}
+
+.campo-olvidar-alt input {
+    padding: 10px 12px;
+    border-radius: 6px;
+    border: 1px solid #ccc;
+    font-size: 0.9rem;
+    width: 100%;
+    box-sizing: border-box;
+}
+
+.campo-olvidar-alt input:focus {
+    outline: none;
+    border-color: #2563EB;
+}
+
+/* ===== Formulario del paso 1 ===== */
+
+.form-olvidar-alt form {
+    display: flex;
+    flex-direction: column;
+    gap: 0;
+}
+
+.form-olvidar-alt form .btn-recuperar-alt {
+    margin-top: 12px;
+}
+
+/* ===== Botón principal ===== */
+
+.btn-recuperar-alt {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    font-size: 14px;
+    width: 100%;
+    margin-top: 32px !important;
+}
+
+.btn-recuperar-alt:hover {
+    background-color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+.btn-recuperar-alt:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+
+.btn-recuperar-alternativo {
+    background-color: #2563EB;
+    color: white;
+    border: none;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s, transform 0.2s;
+    font-size: 14px;
+    width: 100%;
+}
+
+.btn-recuperar-alternativo:hover {
+    background-color: #1E40AF;
+    transform: translateY(-1px);
+}
+
+.btn-recuperar-alternativo:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none;
+}
+
+/* ===== Correo alternativo encontrado ===== */
+
+.correo-alternativo-box-alt {
+    background-color: #f0f4ff;
+    border: 1px solid #c7d7f9;
+    border-radius: 8px;
+    padding: 14px 18px;
+    text-align: center;
+}
+
+.correo-alternativo-valor-alt {
+    font-size: 1rem;
+    font-weight: 600;
+    color: #2563EB;
+    letter-spacing: 0.3px;
+    word-break: break-all;
+}
+
+.fila-botones-alternativo-alt {
+    display: flex;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.fila-botones-alternativo-alt .btn-recuperar-alternativo {
+    flex: 1;
+}
+
+.btn-cancelar-alt {
+    flex: 1;
+    background-color: rgb(236, 234, 234);
+    color: #737474;
+    border: 1px solid #d1d5db;
+    padding: 12px;
+    border-radius: 6px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background-color 0.3s;
+    font-size: 14px;
+}
+
+.btn-cancelar-alt:hover {
+    background-color: #f3f4f6;
+}
+
+/* ===== Sin correo alternativo ===== */
+
+.mensaje-sin-alternativo-alt {
+    background-color: #fef3f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 14px 16px;
+}
+
+.mensaje-sin-alternativo-alt p {
+    color: #b91c1c;
+    font-size: 0.88rem;
+    line-height: 1.5;
+    margin: 0;
+    text-align: left;
+}
+
+/* ===== Errores ===== */
+
+.campo-olvidar-alt .mensaje-error {
+    color: #e53935;
+    font-size: 12px;
+    margin-top: 4px;
+    display: block;
+}
+
+/* ============================= RESPONSIVE ============================= */
+
+@media (max-width: 768px) {
+    .contenedor-olvidar-alt {
+        padding: 45px 30px;
+        align-items: flex-start;
+        padding-top: 50px;
+    }
+
+    .form-olvidar-alt {
+        padding: 18px;
+        gap: 16px;
+    }
+
+    .form-olvidar-alt h2 {
+        font-size: 18px;
+        padding: 0 28px;
+    }
+
+    .form-olvidar-alt p {
+        font-size: 0.85rem;
+    }
+
+    .campo-olvidar-alt label {
+        font-size: 0.85rem;
+    }
+
+    .campo-olvidar-alt input {
+        font-size: 0.85rem;
+        padding: 12px;
+    }
+
+    .btn-recuperar-alt {
+        font-size: 0.85rem;
+        padding: 13px;
+    }
+
+    .btn-recuperar-alternativo {
+        font-size: 0.85rem;
+        padding: 13px;
+    }
+
+    .btn-cancelar-alternativo-alt {
+        font-size: 0.85rem;
+        padding: 13px;
+    }
+}
+
+@media (max-width: 480px) {
+    .contenedor-olvidar-alt {
+        padding: 40px 16px;
+        align-items: flex-start;
+    }
+
+    .form-olvidar-alt {
+        padding: 16px;
+        gap: 14px;
+        border-radius: 8px;
+    }
+
+    .form-olvidar-alt h2 {
+        font-size: 16px;
+        padding: 0 24px;
+    }
+
+    .form-olvidar-alt p {
+        font-size: 0.82rem;
+    }
+
+    .campo-olvidar-alt label {
+        font-size: 0.82rem;
+    }
+
+    .campo-olvidar-alt input {
+        font-size: 0.82rem;
+        padding: 12px;
+    }
+
+    .btn-recuperar-alt {
+        font-size: 0.82rem;
+        padding: 13px;
+    }
+
+    .btn-recuperar-alternativo {
+        font-size: 0.82rem;
+        padding: 13px;
+    }
+
+    .btn-cancelar-alt {
+        font-size: 0.82rem;
+        padding: 13px;
+    }
+
+    /* Botones en columna en pantallas muy pequeñas */
+    .fila-botones-alternativo-alt {
+        flex-direction: column;
+    }
+
+    .fila-botones-alternativo-alt .btn-recuperar-alt,
+    .btn-recuperar-alterntativo,
+    .btn-cancelar-alt {
+        flex: unset;
+        width: 100%;
+        min-width: unset;
+    }
+}
+
+@media (max-width: 360px) {
+    .contenedor-olvidar-alt {
+        padding: 40px 20px;
+    }
+
+    .form-olvidar-alt {
+        padding: 14px;
+        gap: 12px;
+    }
+
+    .form-olvidar-alt h2 {
+        font-size: 15px;
+        white-space: normal;
+        overflow-wrap: break-word;
+        line-height: 1.3;
+        margin: 0;
+        padding: 0 22px;
+    }
+
+    .form-olvidar-alt p {
+        font-size: 0.8rem;
+    }
+
+    .campo-olvidar-alt label {
+        font-size: 0.8rem;
+    }
+
+    .campo-olvidar-alt input {
+        font-size: 0.8rem;
+        padding: 11px;
+    }
+
+    .btn-recuperar-alt {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+
+    .btn-recuperar-alternativo {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+
+    .btn-cancelar-alt {
+        font-size: 0.8rem;
+        padding: 12px;
+    }
+
+    .correo-alternativo-valor-alt {
+        font-size: 0.88rem;
+    }
+}
+
+.btn-soporte-alt {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 6px;
+    color: #2563EB;
+    font-size: 0.88rem;
+    font-weight: 500;
+    text-decoration: none;
+    border-bottom: 1px solid transparent;
+    transition: border-color 0.2s, color 0.2s;
+    width: fit-content;
+    margin: 0 auto;
+    margin-bottom: 0px;
+}
+
+.btn-soporte-alt:hover {
+    color: #1E40AF;
+    text-decoration: none;
+}

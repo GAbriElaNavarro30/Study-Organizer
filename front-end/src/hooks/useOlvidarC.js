@@ -9,6 +9,7 @@ export function useOlvidarC() {
   const [email, setEmail] = useState("");
   const [error, setError] = useState("");
   const [isSubmitting, setIsSubmitting] = useState(false);
+  const [enviado, setEnviado] = useState(false);
 
   // ===== Modal confirmar salir =====
   const [mostrarModal, setMostrarModal] = useState(false);
@@ -24,7 +25,7 @@ export function useOlvidarC() {
 
   // ===== INTENTO DE SALIDA (VOLVER / ACCEDER) =====
   const intentarSalir = (ruta) => {
-    if (email.trim()) {
+    if (email.trim() && !enviado) {
       setRutaDestino(ruta);
       setMostrarModal(true);
     } else {
@@ -51,6 +52,9 @@ export function useOlvidarC() {
   // ===== CERRAR ALERT =====
   const cerrarAlert = () => {
     setMostrarAlert(false);
+    if (alertData.type === "success") {
+      setEnviado(true); // Mostrar opción de reenvío
+    }
   };
 
   // ===== SUBMIT =====
@@ -101,7 +105,7 @@ export function useOlvidarC() {
         message: response.data.mensaje,
       });
       setMostrarAlert(true);
-      setEmail(""); // Limpiar campo
+      //setEmail(""); // Limpiar campo
 
     } catch (err) {
       const status = err.response?.status;
@@ -141,6 +145,7 @@ export function useOlvidarC() {
     mostrarModal,
     mostrarAlert,
     alertData,
+    enviado,
 
     // Handlers
     handleEmailChange,
@@ -150,4 +155,4 @@ export function useOlvidarC() {
     cancelarSalida,
     cerrarAlert,
   };
-}
+} 

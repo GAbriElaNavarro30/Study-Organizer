@@ -78,6 +78,8 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
                         <strong>día antes a las 11:59 p. m.</strong> y una{" "}
                         <strong>hora antes</strong> de la fecha y hora programadas
                         para esta tarea.
+                        <br /><br />
+                        Si no desea recibir notificación de la tarea, desactivela presionando la campana.
                     </p>
                 </div>
 

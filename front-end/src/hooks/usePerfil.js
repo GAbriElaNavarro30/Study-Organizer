@@ -33,6 +33,7 @@ export function usePerfil() {
   // ================== ESTADOS DE DATOS ==================
   const [nombre, setNombre] = useState(usuario?.nombre || "");
   const [correo, setCorreo] = useState(usuario?.correo || "");
+  const [correo_alternativo, setCorreoAlternativo] = useState(usuario?.correo_alternativo || "");
   const [telefono, setTelefono] = useState(usuario?.telefono || "");
   const [descripcion, setDescripcion] = useState(usuario?.descripcion || "");
   const [genero, setGenero] = useState(usuario?.genero || "otro");
@@ -64,6 +65,7 @@ export function usePerfil() {
 
     setNombre(usuario.nombre || "");
     setCorreo(usuario.correo || "");
+    setCorreoAlternativo(usuario.correo_alternativo || "");
     setTelefono(usuario.telefono || "");
     setGenero(usuario.genero || "otro");
     setDescripcion(usuario.descripcion || "");
@@ -130,6 +132,7 @@ export function usePerfil() {
   const handleCancelar = () => {
     setNombre(usuario?.nombre || "");
     setCorreo(usuario?.correo || "");
+    setCorreoAlternativo(usuario?.correo_alternativo || "");
     setTelefono(usuario?.telefono || "");
     setDescripcion(usuario?.descripcion || "");
     setGenero(usuario?.genero || "otro");
@@ -172,6 +175,13 @@ export function usePerfil() {
     setCorreo(e.target.value);
     if (errores.correo) {
       setErrores(prev => ({ ...prev, correo: undefined }));
+    }
+  };
+
+  const handleCorreoAlternativoChange = (e) => {
+    setCorreoAlternativo(e.target.value);
+    if (errores.correo_alternativo) {
+      setErrores(prev => ({ ...prev, correo_alternativo: undefined }));
     }
   };
 
@@ -306,6 +316,27 @@ export function usePerfil() {
       }
     }
 
+    // ============== CORREO ALTERNATIVO (OPCIONAL) ==============
+    const correoAltLimpio = correo_alternativo.trim();
+
+    if (correoAltLimpio) {
+      // No puede ser igual al correo principal
+      if (correoAltLimpio.toLowerCase() === correoLimpio.toLowerCase()) {
+        nuevosErrores.correo_alternativo = "El correo alternativo no puede ser igual al correo principal";
+      } else {
+        const correoRegex = /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+        if (!correoRegex.test(correoAltLimpio)) {
+          nuevosErrores.correo_alternativo = "El correo alternativo no cumple con un formato válido y profesional";
+        } else {
+          const parteUsuario = correoAltLimpio.split("@")[0];
+          if (parteUsuario.length > 64) {
+            nuevosErrores.correo_alternativo = "El correo alternativo no debe superar 64 caracteres antes del @";
+          }
+        }
+      }
+    }
+
     // ============== TELÉFONO ==============
     const telefonoLimpio = telefono.trim();
 
@@ -412,6 +443,7 @@ export function usePerfil() {
       const formData = new FormData();
       formData.append("nombre", nombre.trim());
       formData.append("correo", correo.trim().toLowerCase());
+      formData.append("correo_alternativo", correo_alternativo.trim().toLowerCase() || "")
       formData.append("telefono", telefono.trim());
       formData.append("descripcion", descripcion);
       formData.append("genero", genero);
@@ -524,6 +556,7 @@ export function usePerfil() {
     // Estados de datos
     nombre,
     correo,
+    correo_alternativo,
     telefono,
     descripcion,
     genero,
@@ -556,6 +589,7 @@ export function usePerfil() {
     habilitarEdicion,
     handleNombreChange,
     handleCorreoChange,
+    handleCorreoAlternativoChange,
     handleTelefonoChange,
     handlePasswordChange,
     handleConfirmarPasswordChange,

@@ -97,6 +97,49 @@ async function validarCorreoElectronico(correo, db, idUsuarioActual = null) {
   return errores;
 }
 
+// correo alternativo (opcional)
+async function validarCorreoAlternativo(correoAlternativo, correo, db, idUsuarioActual = null) {
+  const errores = [];
+
+  // Si está vacío, es opcional → no validar
+  if (!correoAlternativo || correoAlternativo.trim() === "") {
+    return errores;
+  }
+
+  // No puede ser igual al correo principal
+  if (correoAlternativo.trim().toLowerCase() === correo.trim().toLowerCase()) {
+    errores.push({
+      path: "correo_alternativo",
+      message: "El correo alternativo no puede ser igual al correo principal",
+    });
+    return errores;
+  }
+
+  // Formato
+  const correoRegex =
+    /^(?!\.)(?!.*\.\.)([a-zA-Z0-9]+([._-]?[a-zA-Z0-9]+)*)@([a-zA-Z0-9-]+\.)+[a-zA-Z]{2,}$/;
+
+  if (!correoRegex.test(correoAlternativo)) {
+    errores.push({
+      path: "correo_alternativo",
+      message: "El correo alternativo no cumple con un formato válido",
+    });
+    return errores;
+  }
+
+  // Longitud antes del @
+  const parteUsuario = correoAlternativo.split("@")[0];
+  if (parteUsuario.length > 64) {
+    errores.push({
+      path: "correo_alternativo",
+      message: "El correo alternativo no debe superar 64 caracteres antes del @",
+    });
+    return errores;
+  }
+
+  return errores;
+}
+
 // rol
 async function validarRol(id_rol, db) {
   const errores = [];
@@ -666,6 +709,152 @@ router.post("/resetear-contrasena", async (req, res) => {
 });
 
 /* =======================================================
+-------- Recuperar Contraseña Correo Alternativo ---------
+========================================================*/
+router.post("/verificar-correo-alternativo", async (req, res) => {
+  try {
+    const { correo_electronico } = req.body;
+
+    if (!correo_electronico || !correo_electronico.trim()) {
+      return res.status(400).json({
+        mensaje: "El correo electrónico es obligatorio"
+      });
+    }
+
+    const correoNormalizado = correo_electronico.trim().toLowerCase();
+
+    // Buscar usuario y su correo alternativo
+    const [rows] = await db.query(
+      `SELECT id_usuario, nombre_usuario, correo_alternativo 
+       FROM Usuario 
+       WHERE correo_electronico = ?`,
+      [correoNormalizado]
+    );
+
+    // Si el correo no está registrado
+    if (rows.length === 0) {
+      return res.status(404).json({
+        existe: false,
+        mensaje: "El correo electrónico no está registrado en el sistema"
+      });
+    }
+
+    const usuario = rows[0];
+
+    // Si no tiene correo alternativo
+    if (!usuario.correo_alternativo) {
+      return res.status(200).json({
+        existe: true,
+        tieneAlternativo: false,
+        mensaje: "Lo sentimos, no cuentas con un correo electrónico alternativo. Si no tienes acceso a tu correo, te invitamos a crear una nueva cuenta o contactar a soporte si necesitabas algo de tu cuenta."
+      });
+    }
+
+    // Enmascarar el correo alternativo (ej: us***@gmail.com)
+    const partes = usuario.correo_alternativo.split("@");
+    const nombreVisible = partes[0].substring(0, 3);
+    const correoEnmascarado = `${nombreVisible}***@${partes[1]}`;
+
+    return res.status(200).json({
+      existe: true,
+      tieneAlternativo: true,
+      correoEnmascarado,
+      mensaje: `Tienes registrado el correo alternativo: ${correoEnmascarado}`
+    });
+
+  } catch (error) {
+    console.error("Error al verificar correo alternativo:", error);
+    res.status(500).json({
+      mensaje: "Error al verificar el correo alternativo"
+    });
+  }
+});
+
+router.post("/recuperar-con-alternativo", async (req, res) => {
+  try {
+    const { correo_electronico } = req.body;
+
+    if (!correo_electronico || !correo_electronico.trim()) {
+      return res.status(400).json({
+        mensaje: "El correo electrónico es obligatorio"
+      });
+    }
+
+    const correoNormalizado = correo_electronico.trim().toLowerCase();
+
+    const [rows] = await db.query(
+      `SELECT id_usuario, nombre_usuario, correo_alternativo 
+       FROM Usuario 
+       WHERE correo_electronico = ?`,
+      [correoNormalizado]
+    );
+
+    if (rows.length === 0) {
+      return res.status(404).json({
+        mensaje: "El correo electrónico no está registrado en el sistema"
+      });
+    }
+
+    const usuario = rows[0];
+
+    if (!usuario.correo_alternativo) {
+      return res.status(400).json({
+        mensaje: "Este usuario no tiene correo alternativo registrado"
+      });
+    }
+
+    // Generar token
+    const token = jwt.sign(
+      { id: usuario.id_usuario },
+      process.env.JWT_SECRET,
+      { expiresIn: "15m" }
+    );
+
+    const link = `${process.env.FRONTEND_URL}/#/recuperar-contrasena?token=${token}`;
+
+    // Enviar al correo ALTERNATIVO
+    await transporter.sendMail({
+      from: `"Soporte Study Organizer" <${process.env.EMAIL_USER}>`,
+      to: usuario.correo_alternativo,
+      subject: "Recuperación de contraseña - Correo alternativo",
+      html: `
+        <p>Estimado/a <strong>${usuario.nombre_usuario}</strong>,</p>
+        <p>
+          Hemos recibido una solicitud para restablecer la contraseña asociada a
+          su cuenta en <strong>Study Organizer</strong>.
+        </p>
+        <p>
+          Este enlace fue enviado a su correo alternativo registrado.
+          Para continuar con el proceso, por favor haga clic en el siguiente enlace:
+        </p>
+        <p><a href="${link}">${link}</a></p>
+        <p>
+          Por motivos de seguridad, este enlace tendrá una vigencia de
+          <strong>15 minutos</strong>.
+        </p>
+        <p>
+          Si usted no realizó esta solicitud, puede ignorar este mensaje. No se realizará ningún cambio en su cuenta.
+        </p>
+        <p>
+          Atentamente,<br />
+          <strong>Equipo de Soporte<br />Study Organizer</strong>
+        </p>
+      `,
+    });
+
+    res.json({
+      mensaje: "Se ha enviado un enlace de recuperación a tu correo alternativo"
+    });
+
+  } catch (error) {
+    console.error("Error al enviar enlace alternativo:", error);
+    res.status(500).json({
+      mensaje: "Error al enviar el enlace de recuperación"
+    });
+  }
+});
+
+/* =======================================================
 ------------------------- LOGIN --------------------------
 ========================================================*/
 router.post("/login", async (req, res) => {
@@ -820,6 +1009,7 @@ router.get("/me", verificarToken, async (req, res) => {
         id_usuario,
         nombre_usuario,
         correo_electronico,
+        correo_alternativo,
         id_rol,
         foto_perfil,
         foto_portada,
@@ -840,7 +1030,7 @@ router.get("/me", verificarToken, async (req, res) => {
     const usuario = rows[0];
 
     // ===== FOTOS PREDETERMINADAS =====
-    
+
     const PORTADA_PREDETERMINADA = "/portada.jpg";
 
     const fotoPerfilUrl =
@@ -867,6 +1057,7 @@ router.get("/me", verificarToken, async (req, res) => {
         id: usuario.id_usuario,
         nombre: usuario.nombre_usuario,
         correo: usuario.correo_electronico,
+        correo_alternativo: usuario.correo_alternativo || "",
         rol: usuario.id_rol,
         foto_perfil: fotoPerfilUrl,
         foto_portada: fotoPortadaUrl,
@@ -1165,6 +1356,7 @@ router.put("/actualizar-perfil",
       let {
         nombre,
         correo,
+        correo_alternativo,
         telefono,
         descripcion,
         fechaNacimiento,
@@ -1181,6 +1373,11 @@ router.put("/actualizar-perfil",
 
       if (correo) {
         errores.push(...await validarCorreoElectronico(correo, db, req.usuario.id));
+      }
+
+      // CORREO ALTERNATIVO: opcional, pero si viene se valida
+      if (correo_alternativo !== undefined) {
+        errores.push(...await validarCorreoAlternativo(correo_alternativo, correo, db, req.usuario.id));
       }
 
       if (telefono) {
@@ -1224,6 +1421,12 @@ router.put("/actualizar-perfil",
       if (correo && correo.trim() !== "") {
         campos.push("correo_electronico = ?");
         valores.push(correo.trim().toLowerCase());
+      }
+
+      // CORREO ALTERNATIVO: si viene vacío guarda null, si viene con valor guarda el valor
+      if (correo_alternativo !== undefined) {
+        campos.push("correo_alternativo = ?");
+        valores.push(correo_alternativo.trim() === "" ? null : correo_alternativo.trim().toLowerCase());
       }
 
       if (telefono && telefono.trim() !== "") {
@@ -1297,6 +1500,7 @@ router.put("/actualizar-perfil",
           u.id_usuario AS id,
           u.nombre_usuario AS nombre,
           u.correo_electronico AS correo,
+          u.correo_alternativo,
           u.telefono,
           u.descripcion,
           u.genero,
@@ -1324,6 +1528,7 @@ router.put("/actualizar-perfil",
         mensaje: "Perfil actualizado correctamente",
         usuario: {
           ...usuario,
+          correo_alternativo: usuario.correo_alternativo || "",
           fecha_nacimiento: fechaNacimientoNormalizada,
         },
         fotos: fotosActualizadas

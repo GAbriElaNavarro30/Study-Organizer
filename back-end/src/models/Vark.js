@@ -22,8 +22,7 @@ export class VarkPregunta {
     }
 }
 
-
-// ✅ Nueva clase para manejar los intentos
+// =========== clase para manejar los intentos en los que el usuario realiza el test ===========
 export class VarkIntento {
     // Crea un nuevo intento y devuelve el id generado (1, 2, 3...)
     static async crear(id_usuario) {
@@ -31,7 +30,7 @@ export class VarkIntento {
             `INSERT INTO vark_intentos (id_usuario) VALUES (?)`,
             [id_usuario]
         );
-        return result.insertId; // ← BD genera el número en orden
+        return result.insertId;
     }
 
     static async getByUsuario(id_usuario) {
@@ -42,7 +41,6 @@ export class VarkIntento {
         return rows;
     }
 }
-
 
 export class VarkRespuestaUsuario {
     constructor({ id_usuario, id_pregunta, id_opcion }) {
@@ -105,7 +103,6 @@ export class VarkRespuestaUsuario {
         );
     }
 }
-
 
 export class VarkResultado {
     constructor({ id_usuario, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante }) {
