@@ -568,11 +568,57 @@ router.post("/compartir-nota/:id", verificarToken, async (req, res) => {
             }],
         });
 
+        // Guardar o recuperar CorreoDestinatario
+        await db.query(
+            `INSERT INTO CorreoDestinatario (id_usuario, correo_electronico)
+     VALUES (?, ?)
+     ON DUPLICATE KEY UPDATE correo_electronico = VALUES(correo_electronico)`,
+            [id_usuario, email.trim().toLowerCase()]
+        );
+
+        // Recuperar el id del destinatario
+        const [correoRow] = await db.query(
+            `SELECT id_correo_destinatario FROM CorreoDestinatario
+     WHERE id_usuario = ? AND correo_electronico = ?`,
+            [id_usuario, email.trim().toLowerCase()]
+        );
+
+        const idCorreoDestinatario = correoRow[0].id_correo_destinatario;
+
+        // Registrar en NotaCompartida
+        await db.query(
+            `INSERT INTO NotaCompartida (id_nota, medio, id_correo_destinatario)
+     VALUES (?, 'correo', ?)`,
+            [id, idCorreoDestinatario]
+        );
+
         res.json({ mensaje: "Nota compartida exitosamente por correo", compartido_con: email });
 
     } catch (error) {
         console.error("Error al compartir nota:", error);
         res.status(500).json({ error: "No se pudo enviar el correo.", detalles: error.message });
+    }
+});
+
+/* ====================================================
+-------- Obtener Destinatarios Correo del usuario -----
+=====================================================*/
+router.get("/correo-destinatarios", verificarToken, async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        const [destinatarios] = await db.query(
+            `SELECT id_correo_destinatario AS id, correo_electronico, created_at
+             FROM CorreoDestinatario
+             WHERE id_usuario = ?
+             ORDER BY created_at DESC`,
+            [id_usuario]
+        );
+
+        res.json(destinatarios);
+    } catch (error) {
+        console.error("Error al obtener destinatarios de correo:", error);
+        res.status(500).json({ error: "Error al obtener destinatarios" });
     }
 });
 
@@ -665,6 +711,22 @@ router.post("/compartir-telegram/:id", verificarToken, async (req, res) => {
      VALUES (?, ?, ?)
      ON DUPLICATE KEY UPDATE chat_id = VALUES(chat_id)`,
             [id_usuario, chatId.trim(), `Chat ${chatId.trim()}`]
+        );
+
+        // Recuperar el id del destinatario
+        const [telegramRow] = await db.query(
+            `SELECT id FROM TelegramDestinatario
+     WHERE id_usuario = ? AND chat_id = ?`,
+            [id_usuario, chatId.trim()]
+        );
+
+        const idTelegramDestinatario = telegramRow[0].id;
+
+        // Registrar en NotaCompartida
+        await db.query(
+            `INSERT INTO NotaCompartida (id_nota, medio, id_telegram_destinatario)
+     VALUES (?, 'telegram', ?)`,
+            [id, idTelegramDestinatario]
         );
 
         res.json({ mensaje: "Nota compartida exitosamente por Telegram" });
@@ -854,7 +916,7 @@ router.post("/compartir-whatsapp/:id", verificarToken, async (req, res) => {
 router.post("/exportar-pdf/:id", verificarToken, async (req, res) => {
     try {
         const { id } = req.params;
-        const { html } = req.body;              
+        const { html } = req.body;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         if (!html) return res.status(400).json({ error: "HTML no recibido" });

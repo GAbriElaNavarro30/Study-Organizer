@@ -12,6 +12,7 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
         destinatariosPrevios, cargandoDestinatarios, seleccionarDestinatario,
         editandoId, editandoNombre, editandoNombreError, guardandoNombre,
         iniciarEdicion, cancelarEdicion, handleChangeNombreEdicion, guardarNombreDestinatario,
+        destinatariosCorreo, cargandoDestinatariosCorreo, seleccionarDestinatarioCorreo,
     } = useModalCompartirNota(isOpen);
 
     if (!isOpen) return null;
@@ -19,9 +20,9 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
     const renderBotonConfirmar = () => {
         if (!modo) return null;
         const acciones = {
-            correo:   { label: "Enviar correo",       fn: () => enviarCorreo(onConfirm) },
-            telegram: { label: "Enviar por Telegram",  fn: () => enviarTelegram(onConfirm) },
-            whatsapp: { label: "Enviar por WhatsApp",  fn: () => enviarWhatsApp(onConfirm) },
+            correo: { label: "Enviar correo", fn: () => enviarCorreo(onConfirm) },
+            telegram: { label: "Enviar por Telegram", fn: () => enviarTelegram(onConfirm) },
+            whatsapp: { label: "Enviar por WhatsApp", fn: () => enviarWhatsApp(onConfirm) },
         };
         const { label, fn } = acciones[modo];
         return (
@@ -84,6 +85,38 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
                                 disabled={enviando}
                             />
                             {emailError && <span className="campo-error">{emailError}</span>}
+
+                            {cargandoDestinatariosCorreo && (
+                                <p className="texto-cargando">Cargando destinatarios...</p>
+                            )}
+
+                            {!cargandoDestinatariosCorreo && destinatariosCorreo.length > 0 && (
+                                <div className="destinatarios-wrapper">
+                                    <p className="label-destinatarios-recientes">
+                                        <Clock size={12} />
+                                        Destinatarios recientes:
+                                    </p>
+                                    <div className="lista-destinatarios-telegram">
+                                        {destinatariosCorreo.map((dest) => (
+                                            <div
+                                                key={dest.id}
+                                                className={`destinatario-item ${email === dest.correo_electronico ? "seleccionado" : ""}`}
+                                            >
+                                                <div className="destinatario-fila">
+                                                    <button
+                                                        className="destinatario-btn-seleccionar"
+                                                        onClick={() => seleccionarDestinatarioCorreo(dest)}
+                                                        disabled={enviando}
+                                                    >
+                                                        <Mail size={12} className="destinatario-icon" />
+                                                        <span className="destinatario-nombre">{dest.correo_electronico}</span>
+                                                    </button>
+                                                </div>
+                                            </div>
+                                        ))}
+                                    </div>
+                                </div>
+                            )}
                         </div>
                     )}
 

@@ -23,6 +23,10 @@ export function useModalCompartirNota(isOpen) {
     const [editandoNombreError, setEditandoNombreError] = useState("");
     const [guardandoNombre, setGuardandoNombre] = useState(false);
 
+    // ── Destinatarios correo ──
+    const [destinatariosCorreo, setDestinatariosCorreo] = useState([]);
+    const [cargandoDestinatariosCorreo, setCargandoDestinatariosCorreo] = useState(false);
+
     /* ── Reset al cerrar ── */
     useEffect(() => {
         if (!isOpen) {
@@ -38,12 +42,14 @@ export function useModalCompartirNota(isOpen) {
             setEditandoId(null);
             setEditandoNombre("");
             setEditandoNombreError("");
+            setDestinatariosCorreo([]);
         }
     }, [isOpen]);
 
     /* ── Cargar destinatarios al entrar en modo telegram ── */
     useEffect(() => {
         if (modo === "telegram") cargarDestinatarios();
+        if (modo === "correo") cargarDestinatariosCorreo();
     }, [modo]);
 
     /* ────────────────────────────────────────────
@@ -94,6 +100,24 @@ export function useModalCompartirNota(isOpen) {
         }
     };
 
+    const cargarDestinatariosCorreo = async () => {
+        setCargandoDestinatariosCorreo(true);
+        try {
+            const res = await fetch(
+                "http://localhost:3000/notas/correo-destinatarios",
+                { credentials: "include" }
+            );
+            if (res.ok) {
+                const data = await res.json();
+                setDestinatariosCorreo(data);
+            }
+        } catch (error) {
+            console.error("Error al cargar destinatarios de correo:", error);
+        } finally {
+            setCargandoDestinatariosCorreo(false);
+        }
+    };
+
     /* ────────────────────────────────────────────
        ENVÍOS
     ──────────────────────────────────────────── */
@@ -137,6 +161,11 @@ export function useModalCompartirNota(isOpen) {
     const seleccionarDestinatario = (dest) => {
         setChatId(dest.chat_id.toString());
         setChatIdError("");
+    };
+
+    const seleccionarDestinatarioCorreo = (dest) => {
+        setEmail(dest.correo_electronico);
+        setEmailError("");
     };
 
     const iniciarEdicion = (dest) => {
@@ -197,5 +226,6 @@ export function useModalCompartirNota(isOpen) {
         destinatariosPrevios, cargandoDestinatarios, seleccionarDestinatario,
         editandoId, editandoNombre, editandoNombreError, guardandoNombre,
         iniciarEdicion, cancelarEdicion, handleChangeNombreEdicion, guardarNombreDestinatario,
+        destinatariosCorreo, cargandoDestinatariosCorreo, seleccionarDestinatarioCorreo,
     };
 }
