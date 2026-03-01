@@ -42,7 +42,7 @@ export function useCorreoAlternativo() {
     }
   };
 
-  
+
 
   const confirmarSalida = () => {
     setMostrarModal(false);

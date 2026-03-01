@@ -15,6 +15,7 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         errors,
         alert,
         showCancelModal,
+        activo,
 
         // Listas
         days,
@@ -33,6 +34,7 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         handleHoraChange,
         handleSubmit,
         setShowCancelModal,
+        setActivo,
     } = useModalCrearActualizarTarea({ isOpen, onClose, onSave, task });
 
     if (!isOpen) return null;
@@ -71,16 +73,28 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
 
                 <hr />
 
+                {/* AVISO + TOGGLE INTEGRADO */}
                 <div className="aviso-recordatorio">
                     <IoInformationCircleOutline className="icono-aviso" />
-                    <p>
-                        Se enviarán recordatorios por correo electrónico un{" "}
-                        <strong>día antes a las 11:59 p. m.</strong> y una{" "}
-                        <strong>hora antes</strong> de la fecha y hora programadas
-                        para esta tarea.
-                        <br /><br />
-                        Si no desea recibir notificación de la tarea, desactivela presionando la campana.
-                    </p>
+                    <div className="aviso-contenido">
+                        <p>
+                            Se enviarán recordatorios por correo electrónico un{" "}
+                            <strong>día antes a las 11:59 p. m.</strong> y una{" "}
+                            <strong>hora antes</strong> de la fecha y hora programadas.
+                            Si no deseas recibirlos, puedes desactivarlos.
+                        </p>
+                        <div
+                            className="toggle-wrapper"
+                            onClick={() => setActivo(!activo)}
+                        >
+                            <div className={`toggle-track ${activo ? "activo" : ""}`}>
+                                <div className="toggle-thumb" />
+                            </div>
+                            <span className="toggle-label">
+                                {activo ? "Notificaciones activadas" : "Notificaciones desactivadas"}
+                            </span>
+                        </div>
+                    </div>
                 </div>
 
                 <form className="modal-form-tarea" onSubmit={handleSubmit}>

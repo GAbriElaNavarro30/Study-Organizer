@@ -127,7 +127,7 @@ router.patch("/completar-tarea/:id", verificarToken, async (req, res) => {
 =====================================================*/
 router.post("/crear-tarea", verificarToken, async (req, res) => {
     try {
-        const { titulo, descripcion, fecha, hora } = req.body;
+        const { titulo, descripcion, fecha, hora, activo } = req.body;
 
         // Validaciones
         const errores = {};
@@ -195,6 +195,7 @@ router.post("/crear-tarea", verificarToken, async (req, res) => {
             descripcion: descripcion.trim(),
             fecha,
             hora,
+            activo: activo !== undefined ? activo : true,
             id_usuario: req.usuario.id,
         });
 
@@ -217,7 +218,7 @@ router.post("/crear-tarea", verificarToken, async (req, res) => {
 =====================================================*/
 router.put("/actualizar-tarea/:id", verificarToken, async (req, res) => {
     try {
-        const { titulo, descripcion, fecha, hora } = req.body;
+        const { titulo, descripcion, fecha, hora, activo } = req.body;
         const { id } = req.params;
 
         // Validaciones
@@ -284,11 +285,11 @@ router.put("/actualizar-tarea/:id", verificarToken, async (req, res) => {
         // Resetear flags de envío Y ESTADO cuando se actualiza fecha/hora
         await db.query(
             `UPDATE Recordatorio 
-       SET titulo = ?, descripcion = ?, fecha = ?, hora = ?,
-           estado = 'pendiente',
-           enviado_hora_antes = FALSE, enviado_dia_antes = FALSE
-       WHERE id_recordatorio = ? AND id_usuario = ?`,
-            [titulo.trim(), descripcion.trim(), fecha, hora, id, req.usuario.id]
+             SET titulo = ?, descripcion = ?, fecha = ?, hora = ?, activo = ?,
+                 estado = 'pendiente',
+                 enviado_hora_antes = FALSE, enviado_dia_antes = FALSE
+             WHERE id_recordatorio = ? AND id_usuario = ?`,
+            [titulo.trim(), descripcion.trim(), fecha, hora, activo !== undefined ? activo : true, id, req.usuario.id] // 👈 agregar activo
         );
 
         res.json({ mensaje: "Tarea actualizada correctamente" });

@@ -204,7 +204,7 @@ export function Tareas() {
                                                 title="Eliminar"
                                                 onClick={() => handleDeleteClick(task)}
                                             >
-                                                <Trash2 size={16} />
+                                                <Trash2 size={18} />
                                             </button>
                                         </td>
                                     </tr>

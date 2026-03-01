@@ -6,9 +6,9 @@ export class Recordatorio {
         descripcion = null,
         fecha,
         hora,
+        activo,
         estado = "pendiente",
-        enviado = false,
-        fecha_envio_real = null,
+
         id_usuario,
     }) {
         // SOLO asignaciones
@@ -16,9 +16,8 @@ export class Recordatorio {
         this.descripcion = descripcion;
         this.fecha = fecha;
         this.hora = hora;
+        this.activo = activo;
         this.estado = estado;
-        this.enviado = enviado;
-        this.fecha_envio_real = fecha_envio_real;
         this.id_usuario = id_usuario;
     }
 
@@ -26,16 +25,15 @@ export class Recordatorio {
     async save() {
         return await db.query(
             `INSERT INTO Recordatorio
-            (titulo, descripcion, fecha, hora, estado, enviado, fecha_envio_real, id_usuario)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
+            (titulo, descripcion, fecha, hora, activo, estado, id_usuario)
+            VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 this.titulo,
                 this.descripcion,
                 this.fecha,
                 this.hora,
+                this.activo,
                 this.estado,
-                this.enviado,
-                this.fecha_envio_real,
                 this.id_usuario,
             ]
         );
@@ -50,9 +48,8 @@ export class Recordatorio {
                 r.descripcion,
                 r.fecha,
                 r.hora,
+                r.activo,
                 r.estado,
-                r.enviado,
-                r.fecha_envio_real,
                 r.created_at,
                 u.nombre_usuario,
                 u.correo_electronico
@@ -99,26 +96,17 @@ export class Recordatorio {
     static async update(id_recordatorio, data) {
         return await db.query(
             `UPDATE Recordatorio
-             SET titulo = ?, descripcion = ?, fecha = ?, hora = ?, estado = ?
+             SET titulo = ?, descripcion = ?, fecha = ?, hora = ?, estado = ?, activo = ?
              WHERE id_recordatorio = ?`,
             [
                 data.titulo,
                 data.descripcion,
                 data.fecha,
                 data.hora,
+                data.activo,
                 data.estado,
                 id_recordatorio,
             ]
-        );
-    }
-
-    // ======================= MARCAR COMO ENVIADO =======================
-    static async marcarEnviado(id_recordatorio) {
-        return await db.query(
-            `UPDATE Recordatorio
-             SET enviado = true, fecha_envio_real = NOW()
-             WHERE id_recordatorio = ?`,
-            [id_recordatorio]
         );
     }
 

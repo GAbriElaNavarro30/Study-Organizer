@@ -171,6 +171,7 @@ export function useTareas() {
                 dueTimeOriginal: t.hora,
                 estado: t.estado,
                 completed: t.estado === "completada",
+                activo: t.activo,
             };
         });
     };
@@ -183,7 +184,8 @@ export function useTareas() {
                     titulo: tarea.title,
                     descripcion: tarea.description,
                     fecha: tarea.dueDate,
-                    hora: tarea.dueTime
+                    hora: tarea.dueTime,
+                    activo: tarea.activo 
                 });
 
                 const tareasResponse = await api.get("/tareas/obtener-tareas");
@@ -197,7 +199,8 @@ export function useTareas() {
                     titulo: tarea.title,
                     descripcion: tarea.description,
                     fecha: tarea.dueDate,
-                    hora: tarea.dueTime
+                    hora: tarea.dueTime,
+                    activo: tarea.activo
                 });
 
                 const tareasResponse = await api.get("/tareas/obtener-tareas");

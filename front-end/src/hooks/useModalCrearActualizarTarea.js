@@ -5,6 +5,8 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
     const [title, setTitle] = useState("");
     const [description, setDescription] = useState("");
     const [errors, setErrors] = useState({});
+    // ===== NOTIFICACIÓN POR CORREO =====
+    const [activo, setActivo] = useState(true);
 
     // ===== CUSTOM ALERT =====
     const [alert, setAlert] = useState({
@@ -53,7 +55,7 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
     );
 
     const hours = Array.from({ length: 12 }, (_, i) => i + 1);
-    
+
     const minutes = Array.from(
         { length: 60 },
         (_, i) => String(i).padStart(2, "0")
@@ -78,7 +80,8 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
             fecha.year !== initialValues.fecha.year ||
             hora.hour !== initialValues.hora.hour ||
             hora.minute !== initialValues.hora.minute ||
-            hora.period !== initialValues.hora.period
+            hora.period !== initialValues.hora.period ||
+            activo !== initialValues.activo
         );
     };
 
@@ -208,7 +211,8 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
                 title: title.trim(),
                 description: description.trim(),
                 dueDate: formattedDate,
-                dueTime: formattedTime
+                dueTime: formattedTime,
+                activo
             });
 
             onClose();
@@ -241,7 +245,10 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
             setDescription(taskDescription);
             setErrors({});
             setAlert({ show: false, type: "error", title: "", message: "" });
+            // MODO EDICIÓN
+            setActivo(task.activo !== undefined ? task.activo : true);
 
+            // MODO CREAR
             let taskFecha = { day: "", month: "", year: "" };
             let taskHora = { hour: "", minute: "", period: "AM" };
 
@@ -290,11 +297,13 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
                 title: taskTitle,
                 description: taskDescription,
                 fecha: taskFecha,
-                hora: taskHora
+                hora: taskHora,
+                activo: task.activo !== undefined ? task.activo : true
             });
         } else {
             // MODO CREAR
             setTitle("");
+            setActivo(true); 
             setDescription("");
             setFecha({ day: "", month: "", year: "" });
             setHora({ hour: "", minute: "", period: "AM" });
@@ -305,7 +314,8 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
                 title: "",
                 description: "",
                 fecha: { day: "", month: "", year: "" },
-                hora: { hour: "", minute: "", period: "AM" }
+                hora: { hour: "", minute: "", period: "AM" },
+                activo: true
             });
         }
     }, [task, isOpen]);
@@ -320,6 +330,7 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
         errors,
         alert,
         showCancelModal,
+        activo,
 
         // Listas
         days,
@@ -339,5 +350,6 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
         handleHoraChange,
         handleSubmit,
         setShowCancelModal,
+        setActivo,
     };
 };

@@ -25,10 +25,11 @@ cron.schedule("* * * * *", async () => {
       WHERE CONCAT(r.fecha, ' ', r.hora) = ?
       AND r.estado = 'pendiente'
       AND r.enviado_hora_antes = FALSE
+      AND r.activo = TRUE
     `, [unaHoraAntes]);
 
     for (const r of horaAntes) {
-      await enviarCorreo(r, "Recordatorio próximo", "1 hora");
+      await enviarCorreo(r, "Recordatorio próximo", "en 1 hora");
       await db.query(
         "UPDATE Recordatorio SET enviado_hora_antes = TRUE WHERE id_recordatorio = ?",
         [r.id_recordatorio]
@@ -48,10 +49,11 @@ cron.schedule("* * * * *", async () => {
         WHERE DATE(r.fecha) = ?
         AND r.estado = 'pendiente'
         AND r.enviado_dia_antes = FALSE
+        AND r.activo = TRUE
       `, [manana]);
 
       for (const r of diaAntesRows) {
-        await enviarCorreo(r, "Recordatorio importante", "24 horas");
+        await enviarCorreo(r, "Recordatorio importante", "para HOY");
         await db.query(
           "UPDATE Recordatorio SET enviado_dia_antes = TRUE WHERE id_recordatorio = ?",
           [r.id_recordatorio]
@@ -103,7 +105,7 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
             <td style="color:#555; font-size:15px; line-height:1.6;">
               <p>Hola <strong>${recordatorio.nombre_usuario}</strong>,</p>
 
-              <p>Te recordamos que tienes la siguiente tarea programada en <strong>${tipoRecordatorio}</strong>:</p>
+              <p>Te recordamos que tienes la siguiente tarea programada <strong>${tipoRecordatorio}</strong>:</p>
 
               <div style="background:#f9fafb; padding:20px; border-radius:8px;">
                 <p style="margin:0 0 10px 0; font-size:16px;">
