@@ -18,8 +18,8 @@ def health_check():
 # ==================== analiza las respuests obtenidas del test con react y node js ====================
 @app.post("/analizar")
 def analizar_vark(data: RespuestasInput):
-    if len(data.categorias) != 16:
-        raise HTTPException(status_code=400, detail="Se requieren exactamente 16 respuestas")
+    if len(data.categorias) < 16:
+        raise HTTPException(status_code=400, detail="Se requieren al menos 16 respuestas")
 
     categorias_validas = {"V", "A", "R", "K"}
     for c in data.categorias:
@@ -34,3 +34,4 @@ def analizar_vark(data: RespuestasInput):
 def obtener_recomendaciones_perfil(perfil: str):
     recomendaciones = obtener_recomendaciones(perfil)
     return {"recomendaciones": recomendaciones}
+

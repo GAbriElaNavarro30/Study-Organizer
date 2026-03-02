@@ -105,8 +105,9 @@ export class VarkRespuestaUsuario {
 }
 
 export class VarkResultado {
-    constructor({ id_usuario, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante }) {
+    constructor({ id_usuario, id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante }) {
         this.id_usuario = id_usuario;
+        this.id_intento = id_intento;
         this.puntaje_v = puntaje_v;
         this.puntaje_a = puntaje_a;
         this.puntaje_r = puntaje_r;
@@ -116,10 +117,11 @@ export class VarkResultado {
 
     async save() {
         return await db.query(
-            `INSERT INTO vark_resultados (id_usuario, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO vark_resultados (id_usuario, id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 this.id_usuario,
+                this.id_intento,
                 this.puntaje_v,
                 this.puntaje_a,
                 this.puntaje_r,

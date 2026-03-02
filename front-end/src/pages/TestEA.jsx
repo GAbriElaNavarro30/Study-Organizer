@@ -206,7 +206,7 @@ export function TestEA() {
     const respondidas = Object.keys(respuestas).length;
     const progreso = Math.round((respondidas / totalPreguntas) * 100);
     const preguntaActual = PREGUNTAS[actual];
-    const seleccionActual = respuestas[preguntaActual.id];
+    const seleccionActual = respuestas[preguntaActual.id] || [];
 
     // ── Música ──
     const toggleMute = () => {
@@ -222,7 +222,24 @@ export function TestEA() {
 
     // ── Seleccionar opción ──
     const seleccionar = (opcionIndex) => {
-        setRespuestas((prev) => ({ ...prev, [preguntaActual.id]: opcionIndex }));
+        setRespuestas((prev) => {
+            const seleccionadas = prev[preguntaActual.id] || [];
+            const yaSeleccionada = seleccionadas.includes(opcionIndex);
+
+            // Si ya estaba → la quitamos (deseleccionar)
+            // Si no estaba → la agregamos
+            const nuevas = yaSeleccionada
+                ? seleccionadas.filter((i) => i !== opcionIndex)
+                : [...seleccionadas, opcionIndex];
+
+            // Si el array quedó vacío, eliminamos la clave para que no cuente como "respondida"
+            if (nuevas.length === 0) {
+                const { [preguntaActual.id]: _, ...resto } = prev;
+                return resto;
+            }
+
+            return { ...prev, [preguntaActual.id]: nuevas };
+        });
     };
 
     // ── Navegar ──
@@ -240,14 +257,13 @@ export function TestEA() {
         setErrorEnvio(null);
 
         try {
-            const respuestasArray = PREGUNTAS.map((pregunta) => {
-                const opcionIndex = respuestas[pregunta.id];
-                const opcion = pregunta.opciones[opcionIndex];
-                return {
+            const respuestasArray = PREGUNTAS.flatMap((pregunta) => {
+                const indices = respuestas[pregunta.id] || [];
+                return indices.map((opcionIndex) => ({
                     id_pregunta: pregunta.id,
                     id_opcion: opcionIndex + 1,
-                    categoria: opcion.cat,
-                };
+                    categoria: pregunta.opciones[opcionIndex].cat,
+                }));
             });
 
             // 1. Guardar respuestas y recibir el id_intento generado
@@ -356,7 +372,8 @@ export function TestEA() {
                         Test de estilos de <em>aprendizaje</em>
                     </h1>
                     <p className="test-header-subtitle">
-                        Selecciona la opción que mejor describa tu comportamiento habitual. No hay respuestas correctas o incorrectas.
+                        Selecciona las opciones que mejor describan tu comportamiento habitual.
+                        No existen respuestas correctas o incorrectas.
                     </p>
                 </div>
                 <div className="test-header-right">
@@ -379,7 +396,7 @@ export function TestEA() {
                     <div className="sidebar-label">Preguntas</div>
                     <nav className="test-sidebar-nav">
                         {PREGUNTAS.map((p, i) => {
-                            const respondida = respuestas[p.id] !== undefined;
+                            const respondida = !!(respuestas[p.id]?.length > 0);
                             const esActual = i === actual;
                             return (
                                 <div
@@ -415,7 +432,7 @@ export function TestEA() {
                             <h2 className="test-pregunta-texto">{preguntaActual.texto}</h2>
                             <div className="test-opciones">
                                 {preguntaActual.opciones.map((op, i) => {
-                                    const seleccionada = seleccionActual === i;
+                                    const seleccionada = seleccionActual.includes(i);
                                     return (
                                         <button
                                             key={i}

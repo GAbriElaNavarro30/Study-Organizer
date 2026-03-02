@@ -16,6 +16,14 @@ def procesar_respuestas(categorias: list) -> dict:
     for categoria in categorias:
         if categoria in puntajes:
             puntajes[categoria] += 1
+    
+    total = len(categorias)  # total de respuestas dadas
+
+    # Calcular porcentajes
+    porcentajes = {
+        k: round((v / total) * 100) if total > 0 else 0
+        for k, v in puntajes.items()
+    }
 
     # Paso 2: Aplicar reglas para determinar perfil
     perfil_dominante = determinar_perfil(puntajes)
@@ -31,6 +39,10 @@ def procesar_respuestas(categorias: list) -> dict:
         "puntaje_a": puntajes["A"],
         "puntaje_r": puntajes["R"],
         "puntaje_k": puntajes["K"],
+        "porcentaje_v": porcentajes["V"], 
+        "porcentaje_a": porcentajes["A"],
+        "porcentaje_r": porcentajes["R"],
+        "porcentaje_k": porcentajes["K"],
         "perfil_dominante": perfil_dominante,
         "nombre_perfil": nombre_perfil,
         "recomendaciones": recomendaciones

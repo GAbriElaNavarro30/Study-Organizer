@@ -14,11 +14,18 @@ export function ResultadoPrevio() {
                 const res = await fetch("http://localhost:3000/estilosaprendizaje/resultado-guardado", {
                     credentials: "include",
                 });
+                console.log("📡 Status:", res.status);
+
                 if (res.ok) {
                     const data = await res.json();
+                    console.log("✅ Datos:", data);
                     setResultado(data);
+                } else {
+                    const err = await res.json();
+                    console.log("❌ Error del servidor:", err);
                 }
-            } catch {
+            } catch (err) {
+                console.error("💥 Error de red:", err);
                 setResultado(null);
             } finally {
                 setCargando(false);

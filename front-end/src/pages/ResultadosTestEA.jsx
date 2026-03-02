@@ -100,8 +100,7 @@ function getPrimary(letras) {
 
 // ─── BARRA ────────────────────────────────────────────────────────────────────
 
-function BarraSimple({ cfg, value, animado }) {
-    const pct = Math.round((value / 16) * 100);
+function BarraSimple({ cfg, value, pct, animado }) {
     return (
         <div className="res-bar-row">
             <div className="res-bar-label">
@@ -118,7 +117,7 @@ function BarraSimple({ cfg, value, animado }) {
                 />
             </div>
             <span className="res-bar-value">
-                {value}<span className="res-bar-den">/16</span>
+                {value} <span className="res-bar-den">({pct}%)</span>
             </span>
         </div>
     );
@@ -274,7 +273,7 @@ export function ResultadosTestEA() {
         );
     }
 
-    const { perfil_dominante, puntajes, recomendaciones } = datos;
+    const { perfil_dominante, puntajes, porcentajes = {}, recomendaciones } = datos;
     const letras = getLetras(perfil_dominante);
     const primary = getPrimary(letras);
     const nombrePerfil = NOMBRES_PERFILES[perfil_dominante] || "Multimodal";
@@ -437,6 +436,7 @@ export function ResultadosTestEA() {
                                                 key={l}
                                                 cfg={PERFIL_CONFIG[l]}
                                                 value={puntajes[l.toLowerCase()]}
+                                                pct={porcentajes[l.toLowerCase()] ?? 0}
                                                 animado={animado}
                                             />
                                         ))}
@@ -486,8 +486,8 @@ export function ResultadosTestEA() {
                                             <cfg.Icon size={26} className="res-score-icon" />
                                             <div className="res-score-letter" style={{ color: cfg.colorMid }}>{l}</div>
                                             <div className="res-score-nombre">{cfg.nombre}</div>
-                                            <div className="res-score-num" style={{ color: cfg.color }}>
-                                                {val}<span className="res-score-den">/16</span>
+                                            <div style={{ fontSize: 13, color: cfg.colorMid, marginTop: 4, fontWeight: 600 }}>
+                                                {porcentajes[l.toLowerCase()] ?? 0}%
                                             </div>
                                         </div>
                                     );

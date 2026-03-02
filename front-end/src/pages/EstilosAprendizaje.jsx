@@ -24,25 +24,25 @@ const VARK_DATA = {
     V: {
         name: "Visual",
         icon: IoEyeOutline,
-        desc: "Aprenden mejor a través de imágenes, diagramas, mapas, colores y representaciones visuales. Prefieren ver la información organizada espacialmente.",
+        desc: "Aprenden mejor a través de imágenes, diagramas, gráficos y otros elementos visuales. El uso de presentaciones visuales, mapas conceptuales y videos es altamente beneficioso para estos estudiantes. Son capaces de recordar y comprender mejor la información cuando pueden verla representada de manera gráfica.",
         barColor: "#4A90C4",
     },
     A: {
         name: "Auditivo",
         icon: IoHeadsetOutline,
-        desc: "Aprenden mejor escuchando explicaciones, discusiones, conferencias y debates. La comunicación verbal es su canal preferido de comprensión.",
+        desc: "Aprenden mejor mediante el sentido del oído. Para ellos, las explicaciones verbales, las discusiones y las lecturas en voz alta son herramientas valiosas. También pueden beneficiarse del uso de grabaciones de audio y la repetición verbal de la información.",
         barColor: "#5A8FB8",
     },
     R: {
         name: "Lectura/Escritura",
         icon: IoBookOutline,
-        desc: "Aprenden mejor leyendo y escribiendo texto. Prefieren notas, listas, manuales, libros y ensayos como medios de aprendizaje.",
+        desc: "Aprenden mejor a través de la lectura y la escritura. Toman notas detalladas, subrayan la información clave y realizan resúmenes para procesar y retener el contenido. Los materiales escritos, como libros de texto y apuntes, son fundamentales para su aprendizaje.",
         barColor: "#4A9E70",
     },
     K: {
         name: "Kinestésico",
         icon: IoHandLeftOutline,
-        desc: "Aprenden mejor a través de experiencias prácticas, ejemplos concretos, simulaciones y aprendizaje en contextos reales.",
+        desc: "Aprenden mejor a través del movimiento y la práctica práctica. Necesitan participar físicamente en la experiencia de aprendizaje, realizar actividades prácticas, experimentar y tocar objetos. El aprendizaje basado en la experiencia y el trabajo práctico es esencial para estos estudiantes.",
         barColor: "#B8842A",
     },
 };
