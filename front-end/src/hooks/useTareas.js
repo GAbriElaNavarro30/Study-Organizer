@@ -227,6 +227,10 @@ export function useTareas() {
         setCurrentPage(1);
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     // ===== FUNCIÓN DE BÚSQUEDA CON DEBOUNCE =====
     useEffect(() => {
         const buscarTareas = async () => {

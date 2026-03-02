@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 
 export function useRegistro() {
   // ================== UI ==================
@@ -12,6 +12,10 @@ export function useRegistro() {
     month: "",
     year: "",
   });
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // ================== FORM DATA ==================
   const [formData, setFormData] = useState({

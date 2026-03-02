@@ -68,6 +68,10 @@ export function Dashboard({
         );
     }, [resultadosTests]);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     /* Simulación de guardado (esto luego vendrá del test real) */
     const simularResultadoAprendizaje = () => {
         const nuevoResultado = {

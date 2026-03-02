@@ -1,4 +1,4 @@
-import { useState, useContext } from "react";
+import { useState, useContext, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
@@ -8,14 +8,14 @@ export function useLogin() {
   const [correo, setCorreo] = useState("");
   const [password, setPassword] = useState("");
   const [errores, setErrores] = useState({ correo: "", password: "" });
-  const [alert, setAlert] = useState({ 
-    mostrar: false, 
-    type: "", 
-    title: "", 
-    message: "" 
+  const [alert, setAlert] = useState({
+    mostrar: false,
+    type: "",
+    title: "",
+    message: ""
   });
   const [redirectPath, setRedirectPath] = useState("");
-  
+
   const navigate = useNavigate();
   const { refrescarUsuario } = useContext(AuthContext); // Cambiado
 
@@ -25,6 +25,10 @@ export function useLogin() {
     if (rol === 1 || rol === 3) return "/home";
     return "/";
   };
+
+  useEffect(() => {
+    window.scrollTo(0, 0);
+  }, []);
 
   // ================== HANDLE SUBMIT ==================
   const handleSubmit = async (e) => {
@@ -75,9 +79,9 @@ export function useLogin() {
         setErrores(nuevosErrores);
       } else {
         // Error genérico (problema de red, servidor caído, etc.)
-        setErrores({ 
-          correo: "", 
-          password: "Error al iniciar sesión. Intenta de nuevo." 
+        setErrores({
+          correo: "",
+          password: "Error al iniciar sesión. Intenta de nuevo."
         });
 
         console.error("Error login completo:", error);

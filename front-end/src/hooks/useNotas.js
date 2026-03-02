@@ -45,6 +45,10 @@ export function useNotas() {
         cargarNotas();
     }, []);
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     const cargarNotas = async () => {
         try {
             setLoading(true);

@@ -129,6 +129,10 @@ export function EstilosAprendizaje() {
         navigate("/test-estilos-aprendizaje");
     };
 
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
     return (
         <div className="vark-app">
             <iframe
