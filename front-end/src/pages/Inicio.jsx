@@ -1,7 +1,4 @@
-import { useState, useEffect, useRef } from "react";
 import { Link } from "react-router-dom";
-import { useContext } from "react";
-import { AuthContext } from "../context/AuthContext";
 import {
   IoBookOutline, IoSchoolOutline, IoDocumentTextOutline,
   IoCheckboxOutline, IoLeafOutline, IoTimeOutline,
@@ -12,52 +9,8 @@ import {
   IoEyeOutline, IoHeadsetOutline, IoHandLeftOutline,
 } from "react-icons/io5";
 import { MdOutlinePsychology } from "react-icons/md";
+import { useInicio, modules } from "../hooks/useInicio";
 import "../styles/inicio.css";
-
-const modules = [
-  {
-    num: "01", title: "Estilos de Aprendizaje", tag: "Test VARK", ruta: "/estilos-aprendizaje",
-    icon: <MdOutlinePsychology />,
-    desc: "Identifica tu estilo de aprendizaje visual, auditivo, lector o kinestésico y obtén recomendaciones de estudio basadas a tu perfil dominante con en el modelo VARK.",
-    detail: "16 preguntas · Perfil radial · Recomendaciones personalizadas",
-    img: "https://www.coldelvalle.edu.mx/wp-content/uploads/2022/04/4.-min-scaled.jpg",
-  },
-  {
-    num: "02", title: "Métodos de Estudio", tag: "Diagnóstico", ruta: "/metodos-estudio",
-    icon: <IoBookOutline />,
-    desc: "Identifica hábitos de estudio que pueden afectar tu desempeño académico y obtén recomendaciones para mejorar tu rendimiento.",
-    detail: "Cuestionario · Errores detectados · Recomendaciones de mejora",
-    img: "https://isil.pe/blog/wp-content/uploads/2024/09/que-es-un-metodo-de-estudio-1600x1066.webp",
-  },
-  {
-    num: "03", title: "Cursos Personalizados", tag: "Por tutores", ruta: "/cursos",
-    icon: <IoSchoolOutline />,
-    desc: "Accede a cursos informativos creados por tutores sobre estilos de aprendizaje y métodos de estudio. El sistema te sugiere cursos de acuerdo con tu estilo de aprendizaje y los métodos de estudio que necesitas mejorar.",
-    detail: "Cursos por perfil · Progreso guardado · Tutores verificados",
-    img: "https://www.evolmind.com/wp-content/uploads/2019/03/como-mejorar-un-curso-virtual_-las-estrategias-que-funcionan.webp",
-  },
-  {
-    num: "04", title: "Notas", tag: "Editor rico", ruta: "/notas",
-    icon: <IoDocumentTextOutline />,
-    desc: "Crea, personaliza y organiza tus notas en un solo lugar. Mantén tus apuntes ordenados, expórtalos en formato PDF y compártelos de manera sencilla.",
-    detail: "Editor digital · Compartir PDF · Exportar PDF",
-    img: "https://images.unsplash.com/photo-1517842645767-c639042777db?w=900&q=80",
-  },
-  {
-    num: "05", title: "Gestor de Tareas", tag: "Recordatorios", ruta: "/tareas",
-    icon: <IoCheckboxOutline />,
-    desc: "Crea y organiza tus tareas académicas con fechas límite. De manera opcional, recibe recordatorios por correo electrónico un día y una hora antes de cada entrega.",
-    detail: "Alertas por correo electróncio · Estado: Pendiente / Vencida / Completada",
-    img: "https://images.unsplash.com/photo-1484480974693-6ca0a78fb36b?w=900&q=80",
-  },
-  {
-    num: "06", title: "Registro Emocional", tag: "Bienestar", ruta: "/dashboard",
-    icon: <IoLeafOutline />,
-    desc: "Registra tu estado emocional cada día. El bienestar es parte del rendimiento aquí también cuidamos esa parte de ti.",
-    detail: "Escala Likert · Emociones · Registro diario",
-    img: "https://gaceta.cch.unam.mx/sites/default/files/styles/imagen_articulos_1920x1080/public/2021-09/get-in-touch-with-emotions.png?h=95862f14&itok=k-0STl_X",
-  },
-];
 
 const benefits = [
   {
@@ -111,40 +64,18 @@ const frasesPlataforma = [
   "Libérate del estrés académico",
 ];
 
+// Asigna el ícono correspondiente a cada módulo según su índice
+const moduleIcons = [
+  <MdOutlinePsychology />,
+  <IoBookOutline />,
+  <IoSchoolOutline />,
+  <IoDocumentTextOutline />,
+  <IoCheckboxOutline />,
+  <IoLeafOutline />,
+];
+
 export function Inicio() {
-  const [heroIn, setHeroIn] = useState(false);
-  const [activeSlide, setActiveSlide] = useState(0);
-  const [isAnimating, setIsAnimating] = useState(false);
-  const autoRef = useRef(null);
-
-  useEffect(() => {
-    const t = setTimeout(() => setHeroIn(true), 50);
-    return () => clearTimeout(t);
-  }, []);
-
-  useEffect(() => {
-    autoRef.current = setInterval(() => {
-      setActiveSlide(p => (p + 1) % modules.length);
-    }, 8000);
-    return () => clearInterval(autoRef.current);
-  }, []);
-
-  const goTo = (idx) => {
-    if (isAnimating) return;
-    clearInterval(autoRef.current);
-    setIsAnimating(true);
-    setActiveSlide(idx);
-    setTimeout(() => setIsAnimating(false), 450);
-    autoRef.current = setInterval(() => {
-      setActiveSlide(p => (p + 1) % modules.length);
-    }, 8000);
-  };
-
-  const prev = () => goTo((activeSlide - 1 + modules.length) % modules.length);
-  const next = () => goTo((activeSlide + 1) % modules.length);
-  const mod = modules[activeSlide];
-
-  const { usuario } = useContext(AuthContext);
+  const { heroIn, activeSlide, currentModule, goTo, prev, next, usuario } = useInicio();
 
   return (
     <div className="so-page">
@@ -328,17 +259,17 @@ export function Inicio() {
 
         <div className="slider-wrap">
           <div className="slide-image-col">
-            <img key={`img-${activeSlide}`} src={mod.img} alt={mod.title} />
-            <div className="slide-num-big">{mod.num}</div>
+            <img key={`img-${activeSlide}`} src={currentModule.img} alt={currentModule.title} />
+            <div className="slide-num-big">{currentModule.num}</div>
           </div>
           <div className="slide-content-col" key={`c-${activeSlide}`}>
-            <span className="slide-tag">{mod.tag}</span>
-            <div className="slide-icon">{mod.icon}</div>
-            <h3 className="slide-title">{mod.title}</h3>
-            <p className="slide-desc">{mod.desc}</p>
-            <p className="slide-meta">{mod.detail}</p>
+            <span className="slide-tag">{currentModule.tag}</span>
+            <div className="slide-icon">{moduleIcons[activeSlide]}</div>
+            <h3 className="slide-title">{currentModule.title}</h3>
+            <p className="slide-desc">{currentModule.desc}</p>
+            <p className="slide-meta">{currentModule.detail}</p>
             <Link
-              to={usuario ? mod.ruta : "/login"}
+              to={usuario ? currentModule.ruta : "/login"}
               className="slide-cta"
             >
               Explorar módulo <IoArrowForwardOutline size={14} />
@@ -355,7 +286,7 @@ export function Inicio() {
         <div className="mod-tabs">
           {modules.map((m, i) => (
             <div key={i} className={`mod-tab${activeSlide === i ? " active" : ""}`} onClick={() => goTo(i)}>
-              <span className="mod-tab-icon">{m.icon}</span>
+              <span className="mod-tab-icon">{moduleIcons[i]}</span>
               {m.title}
             </div>
           ))}

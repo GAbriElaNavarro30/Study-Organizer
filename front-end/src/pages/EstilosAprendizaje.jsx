@@ -49,10 +49,10 @@ const VARK_DATA = {
 
 const NAV_SECTIONS = [
     { label: "¿Qué son los estilos?", id: "seccion-fundamentos" },
-    { label: "El Modelo VARK",        id: "seccion-modelo" },
-    { label: "Historia",              id: "seccion-historia" },
-    { label: "Las 4 modalidades",     id: "seccion-modalidades" },
-    { label: "Sobre el test",         id: "seccion-test" },
+    { label: "El Modelo VARK", id: "seccion-modelo" },
+    { label: "Historia", id: "seccion-historia" },
+    { label: "Las 4 modalidades", id: "seccion-modalidades" },
+    { label: "Sobre el test", id: "seccion-test" },
 ];
 
 export function EstilosAprendizaje() {
@@ -131,7 +131,7 @@ export function EstilosAprendizaje() {
 
     useEffect(() => {
         window.scrollTo(0, 0);
-    }, []);
+    }, []);5
 
     return (
         <div className="vark-app">
