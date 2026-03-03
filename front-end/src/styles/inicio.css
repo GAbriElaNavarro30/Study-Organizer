@@ -17,7 +17,7 @@
     --font-d: 'Playfair Display', Georgia, serif;
     --font-b: 'Outfit', system-ui, sans-serif;
 }
-
+ 
 .so-page {
     font-family: var(--font-b);
     color: var(--ink);
@@ -170,6 +170,7 @@
     flex-wrap: nowrap;
     opacity: 0;
     transition: opacity .5s .48s;
+    width: 55%;
 }
 
 .hero.in .hero-actions {
