@@ -6,16 +6,11 @@ export const AuthContext = createContext();
 
 const esFotoValida = (foto) => {
   if (!foto) return false;
-
-  const invalidas = [
-    "null",
-    "undefined",
-    "/uploads/null",
-    "/uploads/undefined",
-  ];
-
+  const invalidas = ["null", "undefined", "/uploads/null", "/uploads/undefined"];
   return !invalidas.some(v => foto.includes(v));
 };
+
+const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export function AuthProvider({ children }) {
   const [usuario, setUsuario] = useState(null);
@@ -27,50 +22,29 @@ export function AuthProvider({ children }) {
     3: "Tutor",
   };
 
-  const API_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
-
   const normalizarFecha = (fecha) => {
     if (!fecha) return { day: "", month: "", year: "" };
-
-    if (
-      typeof fecha === "object" &&
-      "day" in fecha &&
-      "month" in fecha &&
-      "year" in fecha
-    ) {
+    if (typeof fecha === "object" && "day" in fecha && "month" in fecha && "year" in fecha) {
       return fecha;
     }
-
     const d = new Date(fecha);
-    return {
-      day: d.getDate(),
-      month: d.getMonth() + 1,
-      year: d.getFullYear(),
-    };
+    return { day: d.getDate(), month: d.getMonth() + 1, year: d.getFullYear() };
   };
 
   const normalizarUsuario = (user) => {
     if (!user) return null;
 
-    // DETECTAR SI LA FOTO YA ES UNA URL COMPLETA (http:// o https://)
     const esUrlCompleta = (url) => {
       if (!url) return false;
       return url.startsWith('http://') || url.startsWith('https://');
     };
 
-    // Si la foto ya es URL completa (Cloudinary), úsala directamente
-    // Si es ruta relativa (/uploads/...), construye URL completa del servidor
-    // Si no es válida, usa imagen predeterminada
     const fotoPerfil = esFotoValida(user.foto_perfil)
-      ? (esUrlCompleta(user.foto_perfil)
-        ? user.foto_perfil  // Ya es URL completa (Cloudinary)
-        : `${API_URL}${user.foto_perfil}`)  // Ruta del servidor local
-      : perfilPredeterminado;  // Imagen predeterminada
+      ? (esUrlCompleta(user.foto_perfil) ? user.foto_perfil : `${API_URL}${user.foto_perfil}`)
+      : perfilPredeterminado;
 
     const fotoPortada = esFotoValida(user.foto_portada)
-      ? (esUrlCompleta(user.foto_portada)
-        ? user.foto_portada
-        : `${API_URL}${user.foto_portada}`)
+      ? (esUrlCompleta(user.foto_portada) ? user.foto_portada : `${API_URL}${user.foto_portada}`)
       : "/portada.jpg";
 
     return {
@@ -83,7 +57,6 @@ export function AuthProvider({ children }) {
     };
   };
 
-  // FUNCIÓN PARA RECARGAR EL USUARIO
   const refrescarUsuario = async () => {
     try {
       const res = await api.get("/usuarios/me");
@@ -101,6 +74,10 @@ export function AuthProvider({ children }) {
         const res = await api.get("/usuarios/me");
         setUsuario(normalizarUsuario(res.data.usuario));
       } catch (error) {
+        // 401 es esperado cuando no hay sesión activa
+        if (error.response?.status !== 401) {
+          console.error("Error al verificar sesión:", error);
+        }
         setUsuario(null);
       } finally {
         setLoading(false);
@@ -121,21 +98,17 @@ export function AuthProvider({ children }) {
     }
   };
 
-  if (loading) {
-    return null;
-  }
+  if (loading) return null;
 
   return (
-    <AuthContext.Provider
-      value={{
-        usuario,
-        setUsuario: (user) => setUsuario(normalizarUsuario(user)),
-        loading,
-        logout,
-        setLoading,
-        refrescarUsuario,
-      }}
-    >
+    <AuthContext.Provider value={{
+      usuario,
+      setUsuario: (user) => setUsuario(normalizarUsuario(user)),
+      loading,
+      logout,
+      setLoading,
+      refrescarUsuario,
+    }}>
       {children}
     </AuthContext.Provider>
   );

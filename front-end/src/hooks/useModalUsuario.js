@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
 
 export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ================== ESTADO DEL FORMULARIO ==================
@@ -32,26 +33,15 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ============== VERIFICAR CORREO DISPONIBLE ==============
     const verificarCorreoDisponible = async (correo, usuarioId = null) => {
         try {
-            const payload = {
-                correo_electronico: correo
-            };
+            const payload = { correo_electronico: correo };
+            if (usuarioId) payload.id_usuario = usuarioId;
 
-            // AGREGAR id_usuario solo si existe
-            if (usuarioId) {
-                payload.id_usuario = usuarioId;
-            }
-
-            const response = await fetch(
-                "http://localhost:3000/usuarios/verificar-correo",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            const data = await response.json();
-            return data;
+            const response = await fetch(`${BASE_URL}/usuarios/verificar-correo`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            return await response.json();
         } catch (error) {
             console.error("Error al verificar correo:", error);
             return { disponible: true };
@@ -61,26 +51,15 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ============== VERIFICAR TELÉFONO DISPONIBLE ==============
     const verificarTelefonoDisponible = async (telefono, usuarioId = null) => {
         try {
-            const payload = {
-                telefono: telefono
-            };
+            const payload = { telefono };
+            if (usuarioId) payload.id_usuario = usuarioId;
 
-            // AGREGAR id_usuario solo si existe
-            if (usuarioId) {
-                payload.id_usuario = usuarioId;
-            }
-
-            const response = await fetch(
-                "http://localhost:3000/usuarios/verificar-telefono",
-                {
-                    method: "POST",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify(payload),
-                }
-            );
-
-            const data = await response.json();
-            return data;
+            const response = await fetch(`${BASE_URL}/usuarios/verificar-telefono`, {
+                method: "POST",
+                headers: { "Content-Type": "application/json" },
+                body: JSON.stringify(payload),
+            });
+            return await response.json();
         } catch (error) {
             console.error("Error al verificar teléfono:", error);
             return { disponible: true };

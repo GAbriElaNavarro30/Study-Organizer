@@ -1,17 +1,32 @@
-# main.py  —  API FastAPI (sin cambios de lógica, solo el motor es diferente)
+import os
+from dotenv import load_dotenv
 
 from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from motor.motor_ea import procesar_respuestas          # ← motor experta
-from hechos.hechos_ea import RECOMENDACIONES, PERFILES  # ← base de conocimiento
+from motor.motor_ea import procesar_respuestas
+from hechos.hechos_ea import RECOMENDACIONES, PERFILES
 
-app = FastAPI(title="Sistema Experto VARK")
+load_dotenv()
+
+FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173/Study-Organizer")
+PYTHON_ENV   = os.getenv("PYTHON_ENV", "development")
+PYTHON_PORT  = int(os.getenv("PYTHON_PORT", 8000))
+
+# En desarrollo permite cualquier origen, en producción solo el frontend
+ALLOWED_ORIGINS = ["*"] if PYTHON_ENV == "development" else [FRONTEND_URL]
+
+app = FastAPI(
+    title="Sistema Experto VARK",
+    # En producción oculta la documentación automática
+    docs_url="/docs" if PYTHON_ENV == "development" else None,
+    redoc_url="/redoc" if PYTHON_ENV == "development" else None,
+)
 
 app.add_middleware(
     CORSMiddleware,
-    allow_origins=["*"],
+    allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
     allow_headers=["*"],
 )
@@ -21,13 +36,11 @@ class RespuestasInput(BaseModel):
     categorias: list[str]
 
 
-# ── Health check ──────────────────────────────────────────────────────────────
 @app.get("/")
 def health_check():
     return {"status": "Sistema Experto VARK activo (powered by experta)"}
 
 
-# ── Analizar respuestas ───────────────────────────────────────────────────────
 @app.post("/analizar")
 def analizar_vark(data: RespuestasInput):
     if len(data.categorias) < 16:
@@ -47,7 +60,6 @@ def analizar_vark(data: RespuestasInput):
     return resultado
 
 
-# ── Recomendaciones por perfil ─────────────────────────────────────────────── 
 @app.get("/recomendaciones/{perfil}")
 def obtener_recomendaciones_perfil(perfil: str):
     perfil = perfil.upper()

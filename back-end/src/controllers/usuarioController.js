@@ -269,7 +269,14 @@ export const login = async (req, res) => {
         }
 
         const token = jwt.sign({ id: usuario.id_usuario, id_rol: usuario.id_rol }, process.env.JWT_SECRET, { expiresIn: "2h" });
-        res.cookie("token", token, { httpOnly: true, secure: false, sameSite: "lax", maxAge: 2 * 60 * 60 * 1000, path: "/" });
+        const esProduccion = process.env.NODE_ENV === "production";
+        res.cookie("token", token, {
+            httpOnly: true,
+            secure: esProduccion,
+            sameSite: esProduccion ? "none" : "lax",
+            maxAge: 2 * 60 * 60 * 1000,
+            path: "/"
+        });
 
         const fechaNacimiento = usuario.fecha_nacimiento
             ? { day: new Date(usuario.fecha_nacimiento).getDate(), month: new Date(usuario.fecha_nacimiento).getMonth() + 1, year: new Date(usuario.fecha_nacimiento).getFullYear() }
@@ -338,7 +345,13 @@ export const me = async (req, res) => {
 
 // ============== LOGOUT ==============
 export const logout = (req, res) => {
-    res.clearCookie("token", { httpOnly: true, sameSite: "lax", secure: false, path: "/" });
+    const esProduccion = process.env.NODE_ENV === "production";
+    res.clearCookie("token", {
+        httpOnly: true,
+        secure: esProduccion,
+        sameSite: esProduccion ? "none" : "lax",
+        path: "/"
+    });
     res.json({ mensaje: "Sesión cerrada" });
 };
 
@@ -568,7 +581,7 @@ export const recuperarContrasena = async (req, res) => {
         const link = `${process.env.FRONTEND_URL}/#/recuperar-contrasena?token=${token}`;
 
         await transporter.sendMail({
-            from: `"Soporte Study Organizer" <${process.env.EMAIL_USER}>`,
+            from: `"Soporte Study Organizer" <${process.env.MAIL_USER}>`,
             to: correoNormalizado,
             subject: "Solicitud de recuperación de contraseña",
             html: `
@@ -665,7 +678,7 @@ export const recuperarConAlternativo = async (req, res) => {
         const link = `${process.env.FRONTEND_URL}/#/recuperar-contrasena?token=${token}`;
 
         await transporter.sendMail({
-            from: `"Soporte Study Organizer" <${process.env.EMAIL_USER}>`,
+            from: `"Soporte Study Organizer" <${process.env.MAIL_USER}>`,
             to: usuario.correo_alternativo,
             subject: "Recuperación de contraseña - Correo alternativo",
             html: `

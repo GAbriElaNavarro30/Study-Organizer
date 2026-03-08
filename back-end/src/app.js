@@ -19,9 +19,9 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cors({
-  origin: "http://localhost:5173",
+  origin: process.env.FRONTEND_URL,   // ← variable de entorno
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
-  credentials: true
+  credentials: true,
 }));
 
 app.use(cookieParser());
@@ -39,8 +39,8 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
 app.use("/contacto", contactoRoutes);
 
-app.listen(3000, () => {
-  console.log("Servidor corriendo en puerto 3000");
+app.listen(process.env.PORT || 3000, () => {
+  console.log(`Servidor corriendo en puerto ${process.env.PORT || 3000}`);
 });
 
 export default app;

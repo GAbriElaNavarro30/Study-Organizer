@@ -2,6 +2,8 @@ import { useState, useRef, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import fotoPredeterminada from "../assets/imagenes/perfil-usuario.png";
 
+const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+
 export function usePerfil() {
   const { usuario, setUsuario } = useContext(AuthContext);
 
@@ -241,7 +243,7 @@ export function usePerfil() {
   const verificarCorreoDisponible = async (correo) => {
     try {
       const response = await fetch(
-        "http://localhost:3000/usuarios/verificar-correo",
+        `${BASE_URL}/usuarios/verificar-correo`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -264,7 +266,7 @@ export function usePerfil() {
   const verificarTelefonoDisponible = async (telefono) => {
     try {
       const response = await fetch(
-        "http://localhost:3000/usuarios/verificar-telefono",
+        `${BASE_URL}/usuarios/verificar-telefono`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
@@ -481,7 +483,7 @@ export function usePerfil() {
       if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
       if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
 
-      const res = await fetch("http://localhost:3000/usuarios/actualizar-perfil", {
+      const res = await fetch(`${BASE_URL}/usuarios/actualizar-perfil`, {
         method: "PUT",
         body: formData,
         credentials: "include",

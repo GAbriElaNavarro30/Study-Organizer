@@ -5,6 +5,7 @@ export function useRegistro() {
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [errores, setErrores] = useState({});
+  const BASE_URL = import.meta.env.VITE_API_URL;
 
   // ================== FECHA ==================
   const [fechaNacimiento, setFechaNacimiento] = useState({
@@ -91,17 +92,12 @@ export function useRegistro() {
   // ============== VERIFICAR CORREO DISPONIBLE ==============
   const verificarCorreoDisponible = async (correo) => {
     try {
-      const response = await fetch(
-        "http://localhost:3000/usuarios/verificar-correo",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ correo_electronico: correo }),
-        }
-      );
-
-      const data = await response.json();
-      return data;
+      const response = await fetch(`${BASE_URL}/usuarios/verificar-correo`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ correo_electronico: correo }),
+      });
+      return await response.json();
     } catch (error) {
       console.error("Error al verificar correo:", error);
       return { disponible: true };
@@ -111,17 +107,12 @@ export function useRegistro() {
   // ============== VERIFICAR TELÉFONO DISPONIBLE ==============
   const verificarTelefonoDisponible = async (telefono) => {
     try {
-      const response = await fetch(
-        "http://localhost:3000/usuarios/verificar-telefono",
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({ telefono: telefono }),
-        }
-      );
-
-      const data = await response.json();
-      return data;
+      const response = await fetch(`${BASE_URL}/usuarios/verificar-telefono`, {
+        method: "POST",
+        headers: { "Content-Type": "application/json" },
+        body: JSON.stringify({ telefono }),
+      });
+      return await response.json();
     } catch (error) {
       console.error("Error al verificar teléfono:", error);
       return { disponible: true };
@@ -284,7 +275,7 @@ export function useRegistro() {
 
     // ============== PREPARAR DATOS ==============
     const usuario = {
-      nombre: formData.nombre.trim(), 
+      nombre: formData.nombre.trim(),
       apellido: formData.apellido.trim(),
       telefono: formData.telefono.trim(),
       correo_electronico: formData.correo_electronico.trim().toLowerCase(),
@@ -297,7 +288,7 @@ export function useRegistro() {
     // ============== ENVIAR AL BACKEND ==============
     try {
       const response = await fetch(
-        "http://localhost:3000/usuarios/crear-usuario",
+        `${BASE_URL}/usuarios/crear-usuario`,
         {
           method: "POST",
           headers: { "Content-Type": "application/json" },
