@@ -9,72 +9,57 @@ dayjs.extend(utc);
 dayjs.extend(timezone);
 
 cron.schedule("* * * * *", async () => {
-
-  //console.time("cron-recordatorios");
-
   try {
     const ahora = dayjs().tz("America/Mexico_City");
+    const ahoraFormato = ahora.format("YYYY-MM-DD HH:mm:00");
 
-    /* ================= CORREO 1 HORA ANTES ================= */
-    const unaHoraAntes = ahora.add(1, "hour").format("YYYY-MM-DD HH:mm:00");
-
-    const [horaAntes] = await db.query(`
-      SELECT r.*, u.correo_electronico, u.nombre_usuario
+    // Buscar recordatorios pendientes cuya fecha/hora de envío ya llegó
+    const [recordatorios] = await db.query(`
+      SELECT 
+        r.id_recordatorio,
+        r.tipo,
+        t.titulo,
+        t.descripcion,
+        t.fecha_tarea,
+        t.hora_tarea,
+        t.recordatorio_activo,
+        u.correo_electronico,
+        u.nombre,
+        u.apellido
       FROM Recordatorio r
-      JOIN Usuario u ON r.id_usuario = u.id_usuario
-      WHERE CONCAT(r.fecha, ' ', r.hora) = ?
-      AND r.estado = 'pendiente'
-      AND r.enviado_hora_antes = FALSE
-      AND r.activo = TRUE
-    `, [unaHoraAntes]);
+      JOIN Tarea t ON r.id_tarea = t.id_tarea
+      JOIN Usuario u ON t.id_usuario = u.id_usuario
+      WHERE CONCAT(r.fecha_envio, ' ', r.hora_envio) = ?
+        AND r.enviado = FALSE
+        AND t.recordatorio_activo = TRUE
+        AND t.estado_tarea = 'pendiente'
+    `, [ahoraFormato]);
 
-    for (const r of horaAntes) {
-      await enviarCorreo(r, "Recordatorio próximo", "en 1 hora");
+    for (const r of recordatorios) {
+      const tipoTexto = r.tipo === "una_hora_antes" ? "en 1 hora" : "mañana";
+      const asunto = r.tipo === "una_hora_antes"
+        ? "Recordatorio próximo"
+        : "Recordatorio importante";
+
+      await enviarCorreo(r, asunto, tipoTexto);
+
       await db.query(
-        "UPDATE Recordatorio SET enviado_hora_antes = TRUE WHERE id_recordatorio = ?",
+        `UPDATE Recordatorio SET enviado = TRUE WHERE id_recordatorio = ?`,
         [r.id_recordatorio]
       );
-      console.log(`Correo 1 hora antes enviado para: ${r.titulo}`);
-    }
 
-    /* ================= CORREO 1 DÍA ANTES ================= */
-    if (ahora.format("HH:mm") === "23:59") {
-
-      const manana = ahora.add(1, "day").format("YYYY-MM-DD");
-
-      const [diaAntesRows] = await db.query(`
-        SELECT r.*, u.correo_electronico, u.nombre_usuario
-        FROM Recordatorio r
-        JOIN Usuario u ON r.id_usuario = u.id_usuario
-        WHERE DATE(r.fecha) = ?
-        AND r.estado = 'pendiente'
-        AND r.enviado_dia_antes = FALSE
-        AND r.activo = TRUE
-      `, [manana]);
-
-      for (const r of diaAntesRows) {
-        await enviarCorreo(r, "Recordatorio importante", "para HOY");
-        await db.query(
-          "UPDATE Recordatorio SET enviado_dia_antes = TRUE WHERE id_recordatorio = ?",
-          [r.id_recordatorio]
-        );
-        console.log(`Correo 1 día antes enviado para: ${r.titulo}`);
-      }
+      console.log(`Correo (${r.tipo}) enviado para: ${r.titulo}`);
     }
 
   } catch (error) {
     console.error("Error cron recordatorios:", error);
-  } finally {
-    //console.timeEnd("cron-recordatorios");
   }
-
 });
 
 async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
-  const fechaFormateada = dayjs(recordatorio.fecha).format("DD/MM/YYYY");
-  const horaFormateada = recordatorio.hora.substring(0, 5);
-
-  const icono = tipoRecordatorio === "1 hora" ? "🕒" : "📅";
+  const fechaFormateada = dayjs(recordatorio.fecha_tarea).format("DD/MM/YYYY");
+  const horaFormateada = recordatorio.hora_tarea.substring(0, 5);
+  const icono = tipoRecordatorio === "en 1 hora" ? "🕒" : "📅";
 
   await transporter.sendMail({
     to: recordatorio.correo_electronico,
@@ -88,34 +73,26 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
       <td align="center">
         <table width="500" style="background:#ffffff; border-radius:10px; padding:40px; box-shadow:0 4px 12px rgba(0,0,0,0.05);">
           
-          <!-- TÍTULO -->
           <tr>
             <td style="text-align:center;">
-              <h2 style="margin:0; color:#333;">
-                ${icono} ${asunto}
-              </h2>
+              <h2 style="margin:0; color:#333;">${icono} ${asunto}</h2>
             </td>
           </tr>
 
-          <!-- ESPACIO -->
           <tr><td style="height:25px;"></td></tr>
 
-          <!-- CONTENIDO -->
           <tr>
             <td style="color:#555; font-size:15px; line-height:1.6;">
-              <p>Hola <strong>${recordatorio.nombre_usuario}</strong>,</p>
-
+              <p>Hola <strong>${recordatorio.nombre} ${recordatorio.apellido}</strong>,</p>
               <p>Te recordamos que tienes la siguiente tarea programada <strong>${tipoRecordatorio}</strong>:</p>
 
               <div style="background:#f9fafb; padding:20px; border-radius:8px;">
                 <p style="margin:0 0 10px 0; font-size:16px;">
                   <strong>${recordatorio.titulo}</strong>
                 </p>
-
-                ${recordatorio.descripcion ?
-        `<p style="margin:0 0 10px 0;">${recordatorio.descripcion}</p>`
+                ${recordatorio.descripcion
+        ? `<p style="margin:0 0 10px 0;">${recordatorio.descripcion}</p>`
         : ""}
-
                 <p style="margin:0;"><strong>Fecha:</strong> ${fechaFormateada}</p>
                 <p style="margin:5px 0 0 0;"><strong>Hora:</strong> ${horaFormateada}</p>
               </div>
@@ -123,7 +100,6 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
               <p style="margin-top:30px; font-size:13px; color:#999;">
                 Este es un mensaje automático. Por favor no responder.
               </p>
-
               <p style="margin-top:20px; font-size:14px; color:#333;">
                 Att:<br>
                 <strong>Equipo de Study Organizer</strong>

@@ -3,7 +3,8 @@ import { useState, useEffect } from "react";
 export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ================== ESTADO DEL FORMULARIO ==================
     const [formData, setFormData] = useState({
-        nombre_usuario: "",
+        nombre: "",
+        apellido: "",
         correo: "",
         rol: "",
         telefono: "",
@@ -98,7 +99,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
         } else if (tipo === "editar" && usuario) {
             const fecha = usuario.fecha_nacimiento?.split("-") || ["", "", ""];
             const usuarioOriginal = {
-                nombre_usuario: usuario.nombre_usuario || "",
+                nombre: usuario.nombre || "",
+                apellido: usuario.apellido || "",
                 correo: usuario.correo || "",
                 rol: usuario.rol || "",
                 telefono: usuario.telefono || "",
@@ -122,12 +124,22 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
         const nuevosErrores = {};
 
         // ============== NOMBRE ==============
-        if (!formData.nombre_usuario || !formData.nombre_usuario.trim()) {
-            nuevosErrores.nombre_usuario = "El nombre es obligatorio";
+        if (!formData.nombre || !formData.nombre.trim()) {
+            nuevosErrores.nombre = "El nombre es obligatorio";
         } else {
             const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-            if (!nombreRegex.test(formData.nombre_usuario)) {
-                nuevosErrores.nombre_usuario = "El nombre solo puede contener letras, espacios y acentos";
+            if (!nombreRegex.test(formData.nombre)) {
+                nuevosErrores.nombre = "El nombre solo puede contener letras, espacios y acentos";
+            }
+        }
+
+        // ============== APELLIDO ==============
+        if (!formData.apellido || !formData.apellido.trim()) {
+            nuevosErrores.apellido = "El apellido es obligatorio";
+        } else {
+            const apellidoRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+            if (!apellidoRegex.test(formData.apellido)) {
+                nuevosErrores.apellido = "El apellido solo puede contener letras, espacios y acentos";
             }
         }
 
@@ -282,7 +294,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             const [year = "", month = "", day = ""] = usuario.fecha_nacimiento?.split("-") || [];
 
             setFormData({
-                nombre_usuario: usuario.nombre_usuario || "",
+                nombre: usuario.nombre || "",
+                apellido: usuario.apellido || "",
                 correo: usuario.correo || "",
                 rol: usuario.rol || "",
                 telefono: usuario.telefono || "",
@@ -297,7 +310,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             });
         } else {
             setFormData({
-                nombre_usuario: "",
+                nombre: "",
+                apellido: "",
                 correo: "",
                 rol: "",
                 telefono: "",
@@ -391,7 +405,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
         };
 
         const dataEnviar = {
-            nombre_usuario: formData.nombre_usuario.trim(),
+            nombre: formData.nombre.trim(),
+            apellido: formData.apellido.trim(),
             correo: formData.correo.trim().toLowerCase(),
             telefono: formData.telefono.trim(),
             genero: formData.genero,

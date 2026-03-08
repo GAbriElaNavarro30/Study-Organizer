@@ -2,7 +2,7 @@ import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import "../styles/testea.css";
 import { ModalAbandonarTest } from "../components/ModalAbandonarTest";
-import { CustomAlert } from "../components/CustomAlert"; // ← IMPORTADO
+import { CustomAlert } from "../components/CustomAlert";
 import {
     IoVolumeMuteOutline,
     IoMusicalNotesOutline,
@@ -16,166 +16,167 @@ import {
 import logo from "../assets/imagenes/logotipo.png";
 
 // ─── DATOS ───────────────────────────────────────────────────────────────────
+// IMPORTANTE: el campo "id" de cada opción debe coincidir con el id real en vark_opciones de la BD
 
 const PREGUNTAS = [
     {
         id: 1,
         texto: "¿Cómo prefieres recibir instrucciones para llegar a un lugar?",
         opciones: [
-            { texto: "Veo un mapa o diagrama del recorrido", cat: "V" },
-            { texto: "Alguien me lo explica verbalmente o escucho indicaciones", cat: "A" },
-            { texto: "Leo las instrucciones escritas paso a paso", cat: "R" },
-            { texto: "Recorro el camino yo mismo hasta aprenderlo", cat: "K" },
+            { id: 1, texto: "Veo un mapa o diagrama del recorrido", cat: "V" },
+            { id: 2, texto: "Alguien me lo explica verbalmente o escucho indicaciones", cat: "A" },
+            { id: 3, texto: "Leo las instrucciones escritas paso a paso", cat: "R" },
+            { id: 4, texto: "Recorro el camino yo mismo hasta aprenderlo", cat: "K" },
         ],
     },
     {
         id: 2,
         texto: "Cuando aprendes a usar un programa nuevo, ¿qué prefieres?",
         opciones: [
-            { texto: "Ver tutoriales en video con capturas de pantalla", cat: "V" },
-            { texto: "Escuchar a alguien explicarme cómo funciona", cat: "A" },
-            { texto: "Leer el manual o la documentación del programa", cat: "R" },
-            { texto: "Probarlo directamente y aprender con la práctica", cat: "K" },
+            { id: 5, texto: "Ver tutoriales en video con capturas de pantalla", cat: "V" },
+            { id: 6, texto: "Escuchar a alguien explicarme cómo funciona", cat: "A" },
+            { id: 7, texto: "Leer el manual o la documentación del programa", cat: "R" },
+            { id: 8, texto: "Probarlo directamente y aprender con la práctica", cat: "K" },
         ],
     },
     {
         id: 3,
         texto: "Si tienes que recordar una lista de cosas, ¿qué haces?",
         opciones: [
-            { texto: "Hago una lista visual o mapa mental con colores", cat: "V" },
-            { texto: "Las repito en voz alta varias veces", cat: "A" },
-            { texto: "Las escribo en un papel o cuaderno", cat: "R" },
-            { texto: "Las asocio con acciones o movimientos que puedo hacer", cat: "K" },
+            { id: 9,  texto: "Hago una lista visual o mapa mental con colores", cat: "V" },
+            { id: 10, texto: "Las repito en voz alta varias veces", cat: "A" },
+            { id: 11, texto: "Las escribo en un papel o cuaderno", cat: "R" },
+            { id: 12, texto: "Las asocio con acciones o movimientos que puedo hacer", cat: "K" },
         ],
     },
     {
         id: 4,
         texto: "¿Cómo prefieres que te expliquen un tema difícil?",
         opciones: [
-            { texto: "Con gráficas, esquemas o imágenes ilustrativas", cat: "V" },
-            { texto: "Con una explicación oral detallada o un podcast", cat: "A" },
-            { texto: "Con textos, artículos o apuntes bien redactados", cat: "R" },
-            { texto: "Con ejemplos prácticos y ejercicios que pueda realizar", cat: "K" },
+            { id: 13, texto: "Con gráficas, esquemas o imágenes ilustrativas", cat: "V" },
+            { id: 14, texto: "Con una explicación oral detallada o un podcast", cat: "A" },
+            { id: 15, texto: "Con textos, artículos o apuntes bien redactados", cat: "R" },
+            { id: 16, texto: "Con ejemplos prácticos y ejercicios que pueda realizar", cat: "K" },
         ],
     },
     {
         id: 5,
         texto: "Cuando estudias para un examen, ¿qué método usas más?",
         opciones: [
-            { texto: "Reviso diagramas, mapas conceptuales y esquemas visuales", cat: "V" },
-            { texto: "Escucho grabaciones de clase o explico en voz alta", cat: "A" },
-            { texto: "Leo mis apuntes y resumo la información en texto", cat: "R" },
-            { texto: "Hago ejercicios, resuelvo problemas o practico casos", cat: "K" },
+            { id: 17, texto: "Reviso diagramas, mapas conceptuales y esquemas visuales", cat: "V" },
+            { id: 18, texto: "Escucho grabaciones de clase o explico en voz alta", cat: "A" },
+            { id: 19, texto: "Leo mis apuntes y resumo la información en texto", cat: "R" },
+            { id: 20, texto: "Hago ejercicios, resuelvo problemas o practico casos", cat: "K" },
         ],
     },
     {
         id: 6,
         texto: "Si tienes un problema, ¿cómo sueles resolverlo?",
         opciones: [
-            { texto: "Visualizo el problema y busco patrones o diagramas", cat: "V" },
-            { texto: "Lo hablo con alguien o lo pienso en voz alta", cat: "A" },
-            { texto: "Investigo y leo sobre el tema antes de actuar", cat: "R" },
-            { texto: "Lo intento directamente y aprendo del ensayo y error", cat: "K" },
+            { id: 21, texto: "Visualizo el problema y busco patrones o diagramas", cat: "V" },
+            { id: 22, texto: "Lo hablo con alguien o lo pienso en voz alta", cat: "A" },
+            { id: 23, texto: "Investigo y leo sobre el tema antes de actuar", cat: "R" },
+            { id: 24, texto: "Lo intento directamente y aprendo del ensayo y error", cat: "K" },
         ],
     },
     {
         id: 7,
         texto: "¿Qué tipo de clases disfrutas más?",
         opciones: [
-            { texto: "Las que usan imágenes, videos y presentaciones visuales", cat: "V" },
-            { texto: "Las que incluyen debates, exposiciones o discusiones orales", cat: "A" },
-            { texto: "Las que tienen lecturas, ensayos y materiales escritos", cat: "R" },
-            { texto: "Las que tienen actividades prácticas, talleres o laboratorios", cat: "K" },
+            { id: 25, texto: "Las que usan imágenes, videos y presentaciones visuales", cat: "V" },
+            { id: 26, texto: "Las que incluyen debates, exposiciones o discusiones orales", cat: "A" },
+            { id: 27, texto: "Las que tienen lecturas, ensayos y materiales escritos", cat: "R" },
+            { id: 28, texto: "Las que tienen actividades prácticas, talleres o laboratorios", cat: "K" },
         ],
     },
     {
         id: 8,
         texto: "Cuando compras algo nuevo, ¿qué haces primero?",
         opciones: [
-            { texto: "Reviso fotos, videos o imágenes del producto", cat: "V" },
-            { texto: "Pregunto a alguien que ya lo haya usado o busco reseñas en audio", cat: "A" },
-            { texto: "Leo las instrucciones o las especificaciones técnicas", cat: "R" },
-            { texto: "Lo pruebo directamente para ver cómo funciona", cat: "K" },
+            { id: 29, texto: "Reviso fotos, videos o imágenes del producto", cat: "V" },
+            { id: 30, texto: "Pregunto a alguien que ya lo haya usado o busco reseñas en audio", cat: "A" },
+            { id: 31, texto: "Leo las instrucciones o las especificaciones técnicas", cat: "R" },
+            { id: 32, texto: "Lo pruebo directamente para ver cómo funciona", cat: "K" },
         ],
     },
     {
         id: 9,
         texto: "¿Cómo prefieres que sea una presentación en clase?",
         opciones: [
-            { texto: "Con muchas imágenes, gráficos y recursos visuales", cat: "V" },
-            { texto: "Con una buena explicación oral y espacio para preguntas", cat: "A" },
-            { texto: "Con diapositivas con texto claro y referencias para leer después", cat: "R" },
-            { texto: "Con demostraciones en vivo y actividades para participar", cat: "K" },
+            { id: 33, texto: "Con muchas imágenes, gráficos y recursos visuales", cat: "V" },
+            { id: 34, texto: "Con una buena explicación oral y espacio para preguntas", cat: "A" },
+            { id: 35, texto: "Con diapositivas con texto claro y referencias para leer después", cat: "R" },
+            { id: 36, texto: "Con demostraciones en vivo y actividades para participar", cat: "K" },
         ],
     },
     {
         id: 10,
         texto: "Si tuvieras que enseñarle algo a alguien, ¿cómo lo harías?",
         opciones: [
-            { texto: "Dibujando esquemas, mapas o imágenes explicativas", cat: "V" },
-            { texto: "Explicándoselo en voz alta con ejemplos orales", cat: "A" },
-            { texto: "Escribiendo un resumen o guía que pueda leer", cat: "R" },
-            { texto: "Haciéndolo practicar directamente con ejercicios", cat: "K" },
+            { id: 37, texto: "Dibujando esquemas, mapas o imágenes explicativas", cat: "V" },
+            { id: 38, texto: "Explicándoselo en voz alta con ejemplos orales", cat: "A" },
+            { id: 39, texto: "Escribiendo un resumen o guía que pueda leer", cat: "R" },
+            { id: 40, texto: "Haciéndolo practicar directamente con ejercicios", cat: "K" },
         ],
     },
     {
         id: 11,
         texto: "Cuando visitas un lugar nuevo, ¿cómo lo recuerdas mejor?",
         opciones: [
-            { texto: "Por las imágenes y el aspecto visual del lugar", cat: "V" },
-            { texto: "Por los sonidos, conversaciones o música del ambiente", cat: "A" },
-            { texto: "Por el nombre del lugar y detalles que anoté", cat: "R" },
-            { texto: "Por las sensaciones y experiencias que viví ahí", cat: "K" },
+            { id: 41, texto: "Por las imágenes y el aspecto visual del lugar", cat: "V" },
+            { id: 42, texto: "Por los sonidos, conversaciones o música del ambiente", cat: "A" },
+            { id: 43, texto: "Por el nombre del lugar y detalles que anoté", cat: "R" },
+            { id: 44, texto: "Por las sensaciones y experiencias que viví ahí", cat: "K" },
         ],
     },
     {
         id: 12,
         texto: "¿Qué te ayuda más a concentrarte al estudiar?",
         opciones: [
-            { texto: "Tener un espacio ordenado con colores y organización visual", cat: "V" },
-            { texto: "Escuchar música suave o estar en un ambiente con sonido controlado", cat: "A" },
-            { texto: "Tener mis apuntes bien organizados y leer en silencio", cat: "R" },
-            { texto: "Cambiar de postura, caminar o tomar descansos activos", cat: "K" },
+            { id: 45, texto: "Tener un espacio ordenado con colores y organización visual", cat: "V" },
+            { id: 46, texto: "Escuchar música suave o estar en un ambiente con sonido controlado", cat: "A" },
+            { id: 47, texto: "Tener mis apuntes bien organizados y leer en silencio", cat: "R" },
+            { id: 48, texto: "Cambiar de postura, caminar o tomar descansos activos", cat: "K" },
         ],
     },
     {
         id: 13,
         texto: "Cuando algo no te queda claro, ¿qué haces?",
         opciones: [
-            { texto: "Busco un video o imagen que lo explique visualmente", cat: "V" },
-            { texto: "Le pido a alguien que me lo explique con sus palabras", cat: "A" },
-            { texto: "Busco más textos, artículos o apuntes sobre el tema", cat: "R" },
-            { texto: "Intento aplicarlo en un ejemplo práctico hasta entenderlo", cat: "K" },
+            { id: 49, texto: "Busco un video o imagen que lo explique visualmente", cat: "V" },
+            { id: 50, texto: "Le pido a alguien que me lo explique con sus palabras", cat: "A" },
+            { id: 51, texto: "Busco más textos, artículos o apuntes sobre el tema", cat: "R" },
+            { id: 52, texto: "Intento aplicarlo en un ejemplo práctico hasta entenderlo", cat: "K" },
         ],
     },
     {
         id: 14,
         texto: "¿Cómo prefieres recibir retroalimentación de un trabajo?",
         opciones: [
-            { texto: "Con anotaciones visuales, gráficas o subrayados en el documento", cat: "V" },
-            { texto: "En una conversación donde me expliquen verbalmente", cat: "A" },
-            { texto: "Con comentarios escritos detallados en mi trabajo", cat: "R" },
-            { texto: "Con una demostración de cómo mejorar lo que hice", cat: "K" },
+            { id: 53, texto: "Con anotaciones visuales, gráficas o subrayados en el documento", cat: "V" },
+            { id: 54, texto: "En una conversación donde me expliquen verbalmente", cat: "A" },
+            { id: 55, texto: "Con comentarios escritos detallados en mi trabajo", cat: "R" },
+            { id: 56, texto: "Con una demostración de cómo mejorar lo que hice", cat: "K" },
         ],
     },
     {
         id: 15,
         texto: "Al planificar tus actividades, ¿cómo lo haces?",
         opciones: [
-            { texto: "Uso un calendario visual, tablero o mapa de actividades", cat: "V" },
-            { texto: "Me digo a mí mismo o comento con alguien mis planes del día", cat: "A" },
-            { texto: "Escribo una lista detallada de tareas en papel o app de notas", cat: "R" },
-            { texto: "Simplemente empiezo a hacer las cosas más urgentes", cat: "K" },
+            { id: 57, texto: "Uso un calendario visual, tablero o mapa de actividades", cat: "V" },
+            { id: 58, texto: "Me digo a mí mismo o comento con alguien mis planes del día", cat: "A" },
+            { id: 59, texto: "Escribo una lista detallada de tareas en papel o app de notas", cat: "R" },
+            { id: 60, texto: "Simplemente empiezo a hacer las cosas más urgentes", cat: "K" },
         ],
     },
     {
         id: 16,
         texto: "¿Qué tipo de material de estudio prefieres?",
         opciones: [
-            { texto: "Infografías, mapas mentales y material con muchas imágenes", cat: "V" },
-            { texto: "Podcasts, audiolibros o videos con buena explicación oral", cat: "A" },
-            { texto: "Libros, artículos, apuntes y resúmenes escritos", cat: "R" },
-            { texto: "Guías de ejercicios, casos prácticos y simulaciones", cat: "K" },
+            { id: 61, texto: "Infografías, mapas mentales y material con muchas imágenes", cat: "V" },
+            { id: 62, texto: "Podcasts, audiolibros o videos con buena explicación oral", cat: "A" },
+            { id: 63, texto: "Libros, artículos, apuntes y resúmenes escritos", cat: "R" },
+            { id: 64, texto: "Guías de ejercicios, casos prácticos y simulaciones", cat: "K" },
         ],
     },
 ];
@@ -195,7 +196,6 @@ export function TestEA() {
     const [enviando, setEnviando] = useState(false);
     const [errorEnvio, setErrorEnvio] = useState(null);
 
-    // ── Estados para el CustomAlert ──
     const [mostrarAlertExito, setMostrarAlertExito] = useState(false);
     const [resultadoPendiente, setResultadoPendiente] = useState(null);
 
@@ -226,13 +226,10 @@ export function TestEA() {
             const seleccionadas = prev[preguntaActual.id] || [];
             const yaSeleccionada = seleccionadas.includes(opcionIndex);
 
-            // Si ya estaba → la quitamos (deseleccionar)
-            // Si no estaba → la agregamos
             const nuevas = yaSeleccionada
                 ? seleccionadas.filter((i) => i !== opcionIndex)
                 : [...seleccionadas, opcionIndex];
 
-            // Si el array quedó vacío, eliminamos la clave para que no cuente como "respondida"
             if (nuevas.length === 0) {
                 const { [preguntaActual.id]: _, ...resto } = prev;
                 return resto;
@@ -260,13 +257,11 @@ export function TestEA() {
             const respuestasArray = PREGUNTAS.flatMap((pregunta) => {
                 const indices = respuestas[pregunta.id] || [];
                 return indices.map((opcionIndex) => ({
-                    id_pregunta: pregunta.id,
-                    id_opcion: opcionIndex + 1,
+                    id_opcion: pregunta.opciones[opcionIndex].id,  // ← ID real de BD
                     categoria: pregunta.opciones[opcionIndex].cat,
                 }));
             });
 
-            // 1. Guardar respuestas y recibir el id_intento generado
             const saveRes = await fetch("http://localhost:3000/estilosaprendizaje/responder", {
                 method: "POST",
                 headers: { "Content-Type": "application/json" },
@@ -279,10 +274,8 @@ export function TestEA() {
                 throw new Error(data.error || "Error al guardar las respuestas");
             }
 
-            // ✅ Extraemos el id_intento que devuelve el backend
             const { id_intento } = await saveRes.json();
 
-            // 2. Obtener resultado pasando el id_intento como query param
             const resultRes = await fetch(
                 `http://localhost:3000/estilosaprendizaje/resultado?id_intento=${id_intento}`,
                 {
@@ -298,7 +291,6 @@ export function TestEA() {
 
             const resultado = await resultRes.json();
 
-            // 3. Mostrar CustomAlert y guardar resultado para navegar después
             setResultadoPendiente(resultado);
             setMostrarAlertExito(true);
 
@@ -309,13 +301,11 @@ export function TestEA() {
         }
     };
 
-    // ── Al aceptar el CustomAlert → navegar a resultados ──
     const handleCerrarAlertExito = () => {
         setMostrarAlertExito(false);
         navigate("/resultados-test-estilos-aprendizaje", { state: resultadoPendiente });
     };
 
-    // ── Abandonar ──
     const handleAbandonar = () => {
         setMostrarModal(false);
         navigate("/estilos-aprendizaje");
@@ -330,7 +320,6 @@ export function TestEA() {
     return (
         <div className="test-app">
 
-            {/* ── Modal abandonar ── */}
             {mostrarModal && (
                 <ModalAbandonarTest
                     respondidas={respondidas}
@@ -339,7 +328,6 @@ export function TestEA() {
                 />
             )}
 
-            {/* ── CustomAlert éxito ── */}
             {mostrarAlertExito && (
                 <CustomAlert
                     type="success"
@@ -467,14 +455,12 @@ export function TestEA() {
                         </div>
                     </div>
 
-                    {/* Error de envío */}
                     {errorEnvio && (
                         <div className="test-aviso" style={{ borderColor: "#e53e3e", background: "#fff5f5", color: "#c53030" }}>
                             ⚠️ {errorEnvio}
                         </div>
                     )}
 
-                    {/* Navegación */}
                     <div className="test-nav-btns">
                         <button
                             className="test-nav-btn secondary"

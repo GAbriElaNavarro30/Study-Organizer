@@ -99,23 +99,35 @@ export function Registro() {
 
         <hr className="separador" />
 
-        {/* ========================== NOMBRE ============================ */}
+        {/* ========================== NOMBRE Y APELLIDO ============================ */}
         <div className="fila-campos">
           <div className="campo">
             <label>Nombre</label>
             <input
               type="text"
-              name="nombre_usuario"
+              name="nombre"
               placeholder="Nombre"
-              value={formData.nombre_usuario}
+              value={formData.nombre}
               onChange={handleChange}
-              className={errores.nombre_usuario ? "input-error" : ""}
-
+              className={errores.nombre ? "input-error" : ""}
             />
-            {errores.nombre_usuario && (
-              <span className="mensaje-error">
-                {errores.nombre_usuario}
-              </span>
+            {errores.nombre && (
+              <span className="mensaje-error">{errores.nombre}</span>
+            )}
+          </div>
+
+          <div className="campo">
+            <label>Apellido</label>
+            <input
+              type="text"
+              name="apellido"
+              placeholder="Apellido"
+              value={formData.apellido}
+              onChange={handleChange}
+              className={errores.apellido ? "input-error" : ""}
+            />
+            {errores.apellido && (
+              <span className="mensaje-error">{errores.apellido}</span>
             )}
           </div>
         </div>

@@ -227,12 +227,12 @@ export function Inicio() {
           </div>
           <div className="about-quote-strip">
             <div className="about-quote-inner">
-              <span className="about-quote-mark">"</span>
+              <span className="about-quote-mark">✦</span>
               <p className="about-quote-text">
                 Aprender mejor no depende del tiempo que estudias,
                 <em> sino de cómo lo haces.</em>
               </p>
-              <span className="about-quote-mark about-quote-mark--close">"</span>
+              <span className="about-quote-mark about-quote-mark--close">✦</span>
             </div>
           </div>
         </div>
@@ -357,7 +357,7 @@ export function Inicio() {
       <section className="quote-section">
         <div className="quote-inner">
           <div className="quote-line-top" />
-          <span className="quote-mark">"</span>
+          <span className="quote-mark">✦</span>
           <p className="quote-text">
             Aprender mejor comienza por entender cómo aprendes.
           </p>

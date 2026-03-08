@@ -31,6 +31,7 @@ export function Perfil() {
 
         // Estados de datos
         nombre,
+        apellido,
         correo,
         correo_alternativo,
         telefono,
@@ -61,6 +62,7 @@ export function Perfil() {
         handleFotoPortadaSeleccionada,
         habilitarEdicion,
         handleNombreChange,
+        handleApellidoChange,
         handleCorreoChange,
         handleCorreoAlternativoChange,
         handleTelefonoChange,
@@ -89,7 +91,7 @@ export function Perfil() {
                 <p className="perfil-descripcion-usuario">
                     <strong>{usuario?.rol_texto}</strong>
                 </p>
-                <h2 className="perfil-nombre-usuario">{usuario?.nombre}</h2>
+                <h2 className="perfil-nombre-usuario">{usuario?.nombre} {usuario?.apellido}</h2>
                 <p className="perfil-descripcion-usuario">
                     {usuario?.descripcion}
                 </p>
@@ -114,55 +116,77 @@ export function Perfil() {
                     </div>
 
                     <div className="campos-columna-usuario">
-                        <div className="campo-usuario">
-                            <label>Nombre</label>
-                            <div className="input-editable">
-                                <input
-                                    type="text"
-                                    placeholder="Nombre completo"
-                                    value={nombre}
-                                    onChange={handleNombreChange}
-                                    disabled
-                                />
-                                <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
-                                    <FiEdit2 />
-                                </button>
+                        <div className="fila-form-usuario">
+                            {/* NOMBRE Y APELLIDO */}
+                            <div className="campo-usuario">
+                                <label>Nombre</label>
+                                <div className="input-editable">
+                                    <input
+                                        type="text"
+                                        placeholder="Nombre"
+                                        value={nombre}
+                                        onChange={handleNombreChange}
+                                        disabled
+                                    />
+                                    <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                                        <FiEdit2 />
+                                    </button>
+                                </div>
+                                {errores.nombre && <p className="error-text">{errores.nombre}</p>}
                             </div>
-                            {errores.nombre && <p className="error-text">{errores.nombre}</p>}
+
+                            <div className="campo-usuario">
+                                <label>Apellido</label>
+                                <div className="input-editable">
+                                    <input
+                                        type="text"
+                                        placeholder="Apellido"
+                                        value={apellido}
+                                        onChange={handleApellidoChange}
+                                        disabled
+                                    />
+                                    <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                                        <FiEdit2 />
+                                    </button>
+                                </div>
+                                {errores.apellido && <p className="error-text">{errores.apellido}</p>}
+                            </div>
                         </div>
 
-                        <div className="campo-usuario">
-                            <label>Correo electrónico</label>
-                            <div className="input-editable">
-                                <input
-                                    type="email"
-                                    placeholder="Correo electrónico"
-                                    value={correo}
-                                    onChange={handleCorreoChange}
-                                    disabled
-                                />
-                                <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
-                                    <FiEdit2 />
-                                </button>
+                        <div className="fila-form-usuario">
+                            <div className="campo-usuario">
+                                <label>Correo electrónico</label>
+                                <div className="input-editable">
+                                    <input
+                                        type="email"
+                                        placeholder="Correo electrónico"
+                                        value={correo}
+                                        onChange={handleCorreoChange}
+                                        disabled
+                                    />
+                                    <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                                        <FiEdit2 />
+                                    </button>
+                                </div>
+                                {errores.correo && <p className="error-text">{errores.correo}</p>}
                             </div>
-                            {errores.correo && <p className="error-text">{errores.correo}</p>}
-                        </div>
 
-                        <div className="campo-usuario">
-                            <label>Correo electrónico alternativo (Opcional) </label>
-                            <div className="input-editable">
-                                <input
-                                    type="email"
-                                    placeholder="Correo electrónico alternativo"
-                                    value={correo_alternativo}
-                                    onChange={handleCorreoAlternativoChange}
-                                    disabled
-                                />
-                                <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
-                                    <FiEdit2 />
-                                </button>
+                            <div className="campo-usuario">
+                                <label>Correo electrónico alternativo (Opcional) </label>
+                                <div className="input-editable">
+                                    <input
+                                        type="email"
+                                        placeholder="Correo electrónico alternativo"
+                                        value={correo_alternativo}
+                                        onChange={handleCorreoAlternativoChange}
+                                        disabled
+                                    />
+                                    <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
+                                        <FiEdit2 />
+                                    </button>
+                                </div>
+                                {errores.correo_alternativo && <p className="error-text">{errores.correo_alternativo}</p>}
                             </div>
-                            {errores.correo_alternativo && <p className="error-text">{errores.correo_alternativo}</p>}
                         </div>
                     </div>
                 </div>

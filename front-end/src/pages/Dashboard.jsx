@@ -129,7 +129,7 @@ export function Dashboard({
                 </div>
 
                 <div className="perfil-info">
-                    <h2>Bienvenid@, {usuario?.nombre}</h2>
+                    <h2>Bienvenid@, {usuario?.nombre} {usuario?.apellido}</h2>
                     <span className="perfil-rol">{usuario?.rol_texto}</span>
                     <p className="perfil-descripcion">{usuario?.descripcion}</p>
                 </div>

@@ -30,9 +30,8 @@ export function useTareas() {
         message: ""
     });
 
-    // ===== ESTADO PARA RESULTADOS DE BÚSQUEDA =====
+    // ===== BÚSQUEDA =====
     const [searchResults, setSearchResults] = useState([]);
-    const [isSearching, setIsSearching] = useState(false);
 
     const showAlert = (type, title, message) => {
         setAlert({ show: true, type, title, message });
@@ -42,7 +41,6 @@ export function useTareas() {
         setAlert({ ...alert, show: false });
     };
 
-    // ===== FUNCIONES =====
     const toggleTask = (id) => {
         setTasks(tasks.map(task =>
             task.id === id ? { ...task, completed: !task.completed } : task
@@ -60,14 +58,11 @@ export function useTareas() {
 
     const handleConfirmDelete = async () => {
         if (!taskToDelete) return;
-
         try {
             await api.delete(`/tareas/eliminar-tarea/${taskToDelete.id}`);
-
             setTasks(tasks.filter(task => task.id !== taskToDelete.id));
             setTaskToDelete(null);
             setModalOpen(false);
-
             showAlert("success", "¡Tarea eliminada!", "La tarea se ha eliminado correctamente");
         } catch (error) {
             console.error("Error al eliminar tarea:", error);
@@ -82,12 +77,8 @@ export function useTareas() {
 
     const handleConfirmFinish = async () => {
         if (!taskToFinish) return;
-
         try {
-            const url = `/tareas/completar-tarea/${taskToFinish.id}`;
-            const response = await api.patch(url);
-
-            // Actualizar estado local con el nuevo estado
+            await api.patch(`/tareas/completar-tarea/${taskToFinish.id}`);
             setTasks(tasks.map(t =>
                 t.id === taskToFinish.id
                     ? {
@@ -97,10 +88,8 @@ export function useTareas() {
                     }
                     : t
             ));
-
             setTaskToFinish(null);
             setModalFinalizarOpen(false);
-
             const mensaje = taskToFinish.completed
                 ? "La tarea se marcó como pendiente"
                 : "La tarea se completó exitosamente";
@@ -117,29 +106,31 @@ export function useTareas() {
     };
 
     const handleEditClick = (task) => {
-        const taskForEdit = {
+        setTaskToEdit({
             ...task,
             dueDate: task.dueDateOriginal || task.dueDate,
             dueTime: task.dueTimeOriginal || task.dueTime
-        };
-        setTaskToEdit(taskForEdit);
+        });
         setModalTareaOpen(true);
     };
 
+    // ===== FORMATEAR TAREAS — campos corregidos =====
     const formatearTareas = (tareas) => {
         return tareas.map(t => {
-            let fechaFormateada = t.fecha;
-            if (t.fecha) {
-                const dateObj = new Date(t.fecha);
+            // Fecha: viene como fecha_tarea
+            let fechaFormateada = t.fecha_tarea;
+            if (t.fecha_tarea) {
+                const dateObj = new Date(t.fecha_tarea);
                 const day = String(dateObj.getUTCDate()).padStart(2, "0");
                 const month = String(dateObj.getUTCMonth() + 1).padStart(2, "0");
                 const year = dateObj.getUTCFullYear();
                 fechaFormateada = `${day}-${month}-${year}`;
             }
 
-            let horaFormateada = t.hora;
-            if (t.hora) {
-                let [h, min] = t.hora.split(":");
+            // Hora: viene como hora_tarea
+            let horaFormateada = t.hora_tarea;
+            if (t.hora_tarea) {
+                const [h, min] = t.hora_tarea.split(":");
                 let hourNum = parseInt(h);
                 let period = "AM";
                 let displayHour = hourNum;
@@ -153,25 +144,22 @@ export function useTareas() {
                 } else if (hourNum > 12) {
                     displayHour = hourNum - 12;
                     period = "PM";
-                } else {
-                    displayHour = hourNum;
-                    period = "AM";
                 }
 
                 horaFormateada = `${displayHour}:${min} ${period}`;
             }
 
             return {
-                id: t.id_recordatorio,
+                id: t.id_tarea,                          // ← era id_recordatorio
                 title: t.titulo,
                 description: t.descripcion,
                 dueDate: fechaFormateada,
                 dueTime: horaFormateada,
-                dueDateOriginal: t.fecha,
-                dueTimeOriginal: t.hora,
-                estado: t.estado,
-                completed: t.estado === "completada",
-                activo: t.activo,
+                dueDateOriginal: t.fecha_tarea,          // ← era t.fecha
+                dueTimeOriginal: t.hora_tarea,           // ← era t.hora
+                estado: t.estado_tarea,                  // ← era t.estado
+                completed: t.estado_tarea === "completada",
+                activo: t.recordatorio_activo,           // ← era t.activo
             };
         });
     };
@@ -179,22 +167,15 @@ export function useTareas() {
     const handleSaveTask = async (tarea) => {
         try {
             if (tarea.id) {
-                // ===== EDITAR TAREA EXISTENTE =====
                 await api.put(`/tareas/actualizar-tarea/${tarea.id}`, {
                     titulo: tarea.title,
                     descripcion: tarea.description,
                     fecha: tarea.dueDate,
                     hora: tarea.dueTime,
-                    activo: tarea.activo 
+                    activo: tarea.activo
                 });
-
-                const tareasResponse = await api.get("/tareas/obtener-tareas");
-                const tareasFormateadas = formatearTareas(tareasResponse.data);
-
-                setTasks(tareasFormateadas);
                 showAlert("success", "¡Tarea actualizada!", "Los cambios se guardaron correctamente");
             } else {
-                // ===== CREAR NUEVA TAREA =====
                 await api.post("/tareas/crear-tarea", {
                     titulo: tarea.title,
                     descripcion: tarea.description,
@@ -202,18 +183,14 @@ export function useTareas() {
                     hora: tarea.dueTime,
                     activo: tarea.activo
                 });
-
-                const tareasResponse = await api.get("/tareas/obtener-tareas");
-                const tareasFormateadas = formatearTareas(tareasResponse.data);
-
-                setTasks(tareasFormateadas);
                 showAlert("success", "¡Tarea creada!", "La nueva tarea se ha creado exitosamente");
             }
 
+            const tareasResponse = await api.get("/tareas/obtener-tareas");
+            setTasks(formatearTareas(tareasResponse.data));
             setModalTareaOpen(false);
         } catch (error) {
             console.error("Error al guardar tarea:", error);
-
             if (error.response?.data?.errores) {
                 throw error;
             } else {
@@ -231,61 +208,32 @@ export function useTareas() {
         window.scrollTo(0, 0);
     }, []);
 
-    // ===== FUNCIÓN DE BÚSQUEDA CON DEBOUNCE =====
+    // ===== BÚSQUEDA SIN DELAY =====
     useEffect(() => {
         const buscarTareas = async () => {
             if (!searchQuery.trim()) {
                 setSearchResults([]);
-                setIsSearching(false);
                 return;
             }
-
-            setIsSearching(true);
             try {
                 const response = await api.get(`/tareas/buscar-tarea?q=${encodeURIComponent(searchQuery.trim())}`);
-                const tareasFormateadas = formatearTareas(response.data.resultados);
-                setSearchResults(tareasFormateadas);
+                setSearchResults(formatearTareas(response.data.resultados));
             } catch (error) {
                 console.error("Error al buscar tareas:", error);
                 setSearchResults([]);
-            } finally {
-                setIsSearching(false);
             }
         };
 
-        const timeoutId = setTimeout(buscarTareas);
-        return () => clearTimeout(timeoutId);
+        buscarTareas();
     }, [searchQuery]);
 
-    // ===== FILTRADO CON BÚSQUEDA =====
+    // ===== FILTRADO =====
     const filteredTasks = (() => {
-        if (searchQuery.trim()) {
-            const results = searchResults;
-
-            if (activeFilter === "pending") {
-                return results.filter(task => task.estado === "pendiente");
-            }
-            if (activeFilter === "completed") {
-                return results.filter(task => task.estado === "completada");
-            }
-            if (activeFilter === "expired") {
-                return results.filter(task => task.estado === "vencida");
-            }
-
-            return results;
-        }
-
-        if (activeFilter === "pending") {
-            return tasks.filter(task => task.estado === "pendiente");
-        }
-        if (activeFilter === "completed") {
-            return tasks.filter(task => task.estado === "completada");
-        }
-        if (activeFilter === "expired") {
-            return tasks.filter(task => task.estado === "vencida");
-        }
-
-        return tasks;
+        const base = searchQuery.trim() ? searchResults : tasks;
+        if (activeFilter === "pending") return base.filter(t => t.estado === "pendiente");
+        if (activeFilter === "completed") return base.filter(t => t.estado === "completada");
+        if (activeFilter === "expired") return base.filter(t => t.estado === "vencida");
+        return base;
     })();
 
     const pendingTasks = tasks.filter(t => t.estado === "pendiente");
@@ -293,67 +241,48 @@ export function useTareas() {
     // ===== PAGINACIÓN =====
     const totalPages = Math.ceil(filteredTasks.length / itemsPerPage);
     const startIndex = (currentPage - 1) * itemsPerPage;
-    const paginatedTasks = filteredTasks.slice(
-        startIndex,
-        startIndex + itemsPerPage
-    );
+    const paginatedTasks = filteredTasks.slice(startIndex, startIndex + itemsPerPage);
 
     const getEmptyStateContent = () => {
-        if (searchQuery.trim() !== "") {
-            return {
-                title: "No hay resultados que coincidan con la consulta",
-                message: `No se encontraron tareas para "${searchQuery}"`,
-            };
-        }
-
-        if (activeFilter === "pending") {
-            return {
-                title: "Excelente",
-                message: "No hay tareas pendientes",
-            };
-        }
-
-        if (activeFilter === "completed") {
-            return {
-                title: "No hay tareas completadas",
-                message: "Finaliza tus tareas pendientes",
-            };
-        }
-
-        if (activeFilter === "expired") {
-            return {
-                title: "No hay tareas expiradas",
-                message: "Finaliza tus tareas pendientes antes de que expiren",
-            };
-        }
-
+        if (searchQuery.trim()) return {
+            title: "No hay resultados que coincidan con la consulta",
+            message: `No se encontraron tareas para "${searchQuery}"`,
+        };
+        if (activeFilter === "pending") return {
+            title: "Excelente",
+            message: "No hay tareas pendientes",
+        };
+        if (activeFilter === "completed") return {
+            title: "No hay tareas completadas",
+            message: "Finaliza tus tareas pendientes",
+        };
+        if (activeFilter === "expired") return {
+            title: "No hay tareas expiradas",
+            message: "Finaliza tus tareas pendientes antes de que expiren",
+        };
         return {
             title: "No hay tareas",
             message: "Crea una nueva tarea para comenzar",
         };
     };
 
-    // ===== OBTENER TAREAS =====
+    // ===== OBTENER TAREAS (polling cada 30s) =====
     useEffect(() => {
         const obtenerTareas = async () => {
             try {
                 const response = await api.get("/tareas/obtener-tareas");
-                const tareasFormateadas = formatearTareas(response.data);
-                setTasks(tareasFormateadas);
+                setTasks(formatearTareas(response.data));
             } catch (error) {
                 console.error("Error al obtener tareas:", error);
             }
         };
 
         obtenerTareas();
-
-        const interval = setInterval(obtenerTareas, 1000);
-
+        const interval = setInterval(obtenerTareas, 39000); // ← era 1000ms, muy agresivo
         return () => clearInterval(interval);
     }, []);
 
     return {
-        // Estados
         tasks,
         activeFilter,
         searchQuery,
@@ -367,13 +296,11 @@ export function useTareas() {
         taskToEdit,
         alert,
         searchResults,
-        isSearching,
         filteredTasks,
         pendingTasks,
         totalPages,
         paginatedTasks,
 
-        // Setters
         setActiveFilter,
         setItemsPerPage,
         setCurrentPage,
@@ -381,7 +308,6 @@ export function useTareas() {
         setModalFinalizarOpen,
         setModalTareaOpen,
 
-        // Funciones
         showAlert,
         closeAlert,
         toggleTask,

@@ -1,89 +1,44 @@
+// =========================== MÓDULO DE RECORDATORIOS ===========================
 import { db } from "../config/db.js";
 
 export class Recordatorio {
     constructor({
-        titulo,
-        descripcion = null,
-        fecha,
-        hora,
-        activo,
-        estado = "pendiente",
-
-        id_usuario,
+        tipo,
+        fecha_envio,
+        hora_envio,
+        enviado = false,
+        id_tarea,
     }) {
-        // SOLO asignaciones
-        this.titulo = titulo;
-        this.descripcion = descripcion;
-        this.fecha = fecha;
-        this.hora = hora;
-        this.activo = activo;
-        this.estado = estado;
-        this.id_usuario = id_usuario;
+        this.tipo = tipo;
+        this.fecha_envio = fecha_envio;
+        this.hora_envio = hora_envio;
+        this.enviado = enviado;
+        this.id_tarea = id_tarea;
     }
 
-    // ======================= CREAR RECORDATORIO =======================
     async save() {
-        return await db.query(
-            `INSERT INTO Recordatorio
-            (titulo, descripcion, fecha, hora, activo, estado, id_usuario)
-            VALUES (?, ?, ?, ?, ?, ?, ?)`,
+        const [result] = await db.query(
+            `INSERT INTO Recordatorio (tipo, fecha_envio, hora_envio, enviado, id_tarea)
+            VALUES (?, ?, ?, ?, ?)`,
             [
-                this.titulo,
-                this.descripcion,
-                this.fecha,
-                this.hora,
-                this.activo,
-                this.estado,
-                this.id_usuario,
+                this.tipo,
+                this.fecha_envio,
+                this.hora_envio,
+                this.enviado,
+                this.id_tarea,
             ]
         );
+        return result;
     }
 
-    // ======================= OBTENER TODOS =======================
-    static async getAll() {
-        const [rows] = await db.query(`
-            SELECT 
-                r.id_recordatorio,
-                r.titulo,
-                r.descripcion,
-                r.fecha,
-                r.hora,
-                r.activo,
-                r.estado,
-                r.created_at,
-                u.nombre_usuario,
-                u.correo_electronico
-            FROM Recordatorio r
-            INNER JOIN Usuario u ON r.id_usuario = u.id_usuario
-            ORDER BY r.fecha, r.hora
-        `);
-
-        return rows;
-    }
-
-    // ======================= OBTENER POR USUARIO =======================
-    static async getByUsuario(id_usuario) {
+    static async getByTarea(id_tarea) {
         const [rows] = await db.query(
-            `SELECT * FROM Recordatorio 
-             WHERE id_usuario = ?
-             ORDER BY fecha, hora`,
-            [id_usuario]
+            `SELECT * FROM Recordatorio WHERE id_tarea = ?`,
+            [id_tarea]
         );
         return rows;
     }
 
-    // ======================= OBTENER POR ESTADO =======================
-    static async getByEstado(id_usuario, estado) {
-        const [rows] = await db.query(
-            `SELECT * FROM Recordatorio 
-             WHERE id_usuario = ? AND estado = ?
-             ORDER BY fecha, hora`,
-            [id_usuario, estado]
-        );
-        return rows;
-    }
-
-    // ======================= OBTENER UNO =======================
     static async getById(id_recordatorio) {
         const [rows] = await db.query(
             `SELECT * FROM Recordatorio WHERE id_recordatorio = ?`,
@@ -92,29 +47,33 @@ export class Recordatorio {
         return rows[0];
     }
 
-    // ======================= ACTUALIZAR =======================
-    static async update(id_recordatorio, data) {
-        return await db.query(
-            `UPDATE Recordatorio
-             SET titulo = ?, descripcion = ?, fecha = ?, hora = ?, estado = ?, activo = ?
-             WHERE id_recordatorio = ?`,
-            [
-                data.titulo,
-                data.descripcion,
-                data.fecha,
-                data.hora,
-                data.activo,
-                data.estado,
-                id_recordatorio,
-            ]
-        );
-    }
-
-    // ======================= ELIMINAR =======================
-    static async delete(id_recordatorio) {
-        return await db.query(
-            `DELETE FROM Recordatorio WHERE id_recordatorio = ?`,
+    static async marcarEnviado(id_recordatorio) {
+        const [result] = await db.query(
+            `UPDATE Recordatorio SET enviado = TRUE WHERE id_recordatorio = ?`,
             [id_recordatorio]
         );
+        return result;
+    }
+
+    static async deleteByTarea(id_tarea) {
+        const [result] = await db.query(
+            `DELETE FROM Recordatorio WHERE id_tarea = ?`,
+            [id_tarea]
+        );
+        return result;
+    }
+
+    static async getPendientes(fechaHora) {
+        const [rows] = await db.query(
+            `SELECT r.*, t.id_usuario, u.correo_electronico, u.nombre, u.apellido
+             FROM Recordatorio r
+             JOIN Tarea t ON r.id_tarea = t.id_tarea
+             JOIN Usuario u ON t.id_usuario = u.id_usuario
+             WHERE CONCAT(r.fecha_envio, ' ', r.hora_envio) = ?
+             AND r.enviado = FALSE
+             AND t.recordatorio_activo = TRUE`,
+            [fechaHora]
+        );
+        return rows;
     }
 }

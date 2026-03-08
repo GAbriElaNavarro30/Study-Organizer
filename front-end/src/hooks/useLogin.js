@@ -55,7 +55,7 @@ export function useLogin() {
         mostrar: true,
         type: "success",
         title: "Inicio de sesión exitoso",
-        message: `Bienvenido, ${res.data.usuario.nombre}!`,
+        message: `Bienvenido, ${res.data.usuario.nombre} ${res.data.usuario.apellido}!`,
       });
 
     } catch (error) {

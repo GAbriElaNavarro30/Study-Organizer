@@ -109,6 +109,7 @@ export const PdfUsuarios = (usuarios) => {
       head: [[
         "ID",
         "Nombre",
+        "Apellido",
         "Correo",
         "Rol",
         "Teléfono",
@@ -117,7 +118,8 @@ export const PdfUsuarios = (usuarios) => {
       ]],
       body: usuarios.map(u => [
         u.id,
-        u.nombre_usuario,
+        u.nombre,
+        u.apellido,
         u.correo,
         u.rol,
         u.telefono || "-",

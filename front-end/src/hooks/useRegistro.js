@@ -19,7 +19,8 @@ export function useRegistro() {
 
   // ================== FORM DATA ==================
   const [formData, setFormData] = useState({
-    nombre_usuario: "",
+    nombre: "",
+    apellido: "",
     telefono: "",
     correo_electronico: "",
     contrasena: "",
@@ -132,12 +133,22 @@ export function useRegistro() {
     const erroresFrontend = {};
 
     // ============== NOMBRE ==============
-    if (!formData.nombre_usuario || !formData.nombre_usuario.trim()) {
-      erroresFrontend.nombre_usuario = "El nombre es obligatorio";
+    if (!formData.nombre || !formData.nombre.trim()) {
+      erroresFrontend.nombre = "El nombre es obligatorio";
     } else {
       const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
-      if (!nombreRegex.test(formData.nombre_usuario)) {
-        erroresFrontend.nombre_usuario = "El nombre solo puede contener letras, espacios y acentos";
+      if (!nombreRegex.test(formData.nombre)) {
+        erroresFrontend.nombre = "El nombre solo puede contener letras, espacios y acentos";
+      }
+    }
+
+    // ============== APELLIDO ==============
+    if (!formData.apellido || !formData.apellido.trim()) {
+      erroresFrontend.apellido = "El apellido es obligatorio";
+    } else {
+      const apellidoRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+      if (!apellidoRegex.test(formData.apellido)) {
+        erroresFrontend.apellido = "El apellido solo puede contener letras, espacios y acentos";
       }
     }
 
@@ -273,7 +284,8 @@ export function useRegistro() {
 
     // ============== PREPARAR DATOS ==============
     const usuario = {
-      nombre_usuario: formData.nombre_usuario.trim(),
+      nombre: formData.nombre.trim(), 
+      apellido: formData.apellido.trim(),
       telefono: formData.telefono.trim(),
       correo_electronico: formData.correo_electronico.trim().toLowerCase(),
       contrasena: formData.contrasena,

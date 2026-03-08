@@ -56,9 +56,8 @@ router.get("/resultado", verificarToken, async (req, res) => {
             return res.status(404).json({ mensaje: "No se encontraron respuestas del intento" });
         }
 
-        const preguntasRespondidas = new Set(respuestas.map(r => r.id_pregunta));
-        if (preguntasRespondidas.size !== 16) {
-            return res.status(404).json({ mensaje: "No se encontraron las 16 preguntas respondidas del intento" });
+        if (respuestas.length < 16) {
+            return res.status(404).json({ mensaje: "No se encontraron las 16 respuestas del intento" });
         }
 
         const categorias = respuestas.map(r => r.categoria);

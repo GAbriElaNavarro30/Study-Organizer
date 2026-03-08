@@ -40,7 +40,6 @@ export function HeaderInterno() {
     const handleConfirmLogout = async () => {
         setOpenLogout(false);
         setMenuAbierto(false);
-
         await logout();   // backend + context
         navigate("/login");
     };
@@ -57,7 +56,7 @@ export function HeaderInterno() {
 
             <div className="info-usuario" ref={menuRef}>
                 <span className="nombre-usuario">
-                    {usuario?.nombre}
+                    {usuario?.nombre} {usuario?.apellido}
                 </span>
 
                 <div

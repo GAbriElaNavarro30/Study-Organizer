@@ -101,6 +101,7 @@ export function CrudAdmin() {
               <tr>
                 <th>ID</th>
                 <th>Nombre</th>
+                <th>Apellido</th>
                 <th>Correo</th>
                 <th>Rol</th>
                 <th>Teléfono</th>
@@ -114,7 +115,8 @@ export function CrudAdmin() {
                 usuariosActuales.map((usuario) => (
                   <tr key={usuario.id}>
                     <td>{usuario.id}</td>
-                    <td>{usuario.nombre_usuario}</td>
+                    <td>{usuario.nombre}</td>
+                    <td>{usuario.apellido}</td>
                     <td>{usuario.correo}</td>
                     <td>{usuario.rol}</td>
                     <td>{usuario.telefono}</td>
@@ -190,7 +192,7 @@ export function CrudAdmin() {
           isOpen={modalOpen}
           onClose={cerrarModalEliminar}
           onConfirm={confirmarEliminacion}
-          nombreUsuario={usuarioSeleccionado?.nombre_usuario}
+          nombreUsuario={usuarioSeleccionado?.nombre}
         />
 
         <ModalUsuario

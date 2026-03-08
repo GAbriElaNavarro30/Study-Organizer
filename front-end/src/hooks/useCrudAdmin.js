@@ -46,7 +46,8 @@ export function useCrudAdmin() {
 
       const usuariosFormateados = response.data.map((u) => ({
         id: u.id_usuario,
-        nombre_usuario: u.nombre_usuario,
+        nombre: u.nombre,
+        apellido: u.apellido,
         correo: u.correo_electronico,
         rol: convertirRol(u.id_rol),
         telefono: u.telefono,
@@ -76,7 +77,8 @@ export function useCrudAdmin() {
 
         const usuariosFormateados = response.data.map((u) => ({
           id: u.id_usuario,
-          nombre_usuario: u.nombre_usuario,
+          nombre: u.nombre,
+          apellido: u.apellido,
           correo: u.correo_electronico,
           rol: convertirRol(u.id_rol),
           telefono: u.telefono,
@@ -151,7 +153,8 @@ export function useCrudAdmin() {
     try {
       if (tipoModal === "crear") {
         const payload = {
-          nombre_usuario: usuarioData.nombre_usuario,
+          nombre: usuarioData.nombre,
+          apellido: usuarioData.apellido,
           correo_electronico: usuarioData.correo,
           telefono: usuarioData.telefono,
           genero: usuarioData.genero,
@@ -170,7 +173,8 @@ export function useCrudAdmin() {
 
       if (tipoModal === "editar") {
         const payload = {
-          nombre_usuario: usuarioData.nombre_usuario,
+          nombre: usuarioData.nombre,
+          apellido: usuarioData.apellido,
           correo_electronico: usuarioData.correo,
           telefono: usuarioData.telefono,
           genero: usuarioData.genero,

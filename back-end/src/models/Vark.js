@@ -59,14 +59,14 @@ export class VarkRespuestaUsuario {
 
     static async saveMany(id_usuario, respuestas, id_intento) {
         const valores = respuestas.map(r => [
-            id_usuario,
-            r.id_pregunta,
+            //id_usuario,
+            //r.id_pregunta,
             r.id_opcion,
             id_intento
         ]);
 
         return await db.query(
-            `INSERT INTO vark_respuestas_usuario (id_usuario, id_pregunta, id_opcion, id_intento)
+            `INSERT INTO vark_respuestas_usuario (id_opcion, id_intento)
              VALUES ?`,
             [valores]
         );
@@ -74,11 +74,12 @@ export class VarkRespuestaUsuario {
 
     static async getByIntento(id_usuario, id_intento) {
         const [rows] = await db.query(
-            `SELECT vru.id_pregunta, vru.id_opcion, vo.categoria, vo.texto
-             FROM vark_respuestas_usuario vru
-             JOIN vark_opciones vo ON vru.id_opcion = vo.id
-             WHERE vru.id_usuario = ? AND vru.id_intento = ?
-             ORDER BY vru.id_pregunta ASC`,
+            `SELECT vru.id_opcion, vo.categoria, vo.texto
+         FROM vark_respuestas_usuario vru
+         JOIN vark_opciones vo ON vru.id_opcion = vo.id
+         JOIN vark_intentos vi ON vru.id_intento = vi.id
+         WHERE vi.id_usuario = ? AND vru.id_intento = ?
+         ORDER BY vru.id ASC`,
             [id_usuario, id_intento]
         );
         return rows;
@@ -105,8 +106,7 @@ export class VarkRespuestaUsuario {
 }
 
 export class VarkResultado {
-    constructor({ id_usuario, id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante }) {
-        this.id_usuario = id_usuario;
+    constructor({ id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante }) {
         this.id_intento = id_intento;
         this.puntaje_v = puntaje_v;
         this.puntaje_a = puntaje_a;
@@ -117,10 +117,9 @@ export class VarkResultado {
 
     async save() {
         return await db.query(
-            `INSERT INTO vark_resultados (id_usuario, id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante)
-             VALUES (?, ?, ?, ?, ?, ?, ?)`,
+            `INSERT INTO vark_resultados (id_intento, puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante)
+         VALUES (?, ?, ?, ?, ?, ?)`,
             [
-                this.id_usuario,
                 this.id_intento,
                 this.puntaje_v,
                 this.puntaje_a,
@@ -133,10 +132,11 @@ export class VarkResultado {
 
     static async getUltimoByUsuario(id_usuario) {
         const [rows] = await db.query(
-            `SELECT * FROM vark_resultados
-             WHERE id_usuario = ?
-             ORDER BY fecha DESC
-             LIMIT 1`,
+            `SELECT vr.* FROM vark_resultados vr
+         JOIN vark_intentos vi ON vr.id_intento = vi.id
+         WHERE vi.id_usuario = ?
+         ORDER BY vi.fecha DESC
+         LIMIT 1`,
             [id_usuario]
         );
         return rows[0];
@@ -144,9 +144,10 @@ export class VarkResultado {
 
     static async getHistorialByUsuario(id_usuario) {
         const [rows] = await db.query(
-            `SELECT * FROM vark_resultados
-             WHERE id_usuario = ?
-             ORDER BY fecha DESC`,
+            `SELECT vr.* FROM vark_resultados vr
+         JOIN vark_intentos vi ON vr.id_intento = vi.id
+         WHERE vi.id_usuario = ?
+         ORDER BY vi.fecha DESC`,
             [id_usuario]
         );
         return rows;

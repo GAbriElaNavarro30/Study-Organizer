@@ -32,6 +32,7 @@ export function usePerfil() {
 
   // ================== ESTADOS DE DATOS ==================
   const [nombre, setNombre] = useState(usuario?.nombre || "");
+  const [apellido, setApellido] = useState(usuario?.apellido || "");
   const [correo, setCorreo] = useState(usuario?.correo || "");
   const [correo_alternativo, setCorreoAlternativo] = useState(usuario?.correo_alternativo || "");
   const [telefono, setTelefono] = useState(usuario?.telefono || "");
@@ -62,8 +63,8 @@ export function usePerfil() {
   // ================== USEEFFECT PARA CARGAR DATOS ==================
   useEffect(() => {
     if (!usuario) return;
-
     setNombre(usuario.nombre || "");
+    setApellido(usuario.apellido || "");
     setCorreo(usuario.correo || "");
     setCorreoAlternativo(usuario.correo_alternativo || "");
     setTelefono(usuario.telefono || "");
@@ -131,6 +132,7 @@ export function usePerfil() {
   // ================== HANDLER DE CANCELAR ==================
   const handleCancelar = () => {
     setNombre(usuario?.nombre || "");
+    setApellido(usuario?.apellido || "");
     setCorreo(usuario?.correo || "");
     setCorreoAlternativo(usuario?.correo_alternativo || "");
     setTelefono(usuario?.telefono || "");
@@ -168,6 +170,13 @@ export function usePerfil() {
     setNombre(e.target.value);
     if (errores.nombre) {
       setErrores(prev => ({ ...prev, nombre: undefined }));
+    }
+  };
+
+  const handleApellidoChange = (e) => {
+    setApellido(e.target.value);
+    if (errores.apellido) {
+      setErrores(prev => ({ ...prev, apellido: undefined }));
     }
   };
 
@@ -287,6 +296,18 @@ export function usePerfil() {
       const nombreRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
       if (!nombreRegex.test(nombreLimpio)) {
         nuevosErrores.nombre = "El nombre solo puede contener letras, espacios, puntos y acentos";
+      }
+    }
+
+    // ============== APELLIDO ==============
+    const apellidoLimpio = apellido.trim();
+
+    if (!apellidoLimpio) {
+      nuevosErrores.apellido = "El apellido es obligatorio";
+    } else {
+      const apellidoRegex = /^[A-Za-zÁÉÍÓÚáéíóúÑñ.\s]+$/;
+      if (!apellidoRegex.test(apellidoLimpio)) {
+        nuevosErrores.apellido = "El apellido solo puede contener letras, espacios, puntos y acentos";
       }
     }
 
@@ -442,6 +463,7 @@ export function usePerfil() {
     try {
       const formData = new FormData();
       formData.append("nombre", nombre.trim());
+      formData.append("apellido", apellido.trim());
       formData.append("correo", correo.trim().toLowerCase());
       formData.append("correo_alternativo", correo_alternativo.trim().toLowerCase() || "")
       formData.append("telefono", telefono.trim());
@@ -494,7 +516,8 @@ export function usePerfil() {
         if (data.errors && Array.isArray(data.errors)) {
           const nuevosErrores = {};
           data.errors.forEach(error => {
-            if (error.path === "nombre_usuario") nuevosErrores.nombre = error.message;
+            if (error.path === "nombre") nuevosErrores.nombre = error.message;
+            if (error.path === "apellido") nuevosErrores.apellido = error.message;
             if (error.path === "correo_electronico") nuevosErrores.correo = error.message;
             if (error.path === "telefono") nuevosErrores.telefono = error.message;
             if (error.path === "contrasena") nuevosErrores.password = error.message;
@@ -555,6 +578,7 @@ export function usePerfil() {
 
     // Estados de datos
     nombre,
+    apellido,
     correo,
     correo_alternativo,
     telefono,
@@ -588,6 +612,7 @@ export function usePerfil() {
     handleCancelar,
     habilitarEdicion,
     handleNombreChange,
+    handleApellidoChange,
     handleCorreoChange,
     handleCorreoAlternativoChange,
     handleTelefonoChange,

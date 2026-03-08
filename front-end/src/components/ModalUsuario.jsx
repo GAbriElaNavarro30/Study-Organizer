@@ -88,13 +88,27 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                     Nombre
                                     <input
                                         type="text"
-                                        name="nombre_usuario"
+                                        name="nombre"
                                         placeholder="Nombre"
-                                        value={formData.nombre_usuario}
+                                        value={formData.nombre}
                                         onChange={handleChange}
                                     />
-                                    {errors.nombre_usuario && (
-                                        <span className="error-text">{errors.nombre_usuario}</span>
+                                    {errors.nombre && (
+                                        <span className="error-text">{errors.nombre}</span>
+                                    )}
+                                </label>
+                            
+                                <label>
+                                    Apellido
+                                    <input
+                                        type="text"
+                                        name="apellido"
+                                        placeholder="Apellido"
+                                        value={formData.apellido}
+                                        onChange={handleChange}
+                                    />
+                                    {errors.apellido && (
+                                        <span className="error-text">{errors.apellido}</span>
                                     )}
                                 </label>
                             </div>

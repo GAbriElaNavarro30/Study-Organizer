@@ -1,10 +1,12 @@
+// ============================== MÓDULO USUARIOS ===============================
 import { db } from "../config/db.js";
 
 export class Usuario {
     constructor({
-        nombre_usuario,
+        nombre,
+        apellido,
         correo_electronico,
-        correo_alternativo,
+        correo_alternativo = null,
         contrasena,
         id_rol,
         telefono = null,
@@ -14,8 +16,8 @@ export class Usuario {
         foto_perfil = null,
         foto_portada = null,
     }) {
-        // SOLO asignaciones
-        this.nombre_usuario = nombre_usuario;
+        this.nombre = nombre;
+        this.apellido = apellido;
         this.correo_electronico = correo_electronico;
         this.correo_alternativo = correo_alternativo;
         this.contrasena = contrasena;
@@ -31,10 +33,11 @@ export class Usuario {
     async save() {
         return await db.query(
             `INSERT INTO Usuario 
-            (nombre_usuario, correo_electronico, correo_alternativo, contrasena, telefono, fecha_nacimiento, genero, descripcion, foto_perfil, foto_portada, id_rol)
-            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
+            (nombre, apellido, correo_electronico, correo_alternativo, contrasena, telefono, fecha_nacimiento, genero, descripcion, foto_perfil, foto_portada, id_rol)
+            VALUES (?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?, ?)`,
             [
-                this.nombre_usuario,
+                this.nombre,
+                this.apellido,
                 this.correo_electronico,
                 this.correo_alternativo,
                 this.contrasena,
@@ -51,21 +54,29 @@ export class Usuario {
 
     static async getAll() {
         const [rows] = await db.query(`
-    SELECT 
-      u.id_usuario,
-      u.nombre_usuario,
-      u.correo_electronico,
-      u.correo_alternativo,
-      u.telefono,
-      u.genero,
-      u.fecha_nacimiento,
-      u.id_rol,  
-      r.tipo_usuario AS rol
-    FROM Usuario u
-    LEFT JOIN Rol r ON u.id_rol = r.id_rol
-  `);
-
+            SELECT 
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.correo_electronico,
+                u.correo_alternativo,
+                u.telefono,
+                u.genero,
+                u.fecha_nacimiento,
+                u.id_rol,
+                r.tipo_rol AS rol
+            FROM Usuario u
+            LEFT JOIN Rol r ON u.id_rol = r.id_rol
+        `);
         return rows;
+    }
+
+    static async getById(id) {
+        const [rows] = await db.query(
+            "SELECT * FROM Usuario WHERE id_usuario = ?",
+            [id]
+        );
+        return rows[0];
     }
 
     static async getByCorreo(correo) {

@@ -1,19 +1,75 @@
-# hechos.py
+# hechos_ea.py
+# Los "hechos" en experta se representan como subclases de Fact.
+# Esto equivale a los hechos base y derivados de Prolog.
+
+from experta import Fact, Field
+
+# ===========================================================================
+# HECHOS BASE: datos que el usuario provee (hechos iniciales / WM entries)
+# ===========================================================================
+
+class RespuestaUsuario(Fact):
+    """
+    Hecho que representa una categoría respondida por el usuario.
+    Se inserta una instancia por cada respuesta del cuestionario VARK.
+    Ejemplo: RespuestaUsuario(categoria="V")
+    """
+    categoria = Field(str, mandatory=True)
+
+
+class PuntajesVARK(Fact):
+    """
+    Hecho derivado: contiene los puntajes acumulados por categoría.
+    Lo calcula el motor antes de iniciar la inferencia.
+    """
+    v = Field(int, mandatory=True)
+    a = Field(int, mandatory=True)
+    r = Field(int, mandatory=True)
+    k = Field(int, mandatory=True)
+    total = Field(int, mandatory=True)
+
+
+# ===========================================================================
+# HECHOS DERIVADOS: conclusiones que infiere el motor de reglas
+# ===========================================================================
+
+class PerfilDominante(Fact):
+    """
+    Hecho derivado: perfil o combinación de perfiles dominantes.
+    Ejemplo: PerfilDominante(perfil="VK", nombre="Visual — Kinestésico")
+    """
+    perfil = Field(str, mandatory=True)
+    nombre = Field(str, mandatory=True)
+
+
+class Recomendacion(Fact):
+    """
+    Hecho derivado: recomendación asociada a un estilo de aprendizaje.
+    Ejemplo: Recomendacion(estilo="V", texto="Usa mapas mentales...")
+    """
+    estilo  = Field(str, mandatory=True)
+    texto   = Field(str, mandatory=True)
+
+
+# ===========================================================================
+# BASE DE CONOCIMIENTO ESTÁTICA (equivalente a hechos base en Prolog)
+# ===========================================================================
+
 PERFILES = {
-    "V": "Visual",
-    "A": "Auditivo",
-    "R": "Lector / Escritor",
-    "K": "Kinestésico",
-    "VA": "Visual — Auditivo",
-    "VR": "Visual — Lector",
-    "VK": "Visual — Kinestésico",
-    "AR": "Auditivo — Lector",
-    "AK": "Auditivo — Kinestésico",
-    "RK": "Lector — Kinestésico",
-    "VAR": "Visual · Auditivo · Lector",
-    "VAK": "Visual · Auditivo · Kinestésico",
-    "VRK": "Visual · Lector · Kinestésico",
-    "ARK": "Auditivo · Lector · Kinestésico",
+    "V":    "Visual",
+    "A":    "Auditivo",
+    "R":    "Lector / Escritor",
+    "K":    "Kinestésico",
+    "VA":   "Visual — Auditivo",
+    "VR":   "Visual — Lector",
+    "VK":   "Visual — Kinestésico",
+    "AR":   "Auditivo — Lector",
+    "AK":   "Auditivo — Kinestésico",
+    "RK":   "Lector — Kinestésico",
+    "VAR":  "Visual · Auditivo · Lector",
+    "VAK":  "Visual · Auditivo · Kinestésico",
+    "VRK":  "Visual · Lector · Kinestésico",
+    "ARK":  "Auditivo · Lector · Kinestésico",
     "VARK": "Multimodal",
 }
 
@@ -28,7 +84,7 @@ RECOMENDACIONES = {
         "Subraya con distintos colores según la importancia del contenido",
         "Usa post-its o tarjetas visuales para recordar conceptos clave",
         "Convierte listas largas en diagramas o líneas de tiempo",
-        "Dibuja conceptos o procesos mientras estudias"
+        "Dibuja conceptos o procesos mientras estudias",
     ],
     "A": [
         "Graba tus clases o explicaciones y escúchalas después",
@@ -40,7 +96,7 @@ RECOMENDACIONES = {
         "Resume la información hablando y no solo escribiendo",
         "Asocia conceptos con ritmos, sonidos o palabras clave",
         "Haz pausas para explicar lo aprendido antes de continuar",
-        "Prefiere ambientes donde puedas hablar sin distraerte"
+        "Prefiere ambientes donde puedas hablar sin distraerte",
     ],
     "R": [
         "Toma notas detalladas durante las clases o lecturas",
@@ -52,7 +108,7 @@ RECOMENDACIONES = {
         "Utiliza definiciones y conceptos clave por escrito",
         "Prefiere materiales con texto claro y bien organizado",
         "Usa cuestionarios escritos para autoevaluarte",
-        "Mantén un cuaderno o documento digital para cada materia"
+        "Mantén un cuaderno o documento digital para cada materia",
     ],
     "K": [
         "Aprende haciendo: practica ejercicios y casos reales",
@@ -64,6 +120,6 @@ RECOMENDACIONES = {
         "Utiliza objetos físicos o modelos para representar conceptos",
         "Aprende resolviendo problemas en lugar de solo leer",
         "Cambia de lugar o postura para mantener la concentración",
-        "Aplica lo aprendido inmediatamente después de estudiarlo"
-    ]
+        "Aplica lo aprendido inmediatamente después de estudiarlo",
+    ],
 }
