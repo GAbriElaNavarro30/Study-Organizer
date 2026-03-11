@@ -1,4 +1,3 @@
-import React from "react";
 import "../styles/modalEliminar.css";
 
 export function ModalEliminar({ isOpen, onClose, onConfirm, nombreUsuario }) {

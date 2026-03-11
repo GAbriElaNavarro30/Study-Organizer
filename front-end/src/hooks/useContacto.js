@@ -1,4 +1,5 @@
 import { useState } from "react";
+import api from "../services/api";
 
 export function useContacto() {
     const [nombre, setNombre] = useState("");
@@ -14,29 +15,24 @@ export function useContacto() {
         setErrores({});
 
         try {
-            const res = await fetch("http://localhost:3000/contacto/contactanos", {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ nombre, correo, mensaje }),
-            });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                setErrores(data.errores || {});
-                return;
-            }
+            // axios resuelve directamente, no necesita .json() ni .ok
+            await api.post("/contacto/contactanos", { nombre, correo, mensaje });
 
             setExitoso(true);
             setNombre("");
             setCorreo("");
             setMensaje("");
 
-            setTimeout(() => {
-                setExitoso(false);
-            }, 5000);
-        } catch (error) {
-            setErrores({ general: "Error de conexión. Intenta nuevamente." });
+            setTimeout(() => setExitoso(false), 5000);
+
+        } catch (err) {
+            // axios lanza excepción en status >= 400, los errores van en err.response
+            const data = err.response?.data;
+            if (data?.errores) {
+                setErrores(data.errores);
+            } else {
+                setErrores({ general: "Error de conexión. Intenta nuevamente." });
+            }
         } finally {
             setEnviando(false);
         }

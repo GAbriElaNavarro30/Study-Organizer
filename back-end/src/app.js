@@ -11,7 +11,6 @@ import dotenv from "dotenv";
 import "../src/cron/recordatoriosCron.js";
 import { iniciarCronTipDiario } from "./cron/tipDiario.cron.js";
 
-dotenv.config();
 const app = express();
 
 // limite de las notas 50mb
@@ -39,8 +38,6 @@ app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
 app.use("/contacto", contactoRoutes);
 
-app.listen(process.env.PORT || 3000, () => {
-  console.log(`Servidor corriendo en puerto ${process.env.PORT || 3000}`);
-});
+
 
 export default app;

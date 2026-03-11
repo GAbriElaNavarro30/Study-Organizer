@@ -1,11 +1,11 @@
 import { useState, useEffect } from "react";
+import api from "../services/api";
 
 export function useRegistro() {
   // ================== UI ==================
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [errores, setErrores] = useState({});
-  const BASE_URL = import.meta.env.VITE_API_URL;
 
   // ================== FECHA ==================
   const [fechaNacimiento, setFechaNacimiento] = useState({
@@ -92,12 +92,10 @@ export function useRegistro() {
   // ============== VERIFICAR CORREO DISPONIBLE ==============
   const verificarCorreoDisponible = async (correo) => {
     try {
-      const response = await fetch(`${BASE_URL}/usuarios/verificar-correo`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ correo_electronico: correo }),
+      const { data } = await api.post("/usuarios/verificar-correo", {
+        correo_electronico: correo,
       });
-      return await response.json();
+      return data;
     } catch (error) {
       console.error("Error al verificar correo:", error);
       return { disponible: true };
@@ -107,12 +105,10 @@ export function useRegistro() {
   // ============== VERIFICAR TELÉFONO DISPONIBLE ==============
   const verificarTelefonoDisponible = async (telefono) => {
     try {
-      const response = await fetch(`${BASE_URL}/usuarios/verificar-telefono`, {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({ telefono }),
+      const { data } = await api.post("/usuarios/verificar-telefono", {
+        telefono,
       });
-      return await response.json();
+      return data;
     } catch (error) {
       console.error("Error al verificar teléfono:", error);
       return { disponible: true };
@@ -287,36 +283,16 @@ export function useRegistro() {
 
     // ============== ENVIAR AL BACKEND ==============
     try {
-      const response = await fetch(
-        `${BASE_URL}/usuarios/crear-usuario`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify(usuario),
-        }
-      );
-
-      const data = await response.json();
-
-      // ============== SI HAY ERROR EN BACKEND ==============
-      if (!response.ok) {
-        console.error("Error del backend:", data.errors);
-
-        return {
-          success: false,
-          message: data.message || "Error al registrar la cuenta. Por favor intenta de nuevo."
-        };
-      }
-
-      // ============== ÉXITO ==============
+      const { data } = await api.post("/usuarios/crear-usuario", usuario);
       setErrores({});
       return { success: true, data };
 
-    } catch (error) {
-      console.error("Error de red:", error);
+    } catch (err) {
+      const data = err.response?.data;
+      console.error("Error del backend:", data?.errors);
       return {
         success: false,
-        message: "Error de conexión. Por favor intenta de nuevo."
+        message: data?.message || "Error al registrar la cuenta. Por favor intenta de nuevo."
       };
     }
   };

@@ -11,7 +11,7 @@ import {
 import { MdOutlinePsychology } from "react-icons/md";
 import { useInicio, modules } from "../hooks/useInicio";
 import "../styles/inicio.css";
- 
+
 const benefits = [
   {
     icon: <IoTimeOutline />, label: "Ahorra tiempo",

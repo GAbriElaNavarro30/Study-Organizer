@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import api from "../services/api";
 
 export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
     // ================== ESTADO DEL FORMULARIO ==================
@@ -36,12 +36,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             const payload = { correo_electronico: correo };
             if (usuarioId) payload.id_usuario = usuarioId;
 
-            const response = await fetch(`${BASE_URL}/usuarios/verificar-correo`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            return await response.json();
+            const { data } = await api.post("/usuarios/verificar-correo", payload);
+            return data;
         } catch (error) {
             console.error("Error al verificar correo:", error);
             return { disponible: true };
@@ -54,12 +50,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
             const payload = { telefono };
             if (usuarioId) payload.id_usuario = usuarioId;
 
-            const response = await fetch(`${BASE_URL}/usuarios/verificar-telefono`, {
-                method: "POST",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify(payload),
-            });
-            return await response.json();
+            const { data } = await api.post("/usuarios/verificar-telefono", payload);
+            return data;
         } catch (error) {
             console.error("Error al verificar teléfono:", error);
             return { disponible: true };

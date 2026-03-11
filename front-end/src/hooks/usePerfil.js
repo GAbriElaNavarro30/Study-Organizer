@@ -1,8 +1,7 @@
 import { useState, useRef, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import fotoPredeterminada from "../assets/imagenes/perfil-usuario.png";
-
-const BASE_URL = import.meta.env.VITE_API_URL || "http://localhost:3000";
+import api from "../services/api";
 
 export function usePerfil() {
   const { usuario, setUsuario } = useContext(AuthContext);
@@ -242,19 +241,10 @@ export function usePerfil() {
   // ================== VERIFICAR CORREO DISPONIBLE ==================
   const verificarCorreoDisponible = async (correo) => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/usuarios/verificar-correo`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            correo_electronico: correo,
-            id_usuario: usuario?.id_usuario
-          }),
-        }
-      );
-
-      const data = await response.json();
+      const { data } = await api.post("/usuarios/verificar-correo", {
+        correo_electronico: correo,
+        id_usuario: usuario?.id_usuario,
+      });
       return data;
     } catch (error) {
       console.error("Error al verificar correo:", error);
@@ -265,19 +255,10 @@ export function usePerfil() {
   // ================== VERIFICAR TELÉFONO DISPONIBLE ==================
   const verificarTelefonoDisponible = async (telefono) => {
     try {
-      const response = await fetch(
-        `${BASE_URL}/usuarios/verificar-telefono`,
-        {
-          method: "POST",
-          headers: { "Content-Type": "application/json" },
-          body: JSON.stringify({
-            telefono: telefono,
-            id_usuario: usuario?.id_usuario
-          }),
-        }
-      );
-
-      const data = await response.json();
+      const { data } = await api.post("/usuarios/verificar-telefono", {
+        telefono,
+        id_usuario: usuario?.id_usuario,
+      });
       return data;
     } catch (error) {
       console.error("Error al verificar teléfono:", error);
@@ -483,7 +464,7 @@ export function usePerfil() {
       if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
       if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
 
-      const res = await fetch(`${BASE_URL}/usuarios/actualizar-perfil`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/actualizar-perfil`, {
         method: "PUT",
         body: formData,
         credentials: "include",
