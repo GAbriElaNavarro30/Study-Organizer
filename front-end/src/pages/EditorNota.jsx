@@ -24,6 +24,7 @@ export function EditorNota() {
         fontFamily,
         fontSize,
         editorBackgroundColor,
+        textColor,
 
         // Modales
         mostrarModalSalir, setMostrarModalSalir,
@@ -187,7 +188,7 @@ export function EditorNota() {
                             <Palette size={16} />
                             <input
                                 type="color"
-                                defaultValue="#000000"
+                                value={textColor}
                                 onChange={(e) => handleTextColor(e.target.value)}
                                 className="color-input"
                             />

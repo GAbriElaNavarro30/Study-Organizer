@@ -1,4 +1,5 @@
 import { useState, useEffect } from "react";
+import api from "../services/api.js";
 
 export function useModalCompartirNota(isOpen) {
 
@@ -23,6 +24,11 @@ export function useModalCompartirNota(isOpen) {
     const [editandoNombreError, setEditandoNombreError] = useState("");
     const [guardandoNombre, setGuardandoNombre] = useState(false);
 
+    const [editandoIdCorreo, setEditandoIdCorreo] = useState(null);
+    const [editandoNombreCorreo, setEditandoNombreCorreo] = useState("");
+    const [editandoNombreCorreoError, setEditandoNombreCorreoError] = useState("");
+    const [guardandoNombreCorreo, setGuardandoNombreCorreo] = useState(false);
+
     // ── Destinatarios correo ──
     const [destinatariosCorreo, setDestinatariosCorreo] = useState([]);
     const [cargandoDestinatariosCorreo, setCargandoDestinatariosCorreo] = useState(false);
@@ -43,10 +49,13 @@ export function useModalCompartirNota(isOpen) {
             setEditandoNombre("");
             setEditandoNombreError("");
             setDestinatariosCorreo([]);
+            setEditandoIdCorreo(null);
+            setEditandoNombreCorreo("");
+            setEditandoNombreCorreoError("");
         }
     }, [isOpen]);
 
-    /* ── Cargar destinatarios al entrar en modo telegram ── */
+    /* ── Cargar destinatarios al entrar en modo ── */
     useEffect(() => {
         if (modo === "telegram") cargarDestinatarios();
         if (modo === "correo") cargarDestinatariosCorreo();
@@ -80,19 +89,13 @@ export function useModalCompartirNota(isOpen) {
     };
 
     /* ────────────────────────────────────────────
-       FETCH
+       CARGAR DESTINATARIOS
     ──────────────────────────────────────────── */
     const cargarDestinatarios = async () => {
         setCargandoDestinatarios(true);
         try {
-            const res = await fetch(
-                "http://localhost:3000/notas/telegram-destinatarios",
-                { credentials: "include" }
-            );
-            if (res.ok) {
-                const data = await res.json();
-                setDestinatariosPrevios(data);
-            }
+            const { data } = await api.get("/notas/telegram-destinatarios");
+            setDestinatariosPrevios(data);
         } catch (error) {
             console.error("Error al cargar destinatarios:", error);
         } finally {
@@ -103,14 +106,8 @@ export function useModalCompartirNota(isOpen) {
     const cargarDestinatariosCorreo = async () => {
         setCargandoDestinatariosCorreo(true);
         try {
-            const res = await fetch(
-                "http://localhost:3000/notas/correo-destinatarios",
-                { credentials: "include" }
-            );
-            if (res.ok) {
-                const data = await res.json();
-                setDestinatariosCorreo(data);
-            }
+            const { data } = await api.get("/notas/correo-destinatarios");
+            setDestinatariosCorreo(data);
         } catch (error) {
             console.error("Error al cargar destinatarios de correo:", error);
         } finally {
@@ -191,29 +188,52 @@ export function useModalCompartirNota(isOpen) {
 
         setGuardandoNombre(true);
         try {
-            const res = await fetch(
-                `http://localhost:3000/notas/telegram-destinatario/${dest.id}`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ nombre: editandoNombre.trim() }),
-                }
+            await api.patch(`/notas/telegram-destinatario/${dest.id}`, { nombre: editandoNombre.trim() });
+            setDestinatariosPrevios(prev =>
+                prev.map(d => d.id === dest.id ? { ...d, nombre: editandoNombre.trim() } : d)
             );
-            if (res.ok) {
-                setDestinatariosPrevios(prev =>
-                    prev.map(d => d.id === dest.id ? { ...d, nombre: editandoNombre.trim() } : d)
-                );
-                cancelarEdicion();
-            } else {
-                const data = await res.json();
-                setEditandoNombreError(data.error || "Error al guardar");
-            }
+            cancelarEdicion();
         } catch (error) {
             console.error("Error al renombrar destinatario:", error);
-            setEditandoNombreError("Error de conexión, intenta de nuevo");
+            setEditandoNombreError(error.response?.data?.error || "Error de conexión, intenta de nuevo");
         } finally {
             setGuardandoNombre(false);
+        }
+    };
+
+    const iniciarEdicionCorreo = (dest) => {
+        setEditandoIdCorreo(dest.id);
+        setEditandoNombreCorreo(dest.nombre || dest.correo_electronico);
+        setEditandoNombreCorreoError("");
+    };
+
+    const cancelarEdicionCorreo = () => {
+        setEditandoIdCorreo(null);
+        setEditandoNombreCorreo("");
+        setEditandoNombreCorreoError("");
+    };
+
+    const handleChangeNombreCorreo = (valor) => {
+        setEditandoNombreCorreo(valor);
+        setEditandoNombreCorreoError("");
+    };
+
+    const guardarNombreDestinatarioCorreo = async (dest) => {
+        const err = validarNombreDestinatario(editandoNombreCorreo);
+        if (err) { setEditandoNombreCorreoError(err); return; }
+
+        setGuardandoNombreCorreo(true);
+        try {
+            await api.patch(`/notas/correo-destinatario/${dest.id}`, { nombre: editandoNombreCorreo.trim() });
+            setDestinatariosCorreo(prev =>
+                prev.map(d => d.id === dest.id ? { ...d, nombre: editandoNombreCorreo.trim() } : d)
+            );
+            cancelarEdicionCorreo();
+        } catch (error) {
+            console.error("Error al renombrar destinatario de correo:", error);
+            setEditandoNombreCorreoError(error.response?.data?.error || "Error de conexión, intenta de nuevo");
+        } finally {
+            setGuardandoNombreCorreo(false);
         }
     };
 
@@ -227,5 +247,7 @@ export function useModalCompartirNota(isOpen) {
         editandoId, editandoNombre, editandoNombreError, guardandoNombre,
         iniciarEdicion, cancelarEdicion, handleChangeNombreEdicion, guardarNombreDestinatario,
         destinatariosCorreo, cargandoDestinatariosCorreo, seleccionarDestinatarioCorreo,
+        editandoIdCorreo, editandoNombreCorreo, editandoNombreCorreoError, guardandoNombreCorreo,
+        iniciarEdicionCorreo, cancelarEdicionCorreo, handleChangeNombreCorreo, guardarNombreDestinatarioCorreo,
     };
 }

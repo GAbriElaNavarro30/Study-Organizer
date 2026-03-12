@@ -145,10 +145,11 @@ export function Notas() {
                                 ) : (
                                     <>
                                         <p>No hay notas todavía</p>
-                                        <button className="btn-new" onClick={crearNuevaNota}>
+                                        <p>Crea tu primera nota para comenzar (+) Nueva nota</p>
+                                        {/*<button className="btn-new" onClick={crearNuevaNota}>
                                             <Plus size={16} />
                                             Crear primera nota
-                                        </button>
+                                        </button>*/}
                                     </>
                                 )}
                             </div>

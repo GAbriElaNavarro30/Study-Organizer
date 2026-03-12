@@ -1,114 +1,75 @@
+// ============================== MÓDULO NOTAS ===============================
 import { db } from "../config/db.js";
 
 export class Nota {
     constructor({
         titulo,
         contenido = null,
-        cloudinary_url,
-        cloudinary_public_id,
+        color_fondo = '#ffffff',
+        tipo_letra = 'Arial',
+        tamano_letra = '16',
         id_usuario,
     }) {
         this.titulo = titulo;
         this.contenido = contenido;
-        this.cloudinary_url = cloudinary_url;
-        this.cloudinary_public_id = cloudinary_public_id;
+        this.color_fondo = color_fondo;
+        this.tipo_letra = tipo_letra;
+        this.tamano_letra = tamano_letra;
         this.id_usuario = id_usuario;
     }
 
-    // =========================
-    // Crear nota
-    // =========================
     async save() {
         const [result] = await db.query(
             `INSERT INTO Nota 
-            (titulo, contenido, cloudinary_url, cloudinary_public_id, id_usuario)
-            VALUES (?, ?, ?, ?, ?)`,
+            (titulo, contenido, color_fondo, tipo_letra, tamano_letra, id_usuario)
+            VALUES (?, ?, ?, ?, ?, ?)`,
             [
                 this.titulo,
                 this.contenido,
-                this.cloudinary_url,
-                this.cloudinary_public_id,
+                this.color_fondo,
+                this.tipo_letra,
+                this.tamano_letra,
                 this.id_usuario,
             ]
         );
-
-        return result.insertId;
+        return result;
     }
 
-    // =========================
-    // Obtener notas por usuario
-    // =========================
-    static async getByUsuario(id_usuario) {
+    static async getAll(id_usuario) {
         const [rows] = await db.query(
-            `SELECT 
-                id_nota,
-                titulo,
-                created_at,
-                updated_at
-            FROM Nota
-            WHERE id_usuario = ?
-            ORDER BY updated_at DESC`,
+            `SELECT * FROM Nota WHERE id_usuario = ? 
+             ORDER BY fecha_actualizacion DESC`,
             [id_usuario]
         );
-
         return rows;
     }
 
-    // =========================
-    // Obtener una nota por ID
-    // =========================
     static async getById(id_nota, id_usuario) {
         const [rows] = await db.query(
-            `SELECT *
-             FROM Nota
-             WHERE id_nota = ? AND id_usuario = ?`,
+            `SELECT * FROM Nota WHERE id_nota = ? AND id_usuario = ?`,
             [id_nota, id_usuario]
         );
-
         return rows[0];
     }
 
-    // =========================
-    // Actualizar nota
-    // =========================
-    static async update(id_nota, id_usuario, data) {
-        const {
-            titulo,
-            contenido,
-            cloudinary_url,
-            cloudinary_public_id,
-        } = data;
+    static async update(id_nota, id_usuario, campos) {
+        const keys = Object.keys(campos);
+        const values = Object.values(campos);
+        const setClause = keys.map(k => `${k} = ?`).join(", ");
+        values.push(id_nota, id_usuario);
 
         const [result] = await db.query(
-            `UPDATE Nota SET
-                titulo = ?,
-                contenido = ?,
-                cloudinary_url = ?,
-                cloudinary_public_id = ?
-             WHERE id_nota = ? AND id_usuario = ?`,
-            [
-                titulo,
-                contenido,
-                cloudinary_url,
-                cloudinary_public_id,
-                id_nota,
-                id_usuario,
-            ]
+            `UPDATE Nota SET ${setClause} WHERE id_nota = ? AND id_usuario = ?`,
+            values
         );
-
-        return result.affectedRows;
+        return result;
     }
 
-    // =========================
-    // Eliminar nota
-    // =========================
     static async delete(id_nota, id_usuario) {
         const [result] = await db.query(
-            `DELETE FROM Nota
-             WHERE id_nota = ? AND id_usuario = ?`,
+            `DELETE FROM Nota WHERE id_nota = ? AND id_usuario = ?`,
             [id_nota, id_usuario]
         );
-
-        return result.affectedRows;
+        return result;
     }
 }

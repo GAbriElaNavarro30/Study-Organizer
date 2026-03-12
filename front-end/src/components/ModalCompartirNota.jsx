@@ -13,6 +13,8 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
         editandoId, editandoNombre, editandoNombreError, guardandoNombre,
         iniciarEdicion, cancelarEdicion, handleChangeNombreEdicion, guardarNombreDestinatario,
         destinatariosCorreo, cargandoDestinatariosCorreo, seleccionarDestinatarioCorreo,
+        editandoIdCorreo, editandoNombreCorreo, editandoNombreCorreoError, guardandoNombreCorreo,
+        iniciarEdicionCorreo, cancelarEdicionCorreo, handleChangeNombreCorreo, guardarNombreDestinatarioCorreo,
     } = useModalCompartirNota(isOpen);
 
     if (!isOpen) return null;
@@ -109,9 +111,60 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
                                                         disabled={enviando}
                                                     >
                                                         <Mail size={12} className="destinatario-icon" />
-                                                        <span className="destinatario-nombre">{dest.correo_electronico}</span>
+                                                        <span className="destinatario-nombre">
+                                                            {dest.nombre || dest.correo_electronico}
+                                                        </span>
                                                     </button>
+                                                    <div className="destinatario-acciones">
+                                                        <span className="destinatario-chatid">{dest.correo_electronico}</span>
+                                                        <button
+                                                            className="btn-editar-destinatario"
+                                                            onClick={() => iniciarEdicionCorreo(dest)}
+                                                            disabled={enviando}
+                                                            title="Renombrar destinatario"
+                                                        >
+                                                            <Pencil size={13} />
+                                                        </button>
+                                                    </div>
                                                 </div>
+
+                                                {editandoIdCorreo === dest.id && (
+                                                    <div className="edicion-nombre-wrapper">
+                                                        <div className="edicion-nombre-fila">
+                                                            <input
+                                                                type="text"
+                                                                value={editandoNombreCorreo}
+                                                                onChange={(e) => handleChangeNombreCorreo(e.target.value)}
+                                                                onKeyDown={(e) => {
+                                                                    if (e.key === "Enter") guardarNombreDestinatarioCorreo(dest);
+                                                                    if (e.key === "Escape") cancelarEdicionCorreo();
+                                                                }}
+                                                                placeholder="Nombre del destinatario"
+                                                                autoFocus
+                                                                maxLength={101}
+                                                                className={`edicion-nombre-input ${editandoNombreCorreoError ? "input-error" : ""}`}
+                                                            />
+                                                            <button
+                                                                className="btn-guardar-nombre"
+                                                                onClick={() => guardarNombreDestinatarioCorreo(dest)}
+                                                                disabled={guardandoNombreCorreo}
+                                                            >
+                                                                {guardandoNombreCorreo ? "..." : "Guardar"}
+                                                            </button>
+                                                            <button
+                                                                className="btn-cancelar-nombre"
+                                                                onClick={cancelarEdicionCorreo}
+                                                            >
+                                                                ✕
+                                                            </button>
+                                                        </div>
+                                                        {editandoNombreCorreoError && (
+                                                            <span className="campo-error campo-error--sm">
+                                                                {editandoNombreCorreoError}
+                                                            </span>
+                                                        )}
+                                                    </div>
+                                                )}
                                             </div>
                                         ))}
                                     </div>

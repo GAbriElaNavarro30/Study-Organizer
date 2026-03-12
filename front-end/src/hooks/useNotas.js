@@ -1,5 +1,6 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api.js";
 
 export function useNotas() {
     const navigate = useNavigate();
@@ -52,12 +53,7 @@ export function useNotas() {
     const cargarNotas = async () => {
         try {
             setLoading(true);
-            const response = await fetch("http://localhost:3000/notas/obtener-notas", {
-                method: "GET",
-                credentials: "include",
-            });
-            if (!response.ok) throw new Error("Error al cargar las notas");
-            const data = await response.json();
+            const { data } = await api.get("/notas/obtener-notas");
             setNotas(data);
             setError(null);
         } catch (error) {
@@ -153,11 +149,7 @@ export function useNotas() {
 
     const confirmarEliminarNota = async () => {
         try {
-            const response = await fetch(
-                `http://localhost:3000/notas/eliminar-nota/${notaSeleccionada.id_nota}`,
-                { method: "DELETE", credentials: "include" }
-            );
-            if (!response.ok) throw new Error("Error al eliminar la nota");
+            await api.delete(`/notas/eliminar-nota/${notaSeleccionada.id_nota}`);
             await cargarNotas();
             mostrarAlerta(
                 "success",
@@ -190,52 +182,21 @@ export function useNotas() {
             const htmlCompleto = construirHTMLNota(notaACompartir);
 
             if (tipo === "email") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-nota/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ email, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir");
+                await api.post(`/notas/compartir-nota/${notaACompartir.id_nota}`, { email, html: htmlCompleto });
                 mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado a ${email}`);
-                cerrarModalCompartir();
 
             } else if (tipo === "telegram") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-telegram/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ chatId, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir por Telegram");
+                await api.post(`/notas/compartir-telegram/${notaACompartir.id_nota}`, { chatId, html: htmlCompleto });
                 mostrarAlerta("success", "¡Nota compartida!", "El PDF fue enviado por Telegram");
-                cerrarModalCompartir();
 
             } else if (tipo === "whatsapp") {
-                const res = await fetch(
-                    `http://localhost:3000/notas/compartir-whatsapp/${notaACompartir.id_nota}`,
-                    {
-                        method: "POST",
-                        credentials: "include",
-                        headers: { "Content-Type": "application/json" },
-                        body: JSON.stringify({ telefono, html: htmlCompleto }),
-                    }
-                );
-                const result = await res.json();
-                if (!res.ok) throw new Error(result.error || "Error al compartir por WhatsApp");
+                await api.post(`/notas/compartir-whatsapp/${notaACompartir.id_nota}`, { telefono, html: htmlCompleto });
                 mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado por WhatsApp a ${telefono}`);
-                cerrarModalCompartir();
             }
+
+            cerrarModalCompartir();
         } catch (error) {
-            mostrarAlerta("error", "Error al compartir", error.message);
+            mostrarAlerta("error", "Error al compartir", error.response?.data?.error || error.message);
         }
     };
 
@@ -254,23 +215,13 @@ export function useNotas() {
 
     const confirmarRenombrarNota = async (nuevoNombre) => {
         try {
-            const response = await fetch(
-                `http://localhost:3000/notas/renombrar-nota/${notaARenombrar.id_nota}`,
-                {
-                    method: "PATCH",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ titulo: nuevoNombre }),
-                }
-            );
-            const data = await response.json();
-            if (!response.ok) throw new Error(data.error || "Error al renombrar la nota");
+            await api.patch(`/notas/renombrar-nota/${notaARenombrar.id_nota}`, { titulo: nuevoNombre });
             await cargarNotas();
             mostrarAlerta("success", "¡Nota renombrada!", `La nota ha sido renombrada a "${nuevoNombre}" exitosamente.`);
             cerrarModalRenombrar();
         } catch (error) {
             console.error("Error al renombrar nota:", error);
-            mostrarAlerta("error", "Error al renombrar", error.message || "No se pudo renombrar la nota. Por favor, intenta nuevamente.");
+            mostrarAlerta("error", "Error al renombrar", error.response?.data?.error || error.message || "No se pudo renombrar la nota.");
         }
     };
 
@@ -282,7 +233,7 @@ export function useNotas() {
             mostrarAlerta("success", "Generando PDF...", "Por favor espera un momento.");
             const htmlCompleto = construirHTMLNota(nota);
             const response = await fetch(
-                `http://localhost:3000/notas/exportar-pdf/${nota.id_nota}`,
+                `${import.meta.env.VITE_API_URL}/notas/exportar-pdf/${nota.id_nota}`,
                 {
                     method: "POST",
                     credentials: "include",
@@ -312,9 +263,9 @@ export function useNotas() {
                 notaId: nota.id_nota,
                 titulo: nota.titulo,
                 contenido: nota.contenido,
-                backgroundColor: nota.background_color,
-                fontFamily: nota.font_family,
-                fontSize: nota.font_size,
+                backgroundColor: nota.background_color,  // ← antes: nota.color_fondo
+                fontFamily: nota.font_family,             // ← antes: nota.tipo_letra
+                fontSize: nota.font_size,                 // ← antes: nota.tamano_letra
             })
         );
         navigate("/editor-nota");

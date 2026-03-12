@@ -589,3 +589,19 @@
         font-size: 0.75rem;
     }
 }
+
+.notes-error button {
+    padding: 10px 20px;
+    background: #2563eb;
+    color: #ffffff;
+    border: none;
+    border-radius: 10px;
+    cursor: pointer;
+    font-size: 0.9rem;
+    font-weight: 500;
+    transition: background 0.2s ease;
+}
+
+.notes-error button:hover {
+    background: #1d4ed8;
+}

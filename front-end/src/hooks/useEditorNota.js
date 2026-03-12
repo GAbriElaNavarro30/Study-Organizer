@@ -1,9 +1,11 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
+import api from "../services/api.js";
 
 export function useEditorNota() {
     const navigate = useNavigate();
     const editorRef = useRef(null);
+    const [textColor, setTextColor] = useState("#000000");
 
     // ── Datos de la nota ──
     const [titulo, setTitulo] = useState("");
@@ -14,7 +16,7 @@ export function useEditorNota() {
     const [fontFamily, setFontFamily] = useState("Arial");
     const [fontSize, setFontSize] = useState("16");
     const [editorBackgroundColor, setEditorBackgroundColor] = useState("#ffffff");
-
+    
     // ── Modales ──
     const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
     const [mostrarModalGuardar, setMostrarModalGuardar] = useState(false);
@@ -180,14 +182,8 @@ export function useEditorNota() {
 
     const cargarNotas = async () => {
         try {
-            const response = await fetch("http://localhost:3000/notas/obtener-notas", {
-                method: "GET",
-                credentials: "include",
-            });
-            if (response.ok) {
-                const data = await response.json();
-                setNotas(data);
-            }
+            const { data } = await api.get("/notas/obtener-notas");
+            setNotas(data);
         } catch (error) {
             console.error("Error al cargar notas:", error);
         }
@@ -335,6 +331,7 @@ export function useEditorNota() {
     };
 
     const handleTextColor = (color) => {
+        setTextColor(color);
         editorRef.current?.focus();
         const selection = window.getSelection();
         if (selection.rangeCount && !selection.getRangeAt(0).collapsed) {
@@ -444,27 +441,18 @@ export function useEditorNota() {
 
     const handleConfirmarGuardar = async (tituloNota) => {
         try {
-            const endpoint = modoGuardar === "crear"
-                ? "http://localhost:3000/notas/crear-nota"
-                : `http://localhost:3000/notas/actualizar-nota/${notaId}`;
-            const method = modoGuardar === "crear" ? "POST" : "PUT";
+            const body = {
+                titulo: modoGuardar === "crear" ? tituloNota : titulo,
+                contenido: editorRef.current?.innerHTML,
+                backgroundColor: editorBackgroundColor,
+                fontFamily,
+                fontSize,
+            };
 
-            const response = await fetch(endpoint, {
-                method,
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    titulo: modoGuardar === "crear" ? tituloNota : titulo,
-                    contenido: editorRef.current?.innerHTML,
-                    backgroundColor: editorBackgroundColor,
-                    fontFamily,
-                    fontSize,
-                }),
-            });
-
-            if (!response.ok) {
-                const errorData = await response.json();
-                throw new Error(errorData.error || "Error al guardar la nota");
+            if (modoGuardar === "crear") {
+                await api.post("/notas/crear-nota", body);
+            } else {
+                await api.put(`/notas/actualizar-nota/${notaId}`, body);
             }
 
             setMostrarModalGuardar(false);
@@ -478,9 +466,11 @@ export function useEditorNota() {
                     : "Los cambios han sido guardados exitosamente."
             );
             setShouldRedirectOnAlertClose(true);
+
         } catch (error) {
             console.error("Error al guardar nota:", error);
-            mostrarAlerta("error", "Error al guardar", error.message || "No se pudo guardar la nota. Por favor, intenta nuevamente.");
+            const mensaje = error.response?.data?.error || error.message || "No se pudo guardar la nota.";
+            mostrarAlerta("error", "Error al guardar", mensaje);
         }
     };
 
@@ -532,6 +522,7 @@ export function useEditorNota() {
         titulo, setTitulo,
         notaId,
         notas,
+        textColor,
 
         // Formato
         fontFamily,
@@ -575,5 +566,6 @@ export function useEditorNota() {
         // Handlers de navegación
         handleVolverClick,
         handleConfirmarSalir,
+        handleTextColor,
     };
 }
