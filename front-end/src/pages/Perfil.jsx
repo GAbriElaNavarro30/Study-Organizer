@@ -1,123 +1,313 @@
 import "../styles/perfil.css";
 import EmojiPicker from "emoji-picker-react";
-import { BsEmojiSmile } from "react-icons/bs";
-import { FiEdit2 } from "react-icons/fi";
-import { IoEye, IoEyeOff } from "react-icons/io5";
-import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
-import { CustomAlert } from "../components/CustomAlert";
-import logo from "../assets/imagenes/logotipo.png";
-import { usePerfil } from "../hooks/usePerfil";
+import { BsEmojiSmile }                          from "react-icons/bs";
+import { FiEdit2 }                               from "react-icons/fi";
+import { IoEye, IoEyeOff }                       from "react-icons/io5";
+import { MdCameraAlt, MdZoomIn, MdZoomOut, MdCheck, MdClose } from "react-icons/md";
+import { ModalConfirmarCancelar }                from "../components/ModalConfirmarCancelar";
+import { CustomAlert }                           from "../components/CustomAlert";
+import logo                                      from "../assets/imagenes/logotipo.png";
+import { usePerfil }                             from "../hooks/usePerfil";
 
 export function Perfil() {
+
+    // ================================================================
+    //  HOOK — toda la lógica viene de usePerfil
+    // ================================================================
     const {
-        // Estados de UI
-        mostrarModalCancelar,
-        setMostrarModalCancelar,
-        mostrarAlert,
-        setMostrarAlert,
-        alertConfig,
-        errores,
-        mostrarPassword,
-        setMostrarPassword,
-        mostrarConfirmPassword,
-        setMostrarConfirmPassword,
-        showEmoji,
-        setShowEmoji,
-        editarFecha,
-        setEditarFecha,
+        // UI
+        mostrarModalCancelar, setMostrarModalCancelar,
+        mostrarAlert, setMostrarAlert,
+        alertConfig, errores,
+        mostrarPassword, setMostrarPassword,
+        mostrarConfirmPassword, setMostrarConfirmPassword,
+        showEmoji, setShowEmoji,
+        editarFecha, setEditarFecha,
 
-        // Referencias
-        fileInputRef,
+        // Refs
+        fileInputPerfilRef, fileInputPortadaRef,
 
-        // Estados de datos
-        nombre,
-        apellido,
-        correo,
-        correo_alternativo,
-        telefono,
-        descripcion,
-        genero,
-        password,
-        confirmarPassword,
-        fechaNacimiento,
-
-        // Estados de fotos
-        fotoPerfil,
-        fotoPortada,
-
-        // Opciones
-        days,
-        months,
-        years,
-
-        // Usuario del contexto
+        // Datos del formulario
+        nombre, apellido, correo, correo_alternativo,
+        telefono, descripcion, genero,
+        password, confirmarPassword, fechaNacimiento,
+        fotoPerfil, fotoPortada,
+        days, months, years,
         usuario,
 
-        // Funciones de utilidad
+        // Utilidades de foto
         obtenerFotoPerfil,
+        handleCambiarFotoPerfil, handleCambiarFotoPortada,
+        handleFotoSeleccionada, handleFotoPortadaSeleccionada,
 
-        // Handlers
-        handleCambiarFoto,
-        handleFotoSeleccionada,
-        handleFotoPortadaSeleccionada,
+        // Formulario
         habilitarEdicion,
-        handleNombreChange,
-        handleApellidoChange,
-        handleCorreoChange,
-        handleCorreoAlternativoChange,
-        handleTelefonoChange,
-        handlePasswordChange,
-        handleConfirmarPasswordChange,
-        handleGeneroChange,
-        handleFechaChange,
-        handleDescripcionChange,
-        handleEmojiClick,
-        handleGuardar,
-        confirmarCancelar,
-        cerrarModal,
+        handleNombreChange, handleApellidoChange,
+        handleCorreoChange, handleCorreoAlternativoChange,
+        handleTelefonoChange, handlePasswordChange,
+        handleConfirmarPasswordChange, handleGeneroChange,
+        handleFechaChange, handleDescripcionChange,
+        handleEmojiClick, handleGuardar,
+        confirmarCancelar, cerrarModal,
+
+        // Ajuste portada
+        modoAjuste,
+        portadaPreviewUrl,
+        portadaZoom,
+        portadaOffset,
+        portadaImgNatural,
+        portadaContainerRef,
+        handlePortadaMouseDown, handlePortadaMouseMove,
+        handlePortadaMouseUp,
+        handlePortadaTouchStart, handlePortadaTouchMove,
+        handlePortadaTouchEnd,
+        handlePortadaZoomChange,
+        confirmarAjustePortada, cancelarAjustePortada,
+
+        // Ajuste foto de perfil
+        modoAjustePerfil,
+        perfilPreviewUrl,
+        perfilZoom,
+        perfilOffset,
+        perfilImgNatural,
+        handlePerfilMouseDown, handlePerfilMouseMove,
+        handlePerfilMouseUp,
+        handlePerfilTouchStart, handlePerfilTouchMove,
+        handlePerfilTouchEnd,
+        handlePerfilZoomChange,
+        confirmarAjustePerfil, cancelarAjustePerfil,
     } = usePerfil();
 
+    // ================================================================
+    //  ZOOM MÍNIMO — calculado en la vista porque depende del DOM ref
+    // ================================================================
+    const ALTURA_PORTADA_FINAL = 240;
+
+    const zoomMinPortada = portadaContainerRef.current
+        ? Math.max(
+            portadaContainerRef.current.offsetWidth / (portadaImgNatural.w || 1),
+            ALTURA_PORTADA_FINAL / (portadaImgNatural.h || 1)
+        )
+        : portadaZoom;
+
+    const zoomMinPerfil = Math.max(
+        140 / (perfilImgNatural.w || 1),
+        140 / (perfilImgNatural.h || 1)
+    );
+
+    // ================================================================
+    //  RENDER
+    // ================================================================
     return (
         <div className="contenedor-perfil-usuario">
 
-            {/* ===== PORTADA ===== */}
-            <div className="perfil-portada-usuario">
-                <img src={fotoPortada} className="imagen-portada-usuario" />
-                <img src={obtenerFotoPerfil()} alt="Foto de perfil" className="imagen-perfil-usuario" />
+            {/* ============================================================
+                PORTADA
+            ============================================================ */}
+            <div
+                className={`perfil-portada-usuario${modoAjuste ? " portada-modo-ajuste" : ""}`}
+                ref={portadaContainerRef}
+            >
+                {/* Imagen o área de ajuste */}
+                {modoAjuste ? (
+                    <div
+                        className="portada-ajuste-area"
+                        onMouseDown={handlePortadaMouseDown}
+                        onMouseMove={handlePortadaMouseMove}
+                        onMouseUp={handlePortadaMouseUp}
+                        onMouseLeave={handlePortadaMouseUp}
+                        onTouchStart={handlePortadaTouchStart}
+                        onTouchMove={handlePortadaTouchMove}
+                        onTouchEnd={handlePortadaTouchEnd}
+                    >
+                        <img
+                            src={portadaPreviewUrl}
+                            draggable={false}
+                            className="portada-ajuste-img"
+                            style={{
+                                left:   portadaOffset.x,
+                                top:    portadaOffset.y,
+                                width:  portadaImgNatural.w * portadaZoom,
+                                height: portadaImgNatural.h * portadaZoom,
+                            }}
+                            alt="Ajuste portada"
+                        />
+                        <div className="portada-ajuste-guias" />
+                    </div>
+                ) : (
+                    <img src={fotoPortada} className="imagen-portada-usuario" alt="Portada" />
+                )}
+
+                {/* Barra de controles de ajuste */}
+                {modoAjuste && (
+                    <div className="portada-ajuste-barra">
+                        <span className="portada-ajuste-hint">Arrastra para reposicionar</span>
+
+                        <div className="portada-ajuste-zoom">
+                            <button type="button" className="btn-ajuste-zoom"
+                                onClick={() => handlePortadaZoomChange(portadaZoom - 0.05)}>
+                                <MdZoomOut />
+                            </button>
+                            <input
+                                type="range"
+                                className="portada-zoom-slider"
+                                min={zoomMinPortada}
+                                max={zoomMinPortada * 3}
+                                step={0.01}
+                                value={portadaZoom}
+                                onChange={(e) => handlePortadaZoomChange(e.target.value)}
+                            />
+                            <button type="button" className="btn-ajuste-zoom"
+                                onClick={() => handlePortadaZoomChange(portadaZoom + 0.05)}>
+                                <MdZoomIn />
+                            </button>
+                        </div>
+
+                        <div className="portada-ajuste-acciones">
+                            <button type="button" className="btn-ajuste-cancelar" onClick={cancelarAjustePortada}>
+                                <MdClose /> Cancelar
+                            </button>
+                            <button type="button" className="btn-ajuste-confirmar" onClick={confirmarAjustePortada}>
+                                <MdCheck /> Aplicar
+                            </button>
+                        </div>
+                    </div>
+                )}
+
+                {/* Botón cambiar portada (solo en modo normal) */}
+                {!modoAjuste && (
+                    <button type="button" className="btn-cambiar-portada"
+                        onClick={handleCambiarFotoPortada} title="Cambiar foto de portada">
+                        <MdCameraAlt />
+                    </button>
+                )}
+
+                {/* Input oculto portada */}
+                <input
+                    type="file"
+                    accept="image/*"
+                    ref={fileInputPortadaRef}
+                    onChange={handleFotoPortadaSeleccionada}
+                    style={{ display: "none" }}
+                />
+
+                {/* ============================================================
+                    FOTO DE PERFIL (dentro de portada para el posicionamiento)
+                ============================================================ */}
+                <div className="contenedor-foto-perfil-usuario">
+
+                    {modoAjustePerfil ? (
+                        /* ── Modo ajuste ── */
+                        <div className="perfil-ajuste-wrapper">
+
+                            {/* Círculo interactivo */}
+                            <div
+                                className="perfil-ajuste-circulo"
+                                onMouseDown={handlePerfilMouseDown}
+                                onMouseMove={handlePerfilMouseMove}
+                                onMouseUp={handlePerfilMouseUp}
+                                onMouseLeave={handlePerfilMouseUp}
+                                onTouchStart={handlePerfilTouchStart}
+                                onTouchMove={handlePerfilTouchMove}
+                                onTouchEnd={handlePerfilTouchEnd}
+                            >
+                                <img
+                                    src={perfilPreviewUrl}
+                                    draggable={false}
+                                    className="perfil-ajuste-img"
+                                    style={{
+                                        left:   perfilOffset.x,
+                                        top:    perfilOffset.y,
+                                        width:  perfilImgNatural.w * perfilZoom,
+                                        height: perfilImgNatural.h * perfilZoom,
+                                    }}
+                                    alt="Ajuste perfil"
+                                />
+                            </div>
+
+                            {/* Controles de zoom y confirmación */}
+                            <div className="perfil-ajuste-controles">
+                                <div className="perfil-ajuste-zoom-fila">
+                                    <button type="button" className="btn-ajuste-zoom-perfil"
+                                        onClick={() => handlePerfilZoomChange(perfilZoom - 0.05)}>
+                                        <MdZoomOut />
+                                    </button>
+                                    <input
+                                        type="range"
+                                        className="perfil-zoom-slider"
+                                        min={zoomMinPerfil}
+                                        max={zoomMinPerfil * 4}
+                                        step={0.01}
+                                        value={perfilZoom}
+                                        onChange={(e) => handlePerfilZoomChange(e.target.value)}
+                                    />
+                                    <button type="button" className="btn-ajuste-zoom-perfil"
+                                        onClick={() => handlePerfilZoomChange(perfilZoom + 0.05)}>
+                                        <MdZoomIn />
+                                    </button>
+                                </div>
+                                <div className="perfil-ajuste-acciones">
+                                    <button type="button" className="btn-perfil-cancelar"
+                                        onClick={cancelarAjustePerfil} title="Cancelar">
+                                        <MdClose />
+                                    </button>
+                                    <button type="button" className="btn-perfil-confirmar"
+                                        onClick={confirmarAjustePerfil} title="Aplicar">
+                                        <MdCheck />
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    ) : (
+                        /* ── Modo normal ── */
+                        <>
+                            <img
+                                src={obtenerFotoPerfil()}
+                                alt="Foto de perfil"
+                                className="imagen-perfil-usuario"
+                            />
+                            <button type="button" className="btn-cambiar-perfil"
+                                onClick={handleCambiarFotoPerfil} title="Cambiar foto de perfil">
+                                <MdCameraAlt />
+                            </button>
+                        </>
+                    )}
+
+                    {/* Input oculto foto de perfil */}
+                    <input
+                        type="file"
+                        accept="image/*"
+                        ref={fileInputPerfilRef}
+                        onChange={handleFotoSeleccionada}
+                        style={{ display: "none" }}
+                    />
+                </div>
             </div>
 
-            {/* ===== INFO ===== */}
+            {/* ============================================================
+                INFO — nombre, rol y descripción
+            ============================================================ */}
             <div className="perfil-info-usuario">
                 <p className="perfil-descripcion-usuario">
                     <strong>{usuario?.rol_texto}</strong>
                 </p>
-                <h2 className="perfil-nombre-usuario">{usuario?.nombre} {usuario?.apellido}</h2>
-                <p className="perfil-descripcion-usuario">
-                    {usuario?.descripcion}
-                </p>
+                <h2 className="perfil-nombre-usuario">
+                    {usuario?.nombre} {usuario?.apellido}
+                </h2>
+                <p className="perfil-descripcion-usuario">{usuario?.descripcion}</p>
             </div>
 
-            {/* ===== FORMULARIO ===== */}
+            {/* ============================================================
+                FORMULARIO — actualizar perfil
+            ============================================================ */}
             <div className="perfil-formulario-usuario">
                 <h3 className="titulo-formulario-usuario">Actualizar Perfil</h3>
 
-                {/* FOTO + NOMBRE / EMAIL */}
+                {/* ── Nombre y Apellido ── */}
                 <div className="fila-form-usuario fila-foto-usuario">
-                    <div className="foto-form-usuario">
-                        <img src={obtenerFotoPerfil()} alt="Perfil" />
-                        <button type="button" onClick={handleCambiarFoto}>Cambiar</button>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            ref={fileInputRef}
-                            onChange={handleFotoSeleccionada}
-                            style={{ display: "none" }}
-                        />
-                    </div>
-
                     <div className="campos-columna-usuario">
+
                         <div className="fila-form-usuario">
-                            {/* NOMBRE Y APELLIDO */}
                             <div className="campo-usuario">
                                 <label>Nombre</label>
                                 <div className="input-editable">
@@ -153,6 +343,7 @@ export function Perfil() {
                             </div>
                         </div>
 
+                        {/* ── Correos ── */}
                         <div className="fila-form-usuario">
                             <div className="campo-usuario">
                                 <label>Correo electrónico</label>
@@ -172,7 +363,7 @@ export function Perfil() {
                             </div>
 
                             <div className="campo-usuario">
-                                <label>Correo electrónico alternativo (Opcional) </label>
+                                <label>Correo electrónico alternativo (Opcional)</label>
                                 <div className="input-editable">
                                     <input
                                         type="email"
@@ -185,13 +376,16 @@ export function Perfil() {
                                         <FiEdit2 />
                                     </button>
                                 </div>
-                                {errores.correo_alternativo && <p className="error-text">{errores.correo_alternativo}</p>}
+                                {errores.correo_alternativo && (
+                                    <p className="error-text">{errores.correo_alternativo}</p>
+                                )}
                             </div>
                         </div>
+
                     </div>
                 </div>
 
-                {/* FECHA / TELÉFONO */}
+                {/* ── Fecha de nacimiento y Teléfono ── */}
                 <div className="fila-form-usuario">
                     <div className="campo-usuario">
                         <label>Fecha de nacimiento</label>
@@ -199,39 +393,35 @@ export function Perfil() {
                             <select
                                 value={fechaNacimiento.day}
                                 disabled={!editarFecha}
-                                onChange={(e) => handleFechaChange('day', e.target.value)}
+                                onChange={(e) => handleFechaChange("day", e.target.value)}
                             >
                                 <option value="">Día</option>
-                                {days.map(d => <option key={d} value={d}>{d}</option>)}
+                                {days.map((d) => <option key={d} value={d}>{d}</option>)}
                             </select>
-
                             <select
                                 value={fechaNacimiento.month}
                                 disabled={!editarFecha}
-                                onChange={(e) => handleFechaChange('month', e.target.value)}
+                                onChange={(e) => handleFechaChange("month", e.target.value)}
                             >
                                 <option value="">Mes</option>
                                 {months.map((m, i) => <option key={i} value={i + 1}>{m}</option>)}
                             </select>
-
                             <select
                                 value={fechaNacimiento.year}
                                 disabled={!editarFecha}
-                                onChange={(e) => handleFechaChange('year', e.target.value)}
+                                onChange={(e) => handleFechaChange("year", e.target.value)}
                             >
                                 <option value="">Año</option>
-                                {years.map(y => <option key={y} value={y}>{y}</option>)}
+                                {years.map((y) => <option key={y} value={y}>{y}</option>)}
                             </select>
-
-                            <button
-                                type="button"
-                                className="btn-lapiz"
-                                onClick={() => setEditarFecha(prev => !prev)}
-                            >
+                            <button type="button" className="btn-lapiz"
+                                onClick={() => setEditarFecha((prev) => !prev)}>
                                 <FiEdit2 />
                             </button>
                         </div>
-                        {errores.fecha_nacimiento && <p className="error-text">{errores.fecha_nacimiento}</p>}
+                        {errores.fecha_nacimiento && (
+                            <p className="error-text">{errores.fecha_nacimiento}</p>
+                        )}
                     </div>
 
                     <div className="campo-usuario">
@@ -252,47 +442,27 @@ export function Perfil() {
                     </div>
                 </div>
 
-                {/* GÉNERO */}
+                {/* ── Género ── */}
                 <div className="fila-form-usuario genero-fila-usuario">
                     <label className="label-full-usuario">Género</label>
                     <div className="genero-opciones-usuario">
-                        <label className="genero-box-usuario">
-                            <input
-                                type="radio"
-                                name="genero"
-                                value="mujer"
-                                checked={genero === "mujer"}
-                                onChange={handleGeneroChange}
-                            />
-                            <span>Mujer</span>
-                        </label>
-
-                        <label className="genero-box-usuario">
-                            <input
-                                type="radio"
-                                name="genero"
-                                value="hombre"
-                                checked={genero === "hombre"}
-                                onChange={handleGeneroChange}
-                            />
-                            <span>Hombre</span>
-                        </label>
-
-                        <label className="genero-box-usuario">
-                            <input
-                                type="radio"
-                                name="genero"
-                                value="otro"
-                                checked={genero === "otro"}
-                                onChange={handleGeneroChange}
-                            />
-                            <span>Otro</span>
-                        </label>
+                        {["mujer", "hombre", "otro"].map((opcion) => (
+                            <label key={opcion} className="genero-box-usuario">
+                                <input
+                                    type="radio"
+                                    name="genero"
+                                    value={opcion}
+                                    checked={genero === opcion}
+                                    onChange={handleGeneroChange}
+                                />
+                                <span>{opcion.charAt(0).toUpperCase() + opcion.slice(1)}</span>
+                            </label>
+                        ))}
                     </div>
                     {errores.genero && <p className="error-text">{errores.genero}</p>}
                 </div>
 
-                {/* CONTRASEÑAS */}
+                {/* ── Contraseñas ── */}
                 <div className="fila-form-usuario">
                     <div className="campo-usuario">
                         <label>Contraseña</label>
@@ -304,21 +474,11 @@ export function Perfil() {
                                 placeholder="Nueva contraseña (opcional)"
                                 disabled
                             />
-
-                            <button
-                                type="button"
-                                className="btn-ojo"
-                                onClick={() => setMostrarPassword(prev => !prev)}
-                                aria-label="Mostrar u ocultar contraseña"
-                            >
+                            <button type="button" className="btn-ojo"
+                                onClick={() => setMostrarPassword((prev) => !prev)}>
                                 {mostrarPassword ? <IoEyeOff /> : <IoEye />}
                             </button>
-
-                            <button
-                                type="button"
-                                className="btn-lapiz"
-                                onClick={habilitarEdicion}
-                            >
+                            <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                 <FiEdit2 />
                             </button>
                         </div>
@@ -335,28 +495,21 @@ export function Perfil() {
                                 placeholder="Confirmar contraseña"
                                 disabled
                             />
-
-                            <button
-                                type="button"
-                                className="btn-ojo"
-                                onClick={() => setMostrarConfirmPassword(prev => !prev)}
-                            >
+                            <button type="button" className="btn-ojo"
+                                onClick={() => setMostrarConfirmPassword((prev) => !prev)}>
                                 {mostrarConfirmPassword ? <IoEyeOff /> : <IoEye />}
                             </button>
-
-                            <button
-                                type="button"
-                                className="btn-lapiz"
-                                onClick={habilitarEdicion}
-                            >
+                            <button type="button" className="btn-lapiz" onClick={habilitarEdicion}>
                                 <FiEdit2 />
                             </button>
                         </div>
-                        {errores.confirmarPassword && <p className="error-text">{errores.confirmarPassword}</p>}
+                        {errores.confirmarPassword && (
+                            <p className="error-text">{errores.confirmarPassword}</p>
+                        )}
                     </div>
                 </div>
 
-                {/* DESCRIPCIÓN */}
+                {/* ── Descripción + Emoji ── */}
                 <div className="campo campo-full-usuario">
                     <label>Descripción</label>
                     <div className="textarea-wrapper">
@@ -366,45 +519,33 @@ export function Perfil() {
                             onChange={handleDescripcionChange}
                             placeholder="Escribe algo..."
                         />
-                        <button
-                            type="button"
-                            className="btn-emoji-usuario"
-                            onClick={() => setShowEmoji(!showEmoji)}
-                        >
+                        <button type="button" className="btn-emoji-usuario"
+                            onClick={() => setShowEmoji(!showEmoji)}>
                             <BsEmojiSmile />
                         </button>
                     </div>
-
                     {showEmoji && (
                         <div className="emoji-picker-wrapper">
-                            <EmojiPicker
-                                locale="es"
-                                onEmojiClick={handleEmojiClick}
-                            />
+                            <EmojiPicker locale="es" onEmojiClick={handleEmojiClick} />
                         </div>
                     )}
                 </div>
 
-                {/* FOTO PORTADA */}
-                <div className="fila-form-usuario">
-                    <div className="campo-usuario campo-full-usuario">
-                        <label>Foto de portada</label>
-                        <input
-                            type="file"
-                            accept="image/*"
-                            onChange={handleFotoPortadaSeleccionada}
-                        />
-                    </div>
-                </div>
-
-                {/* BOTONES */}
+                {/* ── Botones ── */}
                 <div className="fila-botones-usuario">
-                    <button className="btn-guardar-usuario" onClick={handleGuardar}>Guardar</button>
-                    <button className="btn-cancelar-usuario" onClick={() => setMostrarModalCancelar(true)}>Cancelar</button>
+                    <button className="btn-guardar-usuario" onClick={handleGuardar}>
+                        Guardar
+                    </button>
+                    <button className="btn-cancelar-usuario"
+                        onClick={() => setMostrarModalCancelar(true)}>
+                        Cancelar
+                    </button>
                 </div>
             </div>
 
-            {/* MODAL CONFIRMAR CANCELAR */}
+            {/* ============================================================
+                MODALES Y ALERTAS
+            ============================================================ */}
             {mostrarModalCancelar && (
                 <ModalConfirmarCancelar
                     isOpen={mostrarModalCancelar}
@@ -414,7 +555,6 @@ export function Perfil() {
                 />
             )}
 
-            {/* CUSTOM ALERT */}
             {mostrarAlert && (
                 <CustomAlert
                     type={alertConfig.type}
@@ -424,6 +564,7 @@ export function Perfil() {
                     onClose={() => setMostrarAlert(false)}
                 />
             )}
+
         </div>
     );
 }

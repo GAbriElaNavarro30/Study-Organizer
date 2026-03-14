@@ -14,19 +14,34 @@
     position: relative;
     height: 240px;
     background-color: #E5E7EB;
+    overflow: visible;
 }
 
 .imagen-portada-usuario {
     width: 100%;
-    height: 100%;
+    height: 240px;
     object-fit: cover;
+    display: block;
 }
 
-/* ===== FOTO PERFIL ===== */
-.imagen-perfil-usuario {
+/* ===== CONTENEDOR FOTO PERFIL =====
+   overflow: visible CRÍTICO para que el botón cámara
+   y controles de ajuste no queden cortados */
+.contenedor-foto-perfil-usuario {
     position: absolute;
     bottom: -60px;
     left: 40px;
+    width: 140px;
+    height: 140px;
+    overflow: visible;
+    z-index: 20;
+}
+
+/* Imagen dentro del contenedor */
+.contenedor-foto-perfil-usuario .imagen-perfil-usuario {
+    position: absolute;
+    top: 0;
+    left: 0;
     width: 140px;
     height: 140px;
     border-radius: 50%;
@@ -35,13 +50,59 @@
     background-color: #fff;
 }
 
+/* ===== BOTÓN CÁMARA FOTO PERFIL ===== */
+.btn-cambiar-perfil {
+    position: absolute;
+    bottom: 2px;
+    right: 2px;
+    width: 34px;
+    height: 34px;
+    border-radius: 50%;
+    background-color: rgba(0, 0, 0, 0.60);
+    color: #fff;
+    border: 2px solid #fff;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 30;
+}
+
+.btn-cambiar-perfil:hover {
+    background-color: rgba(0, 0, 0, 0.85);
+}
+
+/* ===== BOTÓN CÁMARA PORTADA ===== */
+.btn-cambiar-portada {
+    position: absolute;
+    bottom: 12px;
+    right: 16px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background-color: rgba(0, 0, 0, 0.50);
+    color: #fff;
+    border: none;
+    border-radius: 20px;
+    padding: 6px 14px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+    z-index: 3;
+}
+
+.btn-cambiar-portada:hover {
+    background-color: rgba(0, 0, 0, 0.75);
+}
+
 /* ===== INFO ===== */
 .perfil-info-usuario {
     display: flex;
     flex-direction: column;
     gap: 8px;
     padding: 80px 40px 32px 220px;
-    /* espacio para la foto */
 }
 
 .perfil-nombre-usuario {
@@ -57,25 +118,7 @@
     line-height: 1.5;
 }
 
-@media (max-width: 768px) {
-
-    .imagen-perfil-usuario {
-        left: 50%;
-        transform: translateX(-50%);
-    }
-
-    .perfil-info-usuario {
-        padding: 90px 24px 24px 24px;
-        align-items: center;
-        text-align: center;
-    }
-}
-
-
-
-
-
-/* ===================================== FORMULARIO PERFIL USUARIO ===================================== */
+/* ===================================== FORMULARIO ===================================== */
 
 .perfil-formulario-usuario {
     padding: 32px 40px;
@@ -85,11 +128,11 @@
 .titulo-formulario-usuario {
     font-size: 1.2rem;
     font-weight: 600;
-    margin-bottom: 24px;
+    margin-bottom: 40px;
     color: #111827;
+    text-align: center;
 }
 
-/* ================= FILAS ================= */
 .fila-form-usuario {
     display: flex;
     gap: 24px;
@@ -104,7 +147,6 @@
     width: 100%;
 }
 
-/* ================= CAMPOS ================= */
 .campo-usuario label,
 .label-full-usuario {
     font-size: 0.85rem;
@@ -130,7 +172,6 @@
     border-color: #2563EB;
 }
 
-/* ================= CAMPOS DESHABILITADOS ================= */
 .campo-usuario input:disabled,
 .campo-usuario textarea:disabled {
     background-color: #F3F4F6;
@@ -138,7 +179,6 @@
     cursor: not-allowed;
 }
 
-/* ================= FOTO PERFIL ================= */
 .fila-foto-usuario {
     align-items: center;
 }
@@ -165,7 +205,6 @@
     cursor: pointer;
 }
 
-/* ================= COLUMNAS ================= */
 .campos-columna-usuario {
     display: flex;
     flex-direction: column;
@@ -173,13 +212,12 @@
     flex: 1;
 }
 
-/* ================== FECHA DE NACIMIENTO ================== */
+/* ================== FECHA ================== */
 .fecha-nacimiento-usuario {
     display: flex;
     align-items: center;
     gap: 8px;
 }
-
 
 .fecha-nacimiento-usuario select {
     flex: 0 0 auto;
@@ -196,9 +234,7 @@
     margin-left: 12px;
 }
 
-
-
-/* ================= GÉNERO ================= */
+/* ================== GÉNERO ================== */
 .genero-fila-usuario {
     flex-direction: column;
 }
@@ -223,8 +259,7 @@
     color: rgb(0, 0, 0);
 }
 
-
-/* ================= BOTONES ================= */
+/* ================== BOTONES FORM ================== */
 .fila-botones-usuario {
     display: flex;
     justify-content: flex-end;
@@ -249,7 +284,7 @@
     cursor: pointer;
 }
 
-/* ================= TEXTAREA + EMOJI ================= */
+/* ================== TEXTAREA + EMOJI ================== */
 .textarea-wrapper {
     position: relative;
     width: 100%;
@@ -278,7 +313,6 @@
     color: #2563EB;
 }
 
-/* ================= EMOJI PICKER ================= */
 .emoji-picker-wrapper {
     margin-top: 8px;
     position: relative;
@@ -293,7 +327,7 @@
     padding-left: 38px !important;
 }
 
-/* ================= INPUT EDITABLE (GENERAL) ================= */
+/* ================== INPUT EDITABLE ================== */
 .input-editable {
     position: relative;
     display: flex;
@@ -306,7 +340,6 @@
     padding-right: 42px;
 }
 
-/* ================= LÁPIZ ================= */
 .btn-lapiz {
     position: absolute;
     right: 10px;
@@ -326,12 +359,10 @@
     background-color: #EFF6FF;
 }
 
-/* ================= INPUT PASSWORD ================= */
 .input-password input {
     padding-right: 80px;
 }
 
-/* OJO */
 .input-password .btn-ojo {
     position: absolute;
     right: 44px;
@@ -348,57 +379,320 @@
     color: #2563EB;
 }
 
-/* ================= RESPONSIVE ================= */
+/* ===================================== MODO AJUSTE PORTADA ===================================== */
+
+.perfil-portada-usuario.portada-modo-ajuste {
+    cursor: crosshair;
+}
+
+.contenedor-perfil-usuario:has(.portada-modo-ajuste) {
+    overflow: visible;
+}
+
+.portada-ajuste-area {
+    position: absolute;
+    inset: 0;
+    overflow: hidden;
+    cursor: grab;
+    user-select: none;
+    touch-action: none;
+    background: #111827;
+}
+
+.portada-ajuste-area:active {
+    cursor: grabbing;
+}
+
+.portada-ajuste-img {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
+.portada-ajuste-guias {
+    position: absolute;
+    inset: 0;
+    pointer-events: none;
+    background-image:
+        linear-gradient(rgba(255, 255, 255, 0.12) 1px, transparent 1px),
+        linear-gradient(90deg, rgba(255, 255, 255, 0.12) 1px, transparent 1px);
+    background-size: 33.33% 33.33%;
+}
+
+.portada-ajuste-barra {
+    position: absolute;
+    bottom: -52px;
+    left: 0;
+    right: 0;
+    z-index: 10;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 10px 16px;
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(6px);
+    flex-wrap: wrap;
+    border-radius: 0 0 12px 12px;
+}
+
+.portada-ajuste-hint {
+    font-size: 0.78rem;
+    color: rgba(255, 255, 255, 0.75);
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.portada-ajuste-zoom {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex: 1;
+    min-width: 160px;
+}
+
+.btn-ajuste-zoom {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 30px;
+    height: 30px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1.1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.btn-ajuste-zoom:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.portada-zoom-slider {
+    flex: 1;
+    accent-color: #37cd1c;
+    height: 3px;
+    cursor: pointer;
+}
+
+.portada-ajuste-acciones {
+    display: flex;
+    gap: 8px;
+    flex-shrink: 0;
+}
+
+.btn-ajuste-cancelar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: rgba(255, 255, 255, 0.12);
+    border: 1px solid rgba(255, 255, 255, 0.3);
+    color: #fff;
+    padding: 6px 14px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-ajuste-cancelar:hover {
+    background: rgba(255, 255, 255, 0.22);
+}
+
+.btn-ajuste-confirmar {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    background: #37cd1c;
+    border: none;
+    color: #fff;
+    padding: 6px 16px;
+    border-radius: 8px;
+    font-size: 0.82rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-ajuste-confirmar:hover {
+    background: #2eb317;
+}
+
+/* ===================================== AJUSTE FOTO PERFIL INLINE ===================================== */
+
+.perfil-ajuste-wrapper {
+    position: absolute;
+    top: 0;
+    left: 0;
+    width: 140px;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    z-index: 100;
+    overflow: visible;
+}
+
+.perfil-ajuste-circulo {
+    width: 140px;
+    height: 140px;
+    border-radius: 50%;
+    overflow: hidden;
+    position: relative;
+    cursor: grab;
+    border: 5px solid #37cd1c;
+    background: #111827;
+    user-select: none;
+    touch-action: none;
+    box-shadow: 0 0 0 3px rgba(255, 255, 255, 0.9);
+}
+
+.perfil-ajuste-circulo:active {
+    cursor: grabbing;
+}
+
+.perfil-ajuste-img {
+    position: absolute;
+    pointer-events: none;
+    user-select: none;
+}
+
+.perfil-ajuste-controles {
+    background: rgba(0, 0, 0, 0.75);
+    backdrop-filter: blur(8px);
+    border-radius: 10px;
+    padding: 8px 10px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+    width: 180px;
+    margin-left: calc((140px - 180px) / 2);
+    position: relative;
+    z-index: 100;
+}
+
+.perfil-ajuste-zoom-fila {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.btn-ajuste-zoom-perfil {
+    background: rgba(255, 255, 255, 0.15);
+    border: 1px solid rgba(255, 255, 255, 0.25);
+    color: #fff;
+    width: 26px;
+    height: 26px;
+    border-radius: 6px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 1rem;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background 0.15s;
+}
+
+.btn-ajuste-zoom-perfil:hover {
+    background: rgba(255, 255, 255, 0.28);
+}
+
+.perfil-zoom-slider {
+    flex: 1;
+    accent-color: #37cd1c;
+    height: 3px;
+    cursor: pointer;
+    width: 100%;
+}
+
+.perfil-ajuste-acciones {
+    display: flex;
+    justify-content: center;
+    gap: 8px;
+}
+
+.btn-perfil-cancelar,
+.btn-perfil-confirmar {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    width: 32px;
+    height: 32px;
+    border-radius: 50%;
+    border: none;
+    font-size: 1.1rem;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.btn-perfil-cancelar {
+    background: rgba(255, 255, 255, 0.15);
+    color: #fff;
+}
+
+.btn-perfil-cancelar:hover {
+    background: rgba(239, 68, 68, 0.7);
+}
+
+.btn-perfil-confirmar {
+    background: #37cd1c;
+    color: #fff;
+}
+
+.btn-perfil-confirmar:hover {
+    background: #2eb317;
+}
+
+.portada-hint {
+    position: absolute;
+    bottom: 70px;
+    left: 50%;
+    transform: translateX(-50%);
+    background: rgba(0, 0, 0, 0.45);
+    color: #ffffff;
+    font-size: 0.75rem;
+    padding: 4px 12px;
+    border-radius: 20px;
+    pointer-events: none;
+    white-space: nowrap;
+    z-index: 2;
+}
+
+/* ===================================== RESPONSIVE ===================================== */
+
 @media (max-width: 868px) {
     .fecha-nacimiento-usuario select {
-        flex: 0 0 auto;
-        /* No crecer ni encogerse automáticamente */
         width: 28%;
-        /* Ancho fijo: ajusta según prefieras */
-        padding: 9px 8px;
-        border-radius: 4px;
-        border: 1px solid #ccc;
-        background: #fff;
         font-size: 0.9rem;
         color: rgb(107, 107, 107);
     }
 }
 
 @media (max-width: 768px) {
-    .fila-form-usuario {
-        flex-direction: column;
+    .contenedor-foto-perfil-usuario {
+        left: 50%;
+        margin-left: -70px; 
+        transform: none;
     }
 
-    .fila-botones-usuario {
-        justify-content: center;
+    .perfil-ajuste-wrapper {
+        left: 0;
+        transform: none;
+        width: 140px;
     }
 
-    .titulo-formulario-usuario {
+    .perfil-info-usuario {
+        padding: 90px 24px 24px 24px;
+        align-items: center;
         text-align: center;
     }
 
-    .input-password .btn-ojo {
-        position: absolute;
-        right: 44px;
-        top: 59%;
-        transform: translateY(-50%);
-        background: none;
-        border: none;
-        cursor: pointer;
-        color: #8e9094;
-        font-size: 1.1rem;
+    .perfil-formulario-usuario {
+        padding: 24px 20px;
     }
-}
 
-@media (max-width: 640px) {
-    .genero-opciones-usuario {
-        flex-direction: column;
-    }
-}
-
-
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
     .fila-form-usuario {
         flex-direction: column;
         align-items: stretch;
@@ -420,6 +714,32 @@
     .titulo-formulario-usuario {
         text-align: center;
     }
+
+    .input-password .btn-ojo {
+        right: 44px;
+        top: 59%;
+        font-size: 1.1rem;
+        color: #8e9094;
+    }
+
+    .portada-ajuste-barra {
+        flex-direction: column;
+        align-items: stretch;
+        gap: 8px;
+        padding: 10px 12px;
+    }
+
+    .portada-ajuste-zoom {
+        width: 100%;
+    }
+
+    .portada-ajuste-acciones {
+        justify-content: flex-end;
+    }
+
+    .portada-ajuste-hint {
+        text-align: center;
+    }
 }
 
 @media (max-width: 640px) {
@@ -434,7 +754,6 @@
     }
 
     .fecha-nacimiento-usuario {
-        display: flex;
         flex-direction: column;
         align-items: flex-start;
         gap: 6px;
@@ -444,17 +763,27 @@
         width: 90%;
     }
 
+    .fecha-nacimiento-usuario .btn-lapiz {
+        margin-left: 0;
+    }
 }
 
 @media (max-width: 500px) {
-    .fecha-nacimiento-usuario {
-        display: flex;
-        flex-direction: column;
-        align-items: flex-start;
-        gap: 6px;
-    }
-
     .fecha-nacimiento-usuario select {
         width: 85%;
+    }
+
+    .perfil-formulario-usuario {
+        padding: 20px 16px;
+    }
+
+    .titulo-formulario-usuario {
+        margin-bottom: 28px;
+    }
+}
+
+@media (max-width: 768px) {
+    .perfil-portada-usuario.portada-modo-ajuste .contenedor-foto-perfil-usuario {
+        display: none;
     }
 }
