@@ -24,9 +24,7 @@
     display: block;
 }
 
-/* ===== CONTENEDOR FOTO PERFIL =====
-   overflow: visible CRÍTICO para que el botón cámara
-   y controles de ajuste no queden cortados */
+/* ===== CONTENEDOR FOTO PERFIL ===== */
 .contenedor-foto-perfil-usuario {
     position: absolute;
     bottom: -60px;
