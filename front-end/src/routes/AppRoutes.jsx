@@ -10,10 +10,12 @@ import { LayoutNotas } from "../layouts/LayoutNotas";
 import { Inicio } from "../pages/Inicio";
 import { ManualUsuario } from "../pages/ManualUsuario";
 import { Contactanos } from "../pages/Contactanos";
+import { PreguntasFrecuentes } from "../pages/PreguntasFrecuentes";
 import { Login } from "../pages/Login";
 import { Registro } from "../pages/Registro";
 import { OlvidarC } from "../pages/OlvidarC";
 import { RecuperarC } from "../pages/RecuperarC";
+
 import { CrudAdmin } from "../pages/CrudAdmin";
 import { Perfil } from "../pages/Perfil";
 import { Tareas } from "../pages/Tareas";
@@ -28,6 +30,10 @@ import { CursosT } from "../pages/CursosT";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
 import { CorreoAlternativo } from "../pages/CorreoAlternativo";
+import { MetodosEstudioTest } from "../pages/MetodosEstudioTest";
+import { MetodosEstudioResultado } from "../pages/MetodosEstudioResultado";
+import { MetodosEstudioHistorial } from "../pages/MetodosEstudioHistorial";
+
 
 import { PrivateRoute } from "../components/PrivateRoute";
 
@@ -40,6 +46,7 @@ export function AppRoutes() {
                 <Route path="/" element={<Layout><Inicio /></Layout>} />
                 <Route path="/manual-usuario" element={<Layout><ManualUsuario /></Layout>} />
                 <Route path="/contactanos" element={<Layout><Contactanos /></Layout>} />
+                <Route path="/preguntas-frecuentes" element={<Layout><PreguntasFrecuentes /></Layout>} />
                 <Route path="/registrarse" element={<LayoutLR><Registro /></LayoutLR>} />
                 <Route path="/login" element={<LayoutL><Login /></LayoutL>} />
                 <Route path="/olvidar-contrasena" element={<LayoutO><OlvidarC /></LayoutO>} />
@@ -184,6 +191,39 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <CursosT />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/test-metodos-estudio"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <MetodosEstudioTest />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/resultado-metodos-estudio/"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <MetodosEstudioResultado />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/historial-metodos-estudio"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <MetodosEstudioHistorial />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

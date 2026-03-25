@@ -155,4 +155,4 @@ export function useOlvidarC() {
     cancelarSalida,
     cerrarAlert,
   };
-} 
+}  

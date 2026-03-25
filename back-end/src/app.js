@@ -5,9 +5,9 @@ import notasRoutes from "../src/routes/notas.js";
 import dashboardRoutes from "../src/routes/dashboard.js";
 import contactoRoutes from "../src/routes/contacto.js";
 import estilosAprendizajeRoutes from "../src/routes/estilos-aprendizaje.js";
+import metodosEstudioRoutes from "../src/routes/metodos-estudio.js";
 import cors from "cors";
 import cookieParser from "cookie-parser";
-import dotenv from "dotenv";
 import "../src/cron/recordatoriosCron.js";
 import { iniciarCronTipDiario } from "./cron/tipDiario.cron.js";
 
@@ -18,7 +18,7 @@ app.use(express.json({ limit: "50mb" }));
 app.use(express.urlencoded({ limit: "50mb", extended: true }));
 
 app.use(cors({
-  origin: process.env.FRONTEND_URL,   // ← variable de entorno
+  origin: process.env.FRONTEND_URL,
   methods: ["GET", "POST", "PUT", "DELETE", "PATCH", "OPTIONS"],
   credentials: true,
 }));
@@ -30,14 +30,13 @@ app.get("/", (req, res) => {
 });
 
 // rutas
-iniciarCronTipDiario();
+//iniciarCronTipDiario();
 app.use("/usuarios", usuarioRoutes);
 app.use("/tareas", tareasRoutes);
 app.use("/notas", notasRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
+app.use("/metodosEstudio", metodosEstudioRoutes);
 app.use("/contacto", contactoRoutes);
-
-
 
 export default app;

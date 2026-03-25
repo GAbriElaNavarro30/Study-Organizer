@@ -10,7 +10,7 @@ dayjs.extend(timezone);
 
 export function iniciarCronTipDiario() {
     // Se ejecuta todos los días a las 00:00
-/*    cron.schedule("0 0 * * *", async () => {
+   cron.schedule("0 0 * * *", async () => {
         try {
             const hoy = dayjs().tz("America/Mexico_City").format("YYYY-MM-DD");
             const [totalResult] = await db.query(`SELECT COUNT(*) as total FROM frases`);
@@ -62,5 +62,5 @@ export function iniciarCronTipDiario() {
         }
     }, { timezone: "America/Mexico_City" });
 
-    console.log("Cron de frases diarias inciiado");*/
+    console.log("Cron de frases diarias inciiado");
 }

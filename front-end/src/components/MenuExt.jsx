@@ -31,6 +31,10 @@ export function MenuExt() {
                 <NavLink to="/contactanos" onClick={() => setOpen(false)} className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
                     Contáctanos
                 </NavLink>
+
+                <NavLink to="/preguntas-frecuentes" onClick={() => setOpen(false)} className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
+                    Ayuda
+                </NavLink>
             </div>
 
             <div className="menu-eslogan">

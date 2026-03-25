@@ -1,45 +1,11 @@
-import { useEffect, useState } from "react";
-import { useNavigate } from "react-router-dom";
 import { IoBarChartOutline, IoArrowForwardOutline } from "react-icons/io5";
 import "../styles/ResultadoPrevio.css";
+import { useResultadoPrevio } from "../hooks/useResultadoPrevio";
 
 export function ResultadoPrevio() {
-    const [resultado, setResultado] = useState(null);
-    const [cargando, setCargando] = useState(true);
-    const navigate = useNavigate();
-
-    useEffect(() => {
-        const verificar = async () => {
-            try {
-                const res = await fetch("http://localhost:3000/estilosaprendizaje/resultado-guardado", {
-                    credentials: "include",
-                });
-                console.log("📡 Status:", res.status);
-
-                if (res.ok) {
-                    const data = await res.json();
-                    console.log("✅ Datos:", data);
-                    setResultado(data);
-                } else {
-                    const err = await res.json();
-                    console.log("❌ Error del servidor:", err);
-                }
-            } catch (err) {
-                console.error("💥 Error de red:", err);
-                setResultado(null);
-            } finally {
-                setCargando(false);
-            }
-        };
-        verificar();
-    }, []);
+    const { resultado, cargando, verResultados } = useResultadoPrevio();
 
     if (cargando || !resultado) return null;
-
-    const verResultados = () => {
-        // Pasamos el resultado como state igual que cuando se termina el test
-        navigate("/resultados-test-estilos-aprendizaje", { state: resultado });
-    };
 
     return (
         <div className="resultado-previo">
@@ -55,7 +21,6 @@ export function ResultadoPrevio() {
                     <div>
                         <div className="resultado-previo__titulo">Ya has realizado este test</div>
                         <div className="resultado-previo__sub">
-                            {/*Tu perfil dominante es <strong>{resultado.perfil_dominante}</strong>. */}
                             Da clic en el botón para consultar tus resultados.
                         </div>
                     </div>

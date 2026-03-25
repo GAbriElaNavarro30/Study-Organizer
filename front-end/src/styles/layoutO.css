@@ -49,6 +49,24 @@
     color: white;
 }
 
+.btn-inicio-o {
+    background-color: rgb(8, 31, 207);
+    color: #ffffff;
+    border: 2px solid rgb(8, 31, 207);
+    padding: 10px 20px;
+    border-radius: 6px;
+    cursor: pointer;
+    font-weight: 500;
+    transition: background-color 0.3s, color 0.3s, transform 0.2s;
+    text-decoration: none;
+    font-size: 14px;
+}
+
+.btn-inicio-o:hover {
+    background-color: #89a4dd;
+    color: white;
+}
+
 .menu-eslogan-o {
     position: absolute;
     left: 50%;
@@ -81,9 +99,6 @@
         position: static !important;
         transform: none !important;
         padding: 0 10px !important;
-    }
-
-    .menu-eslogan-o {
         width: 100% !important;
         text-align: center !important;
         font-size: 0.85rem !important;
@@ -106,14 +121,14 @@
         font-size: 0.85rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 8px 16px !important;
         font-size: 0.85rem !important;
         width: auto !important;
         max-width: fit-content;
     }
-    
 }
 
 @media (max-width: 768px) {
@@ -152,7 +167,8 @@
         font-size: 0.85rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 8px 16px !important;
         font-size: 0.85rem !important;
@@ -168,7 +184,6 @@
         margin-top: 0px;
     }
 }
-
 
 @media (max-width: 620px) {
     .header-externo-o {
@@ -206,7 +221,8 @@
         font-size: 0.8rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 8px 14px !important;
         font-size: 0.8rem !important;
@@ -259,7 +275,8 @@
         font-size: 0.7rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 8px 12px !important;
         font-size: 0.7rem !important;
@@ -312,7 +329,8 @@
         font-size: 0.61rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 7px 8px !important;
         font-size: 0.61rem !important;
@@ -365,7 +383,8 @@
         font-size: 0.51rem !important;
     }
 
-    .btn-login-o {
+    .btn-login-o,
+    .btn-inicio-o {
         box-sizing: border-box;
         padding: 6px 7px !important;
         font-size: 0.51rem !important;
@@ -381,4 +400,3 @@
         margin-top: 0px;
     }
 }
-

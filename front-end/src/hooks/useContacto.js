@@ -1,4 +1,4 @@
-import { useState } from "react";
+import { useState, useEffect } from "react";
 import api from "../services/api";
 
 export function useContacto() {
@@ -52,6 +52,12 @@ export function useContacto() {
         setMensaje(e.target.value);
         setErrores(p => ({ ...p, mensaje: undefined }));
     };
+
+    // ─── Scroll al inicio al montar ───
+    useEffect(() => {
+        window.scrollTo(0, 0);
+    }, []);
+
 
     return {
         nombre,

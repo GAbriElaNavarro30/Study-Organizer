@@ -26,7 +26,7 @@ export function OlvidarC() {
 
   return (
     <>
-      <HeaderExtO onAcceder={() => intentarSalir("/login")} />
+      <HeaderExtO onAcceder={() => intentarSalir("/login")} onInicio={() => intentarSalir("/")} />
 
       <div className="contenedor-olvidar">
         <form className="form-olvidar" onSubmit={handleSubmit}>

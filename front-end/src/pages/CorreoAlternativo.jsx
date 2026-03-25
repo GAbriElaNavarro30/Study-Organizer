@@ -32,7 +32,7 @@ export function CorreoAlternativo() {
 
     return (
         <>
-            <HeaderExtO onAcceder={() => intentarSalir("/login")} />
+            <HeaderExtO onAcceder={() => intentarSalir("/login")} onInicio={() => intentarSalir("/")} />
 
             <div className="contenedor-olvidar-alt">
                 <div className="form-olvidar-alt">

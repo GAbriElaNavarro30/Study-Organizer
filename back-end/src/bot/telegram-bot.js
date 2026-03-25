@@ -30,7 +30,7 @@ async function getUpdates() {
 
     } catch (error) {
         console.error("Error en getUpdates:", error.message);
-        return []; // importante: no lanzar error
+        return [];
     }
 }
 
@@ -41,7 +41,7 @@ async function sendMessage(chatId, text) {
         body: JSON.stringify({
             chat_id: chatId,
             text,
-            parse_mode: "HTML" // necesario para <code>
+            parse_mode: "HTML"
         }),
     });
 }

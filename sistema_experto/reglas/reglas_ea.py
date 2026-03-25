@@ -9,8 +9,11 @@ from experta import KnowledgeEngine, Rule, MATCH, TEST, AND, NOT, OR
 from hechos.hechos_ea import (
     PuntajesVARK, PerfilDominante, Recomendacion,
     PERFILES, RECOMENDACIONES,
+    
+    PuntajeDimension, PerfilVARK,
+    ErrorDetectado, RecomendacionME,
+    ERRORES, RECOMENDACIONES_GENERALES, RECOMENDACIONES_VARK,
 )
-
 
 class MotorVARK(KnowledgeEngine):
     """
@@ -184,3 +187,96 @@ class MotorVARK(KnowledgeEngine):
             if letra in RECOMENDACIONES:
                 for texto in RECOMENDACIONES[letra]:
                     self.declare(Recomendacion(estilo=letra, texto=texto))
+                    
+
+
+# ======================================================================================
+# MÉTODOS DE ESTUDIO
+# ======================================================================================
+class MotorMetodosEstudio(KnowledgeEngine):
+ 
+    # ──────────────────────────────────────────
+    # BLOQUE 1: Detectar errores por dimensión
+    # Se dispara cuando una dimensión tiene errores detectados
+    # ──────────────────────────────────────────
+ 
+    @Rule(
+        PuntajeDimension(
+            id_dimension=MATCH.id_dim,
+            nombre=MATCH.nombre,
+            tiene_errores=True,
+        ),
+        salience=20,
+    )
+    def detectar_errores(self, id_dim, nombre):
+        errores = ERRORES.get(id_dim, [])
+        for msg in errores:
+            self.declare(ErrorDetectado(dimension=nombre, mensaje=msg))
+ 
+    # ──────────────────────────────────────────
+    # BLOQUE 2: Recomendaciones generales (bajo/medio)
+    # ──────────────────────────────────────────
+ 
+    @Rule(
+        PuntajeDimension(
+            id_dimension=MATCH.id_dim,
+            nombre=MATCH.nombre,
+            nivel=MATCH.nivel,
+        ),
+        TEST(lambda nivel: nivel in ('bajo', 'medio')),
+        salience=10,
+    )
+    def recomendar_general(self, id_dim, nombre, nivel):
+        recs = RECOMENDACIONES_GENERALES.get(id_dim, [])
+        for texto in recs:
+            self.declare(RecomendacionME(
+                dimension=nombre,
+                estilo_vark="general",
+                texto=texto,
+            ))
+ 
+    # ──────────────────────────────────────────
+    # BLOQUE 3: Recomendaciones cruzadas VARK × dimensión
+    # Se dispara para dimensiones con nivel bajo o medio
+    # ──────────────────────────────────────────
+ 
+    @Rule(
+        PuntajeDimension(
+            id_dimension=MATCH.id_dim,
+            nombre=MATCH.nombre,
+            nivel=MATCH.nivel,
+        ),
+        TEST(lambda nivel: nivel in ('bajo', 'medio')),
+        PerfilVARK(perfil=MATCH.perfil),
+        salience=8,
+    )
+    def recomendar_vark(self, id_dim, nombre, nivel, perfil):
+        for letra in perfil:
+            vark_dim = RECOMENDACIONES_VARK.get(letra, {})
+            texto = vark_dim.get(id_dim)
+            if texto:
+                self.declare(RecomendacionME(
+                    dimension=nombre,
+                    estilo_vark=letra,
+                    texto=texto,
+                ))
+ 
+    # ──────────────────────────────────────────
+    # BLOQUE 4: Refuerzo positivo (nivel alto)
+    # ──────────────────────────────────────────
+ 
+    @Rule(
+        PuntajeDimension(
+            id_dimension=MATCH.id_dim,
+            nombre=MATCH.nombre,
+            nivel='alto',
+        ),
+        salience=5,
+    )
+    def refuerzo_positivo(self, id_dim, nombre):
+        self.declare(RecomendacionME(
+            dimension=nombre,
+            estilo_vark="general",
+            texto=f"¡Excelente! Tus hábitos en '{nombre}' son sólidos. Sigue así y comparte estos hábitos con tus compañeros.",
+        ))
+ 

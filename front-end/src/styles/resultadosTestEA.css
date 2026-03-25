@@ -1080,3 +1080,187 @@
         grid-template-columns: 100px 1fr 44px;
     }
 }
+
+/* ================================================================
+   HISTORIAL DE INTENTOS
+================================================================ */
+
+.res-historial-loading {
+    display: flex;
+    justify-content: center;
+    padding: 32px 0;
+}
+
+.res-historial-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 40px 0;
+    color: var(--ink-lt, #8e8aaa);
+    font-size: 0.9rem;
+}
+
+.res-historial-table-wrap {
+    overflow-x: auto;
+    border-radius: 14px;
+    border: 1.5px solid rgba(74,144,196,0.18);
+    box-shadow: 0 2px 12px rgba(74,144,196,0.06);
+}
+
+.res-historial-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 0.88rem;
+    font-family: 'DM Sans', sans-serif;
+}
+
+/* Encabezado */
+.res-historial-table thead tr {
+    background: linear-gradient(135deg, #f0f4fa 0%, #e8eef8 100%);
+    border-bottom: 2px solid rgba(74,144,196,0.18);
+}
+
+.res-historial-table thead th {
+    padding: 13px 16px;
+    text-align: left;
+    font-size: 0.78rem;
+    font-weight: 700;
+    letter-spacing: 0.08em;
+    text-transform: uppercase;
+    color: #5a6a8a;
+    white-space: nowrap;
+}
+
+.res-historial-table thead th:first-child {
+    border-radius: 12px 0 0 0;
+}
+.res-historial-table thead th:last-child {
+    border-radius: 0 12px 0 0;
+}
+
+/* Filas */
+.res-historial-table tbody tr {
+    border-bottom: 1px solid rgba(74,144,196,0.09);
+    transition: background 0.18s ease;
+}
+
+.res-historial-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.res-historial-table tbody tr:hover {
+    background: rgba(74,144,196,0.04);
+}
+
+/* Fila del intento actual */
+.res-historial-row--actual {
+    background: linear-gradient(135deg, rgba(58,124,184,0.06) 0%, rgba(90,143,184,0.04) 100%) !important;
+}
+
+.res-historial-table tbody td {
+    padding: 13px 16px;
+    color: #2d3a4a;
+    vertical-align: middle;
+}
+
+/* Columna número */
+.res-historial-num {
+    text-align: center;
+    width: 70px;
+}
+
+.res-historial-idx {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    width: 26px; height: 26px;
+    border-radius: 50%;
+    background: rgba(74,144,196,0.10);
+    color: #3a7cb8;
+    font-size: 0.78rem;
+    font-weight: 700;
+}
+
+.res-historial-badge-actual {
+    display: inline-flex;
+    align-items: center;
+    padding: 3px 10px;
+    border-radius: 999px;
+    background: linear-gradient(135deg, #3a7cb8, #5a8fb8);
+    color: #fff;
+    font-size: 0.72rem;
+    font-weight: 700;
+    letter-spacing: 0.06em;
+    box-shadow: 0 2px 8px rgba(58,124,184,0.35);
+}
+
+/* Columna fecha */
+.res-historial-fecha {
+    display: flex !important;
+    align-items: center;
+    gap: 7px;
+    color: #4a5568;
+    font-size: 0.85rem;
+    white-space: nowrap;
+}
+
+/* Badge de perfil dominante */
+.res-historial-perfil {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 12px;
+    border-radius: 999px;
+    border: 1.5px solid;
+    font-size: 0.8rem;
+    font-weight: 600;
+    white-space: nowrap;
+}
+
+/* Columna puntaje con mini barra */
+.res-historial-puntaje {
+    min-width: 80px;
+}
+
+.res-historial-mini-bar-wrap {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+}
+
+.res-historial-mini-val {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #2d3a4a;
+    min-width: 14px;
+    text-align: right;
+}
+
+.res-historial-mini-track {
+    flex: 1;
+    height: 5px;
+    background: rgba(74,144,196,0.12);
+    border-radius: 999px;
+    overflow: hidden;
+    min-width: 40px;
+}
+
+.res-historial-mini-fill {
+    height: 100%;
+    border-radius: 999px;
+    transition: width 0.6s ease;
+}
+
+/* Responsive */
+@media (max-width: 640px) {
+    .res-historial-table thead th:nth-child(4),
+    .res-historial-table thead th:nth-child(5),
+    .res-historial-table thead th:nth-child(6),
+    .res-historial-table thead th:nth-child(7),
+    .res-historial-table tbody td:nth-child(4),
+    .res-historial-table tbody td:nth-child(5),
+    .res-historial-table tbody td:nth-child(6),
+    .res-historial-table tbody td:nth-child(7) {
+        display: none;
+    }
+}

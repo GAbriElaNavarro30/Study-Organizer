@@ -1,7 +1,7 @@
 import logo from '../assets/imagenes/logo-header.png';
 import "../styles/layoutO.css";
 
-export function HeaderExtO({ onAcceder }) {
+export function HeaderExtO({ onAcceder, onInicio }) {
   return (
     <div className="header-externo-o">
       <div className="logo-o">
@@ -13,7 +13,10 @@ export function HeaderExtO({ onAcceder }) {
       </div>
 
       <div className="espacio-login-o">
-        <span>¿Ya tienes una cuenta?</span>
+        {/*<span>¿Ya tienes una cuenta?</span>*/}
+        <button className="btn-inicio-o" onClick={onInicio}>
+          Inicio
+        </button>
         <button className="btn-login-o" onClick={onAcceder}>
           Acceder
         </button>

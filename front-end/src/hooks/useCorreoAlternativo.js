@@ -48,7 +48,6 @@ export function useCorreoAlternativo() {
 
     setIsSubmitting(true);
     try {
-      // ✅ api.post en lugar de fetch hardcodeado
       const { data } = await api.post("/usuarios/verificar-correo-alternativo", {
         correo_electronico: correoLimpio,
       });
@@ -65,7 +64,6 @@ export function useCorreoAlternativo() {
   const handleEnviarAlternativo = async () => {
     setEnviando(true);
     try {
-      // ✅ api.post en lugar de fetch hardcodeado
       await api.post("/usuarios/recuperar-con-alternativo", {
         correo_electronico: correo.trim(),
       });

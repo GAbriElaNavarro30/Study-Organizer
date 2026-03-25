@@ -5,7 +5,7 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from motor.motor_ea import procesar_respuestas
+from motor.motor_ea import procesar_respuestas, procesar_test_me
 from hechos.hechos_ea import RECOMENDACIONES, PERFILES
 
 load_dotenv()
@@ -72,3 +72,48 @@ def obtener_recomendaciones_perfil(perfil: str):
             status_code=404, detail=f"Perfil '{perfil}' no reconocido"
         )
     return {"recomendaciones": recomendaciones}
+
+# ===============================================================
+# métodos de estudio
+# ===============================================================
+class RespuestaItem(BaseModel):
+    id_pregunta:  int
+    id_dimension: int
+    valor:        int   # 1-4
+    es_negativa:  bool
+ 
+ 
+class TestMEInput(BaseModel):
+    respuestas:   list[RespuestaItem]
+    perfil_vark:  str = "VARK"
+ 
+ 
+@app.get("/")
+def health():
+    return {"status": "Sistema Experto Métodos de Estudio activo"}
+ 
+ 
+@app.post("/analizar-me")
+def analizar_me(data: TestMEInput):
+    if len(data.respuestas) != 36:
+        raise HTTPException(
+            status_code=400,
+            detail=f"Se requieren exactamente 36 respuestas (recibidas: {len(data.respuestas)})"
+        )
+    for r in data.respuestas:
+        if r.valor not in (1, 2, 3, 4):
+            raise HTTPException(
+                status_code=400,
+                detail=f"Valor inválido {r.valor} en pregunta {r.id_pregunta}. Use 1-4."
+            )
+ 
+    resultado = procesar_test_me(
+        [r.dict() for r in data.respuestas],
+        data.perfil_vark,
+    )
+    return resultado
+ 
+ 
+if __name__ == "__main__":
+    import uvicorn
+    uvicorn.run("motor_me:app", host="0.0.0.0", port=PYTHON_PORT, reload=True)
