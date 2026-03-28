@@ -1,16 +1,20 @@
 // src/controllers/estilosAprendizajeController.js
-import axios from "axios"; //para llamar al sisitema experto
 
+//para llamar al sisitema experto
+import axios from "axios";
+
+// modelos
 import { PreguntaEA } from "../models/PreguntaEA.js";
 import { IntentoTest } from "../models/IntentoTest.js";
 import { RespuestasTestVARK } from "../models/RespuestasTestVARK.js";
 import { ResultadoTestEA } from "../models/ResultadoTestEA.js";
 
+// direccion del sistema experto
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
-/* ══════════════════════════════════════════════════════════════
-   Obtener preguntas con opciones
-══════════════════════════════════════════════════════════════ */
+/* ===========================================================
+   Obtener preguntas con sus opciones
+=========================================================== */
 export async function obtenerPreguntas(req, res) {
     try {
         const rows = await PreguntaEA.getAllWithOpciones();
@@ -19,16 +23,16 @@ export async function obtenerPreguntas(req, res) {
         for (const row of rows) {
             if (!mapa[row.id_pregunta]) {
                 mapa[row.id_pregunta] = {
-                    id:      row.id_pregunta,
-                    texto:   row.texto_pregunta,
+                    id: row.id_pregunta,
+                    texto: row.texto_pregunta,
                     opciones: [],
                 };
             }
             if (row.id_opcion) {
                 mapa[row.id_pregunta].opciones.push({
-                    id:    row.id_opcion,
+                    id: row.id_opcion,
                     texto: row.texto_opcion,
-                    cat:   row.categoria,
+                    cat: row.categoria,
                 });
             }
         }
@@ -40,18 +44,22 @@ export async function obtenerPreguntas(req, res) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Guardar respuestas y crear intento
-══════════════════════════════════════════════════════════════ */
+/* ===========================================================
+   Guardar respuestas y crear intento - en 4 pasos
+=========================================================== */
 export async function responder(req, res) {
     try {
+        // 1. obtiene el id_usuario desde el token
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        // 2. valida que esten todas las respuestas
         const { respuestas } = req.body;
 
         if (!respuestas || respuestas.length < 16) {
             return res.status(400).json({ error: "Debes responder todas las preguntas" });
         }
 
+        // 3. crea un nuevo intento en la bd
         const result = await new IntentoTest({
             tipo_test: "estilos_aprendizaje",
             id_usuario,
@@ -59,6 +67,7 @@ export async function responder(req, res) {
 
         const id_intento = result.insertId;
 
+        // 4. guarda todas las respuestas de golpe
         const ids_opciones = respuestas.map(r => r.id_opcion);
         await RespuestasTestVARK.saveMany(id_intento, ids_opciones);
 
@@ -69,18 +78,20 @@ export async function responder(req, res) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Obtener resultado — llama al sistema experto y guarda en BD
-══════════════════════════════════════════════════════════════ */
+/* =========================================================================
+    + Obtener resultado — llama al sistema experto y guarda en BD - 4 pasos
+========================================================================= */
 export async function obtenerResultado(req, res) {
     try {
-        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        // 1. trae las respuestas del intento de la bd
         const { id_intento } = req.query;
 
         if (!id_intento) {
             return res.status(400).json({ error: "Falta el id_intento" });
         }
 
+        // respuestas del intento
         const respuestas = await RespuestasTestVARK.getByIntento(id_intento);
 
         if (!respuestas || respuestas.length === 0) {
@@ -91,27 +102,36 @@ export async function obtenerResultado(req, res) {
             return res.status(404).json({ mensaje: "No se encontraron las 16 respuestas del intento" });
         }
 
+        // 2. extrae solo las categorias de las respuestas del intento y los manda al sistema experto
         const categorias = respuestas.map(r => r.categoria);
 
         const pythonRes = await axios.post(`${PYTHON_URL}/analizar`, { categorias });
+
+        // python devuelve:
         const {
             puntaje_v, puntaje_a, puntaje_r, puntaje_k,
             porcentaje_v, porcentaje_a, porcentaje_r, porcentaje_k,
-            perfil_dominante, recomendaciones,
+            perfil_dominante,
+            nombre_perfil,
+            recomendaciones,
         } = pythonRes.data;
 
+        // 3. guarda resultado en la bd - ver resultados
         await new ResultadoTestEA({
             puntaje_v,
             puntaje_a,
             puntaje_r,
             puntaje_k,
             perfil_dominante,
+            nombre_perfil,
             id_intento,
         }).save();
 
+        // 4. manda al frontend lo siguiente:
         res.json({
             perfil_dominante,
-            puntajes:    { v: puntaje_v,    a: puntaje_a,    r: puntaje_r,    k: puntaje_k },
+            nombre_perfil,
+            puntajes: { v: puntaje_v, a: puntaje_a, r: puntaje_r, k: puntaje_k },
             porcentajes: { v: porcentaje_v, a: porcentaje_a, r: porcentaje_r, k: porcentaje_k },
             recomendaciones,
         });
@@ -121,32 +141,37 @@ export async function obtenerResultado(req, res) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════
-   Obtener resultado guardado — sin recalcular
-══════════════════════════════════════════════════════════════ */
+/* =============================================================
+   Obtener resultado guardado — sin recalcular mediante JS
+============================================================= */
 export async function obtenerResultadoGuardado(req, res) {
     try {
+        // 1. obtiene id_usuario desde el token
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
+        // 2. obtiene el ultimo resultado del usuario
         const resultado = await ResultadoTestEA.getUltimoByUsuario(id_usuario);
 
         if (!resultado) {
             return res.status(404).json({ mensaje: "El usuario aún no ha realizado el test" });
         }
 
+        // 3. obtiene recomendaciones
         const pythonRes = await axios.get(`${PYTHON_URL}/recomendaciones/${resultado.perfil_dominante}`);
         const recomendaciones = pythonRes.data.recomendaciones;
 
+        // 4. calcula porcentajes
         const total = resultado.puntaje_v + resultado.puntaje_a + resultado.puntaje_r + resultado.puntaje_k;
         const porcentajes = {
-            v: total > 0 ? Math.round((resultado.puntaje_v / total) * 100) : 0,
-            a: total > 0 ? Math.round((resultado.puntaje_a / total) * 100) : 0,
-            r: total > 0 ? Math.round((resultado.puntaje_r / total) * 100) : 0,
-            k: total > 0 ? Math.round((resultado.puntaje_k / total) * 100) : 0,
+            v: total > 0 ? parseFloat(((resultado.puntaje_v / total) * 100).toFixed(2)) : 0,
+            a: total > 0 ? parseFloat(((resultado.puntaje_a / total) * 100).toFixed(2)) : 0,
+            r: total > 0 ? parseFloat(((resultado.puntaje_r / total) * 100).toFixed(2)) : 0,
+            k: total > 0 ? parseFloat(((resultado.puntaje_k / total) * 100).toFixed(2)) : 0,
         };
 
         res.json({
             perfil_dominante: resultado.perfil_dominante,
+            nombre_perfil: resultado.nombre_perfil,
             puntajes: {
                 v: resultado.puntaje_v,
                 a: resultado.puntaje_a,
@@ -162,12 +187,15 @@ export async function obtenerResultadoGuardado(req, res) {
     }
 }
 
-/* ══════════════════════════════════════════════════════════════
+/* ==============================================================
    Obtener historial del usuario
-══════════════════════════════════════════════════════════════ */
+============================================================== */
 export async function obtenerHistorial(req, res) {
     try {
+        // 1. obtiene id_usuario desde el token
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+        // 2. obtiene historial
         const historial = await ResultadoTestEA.getHistorialByUsuario(id_usuario);
         res.json({ historial });
     } catch (error) {

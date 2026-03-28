@@ -1,7 +1,7 @@
 // src/hooks/useTestEA.js
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api.js";
+import api from "../services/api.js"; // axios 
 
 // ─── DATOS ───────────────────────────────────────────────────────────────────
 // Los id de cada opción deben coincidir con los id reales en Opcion_VARK de la BD
@@ -248,13 +248,13 @@ export function useTestEA() {
                 }));
             });
 
-            // 1. Guardar respuestas en BD
+            // 1. Guardar respuestas en BDredponder
             const { data: saveData } = await api.post(
                 "/estilosaprendizaje/responder",
                 { respuestas: respuestasArray }
             );
 
-            // 2. Obtener resultado del sistema experto
+            // 2. Obtener resultado del sistema experto de ese intento en especifico
             const { data: resultado } = await api.get(
                 `/estilosaprendizaje/resultado?id_intento=${saveData.id_intento}`
             );

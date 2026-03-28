@@ -2,18 +2,8 @@
 import { db } from "../config/db.js";
  
 export class PreguntaEA {
-    /*constructor({ texto_pregunta }) {
-        this.texto_pregunta = texto_pregunta;
-    }
- 
-    async save() {
-        const [result] = await db.query(
-            `INSERT INTO Pregunta_EA (texto_pregunta) VALUES (?)`,
-            [this.texto_pregunta]
-        );
-        return result;
-    }*/
- 
+
+    // todas
     static async getAll() {
         const [rows] = await db.query(
             `SELECT * FROM Pregunta_EA`
@@ -21,6 +11,7 @@ export class PreguntaEA {
         return rows;
     }
  
+    // una pregunta especifica
     static async getById(id_pregunta) {
         const [rows] = await db.query(
             `SELECT * FROM Pregunta_EA WHERE id_pregunta = ?`,
@@ -29,7 +20,7 @@ export class PreguntaEA {
         return rows[0];
     }
  
-    // Obtener pregunta con todas sus opciones VARK
+    // una sola pregunta con todas sus opciones VARK
     static async getWithOpciones(id_pregunta) {
         const [rows] = await db.query(
             `SELECT 
@@ -39,14 +30,14 @@ export class PreguntaEA {
                 o.texto_opcion,
                 o.categoria
              FROM Pregunta_EA p
-             LEFT JOIN Opcion_VARK o ON o.id_pregunta = p.id_pregunta
+             LEFT JOIN Opcion_VARK o ON o.id_pregunta = p.id_pregunta 
              WHERE p.id_pregunta = ?`,
             [id_pregunta]
         );
         return rows;
     }
  
-    // Obtener todas las preguntas con sus opciones (para mostrar el test completo)
+    // cuestionario completo = todas las preguntas con sus opciones, para mostrar el test completo
     static async getAllWithOpciones() {
         const [rows] = await db.query(
             `SELECT 
@@ -61,12 +52,4 @@ export class PreguntaEA {
         );
         return rows;
     }
- 
-    /*static async delete(id_pregunta) {
-        const [result] = await db.query(
-            `DELETE FROM Pregunta_EA WHERE id_pregunta = ?`,
-            [id_pregunta]
-        );
-        return result;
-    }*/
 }

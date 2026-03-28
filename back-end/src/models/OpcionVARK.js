@@ -2,21 +2,8 @@
 import { db } from "../config/db.js";
  
 export class OpcionVARK {
-    /*constructor({ texto_opcion, categoria, id_pregunta }) {
-        this.texto_opcion = texto_opcion;
-        this.categoria   = categoria;   // 'V' | 'A' | 'R' | 'K'
-        this.id_pregunta = id_pregunta;
-    }
-
-    async save() {
-        const [result] = await db.query(
-            `INSERT INTO Opcion_VARK (texto_opcion, categoria, id_pregunta)
-             VALUES (?, ?, ?)`,
-            [this.texto_opcion, this.categoria, this.id_pregunta]
-        );
-        return result;
-    }*/
- 
+    
+    // todas las opciones
     static async getAll() {
         const [rows] = await db.query(
             `SELECT * FROM Opcion_VARK`
@@ -24,6 +11,7 @@ export class OpcionVARK {
         return rows;
     }
  
+    // una opcion por medio de su id
     static async getById(id_opcion) {
         const [rows] = await db.query(
             `SELECT * FROM Opcion_VARK WHERE id_opcion = ?`,
@@ -32,6 +20,7 @@ export class OpcionVARK {
         return rows[0];
     }
  
+    // opciones por pregunta = 4 opciones x pregunta
     static async getByPregunta(id_pregunta) {
         const [rows] = await db.query(
             `SELECT * FROM Opcion_VARK WHERE id_pregunta = ?`,
@@ -39,12 +28,5 @@ export class OpcionVARK {
         );
         return rows;
     }
- 
-    /*static async delete(id_opcion) {
-        const [result] = await db.query(
-            `DELETE FROM Opcion_VARK WHERE id_opcion = ?`,
-            [id_opcion]
-        );
-        return result;
-    }*/
+
 }

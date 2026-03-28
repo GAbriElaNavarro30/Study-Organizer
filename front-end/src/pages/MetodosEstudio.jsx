@@ -49,7 +49,7 @@ const NAV_SECTIONS = [
 export function MetodosEstudio() {
 <>
 </> 
-  /*const navigate     = useNavigate();
+  const navigate     = useNavigate();
   const iframeRef    = useRef(null);
   const mobileRef    = useRef(null);
   const scrollingRef = useRef(false);
@@ -127,8 +127,8 @@ export function MetodosEstudio() {
         {muted ? <IoVolumeMuteOutline size={20}/> : <IoMusicalNotesOutline size={20}/>}
       </button>
 
-      {/* HEADER */ /*}
-      /*<div className="mei-header">
+      {/* HEADER */}
+      <div className="mei-header">
         <div className="mei-header-left">
           <h1 className="mei-header-title">
             Descubre tus <em>hábitos de estudio</em>
@@ -145,7 +145,7 @@ export function MetodosEstudio() {
         </div>
       </div>
 
-      {/* NAV MÓVIL */ /*}
+      {/* NAV MÓVIL */}
       <nav className="mei-mobile-nav" ref={mobileRef}>
         {NAV_SECTIONS.map((s, i) => (
           <button key={i} className={`mei-mobile-item ${activeSection === i ? "active" : ""}`} onClick={() => irASeccion(i)}>
@@ -154,7 +154,7 @@ export function MetodosEstudio() {
         ))}
       </nav>
 
-      {/* LAYOUT */ /*}
+      {/* LAYOUT */}
       <div className="mei-layout">
         <aside className="mei-sidebar">
           <div className="mei-sidebar-label">Contenido</div>
@@ -185,7 +185,7 @@ export function MetodosEstudio() {
             <div className="mei-chip"><IoAnalyticsOutline size={14}/><span>Modelo CHTE</span></div>
           </div>
 
-          {/* ── QUÉ SE EVALÚA ── */ /*}
+          {/* ── QUÉ SE EVALÚA ── */}
           <div id="mei-evalua" className="mei-card">
             <div className="mei-card-inner">
               <div className="mei-card-body">
@@ -214,7 +214,7 @@ export function MetodosEstudio() {
             </div>
           </div>
 
-          {/* ── CÓMO FUNCIONA ── */ /*}
+          {/* ── CÓMO FUNCIONA ── */}
           <div id="mei-funciona" className="mei-card">
             <div className="mei-card-inner mei-reverse">
               <div className="mei-card-image-side">
@@ -244,7 +244,7 @@ export function MetodosEstudio() {
             </div>
           </div>
 
-          {/* ── ERRORES COMUNES ── */ /*}
+          {/* ── ERRORES COMUNES ── */}
           <div id="mei-errores" className="mei-card">
             <div className="mei-card-body" style={{ padding: "40px" }}>
               <div className="mei-card-tag">Errores comunes</div>
@@ -263,7 +263,7 @@ export function MetodosEstudio() {
             </div>
           </div>
 
-          {/* ── RECOMENDACIONES ── */ /*}
+          {/* ── RECOMENDACIONES ── */}
           <div id="mei-recs" className="mei-card">
             <div className="mei-card-body" style={{ padding: "40px" }}>
               <div className="mei-card-tag">Hábitos efectivos</div>
@@ -286,7 +286,7 @@ export function MetodosEstudio() {
             </div>
           </div>
 
-          {/* ── CTA ── */ /*}
+          {/* ── CTA ── */ }
           <div id="mei-cta" className="mei-card">
             <div className="mei-card-body" style={{ padding: "40px", textAlign: "center" }}>
               <div className="mei-card-tag">Comenzar</div>
@@ -309,5 +309,5 @@ export function MetodosEstudio() {
         </main>
       </div>
     </div>
-  ); */
+  );
 }

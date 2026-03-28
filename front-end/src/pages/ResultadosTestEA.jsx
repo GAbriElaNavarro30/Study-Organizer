@@ -8,7 +8,6 @@ import {
 import {
     useResultadosTestEA,
     PERFIL_CONFIG,
-    NOMBRES_PERFILES,
     NAV_SECTIONS,
 } from "../hooks/useResultadosTestEA";
 
@@ -38,7 +37,10 @@ function BarraSimple({ cfg, value, pct, animado }) {
                     style={{ width: animado ? `${pct}%` : "0%", background: `linear-gradient(90deg, ${cfg.colorMid}, ${cfg.color})` }}
                 />
             </div>
-            <span className="res-bar-value">{value} <span className="res-bar-den">({pct}%)</span></span>
+            {/*<span className="res-bar-value">{value} <span className="res-bar-den">({pct}%)</span></span>*/}
+            <span className="res-bar-value">
+                {value} <span className="res-bar-den">({typeof pct === 'number' ? pct.toFixed(2) : pct}%)</span>
+            </span>
         </div>
     );
 }
@@ -48,10 +50,10 @@ function BarraSimple({ cfg, value, pct, animado }) {
 function RadarChart({ puntajes, primaryColor }) {
     const size = 260, cx = size / 2, cy = size / 2, r = 88;
     const datos = [
-        { label: "Visual",      key: "v", angle: -90 },
-        { label: "Auditivo",    key: "a", angle: 0   },
-        { label: "Kinestésico", key: "k", angle: 90  },
-        { label: "Lector",      key: "r", angle: 180 },
+        { label: "Visual", key: "v", angle: -90 },
+        { label: "Auditivo", key: "a", angle: 0 },
+        { label: "Kinestésico", key: "k", angle: 90 },
+        { label: "Lector", key: "r", angle: 180 },
     ];
     const getPoint = (angle, radius) => {
         const rad = (angle * Math.PI) / 180;
@@ -144,12 +146,12 @@ export function ResultadosTestEA() {
                         <IoArrowBackOutline size={14} /> Volver
                     </button>
                     <h1 className="res-header-title">Tu estilo de <em>aprendizaje</em></h1>
-                    <p className="res-header-subtitle">Basado en tus 16 respuestas, el sistema experto determinó tu perfil de aprendizaje dominante.</p>
+                    <p className="res-header-subtitle">Basado en tus 16 respuestas, se determinó tu perfil de aprendizaje dominante.</p>
                 </div>
                 <div className="res-header-right">
                     <div className="res-header-stat"><IoRibbonOutline size={14} /> Perfil identificado</div>
                     <div className="res-header-stat"><IoAnalyticsOutline size={14} /> Modelo VARK</div>
-                    <div className="res-header-stat"><IoBulbOutline size={14} /> Sistema experto</div>
+                    {/*<div className="res-header-stat"><IoBulbOutline size={14} /> Sistema experto</div>*/}
                 </div>
             </div>
 
@@ -252,7 +254,7 @@ export function ResultadosTestEA() {
                             </div>
                             <div className="res-tooltip">
                                 <IoBulbOutline size={14} />
-                                <span>Las dimensiones dominantes ({letras.join(", ")}) son aquellas con mayor puntaje relativo según las reglas del sistema experto.</span>
+                                <span>Las dimensiones dominantes ({letras.join(", ")}) son aquellas con mayor puntaje relativo.</span>
                             </div>
                         </div>
                     </div>
@@ -265,7 +267,7 @@ export function ResultadosTestEA() {
                             <p className="res-card-text" style={{ marginBottom: 28 }}>Tu puntaje exacto en cada modalidad del modelo VARK:</p>
                             <div className="res-score-grid">
                                 {["V", "A", "R", "K"].map((l) => {
-                                    const cfg   = PERFIL_CONFIG[l];
+                                    const cfg = PERFIL_CONFIG[l];
                                     const isDom = letras.includes(l);
                                     return (
                                         <div key={l} className={`res-score-card res-score-${cfg.cssKey} ${isDom ? "dominant" : ""}`}>
@@ -273,7 +275,11 @@ export function ResultadosTestEA() {
                                             <cfg.Icon size={26} className="res-score-icon" />
                                             <div className="res-score-letter" style={{ color: cfg.colorMid }}>{l}</div>
                                             <div className="res-score-nombre">{cfg.nombre}</div>
-                                            <div style={{ fontSize: 13, color: cfg.colorMid, marginTop: 4, fontWeight: 600 }}>{porcentajes[l.toLowerCase()] ?? 0}%</div>
+                                            <div style={{ fontSize: 13, color: cfg.colorMid, marginTop: 4, fontWeight: 600 }}>
+                                                {typeof porcentajes[l.toLowerCase()] === 'number'
+                                                    ? porcentajes[l.toLowerCase()].toFixed(2)
+                                                    : porcentajes[l.toLowerCase()] ?? 0}%
+                                            </div>
                                         </div>
                                     );
                                 })}
@@ -348,10 +354,10 @@ export function ResultadosTestEA() {
                                         <tbody>
                                             {historial.map((item, idx) => {
                                                 const letrasItem = item.perfil_dominante
-                                                    ? item.perfil_dominante.split("").filter(l => ["V","A","R","K"].includes(l))
+                                                    ? item.perfil_dominante.split("").filter(l => ["V", "A", "R", "K"].includes(l))
                                                     : [];
                                                 const primeraCfg = PERFIL_CONFIG[letrasItem[0]] || PERFIL_CONFIG["V"];
-                                                const nombreItem = NOMBRES_PERFILES[item.perfil_dominante] || item.perfil_dominante;
+                                                const nombreItem = item.nombre_perfil || item.perfil_dominante;
                                                 const total = (item.puntaje_v || 0) + (item.puntaje_a || 0) + (item.puntaje_r || 0) + (item.puntaje_k || 0);
                                                 const esMasReciente = idx === 0;
 
@@ -376,7 +382,7 @@ export function ResultadosTestEA() {
                                                                 {nombreItem}
                                                             </span>
                                                         </td>
-                                                        {["v","a","r","k"].map((key) => {
+                                                        {["v", "a", "r", "k"].map((key) => {
                                                             const val = item[`puntaje_${key}`] || 0;
                                                             const pct = total > 0 ? Math.round((val / total) * 100) : 0;
                                                             const cfg = PERFIL_CONFIG[key.toUpperCase()];

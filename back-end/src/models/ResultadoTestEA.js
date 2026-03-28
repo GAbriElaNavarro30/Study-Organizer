@@ -1,12 +1,14 @@
 import { db } from "../config/db.js";
 
 export class ResultadoTestEA {
+    // constructor para inicializar valores
     constructor({
         puntaje_v = 0,
         puntaje_a = 0,
         puntaje_r = 0,
         puntaje_k = 0,
         perfil_dominante,
+        nombre_perfil,
         id_intento,
     }) {
         this.puntaje_v        = puntaje_v;
@@ -14,26 +16,30 @@ export class ResultadoTestEA {
         this.puntaje_r        = puntaje_r;
         this.puntaje_k        = puntaje_k;
         this.perfil_dominante = perfil_dominante; // 'V' | 'A' | 'R' | 'K' | 'VA' | etc.
+        this.nombre_perfil    = nombre_perfil;
         this.id_intento       = id_intento;
     }
  
+    // guarda el resultado 1 vez, cuando el usuario termina el test
     async save() {
         const [result] = await db.query(
             `INSERT INTO Resultado_Test_EA
-             (puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante, id_intento)
-             VALUES (?, ?, ?, ?, ?, ?)`,
+             (puntaje_v, puntaje_a, puntaje_r, puntaje_k, perfil_dominante, nombre_perfil, id_intento)
+             VALUES (?, ?, ?, ?, ?, ?, ?)`,
             [
                 this.puntaje_v,
                 this.puntaje_a,
                 this.puntaje_r,
                 this.puntaje_k,
                 this.perfil_dominante,
+                this.nombre_perfil,
                 this.id_intento,
             ]
         );
         return result;
     }
  
+    // obtiene todos los resultados de todos los usuarios en todos lso intentos
     static async getAll() {
         const [rows] = await db.query(
             `SELECT * FROM Resultado_Test_EA`
@@ -41,6 +47,7 @@ export class ResultadoTestEA {
         return rows;
     }
  
+    // obtiene un resultado en especifico
     static async getById(id_resultado) {
         const [rows] = await db.query(
             `SELECT * FROM Resultado_Test_EA WHERE id_resultado = ?`,
@@ -49,6 +56,7 @@ export class ResultadoTestEA {
         return rows[0];
     }
  
+    // obtiene resultado de un itento en especifico  
     static async getByIntento(id_intento) {
         const [rows] = await db.query(
             `SELECT * FROM Resultado_Test_EA WHERE id_intento = ?`,
@@ -67,6 +75,7 @@ export class ResultadoTestEA {
                 r.puntaje_r,
                 r.puntaje_k,
                 r.perfil_dominante,
+                r.nombre_perfil,
                 it.fecha_intento,
                 it.id_usuario
              FROM Resultado_Test_EA r
@@ -89,6 +98,7 @@ export class ResultadoTestEA {
                 r.puntaje_r,
                 r.puntaje_k,
                 r.perfil_dominante,
+                r.nombre_perfil,
                 it.fecha_intento
              FROM Resultado_Test_EA r
              INNER JOIN Intento_Test it ON it.id_intento = r.id_intento
@@ -98,12 +108,4 @@ export class ResultadoTestEA {
         );
         return rows;
     }
- 
-    /*static async delete(id_resultado) {
-        const [result] = await db.query(
-            `DELETE FROM Resultado_Test_EA WHERE id_resultado = ?`,
-            [id_resultado]
-        );
-        return result;
-    }*/
 }

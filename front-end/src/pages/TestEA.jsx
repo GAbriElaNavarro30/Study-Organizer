@@ -64,7 +64,7 @@ export function TestEA() {
                 />
             )}
 
-            <iframe
+            {/*<iframe
                 ref={iframeRef}
                 src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
                 allow="autoplay"
@@ -73,7 +73,7 @@ export function TestEA() {
             />
             <button className="mute-btn" onClick={toggleMute} title={muted ? "Activar música" : "Silenciar"}>
                 {muted ? <IoVolumeMuteOutline size={20} /> : <IoMusicalNotesOutline size={20} />}
-            </button>
+            </button>*/}
 
             {/* HEADER */}
             <div className="test-header">
@@ -85,7 +85,7 @@ export function TestEA() {
                         Test de estilos de <em>aprendizaje</em>
                     </h1>
                     <p className="test-header-subtitle">
-                        Selecciona las opciones que mejor describan tu comportamiento habitual.
+                        Selecciona las opciones que mejor describan tu comportamiento habitual; puedes seleccionar más de una opción en cada pregunta.
                         No existen respuestas correctas o incorrectas.
                     </p>
                 </div>

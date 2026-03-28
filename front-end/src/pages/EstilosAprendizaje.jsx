@@ -34,7 +34,7 @@ export function EstilosAprendizaje() {
 
     return (
         <div className="vark-app">
-            <iframe
+            {/*<iframe
                 ref={iframeRef}
                 src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
                 allow="autoplay"
@@ -44,7 +44,7 @@ export function EstilosAprendizaje() {
 
             <button className="mute-btn" onClick={toggleMute} title={muted ? "Activar música" : "Silenciar"}>
                 {muted ? <IoVolumeMuteOutline size={20} /> : <IoMusicalNotesOutline size={20} />}
-            </button>
+            </button>*/}
 
             {/* HEADER */}
             <div className="header">

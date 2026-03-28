@@ -6,6 +6,7 @@ export class IntentoTest {
         this.id_usuario  = id_usuario;
     }
  
+    // se crea un intento en la bd con el tipo test y el id_uduario
     async save() {
         const [result] = await db.query(
             `INSERT INTO Intento_Test (tipo_test, id_usuario)
@@ -15,6 +16,7 @@ export class IntentoTest {
         return result;
     }
  
+    // todos los intentos
     static async getAll() {
         const [rows] = await db.query(
             `SELECT 
@@ -30,6 +32,7 @@ export class IntentoTest {
         return rows;
     }
  
+    // un solo intento en especifico por medio d3e su id
     static async getById(id_intento) {
         const [rows] = await db.query(
             `SELECT * FROM Intento_Test WHERE id_intento = ?`,
@@ -38,7 +41,7 @@ export class IntentoTest {
         return rows[0];
     }
  
-    // Obtener todos los intentos de un usuario
+    // Obtener todos los intentos de un usuario del mas reciente al más antiguo
     static async getByUsuario(id_usuario) {
         const [rows] = await db.query(
             `SELECT * FROM Intento_Test
@@ -49,7 +52,7 @@ export class IntentoTest {
         return rows;
     }
  
-    // Obtener el último intento de un usuario para un tipo de test
+    // obtener el último intento de un usuario para un tipo de test ya sea e_a o m_e
     static async getUltimoByUsuario(id_usuario, tipo_test) {
         const [rows] = await db.query(
             `SELECT * FROM Intento_Test
@@ -60,12 +63,4 @@ export class IntentoTest {
         );
         return rows[0];
     }
- 
-    /*static async delete(id_intento) {
-        const [result] = await db.query(
-            `DELETE FROM Intento_Test WHERE id_intento = ?`,
-            [id_intento]
-        );
-        return result;
-    }*/
 }

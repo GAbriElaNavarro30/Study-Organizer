@@ -5,42 +5,44 @@ from fastapi import FastAPI, HTTPException
 from fastapi.middleware.cors import CORSMiddleware
 from pydantic import BaseModel
 
-from motor.motor_ea import procesar_respuestas, procesar_test_me
-from hechos.hechos_ea import RECOMENDACIONES, PERFILES
+from motor.motor_ea import procesar_respuestas, obtener_recomendaciones_perfil
 
+# abre el .env
 load_dotenv()
 
 FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173/Study-Organizer")
 PYTHON_ENV   = os.getenv("PYTHON_ENV", "development")
 PYTHON_PORT  = int(os.getenv("PYTHON_PORT", 8000))
 
-# En desarrollo permite cualquier origen, en producción solo el frontend
+# origenes permitidos
 ALLOWED_ORIGINS = ["*"] if PYTHON_ENV == "development" else [FRONTEND_URL]
 
+# crea el servidor
 app = FastAPI(
     title="Sistema Experto VARK",
-    # En producción oculta la documentación automática
-    docs_url="/docs" if PYTHON_ENV == "development" else None,
-    redoc_url="/redoc" if PYTHON_ENV == "development" else None,
+    docs_url="/docs" if PYTHON_ENV == "development" else None, # en desarrollo ver y probar rutas
+    redoc_url="/redoc" if PYTHON_ENV == "development" else None, # si no, por seguridad no
 )
 
+# origen / CORS
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
     allow_methods=["*"],
-    allow_headers=["*"],
+    allow_headers=["*"], # encabezado
 )
 
-
+# modelo de los datos antes de procesar
 class RespuestasInput(BaseModel):
     categorias: list[str]
 
-
+# ruta prueba
 @app.get("/")
 def health_check():
-    return {"status": "Sistema Experto VARK activo (powered by experta)"}
+    return {"status": "Sistema Experto activo"}
 
 
+# recibe repuetas del test = categorias
 @app.post("/analizar")
 def analizar_vark(data: RespuestasInput):
     if len(data.categorias) < 16:
@@ -49,71 +51,21 @@ def analizar_vark(data: RespuestasInput):
         )
 
     categorias_validas = {"V", "A", "R", "K"}
-    for c in data.categorias:
+    for c in data.categorias: # recorrer n hasta n = 16 o más respuestas (categorias)
         if c not in categorias_validas:
             raise HTTPException(
                 status_code=400,
                 detail=f"Categoría inválida: {c}. Solo se aceptan V, A, R, K",
             )
 
-    resultado = procesar_respuestas(data.categorias)
-    return resultado
+    return procesar_respuestas(data.categorias)
 
-
+# obtener recomendaciones
 @app.get("/recomendaciones/{perfil}")
-def obtener_recomendaciones_perfil(perfil: str):
-    perfil = perfil.upper()
-    recomendaciones: dict[str, list[str]] = {}
-    for letra in perfil:
-        if letra in RECOMENDACIONES:
-            recomendaciones[letra] = RECOMENDACIONES[letra]
+def obtener_recomendaciones_perfil_endpoint(perfil: str):
+    recomendaciones = obtener_recomendaciones_perfil(perfil)  # ← pasa por el motor
     if not recomendaciones:
         raise HTTPException(
-            status_code=404, detail=f"Perfil '{perfil}' no reconocido"
+            status_code=404, detail=f"Perfil '{perfil.upper()}' no reconocido"
         )
     return {"recomendaciones": recomendaciones}
-
-# ===============================================================
-# métodos de estudio
-# ===============================================================
-class RespuestaItem(BaseModel):
-    id_pregunta:  int
-    id_dimension: int
-    valor:        int   # 1-4
-    es_negativa:  bool
- 
- 
-class TestMEInput(BaseModel):
-    respuestas:   list[RespuestaItem]
-    perfil_vark:  str = "VARK"
- 
- 
-@app.get("/")
-def health():
-    return {"status": "Sistema Experto Métodos de Estudio activo"}
- 
- 
-@app.post("/analizar-me")
-def analizar_me(data: TestMEInput):
-    if len(data.respuestas) != 36:
-        raise HTTPException(
-            status_code=400,
-            detail=f"Se requieren exactamente 36 respuestas (recibidas: {len(data.respuestas)})"
-        )
-    for r in data.respuestas:
-        if r.valor not in (1, 2, 3, 4):
-            raise HTTPException(
-                status_code=400,
-                detail=f"Valor inválido {r.valor} en pregunta {r.id_pregunta}. Use 1-4."
-            )
- 
-    resultado = procesar_test_me(
-        [r.dict() for r in data.respuestas],
-        data.perfil_vark,
-    )
-    return resultado
- 
- 
-if __name__ == "__main__":
-    import uvicorn
-    uvicorn.run("motor_me:app", host="0.0.0.0", port=PYTHON_PORT, reload=True)
