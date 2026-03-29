@@ -9,7 +9,8 @@ export function HeaderExt() {
     <>
     <div className="header-externo-e">
         <div className="logo-e">
-            <img src={logo} alt="" className="logo-header-e"/>
+            <img src={logo} alt="" className="logo-header-e" onClick={() => navigate("/")}
+                    style={{ cursor: "pointer" }}/>
         </div>
 
         <div className="botones-e">

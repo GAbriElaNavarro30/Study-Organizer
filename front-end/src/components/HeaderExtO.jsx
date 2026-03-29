@@ -5,7 +5,7 @@ export function HeaderExtO({ onAcceder, onInicio }) {
   return (
     <div className="header-externo-o">
       <div className="logo-o">
-        <img src={logo} alt="" className="logo-header-o" />
+        <img src={logo} alt="" className="logo-header-o"/>
       </div>
 
       <div className="menu-eslogan-o">

@@ -47,7 +47,13 @@ export function HeaderInterno() {
     return (
         <div className="header-interno">
             <div className="logotipo-interno">
-                <img src={logo} alt="Logo" className="logo-header" />
+                <img
+                    src={logo}
+                    alt="Logo"
+                    className="logo-header"
+                    onClick={() => navigate("/")}
+                    style={{ cursor: "pointer" }}
+                />
             </div>
 
             <div className="eslogan-interno">
