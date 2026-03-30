@@ -41,7 +41,7 @@ app.use("/tareas", tareasRoutes); // /ej. /tareas/crear
 app.use("/notas", notasRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
-app.use("/metodosEstudio", metodosEstudioRoutes);
+app.use("/metodosestudio", metodosEstudioRoutes);
 app.use("/contacto", contactoRoutes);
 // cursos
 

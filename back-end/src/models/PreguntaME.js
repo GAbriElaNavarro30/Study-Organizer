@@ -44,7 +44,7 @@ export class PreguntaME {
                 o.valor
             FROM Pregunta_ME p
             JOIN Dimension_Evaluar d ON p.id_dimension = d.id_dimension
-            JOIN Opcion_Likert o ON 1=1
+            CROSS JOIN Opcion_Likert o
             ORDER BY p.id_dimension, p.id_pregunta, o.valor
         `);
         return rows;

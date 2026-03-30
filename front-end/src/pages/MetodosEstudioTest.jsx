@@ -6,21 +6,21 @@ import {
   IoCheckmarkOutline, IoArrowForwardOutline, IoArrowBackOutline,
   IoTimeOutline, IoListOutline, IoArrowBackCircleOutline,
   IoVolumeMuteOutline, IoMusicalNotesOutline,
-  IoAlertCircleOutline, IoCheckmarkCircleOutline,
+  IoAlertCircleOutline,
 } from "react-icons/io5";
 import "../styles/metodos-estudio-test.css";
 
 export function MetodosEstudioTest() {
   const navigate = useNavigate();
 
-  const [dimensiones, setDimensiones] = useState([]);
-  const [dimActual,   setDimActual]   = useState(0);
-  const [respuestas,  setRespuestas]  = useState({});
-  const [cargando,    setCargando]    = useState(true);
-  const [enviando,    setEnviando]    = useState(false);
-  const [error,       setError]       = useState(null);
-  const [muted,       setMuted]       = useState(true);
-  const [mostrarModal, setMostrarModal] = useState(false);
+  const [dimensiones,   setDimensiones]   = useState([]);
+  const [dimActual,     setDimActual]     = useState(0);
+  const [respuestas,    setRespuestas]    = useState({});
+  const [cargando,      setCargando]      = useState(true);
+  const [enviando,      setEnviando]      = useState(false);
+  const [error,         setError]         = useState(null);
+  const [muted,         setMuted]         = useState(true);
+  const [mostrarModal,  setMostrarModal]  = useState(false);
 
   const iframeRef = useRef(null);
   const mainRef   = useRef(null);
@@ -32,7 +32,7 @@ export function MetodosEstudioTest() {
 
   const cargarTest = async () => {
     try {
-      const { data } = await api.get("/metodos-estudio/preguntas");
+      const { data } = await api.get("/metodosestudio/preguntas");
       setDimensiones(data.dimensiones);
     } catch {
       setError("No se pudo cargar el test. Intenta de nuevo.");
@@ -52,15 +52,32 @@ export function MetodosEstudioTest() {
     });
   };
 
+  /**
+   * Toggle selection:
+   * - Si la opción ya está seleccionada → desmarcar (elimina la key)
+   * - Si es diferente → seleccionar la nueva (solo 1 a la vez)
+   */
   const seleccionarRespuesta = (id_pregunta, opcion) => {
-    setRespuestas(prev => ({ ...prev, [id_pregunta]: opcion }));
+    setRespuestas(prev => {
+      const actual = prev[id_pregunta];
+      // Mismo id_opcion → deseleccionar
+      if (actual?.id_opcion === opcion.id_opcion) {
+        const { [id_pregunta]: _, ...resto } = prev;
+        return resto;
+      }
+      // Distinto → reemplazar (solo 1 selección por pregunta)
+      return { ...prev, [id_pregunta]: opcion };
+    });
   };
 
-  const dimCompleta = (dim) => dim?.preguntas?.every(p => respuestas[p.id_pregunta]);
+  const dimCompleta = (dim) =>
+    dim?.preguntas?.every(p => respuestas[p.id_pregunta]);
 
   const totalRespondidas = Object.keys(respuestas).length;
   const totalPreguntas   = dimensiones.reduce((a, d) => a + d.preguntas.length, 0);
-  const progreso         = totalPreguntas > 0 ? Math.round((totalRespondidas / totalPreguntas) * 100) : 0;
+  const progreso         = totalPreguntas > 0
+    ? Math.round((totalRespondidas / totalPreguntas) * 100)
+    : 0;
 
   const irA = (index) => {
     setDimActual(index);
@@ -95,6 +112,7 @@ export function MetodosEstudioTest() {
     }
   };
 
+  /* ── LOADING ── */
   if (cargando) {
     return (
       <div className="met-loading">
@@ -106,22 +124,32 @@ export function MetodosEstudioTest() {
   }
 
   const dim = dimensiones[dimActual];
-  const preguntasRestantes = dim?.preguntas?.filter(p => !respuestas[p.id_pregunta]).length || 0;
+  const preguntasRestantes =
+    dim?.preguntas?.filter(p => !respuestas[p.id_pregunta]).length || 0;
 
   return (
     <div className="met-app">
 
-      {/* Modal abandonar */}
+      {/* ── Modal abandonar ── */}
       {mostrarModal && (
         <div className="met-modal-overlay">
           <div className="met-modal">
             <h3>¿Abandonar el test?</h3>
-            <p>Llevas <strong>{totalRespondidas}</strong> preguntas respondidas. Si sales perderás tu progreso.</p>
+            <p>
+              Llevas <strong>{totalRespondidas}</strong> preguntas respondidas.
+              Si sales perderás tu progreso.
+            </p>
             <div className="met-modal-btns">
-              <button className="met-nav-btn met-secondary" onClick={() => setMostrarModal(false)}>
+              <button
+                className="met-nav-btn met-secondary"
+                onClick={() => setMostrarModal(false)}
+              >
                 Continuar test
               </button>
-              <button className="met-nav-btn met-danger" onClick={() => navigate("/metodos-estudio")}>
+              <button
+                className="met-nav-btn met-danger"
+                onClick={() => navigate("/metodos-estudio")}
+              >
                 Abandonar
               </button>
             </div>
@@ -129,20 +157,27 @@ export function MetodosEstudioTest() {
         </div>
       )}
 
-      {/* Música */}
-      <iframe ref={iframeRef}
+      {/* ── Música de fondo ── */}
+      <iframe
+        ref={iframeRef}
         src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
-        allow="autoplay" style={{ display: "none" }} title="background-music"
+        allow="autoplay"
+        style={{ display: "none" }}
+        title="background-music"
       />
-      <button className="met-mute-btn" onClick={toggleMute} title={muted ? "Activar música" : "Silenciar"}>
+      <button
+        className="met-mute-btn"
+        onClick={toggleMute}
+        title={muted ? "Activar música" : "Silenciar"}
+      >
         {muted ? <IoVolumeMuteOutline size={20}/> : <IoMusicalNotesOutline size={20}/>}
       </button>
 
-      {/* HEADER */}
+      {/* ── HEADER ── */}
       <div className="met-header">
         <div className="met-header-left">
           <button className="met-back-btn" onClick={() => setMostrarModal(true)}>
-            <IoArrowBackCircleOutline size={18}/> Volver
+            <IoArrowBackCircleOutline size={17}/> Volver
           </button>
           <h1 className="met-header-title">
             Test de <em>Métodos de Estudio</em>
@@ -153,12 +188,16 @@ export function MetodosEstudioTest() {
           </p>
         </div>
         <div className="met-header-right">
-          <div className="met-header-stat"><IoListOutline size={15}/> {totalRespondidas}/{totalPreguntas} respondidas</div>
-          <div className="met-header-stat"><IoTimeOutline size={15}/> ~8–10 minutos</div>
+          <div className="met-header-stat">
+            <IoListOutline size={15}/> {totalRespondidas}/{totalPreguntas} respondidas
+          </div>
+          <div className="met-header-stat">
+            <IoTimeOutline size={15}/> ~10–15 minutos
+          </div>
         </div>
       </div>
 
-      {/* BARRA DE PROGRESO */}
+      {/* ── BARRA DE PROGRESO ── */}
       <div className="met-progress-wrapper">
         <div className="met-progress-track">
           <div className="met-progress-fill" style={{ width: `${progreso}%` }}/>
@@ -166,10 +205,10 @@ export function MetodosEstudioTest() {
         <span className="met-progress-label">{progreso}% completado</span>
       </div>
 
-      {/* LAYOUT */}
+      {/* ── LAYOUT ── */}
       <div className="met-layout">
 
-        {/* SIDEBAR — dimensiones */}
+        {/* SIDEBAR */}
         <aside className="met-sidebar">
           <div className="met-sidebar-label">Dimensiones</div>
           <nav className="met-sidebar-nav">
@@ -183,11 +222,11 @@ export function MetodosEstudioTest() {
                   onClick={() => irA(i)}
                 >
                   <div className="met-sidebar-num">
-                    {completada ? <IoCheckmarkOutline size={12}/> : i + 1}
+                    {completada ? <IoCheckmarkOutline size={11}/> : i + 1}
                   </div>
                   <span className="met-sidebar-texto">
-                    {d.nombre_dimension.length > 28
-                      ? d.nombre_dimension.slice(0, 28) + "…"
+                    {d.nombre_dimension.length > 30
+                      ? d.nombre_dimension.slice(0, 30) + "…"
                       : d.nombre_dimension}
                   </span>
                 </div>
@@ -218,7 +257,10 @@ export function MetodosEstudioTest() {
                 {dim?.preguntas?.map((p, pi) => {
                   const seleccionada = respuestas[p.id_pregunta];
                   return (
-                    <div key={p.id_pregunta} className={`met-pregunta-card ${seleccionada ? "respondida" : ""}`}>
+                    <div
+                      key={p.id_pregunta}
+                      className={`met-pregunta-card ${seleccionada ? "respondida" : ""}`}
+                    >
                       <div className="met-pregunta-top">
                         <span className="met-pregunta-num">{pi + 1}</span>
                         <p className="met-pregunta-texto">{p.texto_pregunta}</p>
@@ -226,20 +268,31 @@ export function MetodosEstudioTest() {
                           <span className="met-negativa-badge">¡Atención!</span>
                         )}
                       </div>
+
                       <div className="met-opciones">
-                        {p.opciones.map(op => (
-                          <button
-                            key={op.id_opcion}
-                            className={`met-opcion ${seleccionada?.id_opcion === op.id_opcion ? "selected" : ""}`}
-                            onClick={() => seleccionarRespuesta(p.id_pregunta, { id_opcion: op.id_opcion, valor: op.valor })}
-                          >
-                            <span className="met-opcion-circle"/>
-                            <span className="met-opcion-texto">{op.texto_opcion}</span>
-                            {seleccionada?.id_opcion === op.id_opcion && (
-                              <IoCheckmarkOutline size={14} className="met-opcion-check"/>
-                            )}
-                          </button>
-                        ))}
+                        {p.opciones.map(op => {
+                          const isSelected = seleccionada?.id_opcion === op.id_opcion;
+                          return (
+                            <button
+                              key={op.id_opcion}
+                              className={`met-opcion ${isSelected ? "selected" : ""}`}
+                              onClick={() =>
+                                seleccionarRespuesta(p.id_pregunta, {
+                                  id_opcion: op.id_opcion,
+                                  valor: op.valor,
+                                })
+                              }
+                              /* aria accesibilidad */
+                              aria-pressed={isSelected}
+                            >
+                              <span className="met-opcion-circle"/>
+                              <span className="met-opcion-texto">{op.texto_opcion}</span>
+                              {isSelected && (
+                                <IoCheckmarkOutline size={14} className="met-opcion-check"/>
+                              )}
+                            </button>
+                          );
+                        })}
                       </div>
                     </div>
                   );
@@ -254,26 +307,45 @@ export function MetodosEstudioTest() {
             </div>
           )}
 
+          {/* Botones de navegación */}
           <div className="met-nav-btns">
-            <button className="met-nav-btn met-secondary" disabled={dimActual === 0} onClick={() => irA(dimActual - 1)}>
-              <IoArrowBackOutline size={16}/> Anterior
+            <button
+              className="met-nav-btn met-secondary"
+              disabled={dimActual === 0}
+              onClick={() => irA(dimActual - 1)}
+            >
+              <IoArrowBackOutline size={15}/> Anterior
             </button>
 
             {dimActual < dimensiones.length - 1 ? (
-              <button className="met-nav-btn met-primary" onClick={() => irA(dimActual + 1)}>
-                Siguiente <IoArrowForwardOutline size={16}/>
+              <button
+                className="met-nav-btn met-primary"
+                onClick={() => irA(dimActual + 1)}
+              >
+                Siguiente <IoArrowForwardOutline size={15}/>
               </button>
             ) : (
               <button
-                className={`met-nav-btn met-submit ${totalRespondidas === totalPreguntas ? "ready" : ""}`}
-                onClick={totalRespondidas === totalPreguntas && !enviando ? enviarTest : undefined}
-                disabled={totalRespondidas !== totalPreguntas || enviando}
-                title={totalRespondidas !== totalPreguntas ? `Faltan ${totalPreguntas - totalRespondidas} preguntas` : ""}
-              >
-                {enviando
-                  ? <>Analizando... <span className="met-spinner"/></>
-                  : <>Ver resultados <IoArrowForwardOutline size={16}/></>
+                className={`met-nav-btn met-submit ${
+                  totalRespondidas === totalPreguntas ? "ready" : ""
+                }`}
+                onClick={
+                  totalRespondidas === totalPreguntas && !enviando
+                    ? enviarTest
+                    : undefined
                 }
+                disabled={totalRespondidas !== totalPreguntas || enviando}
+                title={
+                  totalRespondidas !== totalPreguntas
+                    ? `Faltan ${totalPreguntas - totalRespondidas} preguntas`
+                    : ""
+                }
+              >
+                {enviando ? (
+                  <>Analizando... <span className="met-spinner"/></>
+                ) : (
+                  <>Ver resultados <IoArrowForwardOutline size={15}/></>
+                )}
               </button>
             )}
           </div>

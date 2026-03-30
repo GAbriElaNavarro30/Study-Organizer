@@ -9,9 +9,9 @@ import {
 
 const router = Router();
 
-router.get("/preguntas",                    verificarToken, obtenerTest);
-router.post("/guardar-respuestas",          verificarToken, responder);
-router.get("/resultado/:id_intento",        verificarToken, obtenerResultado);
-router.get("/historial",                    verificarToken, obtenerHistorial);
+router.get("/preguntas",             verificarToken, obtenerTest);
+router.post("/guardar-respuestas",   verificarToken, responder);
+router.get("/resultado/:id_intento", verificarToken, obtenerResultado);
+router.get("/historial",             verificarToken, obtenerHistorial);
 
 export default router;
