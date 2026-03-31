@@ -328,22 +328,20 @@
   font-size: 0.875rem; cursor: pointer; text-align: left; width: 100%;
   font-family: 'DM Sans', sans-serif; font-weight: 400;
   color: var(--met-ink-mid);
-  transition: border-color 0.15s, background 0.15s, transform 0.15s, box-shadow 0.15s;
   position: relative;
 }
 .met-opcion:hover {
   border-color: var(--met-blue-mid);
   background: var(--met-blue-muted);
   color: var(--met-ink);
-  transform: translateX(3px);
 }
 .met-opcion.selected {
-  background: var(--met-blue);
-  border-color: var(--met-blue);
-  color: white;
-  transform: translateX(5px);
-  box-shadow: 0 4px 18px var(--met-shadow-deep);
+  background: var(--met-blue-muted);
+  border-color: var(--met-blue-mid);
+  color: var(--met-ink);
   font-weight: 500;
+ 
+   box-shadow: 0 1px 6px var(--met-shadow);
 }
 
 .met-opcion-circle {
@@ -351,7 +349,8 @@
   border: 2px solid currentColor; flex-shrink: 0; transition: all 0.15s;
 }
 .met-opcion.selected .met-opcion-circle {
-  background: rgba(255,255,255,0.35); border-color: white;
+  background: var(--met-blue);
+  border-color: var(--met-blue);
 }
 
 .met-opcion-texto { flex: 1; line-height: 1.45; }

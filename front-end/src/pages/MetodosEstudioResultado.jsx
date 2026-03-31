@@ -1,5 +1,5 @@
 // src/pages/MetodosEstudio/MetodosEstudioResultado.jsx
-import { useState, useEffect, useRef } from "react";
+import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 import {
@@ -12,14 +12,49 @@ import {
 import "../styles/metodos-resultado-test.css";
 
 const VARK_LABELS = { V: "Visual", A: "Auditivo", R: "Lector / Escritor", K: "Kinestésico" };
-const VARK_COLORS = { V: "#898AC4", A: "#89A8B2", R: "#A2AADB", K: "#B3C8CF" };
+const VARK_COLORS = { V: "#2B7AB8", A: "#2E8B57", R: "#A05A00", K: "#6B5B95" };
 
-const nivelColor = (nivel) => ({ alto: "#4caf7d", medio: "#e9a84c", bajo: "#e05c5c" }[nivel] || "#898AC4");
-const nivelLabel = (nivel) => ({ alto: "Sólido", medio: "En desarrollo", bajo: "Requiere atención" }[nivel] || nivel);
-const nivelCssKey = (nivel) => ({ alto: "alto", medio: "medio", bajo: "bajo" }[nivel] || "medio");
+// ── Helpers de nivel ──
+const nivelColor = (nivel) => ({
+  excelente:  "#1A6E3C",
+  muy_bueno:  "#2E8B57",
+  bueno:      "#2B7AB8",
+  regular:    "#A05A00",
+  deficiente: "#B03030",
+}[nivel] || "#4A5A6E");
+
+const nivelLabel = (nivel) => ({
+  excelente:  "Excelente",
+  muy_bueno:  "Muy bueno",
+  bueno:      "Bueno",
+  regular:    "Regular",
+  deficiente: "Deficiente",
+}[nivel] || nivel);
+
+const nivelCssKey = (nivel) => ({
+  excelente:  "excelente",
+  muy_bueno:  "muy-bueno",
+  bueno:      "bueno",
+  regular:    "regular",
+  deficiente: "deficiente",
+}[nivel] || "regular");
+
+// ── Puntaje con 2 decimales, sin redondeo ──
+const formatPuntaje = (p) => (Math.floor(Number(p) * 100) / 100).toFixed(2);
+
+// ── Normalizar: array → objeto keyed por id_dimension ──
+const normalizarResultados = (data) => {
+  if (!data) return null;
+  if (!Array.isArray(data.resultados_por_dimension)) return data;
+  const obj = {};
+  for (const d of data.resultados_por_dimension) {
+    obj[d.id_dimension] = { nombre: d.nombre, puntaje: d.puntaje, nivel: d.nivel };
+  }
+  return { ...data, resultados_por_dimension: obj };
+};
 
 // ── Radar SVG ──
-function RadarChart({ resultados, primaryColor = "#898AC4" }) {
+function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   const cx = 160, cy = 160, r = 110;
   const dims = Object.entries(resultados);
   const n = dims.length;
@@ -37,25 +72,25 @@ function RadarChart({ resultados, primaryColor = "#898AC4" }) {
     <svg viewBox="0 0 320 320" className="mer-radar">
       {[25, 50, 75, 100].map(pct => (
         <polygon key={pct}
-          points={dims.map((_, i) => { const p = punto(i, (pct/100)*r); return `${p.x},${p.y}`; }).join(" ")}
-          fill="none" stroke="rgba(137,138,196,0.2)" strokeWidth="1"
+          points={dims.map((_, i) => { const p = punto(i, (pct / 100) * r); return `${p.x},${p.y}`; }).join(" ")}
+          fill="none" stroke="rgba(43,122,184,0.15)" strokeWidth="1"
         />
       ))}
       {dims.map((_, i) => {
         const p = punto(i, r);
-        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="rgba(137,138,196,0.2)" strokeWidth="1"/>;
+        return <line key={i} x1={cx} y1={cy} x2={p.x} y2={p.y} stroke="rgba(43,122,184,0.15)" strokeWidth="1" />;
       })}
-      <polygon points={poligono} fill={`${primaryColor}30`} stroke={primaryColor} strokeWidth="2"/>
+      <polygon points={poligono} fill={`${primaryColor}25`} stroke={primaryColor} strokeWidth="2" />
       {dims.map(([, info], i) => {
         const p = punto(i, (info.puntaje / 100) * r);
-        return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor}/>;
+        return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor} />;
       })}
       {dims.map(([, info], i) => {
         const p      = punto(i, r + 22);
         const anchor = p.x < cx - 5 ? "end" : p.x > cx + 5 ? "start" : "middle";
         const nombre = info.nombre?.length > 14 ? info.nombre.slice(0, 14) + "…" : info.nombre;
         return (
-          <text key={i} x={p.x} y={p.y} textAnchor={anchor} fontSize="9" fill="#4A5568" fontFamily="DM Sans, sans-serif">
+          <text key={i} x={p.x} y={p.y} textAnchor={anchor} fontSize="9" fill="#2E3D52" fontFamily="DM Sans, sans-serif">
             {nombre}
           </text>
         );
@@ -73,9 +108,9 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
         <span className={`mer-barra-nivel mer-nivel-${nivelCssKey(nivel)}`}>{nivelLabel(nivel)}</span>
       </div>
       <div className="mer-barra-track">
-        <div className="mer-barra-fill" style={{ width: animado ? `${puntaje}%` : "0%", background: nivelColor(nivel) }}/>
+        <div className="mer-barra-fill" style={{ width: animado ? `${puntaje}%` : "0%", background: nivelColor(nivel) }} />
       </div>
-      <span className="mer-barra-pct">{puntaje}%</span>
+      <span className="mer-barra-pct">{formatPuntaje(puntaje)}%</span>
     </div>
   );
 }
@@ -90,7 +125,7 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
     <div className="mer-rec-section">
       <button className="mer-rec-toggle" onClick={() => setAbierta(v => !v)}>
         <span>{dimension}</span>
-        {abierta ? <IoChevronUpOutline size={16}/> : <IoChevronDownOutline size={16}/>}
+        {abierta ? <IoChevronUpOutline size={16} /> : <IoChevronDownOutline size={16} />}
       </button>
       {abierta && (
         <div className="mer-rec-body">
@@ -99,7 +134,7 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
               <p className="mer-rec-cat">Recomendaciones generales</p>
               <ul className="mer-rec-list">
                 {generales.map((r, i) => (
-                  <li key={i}><IoCheckmarkCircleOutline size={14} className="mer-rec-check"/> {r.texto}</li>
+                  <li key={i}><IoCheckmarkCircleOutline size={14} className="mer-rec-check" /> {r.texto}</li>
                 ))}
               </ul>
             </>
@@ -112,7 +147,7 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
               <ul className="mer-rec-list mer-rec-vark">
                 {vark.map((r, i) => (
                   <li key={i}>
-                    <span className="mer-vark-pill" style={{ background: VARK_COLORS[r.estilo_vark] || "#C0C9EE" }}>
+                    <span className="mer-vark-pill" style={{ background: VARK_COLORS[r.estilo_vark] || "#2B7AB8" }}>
                       {r.estilo_vark}
                     </span>
                     {r.texto}
@@ -130,9 +165,9 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
 function LoadingState() {
   return (
     <div className="mer-loading">
-      <div className="mer-loading-icon"><IoAnalyticsOutline size={52}/></div>
+      <div className="mer-loading-icon"><IoAnalyticsOutline size={52} /></div>
       <p className="mer-loading-text">Analizando tus resultados...</p>
-      <div className="mer-loading-dots"><span/><span/><span/></div>
+      <div className="mer-loading-dots"><span /><span /><span /></div>
     </div>
   );
 }
@@ -141,7 +176,11 @@ export function MetodosEstudioResultado() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [datos,    setDatos]    = useState(location.state?.puntaje_global !== undefined ? location.state : null);
+  const [datos,    setDatos]    = useState(() =>
+    normalizarResultados(
+      location.state?.puntaje_global !== undefined ? location.state : null
+    )
+  );
   const [cargando, setCargando] = useState(!datos);
   const [animado,  setAnimado]  = useState(false);
 
@@ -154,8 +193,8 @@ export function MetodosEstudioResultado() {
     const id_intento = location.state?.id_intento;
     if (!id_intento) { navigate("/metodos-estudio"); return; }
     try {
-      const { data } = await api.get(`/metodos-estudio/resultado/${id_intento}`);
-      setDatos(data);
+      const { data } = await api.get(`/metodosestudio/resultado/${id_intento}`);
+      setDatos(normalizarResultados(data));
     } catch {
       navigate("/metodos-estudio");
     } finally {
@@ -164,7 +203,7 @@ export function MetodosEstudioResultado() {
     }
   };
 
-  if (cargando || !datos) return <LoadingState/>;
+  if (cargando || !datos) return <LoadingState />;
 
   const {
     puntaje_global,
@@ -177,6 +216,7 @@ export function MetodosEstudioResultado() {
 
   const dimOrdenadas = Object.entries(resultados_por_dimension).sort((a, b) => Number(a[0]) - Number(b[0]));
   const tieneRecs    = Object.keys(recomendaciones).length > 0;
+  const tieneMejoras = errores_detectados.length > 0;
 
   return (
     <div className={`mer-app ${animado ? "mer-animated" : ""}`}>
@@ -185,19 +225,18 @@ export function MetodosEstudioResultado() {
       <div className="mer-header">
         <div className="mer-header-left">
           <button className="mer-back-btn" onClick={() => navigate("/metodos-estudio")}>
-            <IoArrowBackOutline size={14}/> Volver
+            <IoArrowBackOutline size={14} /> Volver
           </button>
           <h1 className="mer-header-title">Tus <em>resultados</em></h1>
           <p className="mer-header-subtitle">
-            Análisis completo de tus hábitos de estudio basado en el modelo CHTE.
+            Análisis completo de tus hábitos de estudio basado en el modelo CHTE y LASSI.
           </p>
         </div>
         <div className="mer-header-right">
-          <div className="mer-header-stat"><IoBarChartOutline size={14}/> Análisis CHTE</div>
-          <div className="mer-header-stat"><IoBulbOutline     size={14}/> Sistema experto</div>
+          <div className="mer-header-stat"><IoBarChartOutline size={14} /> Análisis CHTE y LASSI</div>
           {perfil_vark && (
             <div className="mer-header-stat">
-              <IoAnalyticsOutline size={14}/> Perfil {perfil_vark}
+              <IoAnalyticsOutline size={14} /> Perfil: {perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}
             </div>
           )}
         </div>
@@ -211,27 +250,27 @@ export function MetodosEstudioResultado() {
           <div className="mer-sidebar-label">Contenido</div>
           <nav className="mer-sidebar-nav">
             {[
-              { label: "Resumen global",     id: "mer-resumen"  },
-              { label: "Por dimensión",      id: "mer-dims"     },
-              ...(errores_detectados.length > 0 ? [{ label: "Errores detectados", id: "mer-errores" }] : []),
-              ...(tieneRecs ? [{ label: "Recomendaciones", id: "mer-recs" }] : []),
+              { label: "Resumen global", id: "mer-resumen" },
+              { label: "Por dimensión",  id: "mer-dims"    },
+              ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
+              ...(tieneRecs    ? [{ label: "Recomendaciones",  id: "mer-recs"    }] : []),
             ].map((s, i) => (
               <div key={i} className="mer-sidebar-item"
                 onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}>
-                <span className="mer-sidebar-dot"/> {s.label}
+                <span className="mer-sidebar-dot" /> {s.label}
               </div>
             ))}
           </nav>
-          <div className="mer-sidebar-divider"/>
+          <div className="mer-sidebar-divider" />
           <div className="mer-sidebar-actions">
             <button className="mer-action-btn" onClick={() => navigate("/test-metodos-estudio")}>
-              <IoRefreshOutline size={13}/> Repetir test
-            </button>
-            <button className="mer-action-btn mer-action-btn--ghost" onClick={() => navigate("/historial-metodos-estudio")}>
-              <IoCalendarOutline size={13}/> Ver historial
+              <IoRefreshOutline size={13} /> Repetir test
             </button>
             <button className="mer-action-btn mer-action-btn--ghost" onClick={() => navigate("/metodos-estudio")}>
-              <IoHomeOutline size={13}/> Inicio
+              <IoHomeOutline size={13} /> Inicio
+            </button>
+            <button className="mer-action-btn mer-action-btn--ghost" onClick={() => navigate("/historial-metodos-estudio")}>
+              <IoCalendarOutline size={13} /> Ver historial
             </button>
           </div>
         </aside>
@@ -241,20 +280,24 @@ export function MetodosEstudioResultado() {
 
           {/* CHIPS */}
           <div className="mer-banner">
-            <div className="mer-chip"><IoBarChartOutline size={14}/><span>Puntaje: {Math.round(puntaje_global)}%</span></div>
+            <div className="mer-chip">
+              <IoBarChartOutline size={14} />
+              <span>Puntaje: {formatPuntaje(puntaje_global)}%</span>
+            </div>
             <div className="mer-chip" style={{ color: nivelColor(nivel_global) }}>
-              <IoAnalyticsOutline size={14}/><span>{nivelLabel(nivel_global)}</span>
+              <IoAnalyticsOutline size={14} />
+              <span>{nivelLabel(nivel_global)}</span>
             </div>
             {perfil_vark && (
               <div className="mer-chip">
-                <IoBulbOutline size={14}/>
+                <IoBulbOutline size={14} />
                 <span>VARK: {perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</span>
               </div>
             )}
-            {errores_detectados.length > 0 && (
+            {tieneMejoras && (
               <div className="mer-chip mer-chip--warn">
-                <IoAlertCircleOutline size={14}/>
-                <span>{errores_detectados.length} error{errores_detectados.length !== 1 ? "es" : ""} detectado{errores_detectados.length !== 1 ? "s" : ""}</span>
+                <IoAlertCircleOutline size={14} />
+                <span>{errores_detectados.length} posible{errores_detectados.length !== 1 ? "s" : ""} mejora{errores_detectados.length !== 1 ? "s" : ""}</span>
               </div>
             )}
           </div>
@@ -263,12 +306,13 @@ export function MetodosEstudioResultado() {
           <div id="mer-resumen" className="mer-card">
             <div className="mer-card-inner">
               <div className="mer-card-body">
-                <div className="mer-card-tag"><IoBarChartOutline size={11}/> Resumen global</div>
+                <div className="mer-card-tag"><IoBarChartOutline size={11} /> Resumen global</div>
                 <h2 className="mer-card-title">Tu puntuación general</h2>
                 <p className="mer-card-text">
-                  Obtuviste un puntaje global de <strong>{Math.round(puntaje_global)}%</strong>, 
-                  lo que corresponde a un nivel <strong style={{ color: nivelColor(nivel_global) }}>{nivelLabel(nivel_global)}</strong> en
-                  tus hábitos de estudio.
+                  Obtuviste un puntaje global de <strong>{formatPuntaje(puntaje_global)}%</strong>,
+                  lo que corresponde a un nivel{" "}
+                  <strong style={{ color: nivelColor(nivel_global) }}>{nivelLabel(nivel_global)}</strong>{" "}
+                  en tus hábitos de estudio.
                 </p>
                 {perfil_vark && (
                   <p className="mer-card-text" style={{ marginTop: 12 }}>
@@ -280,7 +324,7 @@ export function MetodosEstudioResultado() {
               <div className="mer-card-deco">
                 <div className="mer-score-ring" style={{ borderColor: nivelColor(nivel_global) }}>
                   <span className="mer-score-num" style={{ color: nivelColor(nivel_global) }}>
-                    {Math.round(puntaje_global)}
+                    {formatPuntaje(puntaje_global)}
                   </span>
                   <span className="mer-score-label">/ 100</span>
                 </div>
@@ -291,36 +335,44 @@ export function MetodosEstudioResultado() {
           {/* ── POR DIMENSIÓN ── */}
           <div id="mer-dims" className="mer-card">
             <div className="mer-card-body" style={{ padding: "40px" }}>
-              <div className="mer-card-tag"><IoAnalyticsOutline size={11}/> Por dimensión</div>
+              <div className="mer-card-tag"><IoAnalyticsOutline size={11} /> Por dimensión</div>
               <h2 className="mer-card-title">Distribución por dimensión</h2>
               <p className="mer-card-text" style={{ marginBottom: 28 }}>
-                Cada barra representa tu puntaje en esa dimensión del CHTE.
+                Cada barra representa tu puntaje en esa dimensión del CHTE y LASSI.
               </p>
               <div className="mer-charts-grid">
                 <div className="mer-chart-box">
-                  <div className="mer-chart-label"><IoBarChartOutline size={13}/> Comparativa</div>
+                  <div className="mer-chart-label"><IoBarChartOutline size={13} /> Comparativa</div>
                   <div className="mer-barchart">
                     {dimOrdenadas.map(([id, info]) => (
-                      <BarraDimension key={id} nombre={info.nombre} puntaje={info.puntaje} nivel={info.nivel} animado={animado}/>
+                      <BarraDimension
+                        key={id}
+                        nombre={info.nombre}
+                        puntaje={info.puntaje}
+                        nivel={info.nivel}
+                        animado={animado}
+                      />
                     ))}
                   </div>
                 </div>
                 <div className="mer-chart-box mer-chart-box--radar">
-                  <div className="mer-chart-label"><IoAnalyticsOutline size={13}/> Perfil radial</div>
-                  <RadarChart resultados={resultados_por_dimension}/>
+                  <div className="mer-chart-label"><IoAnalyticsOutline size={13} /> Perfil radial</div>
+                  <RadarChart resultados={resultados_por_dimension} />
                 </div>
               </div>
             </div>
           </div>
 
-          {/* ── ERRORES DETECTADOS ── */}
-          {errores_detectados.length > 0 && (
+          {/* ── POSIBLES MEJORAS ── */}
+          {tieneMejoras && (
             <div id="mer-errores" className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px" }}>
-                <div className="mer-card-tag mer-tag-warn"><IoAlertCircleOutline size={11}/> Errores detectados</div>
-                <h2 className="mer-card-title">Hábitos a mejorar</h2>
+                <div className="mer-card-tag mer-tag-warn">
+                  <IoAlertCircleOutline size={11} /> Posibles mejoras
+                </div>
+                <h2 className="mer-card-title">Áreas de oportunidad</h2>
                 <p className="mer-card-text" style={{ marginBottom: 24 }}>
-                  El sistema experto identificó los siguientes patrones negativos en tus respuestas:
+                  El sistema experto identificó los siguientes aspectos que podrías trabajar para mejorar tus hábitos:
                 </p>
                 <div className="mer-errores-grid">
                   {errores_detectados.map((e, i) => (
@@ -334,13 +386,16 @@ export function MetodosEstudioResultado() {
             </div>
           )}
 
-          {/* ── SIN ERRORES ── */}
-          {errores_detectados.length === 0 && (
+          {/* ── SIN MEJORAS (puntaje perfecto o sin hábitos negativos frecuentes) ── */}
+          {!tieneMejoras && (
             <div className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
-                <IoCheckmarkCircleOutline size={48} style={{ color: "#4caf7d", marginBottom: 12 }}/>
-                <h2 className="mer-card-title">¡Excelente!</h2>
-                <p className="mer-card-text">No se detectaron errores significativos en tus hábitos de estudio.</p>
+                <IoCheckmarkCircleOutline size={48} style={{ color: "#1A6E3C", marginBottom: 12 }} />
+                <h2 className="mer-card-title">¡Excelentes hábitos!</h2>
+                <p className="mer-card-text">
+                  No se detectaron hábitos negativos frecuentes en tus respuestas.
+                  Sigue así y consulta las recomendaciones para seguir creciendo.
+                </p>
               </div>
             </div>
           )}
@@ -349,13 +404,13 @@ export function MetodosEstudioResultado() {
           {tieneRecs && (
             <div id="mer-recs" className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px" }}>
-                <div className="mer-card-tag"><IoBulbOutline size={11}/> Recomendaciones</div>
+                <div className="mer-card-tag"><IoBulbOutline size={11} /> Recomendaciones</div>
                 <h2 className="mer-card-title">Recomendaciones personalizadas</h2>
                 <p className="mer-card-text" style={{ marginBottom: 20 }}>
                   Haz clic en cada dimensión para ver las sugerencias adaptadas a tu perfil.
                 </p>
                 {Object.entries(recomendaciones).map(([dim, recs]) => (
-                  <SeccionRecs key={dim} dimension={dim} recs={recs} perfil_vark={perfil_vark || "VARK"}/>
+                  <SeccionRecs key={dim} dimension={dim} recs={recs} perfil_vark={perfil_vark || "VARK"} />
                 ))}
               </div>
             </div>
@@ -364,14 +419,17 @@ export function MetodosEstudioResultado() {
           {/* CTA */}
           <div className="mer-cta-wrapper">
             <button className="mer-start-btn" onClick={() => navigate("/test-metodos-estudio")}>
-              <IoRefreshOutline size={15}/> Repetir el test
+              <IoRefreshOutline size={15} /> Repetir el test
+            </button>
+            <button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/metodos-estudio")}>
+              <IoHomeOutline size={15} /> Inicio
             </button>
             <button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/historial-metodos-estudio")}>
-              <IoCalendarOutline size={15}/> Ver historial
+              <IoCalendarOutline size={15} /> Ver historial
             </button>
-            <button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/cursos")}>
-              <IoBookOutline size={15}/> Ver cursos
-            </button>
+            {/*<button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/cursos")}>
+              <IoBookOutline size={15} /> Ver cursos
+            </button>*/}
           </div>
 
         </main>

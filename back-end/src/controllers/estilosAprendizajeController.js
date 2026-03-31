@@ -105,7 +105,7 @@ export async function obtenerResultado(req, res) {
         // 2. extrae solo las categorias de las respuestas del intento y los manda al sistema experto
         const categorias = respuestas.map(r => r.categoria);
 
-        const pythonRes = await axios.post(`${PYTHON_URL}/analizar`, { categorias });
+        const pythonRes = await axios.post(`${PYTHON_URL}/ea/analizar`, { categorias });
 
         // python devuelve:
         const {
@@ -157,7 +157,7 @@ export async function obtenerResultadoGuardado(req, res) {
         }
 
         // 3. obtiene recomendaciones
-        const pythonRes = await axios.get(`${PYTHON_URL}/recomendaciones/${resultado.perfil_dominante}`);
+        const pythonRes = await axios.get(`${PYTHON_URL}/ea/recomendaciones/${resultado.perfil_dominante}`);
         const recomendaciones = pythonRes.data.recomendaciones;
 
         // 4. calcula porcentajes

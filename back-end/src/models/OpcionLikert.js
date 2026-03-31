@@ -2,16 +2,15 @@
 import { db } from "../config/db.js";
 
 export class OpcionLikert {
-    constructor({ texto_opcion, categoria, valor }) {
-        this.texto_opcion = texto_opcion;
+    constructor({ categoria, valor }) {
         this.categoria    = categoria;
         this.valor        = valor;
     }
 
     async save() {
         return await db.query(
-            "INSERT INTO Opcion_Likert (texto_opcion, categoria, valor) VALUES (?, ?, ?)",
-            [this.texto_opcion, this.categoria, this.valor]
+            "INSERT INTO Opcion_Likert (categoria, valor) VALUES (?, ?)",
+            [this.categoria, this.valor]
         );
     }
 

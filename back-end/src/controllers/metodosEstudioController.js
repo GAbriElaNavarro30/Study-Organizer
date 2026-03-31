@@ -1,15 +1,15 @@
+// metodosEstudioController.js
 import axios from "axios";
-
 import { PreguntaME } from "../models/PreguntaME.js";
 import { IntentoTest } from "../models/IntentoTest.js";
 import { RespuestaTestMe } from "../models/RespuestaTestMe.js";
 import { ResultadoME } from "../models/ResultadoME.js";
 import { db } from "../config/db.js";
 
-const EXPERTO_ME_URL = process.env.EXPERTO_ME_URL || "http://localhost:8001";
+const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
 /* ══════════════════════════════════════════════════════
-   Obtener preguntas del test (36 preguntas con opciones)
+   Obtener preguntas del test
 ══════════════════════════════════════════════════════ */
 export async function obtenerTest(req, res) {
   try {
@@ -19,19 +19,18 @@ export async function obtenerTest(req, res) {
     for (const row of preguntas) {
       if (!map.has(row.id_pregunta)) {
         map.set(row.id_pregunta, {
-          id_pregunta:      row.id_pregunta,
-          texto_pregunta:   row.texto_pregunta,
-          es_negativa:      !!row.es_negativa,
-          id_dimension:     row.id_dimension,
+          id_pregunta:     row.id_pregunta,
+          texto_pregunta:  row.texto_pregunta,
+          es_negativa:     !!row.es_negativa,
+          id_dimension:    row.id_dimension,
           nombre_dimension: row.nombre_dimension,
           opciones: [],
         });
       }
       map.get(row.id_pregunta).opciones.push({
-        id_opcion:    row.id_opcion,
-        texto_opcion: row.texto_opcion,
-        categoria:    row.categoria,
-        valor:        row.valor,
+        id_opcion: row.id_opcion,
+        categoria: row.categoria,
+        valor:     row.valor,
       });
     }
 
@@ -42,7 +41,7 @@ export async function obtenerTest(req, res) {
         dimensiones.set(key, {
           id_dimension:     key,
           nombre_dimension: pregunta.nombre_dimension,
-          preguntas: [],
+          preguntas:        [],
         });
       }
       dimensiones.get(key).preguntas.push(pregunta);
@@ -71,7 +70,7 @@ export async function responder(req, res) {
     // Obtener perfil VARK dominante
     const [varkRows] = await conn.query(`
       SELECT r.perfil_dominante
-      FROM Resultado_VARK r
+      FROM Resultado_Test_EA r
       JOIN Intento_Test i ON r.id_intento = i.id_intento
       WHERE i.id_usuario = ? AND i.tipo_test = 'estilos_aprendizaje'
       ORDER BY i.fecha_intento DESC
@@ -92,7 +91,7 @@ export async function responder(req, res) {
     await RespuestaTestMe.saveMany(id_intento, respuestas);
 
     // Llamar al sistema experto
-    const { data: analisis } = await axios.post(`${EXPERTO_ME_URL}/analizar-me`, {
+    const { data: analisis } = await axios.post(`${PYTHON_URL}/me/analizar-me`, {
       respuestas: respuestas.map(r => ({
         id_pregunta:  r.id_pregunta,
         id_dimension: r.id_dimension,
@@ -105,8 +104,26 @@ export async function responder(req, res) {
     // Guardar resultados por dimensión
     await ResultadoME.saveMany(id_intento, analisis.resultados_por_dimension);
 
+    // ── Calcular puntaje y nivel global ──
+    const puntaje_global = analisis.resultados_por_dimension.reduce(
+      (sum, d) => sum + d.puntaje, 0
+    ) / analisis.resultados_por_dimension.length;
+
+    const nivel_global = puntaje_global < 40 ? "bajo"
+      : puntaje_global < 70 ? "medio"
+      : "alto";
+
     await conn.commit();
-    res.json({ id_intento, perfil_vark, ...analisis });
+
+    // ── Una sola respuesta ──
+    res.json({
+      id_intento,
+      perfil_vark,
+      ...analisis,
+      puntaje_global: Math.round(puntaje_global * 10) / 10,
+      nivel_global,
+    });
+
   } catch (err) {
     await conn.rollback();
     console.error("Error al procesar test ME:", err);
@@ -138,9 +155,9 @@ export async function obtenerResultado(req, res) {
 
     // Obtener perfil VARK dominante
     const [varkRows] = await db.query(`
-      SELECT rv.perfil_dominante
-      FROM Resultado_VARK rv
-      JOIN Intento_Test i ON rv.id_intento = i.id_intento
+      SELECT r.perfil_dominante
+      FROM Resultado_Test_EA r
+      JOIN Intento_Test i ON r.id_intento = i.id_intento
       WHERE i.id_usuario = ? AND i.tipo_test = 'estilos_aprendizaje'
       ORDER BY i.fecha_intento DESC
       LIMIT 1
@@ -148,7 +165,7 @@ export async function obtenerResultado(req, res) {
     const perfil_vark = varkRows.length > 0 ? varkRows[0].perfil_dominante : "VARK";
 
     // Recalcular análisis
-    const { data: analisis } = await axios.post(`${EXPERTO_ME_URL}/analizar-me`, {
+    const { data: analisis } = await axios.post(`${PYTHON_URL}/me/analizar-me`, {
       respuestas: respuestas.map(r => ({
         id_pregunta:  r.id_pregunta,
         id_dimension: r.id_dimension,
@@ -158,7 +175,23 @@ export async function obtenerResultado(req, res) {
       perfil_vark,
     });
 
-    res.json({ id_intento: Number(id_intento), perfil_vark, ...analisis });
+    // ── Calcular puntaje y nivel global ──
+    const puntaje_global = analisis.resultados_por_dimension.reduce(
+      (sum, d) => sum + d.puntaje, 0
+    ) / analisis.resultados_por_dimension.length;
+
+    const nivel_global = puntaje_global < 40 ? "bajo"
+      : puntaje_global < 70 ? "medio"
+      : "alto";
+
+    res.json({
+      id_intento: Number(id_intento),
+      perfil_vark,
+      ...analisis,
+      puntaje_global: Math.round(puntaje_global * 10) / 10,
+      nivel_global,
+    });
+
   } catch (err) {
     console.error("Error al obtener resultado ME:", err);
     res.status(500).json({ error: "Error al obtener resultado" });

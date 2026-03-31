@@ -183,4 +183,3 @@ class MotorVARK(KnowledgeEngine):
             if letra in RECOMENDACIONES: # letra = A, letra = R ¿existe?
                 for texto in RECOMENDACIONES[letra]: 
                     self.declare(Recomendacion(estilo=letra, texto=texto))  # delcara 20 hechos en total en la WM del motor
-                    

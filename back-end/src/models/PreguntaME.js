@@ -39,7 +39,6 @@ export class PreguntaME {
                 p.id_dimension,
                 d.nombre_dimension,
                 o.id_opcion,
-                o.texto_opcion,
                 o.categoria,
                 o.valor
             FROM Pregunta_ME p

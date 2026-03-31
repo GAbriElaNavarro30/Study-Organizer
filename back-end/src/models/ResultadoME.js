@@ -5,8 +5,8 @@ import { db } from "../config/db.js";
 export class ResultadoME {
     constructor({ puntaje_obtenido, id_intento, id_dimension }) {
         this.puntaje_obtenido = puntaje_obtenido;
-        this.id_intento       = id_intento;
-        this.id_dimension     = id_dimension;
+        this.id_intento = id_intento;
+        this.id_dimension = id_dimension;
     }
 
     async save() {
@@ -17,8 +17,8 @@ export class ResultadoME {
     }
 
     static async saveMany(id_intento, resultadosPorDimension) {
-        const valores = Object.entries(resultadosPorDimension).map(
-            ([id_dim, info]) => [info.puntaje, id_intento, Number(id_dim)]
+        const valores = resultadosPorDimension.map(
+            (info) => [info.puntaje, id_intento, info.id_dimension]
         );
         return await db.query(
             "INSERT INTO Resultado_ME (puntaje_obtenido, id_intento, id_dimension) VALUES ?",
