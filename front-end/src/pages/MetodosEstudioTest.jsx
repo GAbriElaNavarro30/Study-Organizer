@@ -86,6 +86,8 @@ export function MetodosEstudioTest() {
   const irA = (index) => {
     setDimActual(index);
     mainRef.current?.scrollTo({ top: 0, behavior: "smooth" });
+    window.scrollTo({ top: 0, behavior: "smooth" });
+    document.documentElement.scrollTo({ top: 0, behavior: "smooth" });
   };
 
   const [datosResultado, setDatosResultado] = useState(null);
