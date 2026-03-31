@@ -365,3 +365,27 @@
   .mer-card-title { font-size: 20px; }
   .mer-errores-grid { grid-template-columns: 1fr; }
 }
+
+/* Transición suave en todos los items del sidebar */
+.mer-sidebar-item {
+  transition: color 0.25s ease, background 0.25s ease, padding-left 0.25s ease;
+}
+ 
+.mer-sidebar-item .mer-sidebar-dot {
+  transition: background 0.25s ease, transform 0.25s ease;
+}
+ 
+/* Estado activo: resalta el item que corresponde a la sección visible */
+.mer-sidebar-item--active {
+  color: #2B7AB8 !important;
+  font-weight: 600;
+  background: rgba(43, 122, 184, 0.08);
+  border-radius: 6px;
+  padding-left: 10px;
+}
+ 
+.mer-sidebar-item--active .mer-sidebar-dot {
+  background: #2B7AB8 !important;
+  transform: scale(1.5);
+}
+ 

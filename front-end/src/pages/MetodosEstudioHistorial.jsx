@@ -42,12 +42,12 @@ export function MetodosEstudioHistorial() {
 
   const [intentos, setIntentos] = useState([]);
   const [cargando, setCargando] = useState(true);
-  const [animado,  setAnimado]  = useState(false);
+  const [animado, setAnimado] = useState(false);
 
   useEffect(() => {
     api.get("/metodosestudio/historial")
       .then(({ data }) => setIntentos(data.historial || []))
-      .catch(() => {})
+      .catch(() => { })
       .finally(() => {
         setCargando(false);
         setTimeout(() => setAnimado(true), 120);
@@ -57,7 +57,9 @@ export function MetodosEstudioHistorial() {
   if (cargando) return <LoadingState />;
 
   const mejorIntento = intentos.length
-    ? intentos.reduce((a, b) => (b.puntaje_global || 0) > (a.puntaje_global || 0) ? b : a)
+    ? intentos.reduce((a, b) =>
+      Number(b.puntaje_global || 0) > Number(a.puntaje_global || 0) ? b : a
+    )
     : null;
 
   return (
@@ -76,7 +78,7 @@ export function MetodosEstudioHistorial() {
         </div>
         <div className="meh-header-right">
           <div className="meh-header-stat"><IoBarChartOutline size={14} /> {intentos.length} intentos</div>
-          <div className="meh-header-stat"><IoTimeOutline     size={14} /> Test CHTE y LASSI</div>
+          <div className="meh-header-stat"><IoTimeOutline size={14} /> Test CHTE y LASSI</div>
           {mejorIntento && (
             <div className="meh-header-stat">
               <IoTrophyOutline size={14} /> Mejor: {formatPuntaje(mejorIntento.puntaje_global || 0)}%
@@ -141,7 +143,7 @@ export function MetodosEstudioHistorial() {
                     </thead>
                     <tbody>
                       {intentos.map((intento, idx) => {
-                        const puntaje       = Number(intento.puntaje_global || 0);
+                        const puntaje = Number(intento.puntaje_global || 0);
                         const esMasReciente = idx === 0;
                         return (
                           <tr

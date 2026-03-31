@@ -53,6 +53,12 @@ export class ResultadoME {
             GROUP BY i.id_intento, i.fecha_intento
             ORDER BY i.fecha_intento DESC
         `, [id_usuario]);
-        return rows;
+        // Convertir a número para evitar comparaciones lexicográficas en el frontend
+        return rows.map(row => ({
+            ...row,
+            puntaje_global: parseFloat(row.puntaje_global) || 0,
+        }));
+
+
     }
 }

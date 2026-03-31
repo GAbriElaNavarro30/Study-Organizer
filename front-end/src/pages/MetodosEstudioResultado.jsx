@@ -181,13 +181,45 @@ export function MetodosEstudioResultado() {
       location.state?.puntaje_global !== undefined ? location.state : null
     )
   );
-  const [cargando, setCargando] = useState(!datos);
-  const [animado,  setAnimado]  = useState(false);
+  const [cargando,       setCargando]       = useState(!datos);
+  const [animado,        setAnimado]        = useState(false);
+  const [activeSection,  setActiveSection]  = useState("mer-resumen"); // ← NUEVO
 
   useEffect(() => {
     if (!datos) cargarResultado();
     else setTimeout(() => setAnimado(true), 120);
   }, []);
+
+  // ── IntersectionObserver para marcar sección activa en sidebar ──
+  useEffect(() => {
+    if (!datos) return;
+
+    const sectionIds = ["mer-resumen", "mer-dims", "mer-errores", "mer-recs"];
+
+    const observer = new IntersectionObserver(
+      (entries) => {
+        // De todas las secciones visibles, toma la con mayor ratio de intersección
+        const visible = entries
+          .filter(e => e.isIntersecting)
+          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
+
+        if (visible.length > 0) {
+          setActiveSection(visible[0].target.id);
+        }
+      },
+      {
+        threshold: [0.1, 0.3, 0.5],
+        rootMargin: "-10% 0px -40% 0px",
+      }
+    );
+
+    sectionIds.forEach(id => {
+      const el = document.getElementById(id);
+      if (el) observer.observe(el);
+    });
+
+    return () => observer.disconnect();
+  }, [datos]); // re-observa cuando los datos estén disponibles
 
   const cargarResultado = async () => {
     const id_intento = location.state?.id_intento;
@@ -217,6 +249,14 @@ export function MetodosEstudioResultado() {
   const dimOrdenadas = Object.entries(resultados_por_dimension).sort((a, b) => Number(a[0]) - Number(b[0]));
   const tieneRecs    = Object.keys(recomendaciones).length > 0;
   const tieneMejoras = errores_detectados.length > 0;
+
+  // Secciones dinámicas para el sidebar (igual que antes, pero ahora con activeSection)
+  const sidebarSections = [
+    { label: "Resumen global", id: "mer-resumen" },
+    { label: "Por dimensión",  id: "mer-dims"    },
+    ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
+    ...(tieneRecs    ? [{ label: "Recomendaciones",  id: "mer-recs"    }] : []),
+  ];
 
   return (
     <div className={`mer-app ${animado ? "mer-animated" : ""}`}>
@@ -249,14 +289,12 @@ export function MetodosEstudioResultado() {
         <aside className="mer-sidebar">
           <div className="mer-sidebar-label">Contenido</div>
           <nav className="mer-sidebar-nav">
-            {[
-              { label: "Resumen global", id: "mer-resumen" },
-              { label: "Por dimensión",  id: "mer-dims"    },
-              ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
-              ...(tieneRecs    ? [{ label: "Recomendaciones",  id: "mer-recs"    }] : []),
-            ].map((s, i) => (
-              <div key={i} className="mer-sidebar-item"
-                onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}>
+            {sidebarSections.map((s, i) => (
+              <div
+                key={i}
+                className={`mer-sidebar-item ${activeSection === s.id ? "mer-sidebar-item--active" : ""}`}
+                onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+              >
                 <span className="mer-sidebar-dot" /> {s.label}
               </div>
             ))}
@@ -386,7 +424,7 @@ export function MetodosEstudioResultado() {
             </div>
           )}
 
-          {/* ── SIN MEJORAS (puntaje perfecto o sin hábitos negativos frecuentes) ── */}
+          {/* ── SIN MEJORAS ── */}
           {!tieneMejoras && (
             <div className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
