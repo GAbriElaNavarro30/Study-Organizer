@@ -26,10 +26,10 @@ def _calcular_puntaje_dimension(respuestas_dim: list[dict]) -> tuple[float, bool
     - Pregunta POSITIVA con valor <= 2 (Nunca/Rara vez) → error
     - Pregunta NEGATIVA con valor >= 3 (Frecuentemente/Siempre) → error
     """
-    total                  = 0
-    max_posible            = len(respuestas_dim) * 4
-    tiene_errores          = False
-    preguntas_con_error    = []
+    total               = 0
+    max_posible         = len(respuestas_dim) * 4
+    tiene_errores       = False
+    preguntas_con_error = []
 
     for r in respuestas_dim:
         valor = r["valor"]
@@ -57,9 +57,15 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
         dims.setdefault(r["id_dimension"], []).append(r)
 
     # 2. Motor + perfil VARK
+    # Si el perfil es "VARK" significa que el usuario no ha realizado el test
+    # de estilos de aprendizaje, por lo que no se declara PerfilVARK y el motor
+    # no generará recomendaciones personalizadas por estilo de aprendizaje.
     motor = MotorMetodosEstudio()
     motor.reset()
-    motor.declare(PerfilVARK(perfil=perfil_vark.upper()))
+
+    perfil_real = perfil_vark.upper() if perfil_vark.upper() != "VARK" else None
+    if perfil_real:
+        motor.declare(PerfilVARK(perfil=perfil_real))
 
     # 3. Calcular puntajes y declarar hechos
     resultados_por_dimension = []
@@ -113,6 +119,7 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
 
     return {
         "perfil_vark":              perfil_vark,
+        "tiene_perfil_vark":        perfil_real is not None,  # ← indica al frontend si hay perfil real
         "resultados_por_dimension": resultados_por_dimension,
         "errores_detectados":       errores,
         "recomendaciones":          recomendaciones,

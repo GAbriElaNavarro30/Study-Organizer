@@ -1,4 +1,4 @@
-// metodosEstudioController.js
+// src/controllers/metodosEstudioController.js
 import axios from "axios";
 import { PreguntaME } from "../models/PreguntaME.js";
 import { IntentoTest } from "../models/IntentoTest.js";
@@ -7,6 +7,19 @@ import { ResultadoME } from "../models/ResultadoME.js";
 import { db } from "../config/db.js";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
+
+// ── Helper compartido: calcula nivel y puntaje con truncado ──
+function calcularGlobal(resultados) {
+  const puntaje = resultados.reduce((sum, d) => sum + d.puntaje, 0) / resultados.length;
+  const truncado = Math.floor(puntaje * 100) / 100;
+  const nivel =
+    puntaje >= 95 ? "excelente"
+      : puntaje >= 80 ? "muy_bueno"
+        : puntaje >= 65 ? "bueno"
+          : puntaje >= 50 ? "regular"
+            : "deficiente";
+  return { puntaje_global: truncado, nivel_global: nivel };
+}
 
 /* ══════════════════════════════════════════════════════
    Obtener preguntas del test
@@ -19,10 +32,10 @@ export async function obtenerTest(req, res) {
     for (const row of preguntas) {
       if (!map.has(row.id_pregunta)) {
         map.set(row.id_pregunta, {
-          id_pregunta:     row.id_pregunta,
-          texto_pregunta:  row.texto_pregunta,
-          es_negativa:     !!row.es_negativa,
-          id_dimension:    row.id_dimension,
+          id_pregunta: row.id_pregunta,
+          texto_pregunta: row.texto_pregunta,
+          es_negativa: !!row.es_negativa,
+          id_dimension: row.id_dimension,
           nombre_dimension: row.nombre_dimension,
           opciones: [],
         });
@@ -30,7 +43,7 @@ export async function obtenerTest(req, res) {
       map.get(row.id_pregunta).opciones.push({
         id_opcion: row.id_opcion,
         categoria: row.categoria,
-        valor:     row.valor,
+        valor: row.valor,
       });
     }
 
@@ -39,9 +52,9 @@ export async function obtenerTest(req, res) {
       const key = pregunta.id_dimension;
       if (!dimensiones.has(key)) {
         dimensiones.set(key, {
-          id_dimension:     key,
+          id_dimension: key,
           nombre_dimension: pregunta.nombre_dimension,
-          preguntas:        [],
+          preguntas: [],
         });
       }
       dimensiones.get(key).preguntas.push(pregunta);
@@ -93,10 +106,10 @@ export async function responder(req, res) {
     // Llamar al sistema experto
     const { data: analisis } = await axios.post(`${PYTHON_URL}/me/analizar-me`, {
       respuestas: respuestas.map(r => ({
-        id_pregunta:  r.id_pregunta,
+        id_pregunta: r.id_pregunta,
         id_dimension: r.id_dimension,
-        valor:        r.valor,
-        es_negativa:  r.es_negativa,
+        valor: r.valor,
+        es_negativa: r.es_negativa,
       })),
       perfil_vark,
     });
@@ -104,23 +117,15 @@ export async function responder(req, res) {
     // Guardar resultados por dimensión
     await ResultadoME.saveMany(id_intento, analisis.resultados_por_dimension);
 
-    // ── Calcular puntaje y nivel global ──
-    const puntaje_global = analisis.resultados_por_dimension.reduce(
-      (sum, d) => sum + d.puntaje, 0
-    ) / analisis.resultados_por_dimension.length;
-
-    const nivel_global = puntaje_global < 40 ? "bajo"
-      : puntaje_global < 70 ? "medio"
-      : "alto";
-
     await conn.commit();
 
-    // ── Una sola respuesta ──
+    const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
+
     res.json({
       id_intento,
       perfil_vark,
       ...analisis,
-      puntaje_global: Math.round(puntaje_global * 10) / 10,
+      puntaje_global,
       nivel_global,
     });
 
@@ -141,7 +146,6 @@ export async function obtenerResultado(req, res) {
     const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
     const { id_intento } = req.params;
 
-    // Verificar que el intento pertenece al usuario
     const [check] = await db.query(
       "SELECT id_intento FROM Intento_Test WHERE id_intento = ? AND id_usuario = ? AND tipo_test = 'metodos_estudio'",
       [id_intento, id_usuario]
@@ -150,10 +154,8 @@ export async function obtenerResultado(req, res) {
       return res.status(404).json({ error: "Intento no encontrado" });
     }
 
-    // Obtener respuestas guardadas
     const respuestas = await RespuestaTestMe.getByIntento(id_intento);
 
-    // Obtener perfil VARK dominante
     const [varkRows] = await db.query(`
       SELECT r.perfil_dominante
       FROM Resultado_Test_EA r
@@ -164,31 +166,23 @@ export async function obtenerResultado(req, res) {
     `, [id_usuario]);
     const perfil_vark = varkRows.length > 0 ? varkRows[0].perfil_dominante : "VARK";
 
-    // Recalcular análisis
     const { data: analisis } = await axios.post(`${PYTHON_URL}/me/analizar-me`, {
       respuestas: respuestas.map(r => ({
-        id_pregunta:  r.id_pregunta,
+        id_pregunta: r.id_pregunta,
         id_dimension: r.id_dimension,
-        valor:        r.valor,
-        es_negativa:  !!r.es_negativa,
+        valor: r.valor,
+        es_negativa: !!r.es_negativa,
       })),
       perfil_vark,
     });
 
-    // ── Calcular puntaje y nivel global ──
-    const puntaje_global = analisis.resultados_por_dimension.reduce(
-      (sum, d) => sum + d.puntaje, 0
-    ) / analisis.resultados_por_dimension.length;
-
-    const nivel_global = puntaje_global < 40 ? "bajo"
-      : puntaje_global < 70 ? "medio"
-      : "alto";
+    const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
 
     res.json({
       id_intento: Number(id_intento),
       perfil_vark,
       ...analisis,
-      puntaje_global: Math.round(puntaje_global * 10) / 10,
+      puntaje_global,
       nivel_global,
     });
 

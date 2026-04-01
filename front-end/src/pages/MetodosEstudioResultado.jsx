@@ -16,26 +16,26 @@ const VARK_COLORS = { V: "#2B7AB8", A: "#2E8B57", R: "#A05A00", K: "#6B5B95" };
 
 // ── Helpers de nivel ──
 const nivelColor = (nivel) => ({
-  excelente:  "#1A6E3C",
-  muy_bueno:  "#2E8B57",
-  bueno:      "#2B7AB8",
-  regular:    "#A05A00",
+  excelente: "#1A6E3C",
+  muy_bueno: "#2E8B57",
+  bueno: "#2B7AB8",
+  regular: "#A05A00",
   deficiente: "#B03030",
 }[nivel] || "#4A5A6E");
 
 const nivelLabel = (nivel) => ({
-  excelente:  "Excelente",
-  muy_bueno:  "Muy bueno",
-  bueno:      "Bueno",
-  regular:    "Regular",
+  excelente: "Excelente",
+  muy_bueno: "Muy bueno",
+  bueno: "Bueno",
+  regular: "Regular",
   deficiente: "Deficiente",
 }[nivel] || nivel);
 
 const nivelCssKey = (nivel) => ({
-  excelente:  "excelente",
-  muy_bueno:  "muy-bueno",
-  bueno:      "bueno",
-  regular:    "regular",
+  excelente: "excelente",
+  muy_bueno: "muy-bueno",
+  bueno: "bueno",
+  regular: "regular",
   deficiente: "deficiente",
 }[nivel] || "regular");
 
@@ -61,7 +61,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   if (n === 0) return null;
 
   const angulo = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
-  const punto  = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
+  const punto = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
 
   const poligono = dims.map(([, info], i) => {
     const p = punto(i, (info.puntaje / 100) * r);
@@ -86,7 +86,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
         return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor} />;
       })}
       {dims.map(([, info], i) => {
-        const p      = punto(i, r + 22);
+        const p = punto(i, r + 22);
         const anchor = p.x < cx - 5 ? "end" : p.x > cx + 5 ? "start" : "middle";
         const nombre = info.nombre?.length > 14 ? info.nombre.slice(0, 14) + "…" : info.nombre;
         return (
@@ -119,7 +119,7 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
 function SeccionRecs({ dimension, recs, perfil_vark }) {
   const [abierta, setAbierta] = useState(false);
   const generales = recs.filter(r => r.estilo_vark === "general");
-  const vark      = recs.filter(r => r.estilo_vark !== "general");
+  const vark = recs.filter(r => r.estilo_vark !== "general");
 
   return (
     <div className="mer-rec-section">
@@ -176,14 +176,14 @@ export function MetodosEstudioResultado() {
   const location = useLocation();
   const navigate = useNavigate();
 
-  const [datos,    setDatos]    = useState(() =>
+  const [datos, setDatos] = useState(() =>
     normalizarResultados(
       location.state?.puntaje_global !== undefined ? location.state : null
     )
   );
-  const [cargando,       setCargando]       = useState(!datos);
-  const [animado,        setAnimado]        = useState(false);
-  const [activeSection,  setActiveSection]  = useState("mer-resumen"); // ← NUEVO
+  const [cargando, setCargando] = useState(!datos);
+  const [animado, setAnimado] = useState(false);
+  const [activeSection, setActiveSection] = useState("mer-resumen"); // ← NUEVO
 
   useEffect(() => {
     if (!datos) cargarResultado();
@@ -247,15 +247,15 @@ export function MetodosEstudioResultado() {
   } = datos;
 
   const dimOrdenadas = Object.entries(resultados_por_dimension).sort((a, b) => Number(a[0]) - Number(b[0]));
-  const tieneRecs    = Object.keys(recomendaciones).length > 0;
+  const tieneRecs = Object.keys(recomendaciones).length > 0;
   const tieneMejoras = errores_detectados.length > 0;
 
   // Secciones dinámicas para el sidebar (igual que antes, pero ahora con activeSection)
   const sidebarSections = [
     { label: "Resumen global", id: "mer-resumen" },
-    { label: "Por dimensión",  id: "mer-dims"    },
+    { label: "Por dimensión", id: "mer-dims" },
     ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
-    ...(tieneRecs    ? [{ label: "Recomendaciones",  id: "mer-recs"    }] : []),
+    ...(tieneRecs ? [{ label: "Recomendaciones", id: "mer-recs" }] : []),
   ];
 
   return (
@@ -439,11 +439,31 @@ export function MetodosEstudioResultado() {
           )}
 
           {/* ── RECOMENDACIONES ── */}
+          {/* ── RECOMENDACIONES ── */}
           {tieneRecs && (
             <div id="mer-recs" className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px" }}>
                 <div className="mer-card-tag"><IoBulbOutline size={11} /> Recomendaciones</div>
                 <h2 className="mer-card-title">Recomendaciones personalizadas</h2>
+
+                {/* Aviso si no tiene perfil VARK */}
+                {(!perfil_vark || perfil_vark === "VARK") && (
+                  <div className="mer-vark-aviso">
+                    <IoAlertCircleOutline size={16} />
+                    <span>
+                      Aún no has realizado el test de Estilos de Aprendizaje.
+                      Se recomienda realizarlo para recibir recomendaciones
+                      personalizadas según tu perfil VARK.
+                    </span>
+                    <button
+                      className="mer-vark-aviso-btn"
+                      onClick={() => navigate("/test-estilos-aprendizaje")}
+                    >
+                      Ir al test VARK
+                    </button>
+                  </div>
+                )}
+
                 <p className="mer-card-text" style={{ marginBottom: 20 }}>
                   Haz clic en cada dimensión para ver las sugerencias adaptadas a tu perfil.
                 </p>
