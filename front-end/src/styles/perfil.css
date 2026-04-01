@@ -13,7 +13,7 @@
 .perfil-portada-usuario {
     position: relative;
     height: 240px;
-    background-color: #E5E7EB;
+    background: rgb(224, 224, 224);
     overflow: visible;
 }
 
@@ -35,7 +35,6 @@
     z-index: 20;
 }
 
-/* Imagen dentro del contenedor */
 .contenedor-foto-perfil-usuario .imagen-perfil-usuario {
     position: absolute;
     top: 0;
@@ -381,6 +380,7 @@
 
 .perfil-portada-usuario.portada-modo-ajuste {
     cursor: crosshair;
+    
 }
 
 .contenedor-perfil-usuario:has(.portada-modo-ajuste) {
@@ -671,7 +671,7 @@
 @media (max-width: 768px) {
     .contenedor-foto-perfil-usuario {
         left: 50%;
-        margin-left: -70px; 
+        margin-left: -70px;
         transform: none;
     }
 

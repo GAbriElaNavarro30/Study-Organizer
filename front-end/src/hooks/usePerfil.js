@@ -10,87 +10,91 @@ export function usePerfil() {
   //  ESTADO — UI
   // ================================================================
   const [mostrarModalCancelar, setMostrarModalCancelar] = useState(false);
-  const [mostrarAlert, setMostrarAlert]                 = useState(false);
-  const [alertConfig, setAlertConfig]                   = useState({ type: "success", title: "", message: "" });
-  const [errores, setErrores]                           = useState({});
-  const [mostrarPassword, setMostrarPassword]           = useState(false);
+  const [mostrarAlert, setMostrarAlert] = useState(false);
+  const [alertConfig, setAlertConfig] = useState({ type: "success", title: "", message: "" });
+  const [errores, setErrores] = useState({});
+  const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
-  const [showEmoji, setShowEmoji]                       = useState(false);
-  const [editarFecha, setEditarFecha]                   = useState(false);
+  const [showEmoji, setShowEmoji] = useState(false);
+  const [editarFecha, setEditarFecha] = useState(false);
 
   // ================================================================
   //  REFERENCIAS — inputs de archivo
   // ================================================================
-  const fileInputPerfilRef  = useRef(null);
+  const fileInputPerfilRef = useRef(null);
   const fileInputPortadaRef = useRef(null);
 
   // ================================================================
   //  ESTADO — ajuste de PORTADA
   // ================================================================
-  const [modoAjuste, setModoAjuste]               = useState(false);
+  const [modoAjuste, setModoAjuste] = useState(false);
   const [portadaPreviewUrl, setPortadaPreviewUrl] = useState(null);
-  const [portadaZoom, setPortadaZoom]             = useState(1);
-  const [portadaOffset, setPortadaOffset]         = useState({ x: 0, y: 0 });
+  const [portadaZoom, setPortadaZoom] = useState(1);
+  const [portadaOffset, setPortadaOffset] = useState({ x: 0, y: 0 });
   const [portadaImgNatural, setPortadaImgNatural] = useState({ w: 1, h: 1 });
 
   const portadaContainerRef = useRef(null);
-  const isDragging          = useRef(false);
-  const dragStart           = useRef({ x: 0, y: 0 });
-  const offsetAtDrag        = useRef({ x: 0, y: 0 });
+  const isDragging = useRef(false);
+  const dragStart = useRef({ x: 0, y: 0 });
+  const offsetAtDrag = useRef({ x: 0, y: 0 });
 
   // ================================================================
   //  ESTADO — ajuste de FOTO DE PERFIL
   // ================================================================
   const TAMAÑO_PERFIL = 140;
 
-  const [modoAjustePerfil, setModoAjustePerfil]   = useState(false);
-  const [perfilPreviewUrl, setPerfilPreviewUrl]   = useState(null);
-  const [perfilZoom, setPerfilZoom]               = useState(1);
-  const [perfilOffset, setPerfilOffset]           = useState({ x: 0, y: 0 });
-  const [perfilImgNatural, setPerfilImgNatural]   = useState({ w: 1, h: 1 });
+  const [modoAjustePerfil, setModoAjustePerfil] = useState(false);
+  const [perfilPreviewUrl, setPerfilPreviewUrl] = useState(null);
+  const [perfilZoom, setPerfilZoom] = useState(1);
+  const [perfilOffset, setPerfilOffset] = useState({ x: 0, y: 0 });
+  const [perfilImgNatural, setPerfilImgNatural] = useState({ w: 1, h: 1 });
 
-  const isDraggingPerfil   = useRef(false);
-  const dragStartPerfil    = useRef({ x: 0, y: 0 });
+  const isDraggingPerfil = useRef(false);
+  const dragStartPerfil = useRef({ x: 0, y: 0 });
   const offsetAtDragPerfil = useRef({ x: 0, y: 0 });
 
   // ================================================================
   //  CONSTANTES
   // ================================================================
-  const FOTO_PREDETERMINADA    = fotoPredeterminada;
-  const PORTADA_PREDETERMINADA = "/portada.jpg";
-  const FECHA_VACIA            = { day: "", month: "", year: "" };
-  const ALTURA_PORTADA_FINAL   = 240;
+  const FOTO_PREDETERMINADA = fotoPredeterminada;
+  // ── null = sin portada, se muestra el fondo degradado CSS ──
+  const PORTADA_PREDETERMINADA = null;
+  const FECHA_VACIA = { day: "", month: "", year: "" };
+  const ALTURA_PORTADA_FINAL = 240;
 
   const esFotoValida = (foto) =>
     foto &&
     foto !== "null" &&
     foto !== "undefined" &&
     foto !== "" &&
-    foto !== "/perfil-usuario.png";
+    foto !== "/perfil-usuario.png" &&
+    foto !== "/portada.jpg";
 
   // ================================================================
   //  ESTADO — datos del formulario
   // ================================================================
-  const [nombre, setNombre]                         = useState(usuario?.nombre || "");
-  const [apellido, setApellido]                     = useState(usuario?.apellido || "");
-  const [correo, setCorreo]                         = useState(usuario?.correo || "");
-  const [correo_alternativo, setCorreoAlternativo]  = useState(usuario?.correo_alternativo || "");
-  const [telefono, setTelefono]                     = useState(usuario?.telefono || "");
-  const [descripcion, setDescripcion]               = useState(usuario?.descripcion || "");
-  const [genero, setGenero]                         = useState(usuario?.genero || "otro");
-  const [password, setPassword]                     = useState("");
-  const [confirmarPassword, setConfirmarPassword]   = useState("");
-  const [fechaNacimiento, setFechaNacimiento]       = useState(FECHA_VACIA);
+  const [nombre, setNombre] = useState(usuario?.nombre || "");
+  const [apellido, setApellido] = useState(usuario?.apellido || "");
+  const [correo, setCorreo] = useState(usuario?.correo || "");
+  const [correo_alternativo, setCorreoAlternativo] = useState(usuario?.correo_alternativo || "");
+  const [telefono, setTelefono] = useState(usuario?.telefono || "");
+  const [descripcion, setDescripcion] = useState(usuario?.descripcion || "");
+  const [genero, setGenero] = useState(usuario?.genero || "otro");
+  const [password, setPassword] = useState("");
+  const [confirmarPassword, setConfirmarPassword] = useState("");
+  const [fechaNacimiento, setFechaNacimiento] = useState(FECHA_VACIA);
 
   // ================================================================
   //  ESTADO — fotos
   // ================================================================
-  const [fotoPerfilFile, setFotoPerfilFile]   = useState(null);
+  const [fotoPerfilFile, setFotoPerfilFile] = useState(null);
   const [fotoPortadaFile, setFotoPortadaFile] = useState(null);
 
   const [fotoPerfil, setFotoPerfil] = useState(
     esFotoValida(usuario?.foto_perfil) ? usuario.foto_perfil : FOTO_PREDETERMINADA
   );
+
+  // ── Portada: null si no hay foto válida (muestra degradado CSS) ──
   const [fotoPortada, setFotoPortada] = useState(
     esFotoValida(usuario?.foto_portada) ? usuario.foto_portada : PORTADA_PREDETERMINADA
   );
@@ -98,7 +102,7 @@ export function usePerfil() {
   // ================================================================
   //  OPCIONES — selects
   // ================================================================
-  const days   = Array.from({ length: 31 }, (_, i) => i + 1);
+  const days = Array.from({ length: 31 }, (_, i) => i + 1);
   const months = [
     "Enero", "Febrero", "Marzo", "Abril", "Mayo", "Junio",
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
@@ -119,6 +123,7 @@ export function usePerfil() {
     setDescripcion(usuario.descripcion || "");
     setFechaNacimiento(usuario.fecha_nacimiento || FECHA_VACIA);
     setFotoPerfil(esFotoValida(usuario.foto_perfil) ? usuario.foto_perfil : FOTO_PREDETERMINADA);
+    // ── null si no hay portada válida ──
     setFotoPortada(esFotoValida(usuario.foto_portada) ? usuario.foto_portada : PORTADA_PREDETERMINADA);
   }, [usuario]);
 
@@ -185,13 +190,13 @@ export function usePerfil() {
     const img = new Image();
     img.onload = () => {
       const contEl = portadaContainerRef.current;
-      const contW  = contEl ? contEl.offsetWidth : 1100;
-      const contH  = ALTURA_PORTADA_FINAL;
-      const imgW   = img.naturalWidth;
-      const imgH   = img.naturalHeight;
-      const zoomMin   = calcularZoomMin(contW, contH, imgW, imgH);
-      const scaledW   = imgW * zoomMin;
-      const scaledH   = imgH * zoomMin;
+      const contW = contEl ? contEl.offsetWidth : 1100;
+      const contH = ALTURA_PORTADA_FINAL;
+      const imgW = img.naturalWidth;
+      const imgH = img.naturalHeight;
+      const zoomMin = calcularZoomMin(contW, contH, imgW, imgH);
+      const scaledW = imgW * zoomMin;
+      const scaledH = imgH * zoomMin;
       setPortadaImgNatural({ w: imgW, h: imgH });
       setPortadaZoom(zoomMin);
       setPortadaOffset({ x: (contW - scaledW) / 2, y: (contH - scaledH) / 2 });
@@ -212,8 +217,8 @@ export function usePerfil() {
     const url = URL.createObjectURL(file);
     const img = new Image();
     img.onload = () => {
-      const imgW    = img.naturalWidth;
-      const imgH    = img.naturalHeight;
+      const imgW = img.naturalWidth;
+      const imgH = img.naturalHeight;
       const zoomMin = Math.max(140 / imgW, 140 / imgH);
       const scaledW = imgW * zoomMin;
       const scaledH = imgH * zoomMin;
@@ -232,10 +237,10 @@ export function usePerfil() {
   //  ZOOM — portada
   // ================================================================
   const handlePortadaZoomChange = useCallback((val) => {
-    const contEl  = portadaContainerRef.current;
+    const contEl = portadaContainerRef.current;
     if (!contEl) return;
-    const contW   = contEl.offsetWidth;
-    const contH   = ALTURA_PORTADA_FINAL;
+    const contW = contEl.offsetWidth;
+    const contH = ALTURA_PORTADA_FINAL;
     const zoomMin = calcularZoomMin(contW, contH, portadaImgNatural.w, portadaImgNatural.h);
     const newZoom = Math.min(zoomMin * 3, Math.max(zoomMin, parseFloat(val)));
     const clamped = clampOffset(
@@ -265,9 +270,9 @@ export function usePerfil() {
   // ================================================================
   const handlePortadaMouseDown = useCallback((e) => {
     e.preventDefault();
-    isDragging.current    = true;
-    dragStart.current     = { x: e.clientX, y: e.clientY };
-    offsetAtDrag.current  = { ...portadaOffset };
+    isDragging.current = true;
+    dragStart.current = { x: e.clientX, y: e.clientY };
+    offsetAtDrag.current = { ...portadaOffset };
   }, [portadaOffset]);
 
   const handlePortadaMouseMove = useCallback((e) => {
@@ -290,8 +295,8 @@ export function usePerfil() {
   // ================================================================
   const handlePortadaTouchStart = useCallback((e) => {
     const t = e.touches[0];
-    isDragging.current   = true;
-    dragStart.current    = { x: t.clientX, y: t.clientY };
+    isDragging.current = true;
+    dragStart.current = { x: t.clientX, y: t.clientY };
     offsetAtDrag.current = { ...portadaOffset };
   }, [portadaOffset]);
 
@@ -317,8 +322,8 @@ export function usePerfil() {
   // ================================================================
   const handlePerfilMouseDown = useCallback((e) => {
     e.preventDefault();
-    isDraggingPerfil.current   = true;
-    dragStartPerfil.current    = { x: e.clientX, y: e.clientY };
+    isDraggingPerfil.current = true;
+    dragStartPerfil.current = { x: e.clientX, y: e.clientY };
     offsetAtDragPerfil.current = { ...perfilOffset };
   }, [perfilOffset]);
 
@@ -339,8 +344,8 @@ export function usePerfil() {
   // ================================================================
   const handlePerfilTouchStart = useCallback((e) => {
     const t = e.touches[0];
-    isDraggingPerfil.current   = true;
-    dragStartPerfil.current    = { x: t.clientX, y: t.clientY };
+    isDraggingPerfil.current = true;
+    dragStartPerfil.current = { x: t.clientX, y: t.clientY };
     offsetAtDragPerfil.current = { ...perfilOffset };
   }, [perfilOffset]);
 
@@ -367,7 +372,7 @@ export function usePerfil() {
     const contW = contEl.offsetWidth;
     const contH = ALTURA_PORTADA_FINAL;
     const canvas = document.createElement("canvas");
-    canvas.width  = contW * 2;
+    canvas.width = contW * 2;
     canvas.height = contH * 2;
     const ctx = canvas.getContext("2d");
     const img = new Image();
@@ -395,7 +400,7 @@ export function usePerfil() {
     const CIRCULO_CSS = 140;
     const OUTPUT_SIZE = 560;
     const canvas = document.createElement("canvas");
-    canvas.width  = OUTPUT_SIZE;
+    canvas.width = OUTPUT_SIZE;
     canvas.height = OUTPUT_SIZE;
     const ctx = canvas.getContext("2d");
     const img = new Image();
@@ -436,7 +441,7 @@ export function usePerfil() {
   // ================================================================
   //  HANDLERS — abrir selector de archivo
   // ================================================================
-  const handleCambiarFotoPerfil  = () => fileInputPerfilRef.current.click();
+  const handleCambiarFotoPerfil = () => fileInputPerfilRef.current.click();
   const handleCambiarFotoPortada = () => fileInputPortadaRef.current.click();
 
   // ================================================================
@@ -473,7 +478,7 @@ export function usePerfil() {
   // ================================================================
   const habilitarEdicion = (e) => {
     const container = e.currentTarget.closest(".input-editable");
-    const input     = container?.querySelector("input");
+    const input = container?.querySelector("input");
     if (input) {
       input.disabled = !input.disabled;
       if (!input.disabled) input.focus();
@@ -520,7 +525,7 @@ export function usePerfil() {
     if (errores.fecha_nacimiento) setErrores((prev) => ({ ...prev, fecha_nacimiento: undefined }));
   };
   const handleDescripcionChange = (e) => setDescripcion(e.target.value);
-  const handleEmojiClick        = (emoji) => setDescripcion((prev) => prev + emoji.emoji);
+  const handleEmojiClick = (emoji) => setDescripcion((prev) => prev + emoji.emoji);
 
   // ================================================================
   //  VERIFICACIONES — disponibilidad en servidor
@@ -634,7 +639,7 @@ export function usePerfil() {
     if (!fechaNacimiento.day || !fechaNacimiento.month || !fechaNacimiento.year) {
       nuevosErrores.fecha_nacimiento = "La fecha de nacimiento es obligatoria";
     } else {
-      const pad      = (n) => String(n).padStart(2, "0");
+      const pad = (n) => String(n).padStart(2, "0");
       const fechaDate = new Date(
         `${fechaNacimiento.year}-${pad(fechaNacimiento.month)}-${pad(fechaNacimiento.day)}`
       );
@@ -670,21 +675,21 @@ export function usePerfil() {
     }
     try {
       const formData = new FormData();
-      formData.append("nombre",             nombre.trim());
-      formData.append("apellido",           apellido.trim());
-      formData.append("correo",             correo.trim().toLowerCase());
+      formData.append("nombre", nombre.trim());
+      formData.append("apellido", apellido.trim());
+      formData.append("correo", correo.trim().toLowerCase());
       formData.append("correo_alternativo", correo_alternativo.trim().toLowerCase() || "");
-      formData.append("telefono",           telefono.trim());
-      formData.append("descripcion",        descripcion);
-      formData.append("genero",             genero);
+      formData.append("telefono", telefono.trim());
+      formData.append("descripcion", descripcion);
+      formData.append("genero", genero);
       if (password && password.trim() !== "")
         formData.append("password", password);
       if (fechaNacimiento.day && fechaNacimiento.month && fechaNacimiento.year)
         formData.append("fechaNacimiento", JSON.stringify(fechaNacimiento));
-      if (fotoPerfilFile)  formData.append("foto_perfil",  fotoPerfilFile);
+      if (fotoPerfilFile) formData.append("foto_perfil", fotoPerfilFile);
       if (fotoPortadaFile) formData.append("foto_portada", fotoPortadaFile);
 
-      const res  = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/actualizar-perfil`, {
+      const res = await fetch(`${import.meta.env.VITE_API_URL}/usuarios/actualizar-perfil`, {
         method: "PUT",
         body: formData,
         credentials: "include",
@@ -692,7 +697,7 @@ export function usePerfil() {
       const data = await res.json();
 
       if (res.ok) {
-        if (data.fotos?.foto_perfil)  setFotoPerfil(data.fotos.foto_perfil);
+        if (data.fotos?.foto_perfil) setFotoPerfil(data.fotos.foto_perfil);
         if (data.fotos?.foto_portada) setFotoPortada(data.fotos.foto_portada);
         setFotoPerfilFile(null);
         setFotoPortadaFile(null);
@@ -705,13 +710,13 @@ export function usePerfil() {
         if (data.errors && Array.isArray(data.errors)) {
           const nuevosErrores = {};
           data.errors.forEach((error) => {
-            if (error.path === "nombre")            nuevosErrores.nombre            = error.message;
-            if (error.path === "apellido")          nuevosErrores.apellido          = error.message;
-            if (error.path === "correo_electronico") nuevosErrores.correo           = error.message;
-            if (error.path === "telefono")          nuevosErrores.telefono          = error.message;
-            if (error.path === "contrasena")        nuevosErrores.password          = error.message;
-            if (error.path === "fecha_nacimiento")  nuevosErrores.fecha_nacimiento  = error.message;
-            if (error.path === "genero")            nuevosErrores.genero            = error.message;
+            if (error.path === "nombre") nuevosErrores.nombre = error.message;
+            if (error.path === "apellido") nuevosErrores.apellido = error.message;
+            if (error.path === "correo_electronico") nuevosErrores.correo = error.message;
+            if (error.path === "telefono") nuevosErrores.telefono = error.message;
+            if (error.path === "contrasena") nuevosErrores.password = error.message;
+            if (error.path === "fecha_nacimiento") nuevosErrores.fecha_nacimiento = error.message;
+            if (error.path === "genero") nuevosErrores.genero = error.message;
           });
           setErrores(nuevosErrores);
         }
@@ -729,7 +734,7 @@ export function usePerfil() {
   //  MODAL — confirmar / cerrar
   // ================================================================
   const confirmarCancelar = () => { handleCancelar(); setMostrarModalCancelar(false); };
-  const cerrarModal       = () => setMostrarModalCancelar(false);
+  const cerrarModal = () => setMostrarModalCancelar(false);
 
   // ================================================================
   //  EXPORTAR
