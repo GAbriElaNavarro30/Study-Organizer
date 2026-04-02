@@ -1,7 +1,5 @@
 // src/pages/MetodosEstudio/MetodosEstudioResultado.jsx
-import { useState, useEffect } from "react";
-import { useLocation, useNavigate } from "react-router-dom";
-import api from "../services/api.js";
+import { useState } from "react";
 import {
   IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline,
   IoArrowBackOutline, IoRefreshOutline, IoHomeOutline,
@@ -10,48 +8,38 @@ import {
   IoCalendarOutline,
 } from "react-icons/io5";
 import "../styles/metodos-resultado-test.css";
+import { useMetodosEstudioResultado } from "../hooks/useMetodosEstudioResultado.js";
 
 const VARK_LABELS = { V: "Visual", A: "Auditivo", R: "Lector / Escritor", K: "Kinestésico" };
 const VARK_COLORS = { V: "#2B7AB8", A: "#2E8B57", R: "#A05A00", K: "#6B5B95" };
 
 // ── Helpers de nivel ──
 const nivelColor = (nivel) => ({
-  excelente: "#1A6E3C",
-  muy_bueno: "#2E8B57",
-  bueno: "#2B7AB8",
-  regular: "#A05A00",
+  excelente:  "#1A6E3C",
+  muy_bueno:  "#2E8B57",
+  bueno:      "#2B7AB8",
+  regular:    "#A05A00",
   deficiente: "#B03030",
 }[nivel] || "#4A5A6E");
 
 const nivelLabel = (nivel) => ({
-  excelente: "Excelente",
-  muy_bueno: "Muy bueno",
-  bueno: "Bueno",
-  regular: "Regular",
+  excelente:  "Excelente",
+  muy_bueno:  "Muy bueno",
+  bueno:      "Bueno",
+  regular:    "Regular",
   deficiente: "Deficiente",
 }[nivel] || nivel);
 
 const nivelCssKey = (nivel) => ({
-  excelente: "excelente",
-  muy_bueno: "muy-bueno",
-  bueno: "bueno",
-  regular: "regular",
+  excelente:  "excelente",
+  muy_bueno:  "muy-bueno",
+  bueno:      "bueno",
+  regular:    "regular",
   deficiente: "deficiente",
 }[nivel] || "regular");
 
 // ── Puntaje con 2 decimales, sin redondeo ──
 const formatPuntaje = (p) => (Math.floor(Number(p) * 100) / 100).toFixed(2);
-
-// ── Normalizar: array → objeto keyed por id_dimension ──
-const normalizarResultados = (data) => {
-  if (!data) return null;
-  if (!Array.isArray(data.resultados_por_dimension)) return data;
-  const obj = {};
-  for (const d of data.resultados_por_dimension) {
-    obj[d.id_dimension] = { nombre: d.nombre, puntaje: d.puntaje, nivel: d.nivel };
-  }
-  return { ...data, resultados_por_dimension: obj };
-};
 
 // ── Radar SVG ──
 function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
@@ -61,7 +49,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   if (n === 0) return null;
 
   const angulo = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
-  const punto = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
+  const punto  = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
 
   const poligono = dims.map(([, info], i) => {
     const p = punto(i, (info.puntaje / 100) * r);
@@ -86,7 +74,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
         return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor} />;
       })}
       {dims.map(([, info], i) => {
-        const p = punto(i, r + 22);
+        const p      = punto(i, r + 22);
         const anchor = p.x < cx - 5 ? "end" : p.x > cx + 5 ? "start" : "middle";
         const nombre = info.nombre?.length > 14 ? info.nombre.slice(0, 14) + "…" : info.nombre;
         return (
@@ -119,7 +107,7 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
 function SeccionRecs({ dimension, recs, perfil_vark }) {
   const [abierta, setAbierta] = useState(false);
   const generales = recs.filter(r => r.estilo_vark === "general");
-  const vark = recs.filter(r => r.estilo_vark !== "general");
+  const vark      = recs.filter(r => r.estilo_vark !== "general");
 
   return (
     <div className="mer-rec-section">
@@ -162,6 +150,7 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
   );
 }
 
+// ── Loading ──
 function LoadingState() {
   return (
     <div className="mer-loading">
@@ -172,91 +161,34 @@ function LoadingState() {
   );
 }
 
+// ══════════════════════════════════════════════
+// COMPONENTE PRINCIPAL — solo vista
+// ══════════════════════════════════════════════
 export function MetodosEstudioResultado() {
-  const location = useLocation();
-  const navigate = useNavigate();
-
-  const [datos, setDatos] = useState(() =>
-    normalizarResultados(
-      location.state?.puntaje_global !== undefined ? location.state : null
-    )
-  );
-  const [cargando, setCargando] = useState(!datos);
-  const [animado, setAnimado] = useState(false);
-  const [activeSection, setActiveSection] = useState("mer-resumen"); // ← NUEVO
-
-  useEffect(() => {
-    if (!datos) cargarResultado();
-    else setTimeout(() => setAnimado(true), 120);
-  }, []);
-
-  // ── IntersectionObserver para marcar sección activa en sidebar ──
-  useEffect(() => {
-    if (!datos) return;
-
-    const sectionIds = ["mer-resumen", "mer-dims", "mer-errores", "mer-recs"];
-
-    const observer = new IntersectionObserver(
-      (entries) => {
-        // De todas las secciones visibles, toma la con mayor ratio de intersección
-        const visible = entries
-          .filter(e => e.isIntersecting)
-          .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
-
-        if (visible.length > 0) {
-          setActiveSection(visible[0].target.id);
-        }
-      },
-      {
-        threshold: [0.1, 0.3, 0.5],
-        rootMargin: "-10% 0px -40% 0px",
-      }
-    );
-
-    sectionIds.forEach(id => {
-      const el = document.getElementById(id);
-      if (el) observer.observe(el);
-    });
-
-    return () => observer.disconnect();
-  }, [datos]); // re-observa cuando los datos estén disponibles
-
-  const cargarResultado = async () => {
-    const id_intento = location.state?.id_intento;
-    if (!id_intento) { navigate("/metodos-estudio"); return; }
-    try {
-      const { data } = await api.get(`/metodosestudio/resultado/${id_intento}`);
-      setDatos(normalizarResultados(data));
-    } catch {
-      navigate("/metodos-estudio");
-    } finally {
-      setCargando(false);
-      setTimeout(() => setAnimado(true), 120);
-    }
-  };
-
-  if (cargando || !datos) return <LoadingState />;
-
   const {
+    // Estados
+    cargando,
+    animado,
+    activeSection,
+
+    // Datos derivados
     puntaje_global,
     nivel_global,
-    resultados_por_dimension = {},
-    errores_detectados = [],
-    recomendaciones = {},
+    resultados_por_dimension,
+    errores_detectados,
+    recomendaciones,
     perfil_vark,
-  } = datos;
+    tieneMejoras,
+    tieneRecs,
+    dimOrdenadas,
+    sidebarSections,
 
-  const dimOrdenadas = Object.entries(resultados_por_dimension).sort((a, b) => Number(a[0]) - Number(b[0]));
-  const tieneRecs = Object.keys(recomendaciones).length > 0;
-  const tieneMejoras = errores_detectados.length > 0;
+    // Acciones
+    navigate,
+    irASeccion,
+  } = useMetodosEstudioResultado();
 
-  // Secciones dinámicas para el sidebar (igual que antes, pero ahora con activeSection)
-  const sidebarSections = [
-    { label: "Resumen global", id: "mer-resumen" },
-    { label: "Por dimensión", id: "mer-dims" },
-    ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
-    ...(tieneRecs ? [{ label: "Recomendaciones", id: "mer-recs" }] : []),
-  ];
+  if (cargando) return <LoadingState />;
 
   return (
     <div className={`mer-app ${animado ? "mer-animated" : ""}`}>
@@ -285,7 +217,7 @@ export function MetodosEstudioResultado() {
       {/* LAYOUT */}
       <div className="mer-layout">
 
-        {/* SIDEBAR */}
+        {/* ── SIDEBAR ── */}
         <aside className="mer-sidebar">
           <div className="mer-sidebar-label">Contenido</div>
           <nav className="mer-sidebar-nav">
@@ -293,7 +225,7 @@ export function MetodosEstudioResultado() {
               <div
                 key={i}
                 className={`mer-sidebar-item ${activeSection === s.id ? "mer-sidebar-item--active" : ""}`}
-                onClick={() => document.getElementById(s.id)?.scrollIntoView({ behavior: "smooth", block: "start" })}
+                onClick={() => irASeccion(s.id)}
               >
                 <span className="mer-sidebar-dot" /> {s.label}
               </div>
@@ -313,7 +245,7 @@ export function MetodosEstudioResultado() {
           </div>
         </aside>
 
-        {/* MAIN */}
+        {/* ── MAIN ── */}
         <main className="mer-main">
 
           {/* CHIPS */}
@@ -335,7 +267,9 @@ export function MetodosEstudioResultado() {
             {tieneMejoras && (
               <div className="mer-chip mer-chip--warn">
                 <IoAlertCircleOutline size={14} />
-                <span>{errores_detectados.length} posible{errores_detectados.length !== 1 ? "s" : ""} mejora{errores_detectados.length !== 1 ? "s" : ""}</span>
+                <span>
+                  {errores_detectados.length} posible{errores_detectados.length !== 1 ? "s" : ""} mejora{errores_detectados.length !== 1 ? "s" : ""}
+                </span>
               </div>
             )}
           </div>
@@ -439,7 +373,6 @@ export function MetodosEstudioResultado() {
           )}
 
           {/* ── RECOMENDACIONES ── */}
-          {/* ── RECOMENDACIONES ── */}
           {tieneRecs && (
             <div id="mer-recs" className="mer-card">
               <div className="mer-card-body" style={{ padding: "40px" }}>
@@ -474,7 +407,7 @@ export function MetodosEstudioResultado() {
             </div>
           )}
 
-          {/* CTA */}
+          {/* ── CTA ── */}
           <div className="mer-cta-wrapper">
             <button className="mer-start-btn" onClick={() => navigate("/test-metodos-estudio")}>
               <IoRefreshOutline size={15} /> Repetir el test

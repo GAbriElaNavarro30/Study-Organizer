@@ -1,6 +1,4 @@
 // src/pages/MetodosEstudio/MetodosEstudio.jsx
-import { useRef, useState, useEffect } from "react";
-import { useNavigate } from "react-router-dom";
 import {
   IoBookOutline, IoHardwareChipOutline, IoTimeOutline,
   IoCheckmarkCircleOutline, IoArrowForwardOutline,
@@ -8,17 +6,19 @@ import {
 } from "react-icons/io5";
 import "../styles/metodos-estudio.css";
 import { ResultadoPrevioME } from "../components/ResultadoPrevioME";
+import { useMetodosEstudio } from "../hooks/useMetodosEstudio.js";
 
+// ── Datos estáticos de presentación ──
 const DIMENSIONES = [
-  { id: 1, nombre: "Actitud ante el estudio",         desc: "Motivación, disposición y nivel concentración" },
-  { id: 2, nombre: "Lugar de estudio",                desc: "Condiciones del ambiente, orden y factores físicos" },
-  { id: 3, nombre: "Estado físico y bienestar",       desc: "Calidad del sueño, alimentación y nivel de energía" },
-  { id: 4, nombre: "Plan de trabajo",                 desc: "Organización, establecimiento de metas y cronogramas" },
-  { id: 5, nombre: "Técnicas de estudio",             desc: "Uso de estrategias como subrayado, mapas mentales y resúmenes" },
-  { id: 6, nombre: "Preparación para exámenes",       desc: "Repaso, anticipación y manejo del estrés" },
-  { id: 7, nombre: "Trabajos académicos",             desc: "Planificación, uso de fuentes y calidad del trabajo" },
-  { id: 8, nombre: "Gestión del tiempo",              desc: "Establecimiento de prioridades, organización de bloques y equilibrio" },
-  { id: 9, nombre: "Uso de recursos de aprendizaje",  desc: "Uso de plataformas, bibliografía y trabajo colaborativo" },
+  { id: 1, nombre: "Actitud ante el estudio", desc: "Motivación, disposición y nivel concentración" },
+  { id: 2, nombre: "Lugar de estudio", desc: "Condiciones del ambiente, orden y factores físicos" },
+  { id: 3, nombre: "Estado físico y bienestar", desc: "Calidad del sueño, alimentación y nivel de energía" },
+  { id: 4, nombre: "Plan de trabajo", desc: "Organización, establecimiento de metas y cronogramas" },
+  { id: 5, nombre: "Técnicas de estudio", desc: "Uso de estrategias como subrayado, mapas mentales y resúmenes" },
+  { id: 6, nombre: "Preparación para exámenes", desc: "Repaso, anticipación y manejo del estrés" },
+  { id: 7, nombre: "Trabajos académicos", desc: "Planificación, uso de fuentes y calidad del trabajo" },
+  { id: 8, nombre: "Gestión del tiempo", desc: "Establecimiento de prioridades, organización de bloques y equilibrio" },
+  { id: 9, nombre: "Uso de recursos de aprendizaje", desc: "Uso de plataformas, bibliografía y trabajo colaborativo" },
 ];
 
 const ERRORES_COMUNES = [
@@ -31,75 +31,24 @@ const ERRORES_COMUNES = [
 ];
 
 const RECOMENDACIONES = [
-  { icon: <IoTimeOutline size={18} />,         texto: "Establecer horarios fijos de estudio y respetarlos como compromisos" },
+  { icon: <IoTimeOutline size={18} />, texto: "Establecer horarios fijos de estudio y respetarlos como compromisos" },
   { icon: <IoHardwareChipOutline size={18} />, texto: "Utilizar técnicas activas como mapas mentales, autoevaluación o la enseñanza del contenido" },
-  { icon: <IoCheckmarkCircleOutline size={18}/>,texto: "Dividir el material en bloques pequeños con objetivos claros por sesión" },
-  { icon: <IoBookOutline size={18} />,         texto: "Combinar múltiples fuentes de aprendizaje, adaptadas al estilo de aprendizaje" },
+  { icon: <IoCheckmarkCircleOutline size={18} />, texto: "Dividir el material en bloques pequeños con objetivos claros por sesión" },
+  { icon: <IoBookOutline size={18} />, texto: "Combinar múltiples fuentes de aprendizaje, adaptadas al estilo de aprendizaje" },
 ];
 
-const NAV_SECTIONS = [
-  { label: "Introducción",     id: "mei-intro"    },
-  { label: "¿Qué se evalúa?", id: "mei-evalua"   },
-  { label: "¿Cómo funciona?", id: "mei-funciona" },
-  { label: "Errores comunes", id: "mei-errores"  },
-  { label: "Recomendaciones", id: "mei-recs"     },
-  { label: "Comenzar",        id: "mei-cta"      },
-];
-
+// ══════════════════════════════════════════════
+// COMPONENTE PRINCIPAL — solo vista
+// ══════════════════════════════════════════════
 export function MetodosEstudio() {
-  const navigate     = useNavigate();
-  const mobileRef    = useRef(null);
-  const scrollingRef = useRef(false);
-
-  const [activeSection, setActiveSection] = useState(0);
-  const [animado,       setAnimado]       = useState(false);
-
-  useEffect(() => {
-    window.scrollTo(0, 0);
-    setTimeout(() => setAnimado(true), 80);
-  }, []);
-
-  useEffect(() => {
-    const observers = [];
-    NAV_SECTIONS.forEach((s, i) => {
-      const el = document.getElementById(s.id);
-      if (!el) return;
-      const obs = new IntersectionObserver(
-        (entries) => {
-          entries.forEach((e) => {
-            if (e.isIntersecting && !scrollingRef.current) {
-              setActiveSection(i);
-              scrollMobileNav(i);
-            }
-          });
-        },
-        { rootMargin: "-15% 0px -55% 0px", threshold: 0 }
-      );
-      obs.observe(el);
-      observers.push(obs);
-    });
-    return () => observers.forEach((o) => o.disconnect());
-  }, []);
-
-  const scrollMobileNav = (index) => {
-    if (!mobileRef.current) return;
-    const items = mobileRef.current.querySelectorAll(".mei-mobile-item");
-    if (items[index]) {
-      const item = items[index];
-      mobileRef.current.scrollTo({
-        left: item.offsetLeft - mobileRef.current.offsetWidth / 2 + item.offsetWidth / 2,
-        behavior: "smooth",
-      });
-    }
-  };
-
-  const irASeccion = (index) => {
-    scrollingRef.current = true;
-    setActiveSection(index);
-    scrollMobileNav(index);
-    document.getElementById(NAV_SECTIONS[index].id)?.scrollIntoView({ behavior: "smooth", block: "start" });
-    setTimeout(() => { scrollingRef.current = false; }, 900);
-  };
+  const {
+    mobileRef,
+    activeSection,
+    animado,
+    NAV_SECTIONS,
+    navigate,
+    irASeccion,
+  } = useMetodosEstudio();
 
   return (
     <div className={`mei-app ${animado ? "mei-animated" : ""}`}>
@@ -137,7 +86,7 @@ export function MetodosEstudio() {
       {/* ── LAYOUT ── */}
       <div className="mei-layout">
 
-        {/* SIDEBAR */}
+        {/* ── SIDEBAR ── */}
         <aside className="mei-sidebar">
           <div className="mei-sidebar-label">Contenido</div>
           <nav className="mei-sidebar-nav">
@@ -163,11 +112,11 @@ export function MetodosEstudio() {
           </div>
         </aside>
 
-        {/* MAIN */}
+        {/* ── MAIN ── */}
         <main className="mei-main">
           <div className="mei-banner">
-            <div className="mei-chip"><IoListOutline  size={13} /><span>36 preguntas</span></div>
-            <div className="mei-chip"><IoTimeOutline  size={13} /><span>~10–15 minutos</span></div>
+            <div className="mei-chip"><IoListOutline size={13} /><span>36 preguntas</span></div>
+            <div className="mei-chip"><IoTimeOutline size={13} /><span>~10–15 minutos</span></div>
             <div className="mei-chip"><IoFlashOutline size={13} /><span>Resultados inmediatos</span></div>
           </div>
 
@@ -189,7 +138,10 @@ export function MetodosEstudio() {
                 </p>
               </div>
               <div className="mei-card-image-side">
-                <img src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80" alt="Estudiante tomando notas" />
+                <img
+                  src="https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=600&q=80"
+                  alt="Estudiante tomando notas"
+                />
                 <div className="mei-card-image-overlay" />
               </div>
             </div>
@@ -233,7 +185,10 @@ export function MetodosEstudio() {
           <div id="mei-evalua" className="mei-card mei-card--accent">
             <div className="mei-card-inner mei-card-inner--reverse">
               <div className="mei-card-image-side">
-                <img src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80" alt="Libros y materiales de estudio" />
+                <img
+                  src="https://images.unsplash.com/photo-1456513080510-7bf3a84b82f8?w=600&q=80"
+                  alt="Libros y materiales de estudio"
+                />
                 <div className="mei-card-image-overlay" />
               </div>
               <div className="mei-card-body">
@@ -269,10 +224,10 @@ export function MetodosEstudio() {
                 </p>
                 <div className="mei-steps">
                   {[
-                    { n: "01", t: "Responde el test",   d: "36 preguntas sobre tus hábitos actuales con escala de frecuencia." },
-                    { n: "02", t: "Análisis",           d: "El sistema evalúa tus respuestas dimensión por dimensión." },
+                    { n: "01", t: "Responde el test", d: "36 preguntas sobre tus hábitos actuales con escala de frecuencia." },
+                    { n: "02", t: "Análisis", d: "El sistema evalúa tus respuestas dimensión por dimensión." },
                     { n: "03", t: "Errores detectados", d: "Identificamos los hábitos y métodos que afectan tu rendimiento académico." },
-                    { n: "04", t: "Recomendaciones",    d: "Sugerencias adaptadas a tu perfil de aprendizaje VARK dominante." },
+                    { n: "04", t: "Recomendaciones", d: "Sugerencias adaptadas a tu perfil de aprendizaje VARK dominante." },
                   ].map(s => (
                     <div key={s.n} className="mei-step">
                       <span className="mei-step-num">{s.n}</span>
@@ -285,7 +240,10 @@ export function MetodosEstudio() {
                 </div>
               </div>
               <div className="mei-card-image-side">
-                <img src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80" alt="Persona organizando su estudio" />
+                <img
+                  src="https://images.unsplash.com/photo-1488190211105-8b0e65b80b4e?w=600&q=80"
+                  alt="Persona organizando su estudio"
+                />
                 <div className="mei-card-image-overlay" />
               </div>
             </div>
@@ -295,7 +253,10 @@ export function MetodosEstudio() {
           <div id="mei-errores" className="mei-card">
             <div className="mei-card-inner mei-card-inner--reverse">
               <div className="mei-card-image-side">
-                <img src="https://images.unsplash.com/photo-1565688534245-05d6b5be184a?w=600&q=80" alt="Estudiante estresado frente al escritorio" />
+                <img
+                  src="https://images.unsplash.com/photo-1565688534245-05d6b5be184a?w=600&q=80"
+                  alt="Estudiante estresado frente al escritorio"
+                />
                 <div className="mei-card-image-overlay" />
               </div>
               <div className="mei-card-body">
@@ -341,7 +302,10 @@ export function MetodosEstudio() {
                 </div>
               </div>
               <div className="mei-card-image-side">
-                <img src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80" alt="Grupo de estudiantes colaborando" />
+                <img
+                  src="https://images.unsplash.com/photo-1522202176988-66273c2fd55f?w=600&q=80"
+                  alt="Grupo de estudiantes colaborando"
+                />
                 <div className="mei-card-image-overlay" />
               </div>
             </div>

@@ -1,4 +1,4 @@
-import "../styles/modalEliminar.css";
+import "../styles/modalEliminar.css"; 
 
 export function ModalEliminar({ isOpen, onClose, onConfirm, nombreUsuario }) {
     if (!isOpen) return null;

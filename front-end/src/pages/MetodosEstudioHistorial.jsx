@@ -8,24 +8,11 @@ import {
   IoTrophyOutline, IoAlertCircleOutline,
 } from "react-icons/io5";
 import "../styles/metodos-estudio-historial.css";
-
-// ── Helpers de nivel (por puntaje numérico) ──
-const nivelColor = (p) =>
-  p >= 95 ? "#1A6E3C" : p >= 80 ? "#2E8B57" : p >= 65 ? "#2B7AB8" : p >= 50 ? "#A05A00" : "#B03030";
-
-const nivelLabel = (p) =>
-  p >= 95 ? "Excelente" : p >= 80 ? "Muy bueno" : p >= 65 ? "Bueno" : p >= 50 ? "Regular" : "Deficiente";
-
-const nivelCssKey = (p) =>
-  p >= 95 ? "excelente" : p >= 80 ? "muy-bueno" : p >= 65 ? "bueno" : p >= 50 ? "regular" : "deficiente";
-
-// ── Puntaje con 2 decimales sin redondeo ──
-const formatPuntaje = (p) => (Math.floor(Number(p) * 100) / 100).toFixed(2);
-
-const formatFecha = (f) => new Date(f).toLocaleString("es-MX", {
-  day: "2-digit", month: "short", year: "numeric",
-  hour: "2-digit", minute: "2-digit",
-});
+import {
+  useMetodosEstudioHistorial,
+  nivelColor, nivelLabel, nivelCssKey,
+  formatPuntaje, formatFecha,
+} from "../hooks/useMetodosEstudioHistorial";
 
 function LoadingState() {
   return (
@@ -38,29 +25,17 @@ function LoadingState() {
 }
 
 export function MetodosEstudioHistorial() {
-  const navigate = useNavigate();
-
-  const [intentos, setIntentos] = useState([]);
-  const [cargando, setCargando] = useState(true);
-  const [animado, setAnimado] = useState(false);
-
-  useEffect(() => {
-    api.get("/metodosestudio/historial")
-      .then(({ data }) => setIntentos(data.historial || []))
-      .catch(() => { })
-      .finally(() => {
-        setCargando(false);
-        setTimeout(() => setAnimado(true), 120);
-      });
-  }, []);
+  const {
+    intentos,
+    cargando,
+    animado,
+    mejorIntento,
+    verResultado,
+    irAlTest,
+    irAlInicio,
+  } = useMetodosEstudioHistorial();
 
   if (cargando) return <LoadingState />;
-
-  const mejorIntento = intentos.length
-    ? intentos.reduce((a, b) =>
-      Number(b.puntaje_global || 0) > Number(a.puntaje_global || 0) ? b : a
-    )
-    : null;
 
   return (
     <div className={`meh-app ${animado ? "meh-animated" : ""}`}>
@@ -68,7 +43,7 @@ export function MetodosEstudioHistorial() {
       {/* HEADER */}
       <div className="meh-header">
         <div className="meh-header-left">
-          <button className="meh-back-btn" onClick={() => navigate("/metodos-estudio")}>
+          <button className="meh-back-btn" onClick={irAlInicio}>
             ← Volver
           </button>
           <h1 className="meh-header-title">Historial de <em>Métodos de Estudio</em></h1>
@@ -115,7 +90,7 @@ export function MetodosEstudioHistorial() {
             <IoAlertCircleOutline size={52} className="meh-empty-icon" />
             <h2 className="meh-empty-title">Sin intentos aún</h2>
             <p className="meh-empty-sub">Aún no has realizado el test de métodos de estudio.</p>
-            <button className="meh-start-btn" onClick={() => navigate("/test-metodos-estudio")}>
+            <button className="meh-start-btn" onClick={irAlTest}>
               Realizar el test <IoArrowForwardOutline size={15} />
             </button>
           </div>
@@ -149,9 +124,7 @@ export function MetodosEstudioHistorial() {
                           <tr
                             key={intento.id_intento}
                             className={`meh-table-row ${esMasReciente ? "meh-row--actual" : ""}`}
-                            onClick={() => navigate("/resultado-metodos-estudio", {
-                              state: { id_intento: intento.id_intento },
-                            })}
+                            onClick={() => verResultado(intento.id_intento)}
                           >
                             <td className="meh-col-num">
                               {esMasReciente
@@ -192,10 +165,10 @@ export function MetodosEstudioHistorial() {
             </div>
 
             <div className="meh-cta-wrapper">
-              <button className="meh-start-btn" onClick={() => navigate("/test-metodos-estudio")}>
+              <button className="meh-start-btn" onClick={irAlTest}>
                 <IoRefreshOutline size={15} /> Nuevo intento
               </button>
-              <button className="meh-start-btn meh-start-btn--outline" onClick={() => navigate("/metodos-estudio")}>
+              <button className="meh-start-btn meh-start-btn--outline" onClick={irAlInicio}>
                 <IoHomeOutline size={15} /> Ir al inicio
               </button>
             </div>

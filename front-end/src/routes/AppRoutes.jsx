@@ -27,6 +27,7 @@ import { EstilosAprendizaje } from "../pages/EstilosAprendizaje";
 import { MetodosEstudio } from "../pages/MetodosEstudio";
 import { CursosE } from "../pages/CursosE";
 import { CursosT } from "../pages/CursosT";
+import { EditorCurso } from "../pages/EditorCurso";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
 import { CorreoAlternativo } from "../pages/CorreoAlternativo";
@@ -191,6 +192,17 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <CursosT />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/editor-curso"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <EditorCurso />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

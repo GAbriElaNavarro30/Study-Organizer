@@ -4,8 +4,8 @@ import { db } from "../config/db.js";
 export class PreguntaME {
     constructor({ texto_pregunta, es_negativa = false, id_dimension }) {
         this.texto_pregunta = texto_pregunta;
-        this.es_negativa    = es_negativa;
-        this.id_dimension   = id_dimension;
+        this.es_negativa = es_negativa;
+        this.id_dimension = id_dimension;
     }
 
     async save() {

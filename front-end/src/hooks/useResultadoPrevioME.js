@@ -6,7 +6,7 @@ import api from "../services/api.js";
 export function useResultadoPrevioME() {
     const navigate = useNavigate();
     const [resultado, setResultado] = useState(null);
-    const [cargando, setCargando]   = useState(true);
+    const [cargando, setCargando] = useState(true);
 
     useEffect(() => {
         const verificar = async () => {

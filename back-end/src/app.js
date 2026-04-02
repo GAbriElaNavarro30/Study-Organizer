@@ -9,8 +9,8 @@ import notasRoutes from "../src/routes/notas.js";
 import contactoRoutes from "../src/routes/contacto.js";
 import estilosAprendizajeRoutes from "../src/routes/estilos-aprendizaje.js";
 import metodosEstudioRoutes from "../src/routes/metodos-estudio.js";
+import cursosRoutes from "../src/routes/cursos.js";
 import dashboardRoutes from "../src/routes/dashboard.js";
-// falta cursos
 
 import "../src/cron/recordatoriosCron.js";
 //import { iniciarCronTipDiario } from "./cron/tipDiario.cron.js";
@@ -42,6 +42,7 @@ app.use("/notas", notasRoutes);
 app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
 app.use("/metodosestudio", metodosEstudioRoutes);
+app.use("/cursos", cursosRoutes);
 app.use("/contacto", contactoRoutes);
 // cursos
 

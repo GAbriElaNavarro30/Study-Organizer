@@ -3,8 +3,8 @@ import { db } from "../config/db.js";
 
 export class OpcionLikert {
     constructor({ categoria, valor }) {
-        this.categoria    = categoria;
-        this.valor        = valor;
+        this.categoria = categoria;
+        this.valor = valor;
     }
 
     async save() {

@@ -1,0 +1,44 @@
+// src/models/SeccionCurso.js
+import { db } from "../config/db.js";
+
+export class SeccionCurso {
+    constructor({ titulo_seccion, orden, id_curso }) {
+        this.titulo_seccion = titulo_seccion;
+        this.orden          = orden;
+        this.id_curso       = id_curso;
+    }
+
+    async save() {
+        return await db.query(
+            `INSERT INTO Seccion_Curso (titulo_seccion, orden, id_curso)
+             VALUES (?, ?, ?)`,
+            [this.titulo_seccion, this.orden, this.id_curso]
+        );
+    }
+
+    static async getByCurso(id_curso) {
+        const [rows] = await db.query(
+            "SELECT * FROM Seccion_Curso WHERE id_curso = ? ORDER BY orden ASC",
+            [id_curso]
+        );
+        return rows;
+    }
+
+    static async getById(id) {
+        const [rows] = await db.query(
+            "SELECT * FROM Seccion_Curso WHERE id_seccion = ?",
+            [id]
+        );
+        return rows[0];
+    }
+
+    static async update(id, campos) {
+        const keys   = Object.keys(campos).map(k => `${k} = ?`).join(", ");
+        const values = [...Object.values(campos), id];
+        return await db.query(`UPDATE Seccion_Curso SET ${keys} WHERE id_seccion = ?`, values);
+    }
+
+    static async delete(id) {
+        return await db.query("DELETE FROM Seccion_Curso WHERE id_seccion = ?", [id]);
+    }
+}
