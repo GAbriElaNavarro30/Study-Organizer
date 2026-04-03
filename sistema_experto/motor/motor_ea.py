@@ -2,12 +2,12 @@
 
 # hechos
 from hechos.hechos_ea import (
-    PuntajesVARK, PerfilDominante, Recomendacion, RECOMENDACIONES
+    PuntajesVARK, PerfilDominante, Recomendacion, RECOMENDACIONES,
+    CriteriosCurso, 
 )
 
 # reglas
 from reglas.reglas_ea import MotorVARK
-from services.cursos_service import obtener_cursos_por_perfil 
 
 # =================================================================
 # Estilos de aprendizaje
@@ -79,11 +79,15 @@ def procesar_respuestas(categorias: list[str]) -> dict:
             estilo = fact["estilo"]
             recomendaciones.setdefault(estilo, []).append(fact["texto"])
     
-    
-    # ── NUEVO: cursos recomendados por perfil VARK ──
-    cursos_recomendados = obtener_cursos_por_perfil(
-        perfil=perfil,
-    )
+    # Después de recoger recomendaciones, antes del return:
+    criterios_cursos = None
+    for fact in motor.facts.values():
+        if isinstance(fact, CriteriosCurso):
+            criterios_cursos = {
+                "perfil":      fact["perfil"],
+                "dimensiones": fact["dimensiones"],
+            }
+            break
     
     # 5. Construir y devolver el resultado
     return {
@@ -98,7 +102,7 @@ def procesar_respuestas(categorias: list[str]) -> dict:
         "perfil_dominante": perfil,
         "nombre_perfil":    nombre,
         "recomendaciones":  recomendaciones,
-        "cursos_recomendados": cursos_recomendados,
+        "criterios_cursos": criterios_cursos,
     }
 
 

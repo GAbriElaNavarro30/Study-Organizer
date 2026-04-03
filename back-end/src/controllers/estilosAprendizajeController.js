@@ -116,31 +116,32 @@ export async function obtenerResultado(req, res) {
             perfil_dominante, nombre_perfil, id_intento,
         }).save();
 
-        // 3. Consulta cursos recomendados por perfil VARK
-        const letras = perfil_dominante.split("").filter(l => ["V", "A", "R", "K"].includes(l));
-        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
-        const perfilParams = letras.map(l => `%${l}%`);
+        // 3. Python ya decidió los criterios
+        const criterios = pythonRes.data.criterios_cursos;
+        let cursos = [];
 
-        // 3. Consulta cursos recomendados por perfil VARK exacto
-        const [cursos] = await db.query(
-            `SELECT
-                c.id_curso, c.titulo, c.descripcion, c.foto,
-                c.perfil_vark, c.fecha_creacion,
-                d.nombre_dimension,
-                u.nombre AS nombre_tutor,
-                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-            FROM Curso c
-            LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-            LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-            WHERE c.es_publicado  = 1
-            AND c.archivado     = 0
-            AND c.id_usuario   != ?
-            AND c.perfil_vark   = ?
-            AND c.id_dimension IS NULL
-            ORDER BY c.fecha_creacion DESC
-            LIMIT 12`,
-            [id_usuario, perfil_dominante]
-        );
+        if (criterios?.perfil) {
+            const [rows] = await db.query(
+                `SELECT
+                    c.id_curso, c.titulo, c.descripcion, c.foto,
+                    c.perfil_vark, c.fecha_creacion,
+                    d.nombre_dimension,
+                    u.nombre AS nombre_tutor,
+                    (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+                 FROM Curso c
+                 LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+                 LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+                 WHERE c.es_publicado = 1
+                   AND c.archivado   = 0
+                   AND c.id_usuario  != ?
+                   AND c.perfil_vark  = ?
+                   AND c.id_dimension IS NULL
+                 ORDER BY c.fecha_creacion DESC
+                 LIMIT 12`,
+                [id_usuario, criterios.perfil]
+            );
+            cursos = rows;
+        }
 
         // 4. Devuelve todo al frontend
         res.json({
@@ -180,30 +181,32 @@ export async function obtenerResultadoGuardado(req, res) {
             k: total > 0 ? parseFloat(((resultado.puntaje_k / total) * 100).toFixed(2)) : 0,
         };
 
-        // Consulta cursos recomendados
-        const letras = resultado.perfil_dominante.split("").filter(l => ["V", "A", "R", "K"].includes(l));
-        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
-        const perfilParams = letras.map(l => `%${l}%`);
+        // Python ya decidió los criterios
+        const criterios = pythonRes.data.criterios_cursos;
+        let cursos = [];
 
-        const [cursos] = await db.query(
-            `SELECT
-                c.id_curso, c.titulo, c.descripcion, c.foto,
-                c.perfil_vark, c.fecha_creacion,
-                d.nombre_dimension,
-                u.nombre AS nombre_tutor,
-                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-            FROM Curso c
-            LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-            LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-            WHERE c.es_publicado  = 1
-            AND c.archivado     = 0
-            AND c.id_usuario   != ?
-            AND c.perfil_vark   = ?
-            AND c.id_dimension IS NULL
-            ORDER BY c.fecha_creacion DESC
-            LIMIT 12`,
-            [id_usuario, resultado.perfil_dominante]
-        );
+        if (criterios?.perfil) {
+            const [rows] = await db.query(
+                `SELECT
+                    c.id_curso, c.titulo, c.descripcion, c.foto,
+                    c.perfil_vark, c.fecha_creacion,
+                    d.nombre_dimension,
+                    u.nombre AS nombre_tutor,
+                    (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+                 FROM Curso c
+                 LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+                 LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+                 WHERE c.es_publicado = 1
+                   AND c.archivado   = 0
+                   AND c.id_usuario  != ?
+                   AND c.perfil_vark  = ?
+                   AND c.id_dimension IS NULL
+                 ORDER BY c.fecha_creacion DESC
+                 LIMIT 12`,
+                [id_usuario, criterios.perfil]
+            );
+            cursos = rows;
+        }
 
         res.json({
             perfil_dominante: resultado.perfil_dominante,

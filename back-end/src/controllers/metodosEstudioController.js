@@ -1,4 +1,4 @@
-// src/controllers/metodosEstudioController.js
+/// src/controllers/metodosEstudioController.js
 import axios from "axios";
 import { PreguntaME } from "../models/PreguntaME.js";
 import { IntentoTest } from "../models/IntentoTest.js";
@@ -121,38 +121,37 @@ export async function responder(req, res) {
 
     const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
 
-    // ── Cursos recomendados ──
-    const dimensionesDebiles = analisis.resultados_por_dimension
-      .filter(d => ["deficiente", "regular"].includes(d.nivel))
-      .map(d => d.id_dimension);
-
+    // ── Python ya decidió los criterios ──
+    const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
-    if (dimensionesDebiles.length > 0 && perfil_vark !== "VARK") {
-      // Intento 1: perfil VARK exacto + dimensiones débiles
-      const dimPlaceholders = dimensionesDebiles.map(() => "?").join(",");
-      const [cursos] = await conn.query(
-        `SELECT
-            c.id_curso, c.titulo, c.descripcion, c.foto,
-            c.perfil_vark, c.fecha_creacion,
-            d.nombre_dimension,
-            u.nombre AS nombre_tutor,
-            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-         FROM Curso c
-         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-         WHERE c.es_publicado  = 1
-           AND c.archivado     = 0
-           AND c.id_usuario   != ?
-           AND c.perfil_vark   = ?
-           AND c.id_dimension IN (${dimPlaceholders})
-         ORDER BY c.fecha_creacion DESC
-         LIMIT 12`,
-        [id_usuario, perfil_vark, ...dimensionesDebiles]
-      );
-      cursos_recomendados = cursos;
+    if (criterios?.perfil) {
+      if (criterios.dimensiones?.length > 0) {
+        // Intento 1: perfil + dimensiones débiles (decisión del sistema experto)
+        const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
+        const [cursos] = await conn.query(
+          `SELECT
+              c.id_curso, c.titulo, c.descripcion, c.foto,
+              c.perfil_vark, c.fecha_creacion,
+              d.nombre_dimension,
+              u.nombre AS nombre_tutor,
+              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+           FROM Curso c
+           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+           WHERE c.es_publicado  = 1
+             AND c.archivado     = 0
+             AND c.id_usuario   != ?
+             AND c.perfil_vark   = ?
+             AND c.id_dimension IN (${dimPlaceholders})
+           ORDER BY c.fecha_creacion DESC
+           LIMIT 12`,
+          [id_usuario, criterios.perfil, ...criterios.dimensiones]
+        );
+        cursos_recomendados = cursos;
+      }
 
-      // Intento 2 (fallback): solo perfil VARK exacto
+      // Intento 2 (fallback): solo perfil
       if (cursos_recomendados.length === 0) {
         const [cursosFallback] = await conn.query(
           `SELECT
@@ -170,7 +169,7 @@ export async function responder(req, res) {
              AND c.perfil_vark  = ?
            ORDER BY c.fecha_creacion DESC
            LIMIT 12`,
-          [id_usuario, perfil_vark]
+          [id_usuario, criterios.perfil]
         );
         cursos_recomendados = cursosFallback;
       }
@@ -234,38 +233,37 @@ export async function obtenerResultado(req, res) {
 
     const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
 
-    // ── Cursos recomendados ──
-    const dimensionesDebiles = analisis.resultados_por_dimension
-      .filter(d => ["deficiente", "regular"].includes(d.nivel))
-      .map(d => d.id_dimension);
-
+    // ── Python ya decidió los criterios ──
+    const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
-    if (dimensionesDebiles.length > 0 && perfil_vark !== "VARK") {
-      // Intento 1: perfil VARK exacto + dimensiones débiles
-      const dimPlaceholders = dimensionesDebiles.map(() => "?").join(",");
-      const [cursos] = await db.query(
-        `SELECT
-            c.id_curso, c.titulo, c.descripcion, c.foto,
-            c.perfil_vark, c.fecha_creacion,
-            d.nombre_dimension,
-            u.nombre AS nombre_tutor,
-            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-         FROM Curso c
-         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-         WHERE c.es_publicado  = 1
-           AND c.archivado     = 0
-           AND c.id_usuario   != ?
-           AND c.perfil_vark   = ?
-           AND c.id_dimension IN (${dimPlaceholders})
-         ORDER BY c.fecha_creacion DESC
-         LIMIT 12`,
-        [id_usuario, perfil_vark, ...dimensionesDebiles]
-      );
-      cursos_recomendados = cursos;
+    if (criterios?.perfil) {
+      if (criterios.dimensiones?.length > 0) {
+        // Intento 1: perfil + dimensiones débiles (decisión del sistema experto)
+        const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
+        const [cursos] = await db.query(
+          `SELECT
+              c.id_curso, c.titulo, c.descripcion, c.foto,
+              c.perfil_vark, c.fecha_creacion,
+              d.nombre_dimension,
+              u.nombre AS nombre_tutor,
+              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+           FROM Curso c
+           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+           WHERE c.es_publicado  = 1
+             AND c.archivado     = 0
+             AND c.id_usuario   != ?
+             AND c.perfil_vark   = ?
+             AND c.id_dimension IN (${dimPlaceholders})
+           ORDER BY c.fecha_creacion DESC
+           LIMIT 12`,
+          [id_usuario, criterios.perfil, ...criterios.dimensiones]
+        );
+        cursos_recomendados = cursos;
+      }
 
-      // Intento 2 (fallback): solo perfil VARK exacto
+      // Intento 2 (fallback): solo perfil
       if (cursos_recomendados.length === 0) {
         const [cursosFallback] = await db.query(
           `SELECT
@@ -283,7 +281,7 @@ export async function obtenerResultado(req, res) {
              AND c.perfil_vark  = ?
            ORDER BY c.fecha_creacion DESC
            LIMIT 12`,
-          [id_usuario, perfil_vark]
+          [id_usuario, criterios.perfil]
         );
         cursos_recomendados = cursosFallback;
       }

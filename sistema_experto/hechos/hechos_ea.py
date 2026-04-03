@@ -110,3 +110,9 @@ RECOMENDACIONES = {
         "Aplica lo aprendido inmediatamente después de estudiarlo",
     ],
 } 
+
+
+class CriteriosCurso(Fact):
+    """Criterios que el motor determinó para recomendar cursos."""
+    perfil      = Field(str, mandatory=True)
+    dimensiones = Field(list, mandatory=False)  # None = sin filtro por dimensión

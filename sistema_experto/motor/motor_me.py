@@ -2,10 +2,9 @@ from hechos.hechos_me import (
     PuntajeDimension, PreguntaConError, PerfilVARK,
     ErrorDetectado, RecomendacionME,
     DIMENSIONES_INFO, ERRORES_POR_PREGUNTA,
+    CriteriosCurso,
 )
 from reglas.reglas_me import MotorMetodosEstudio
-
-from services.cursos_service import obtener_cursos_por_perfil 
 
 
 def _calcular_nivel(puntaje: float) -> str:
@@ -118,21 +117,16 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
                 "estilo_vark": fact["estilo_vark"],
                 "texto":       fact["texto"],
             })
-
-    # ── NUEVO: extraer dimensiones con error para filtrar cursos ──
-    ids_dimensiones_con_error: list[int] = []
+    
+    # Después de recoger errores y recomendaciones, antes del return:
+    criterios_cursos = None
     for fact in motor.facts.values():
-        if isinstance(fact, PuntajeDimension):
-            if fact["nivel"] in ("deficiente", "regular", "bueno"):
-                ids_dimensiones_con_error.append(fact["id_dimension"])
-
-    # Usar perfil real si existe, si no usar todas las letras VARK
-    perfil_para_cursos = perfil_real if perfil_real else "VARK"
-
-    cursos_recomendados = obtener_cursos_por_perfil(
-        perfil=perfil_para_cursos,
-        dimensiones_con_error=ids_dimensiones_con_error or None,
-    )
+        if isinstance(fact, CriteriosCurso):
+            criterios_cursos = {
+                "perfil":      fact["perfil"],
+                "dimensiones": fact["dimensiones"],
+            }
+            break
     
     return {
         "perfil_vark":              perfil_vark,
@@ -140,5 +134,5 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
         "resultados_por_dimension": resultados_por_dimension,
         "errores_detectados":       errores,
         "recomendaciones":          recomendaciones,
-        "cursos_recomendados":       cursos_recomendados,
+        "criterios_cursos":          criterios_cursos,
     }

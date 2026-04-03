@@ -191,3 +191,8 @@ RECOMENDACIONES_VARK = {
         9: "Busca talleres, laboratorios, simulaciones o proyectos prácticos como recursos.",
     },
 }
+
+class CriteriosCurso(Fact):
+    """Criterios que el motor determinó para recomendar cursos."""
+    perfil      = Field(str, mandatory=True)
+    dimensiones = Field(list, mandatory=False)

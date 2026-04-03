@@ -23,4 +23,10 @@ def obtener_recomendaciones(perfil: str):
     resultado = obtener_recomendaciones_perfil(perfil)
     if not resultado:
         raise HTTPException(status_code=404, detail=f"Perfil '{perfil.upper()}' no reconocido")
-    return {"recomendaciones": resultado} 
+    return {
+        "recomendaciones": resultado,
+        "criterios_cursos": {
+            "perfil": perfil.upper(),
+            "dimensiones": []
+        }
+    }

@@ -1,9 +1,10 @@
-from experta import KnowledgeEngine, Rule, MATCH, TEST
+from experta import KnowledgeEngine, Rule, MATCH, TEST, NOT
 
 from hechos.hechos_me import (
     PuntajeDimension, PreguntaConError, PerfilVARK,
     ErrorDetectado, RecomendacionME,
     ERRORES_POR_PREGUNTA, RECOMENDACIONES_GENERALES, RECOMENDACIONES_VARK,
+    CriteriosCurso,
 )
 
 NIVELES_A_MEJORAR = ("deficiente", "regular", "bueno")
@@ -109,3 +110,36 @@ class MotorMetodosEstudio(KnowledgeEngine):
                     estilo_vark=letra,
                     texto=texto,
                 ))
+          
+          
+                
+    # ── BLOQUE 6: Criterios de cursos — con perfil VARK conocido ──
+    # Acumula dimensiones débiles y declara los criterios al final.
+    @Rule(
+        PerfilVARK(perfil=MATCH.perfil),
+        salience=1,
+    )
+    def criterios_cursos_con_perfil(self, perfil):
+        # Recolectar dimensiones deficientes y regulares de la WM
+        dimensiones_debiles = [
+            fact["id_dimension"]
+            for fact in self.facts.values()
+            if isinstance(fact, PuntajeDimension)
+            and fact["nivel"] in ("deficiente", "regular")
+        ]
+        self.declare(CriteriosCurso(
+            perfil=perfil,
+            dimensiones=dimensiones_debiles,
+        ))
+
+    # ── BLOQUE 7: Criterios de cursos — sin perfil VARK ──
+    # Si el estudiante no hizo el test VARK, no se puede recomendar por perfil.
+    @Rule(
+        NOT(PerfilVARK()),
+        salience=1,
+    )
+    def criterios_cursos_sin_perfil(self):
+        self.declare(CriteriosCurso(
+            perfil="",
+            dimensiones=[],
+        ))
