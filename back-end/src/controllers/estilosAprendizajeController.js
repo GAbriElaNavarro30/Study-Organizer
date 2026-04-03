@@ -132,10 +132,11 @@ export async function obtenerResultado(req, res) {
             FROM Curso c
             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-            WHERE c.es_publicado = 1
-            AND c.archivado   = 0
-            AND c.id_usuario  != ?
-            AND c.perfil_vark  = ?
+            WHERE c.es_publicado  = 1
+            AND c.archivado     = 0
+            AND c.id_usuario   != ?
+            AND c.perfil_vark   = ?
+            AND c.id_dimension IS NULL
             ORDER BY c.fecha_creacion DESC
             LIMIT 12`,
             [id_usuario, perfil_dominante]
@@ -194,10 +195,11 @@ export async function obtenerResultadoGuardado(req, res) {
             FROM Curso c
             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-            WHERE c.es_publicado = 1
-            AND c.archivado   = 0
-            AND c.id_usuario  != ?
-            AND c.perfil_vark  = ?
+            WHERE c.es_publicado  = 1
+            AND c.archivado     = 0
+            AND c.id_usuario   != ?
+            AND c.perfil_vark   = ?
+            AND c.id_dimension IS NULL
             ORDER BY c.fecha_creacion DESC
             LIMIT 12`,
             [id_usuario, resultado.perfil_dominante]

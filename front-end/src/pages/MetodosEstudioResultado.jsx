@@ -15,26 +15,26 @@ const VARK_COLORS = { V: "#2B7AB8", A: "#2E8B57", R: "#A05A00", K: "#6B5B95" };
 
 // ── Helpers de nivel ──
 const nivelColor = (nivel) => ({
-  excelente:  "#1A6E3C",
-  muy_bueno:  "#2E8B57",
-  bueno:      "#2B7AB8",
-  regular:    "#A05A00",
+  excelente: "#1A6E3C",
+  muy_bueno: "#2E8B57",
+  bueno: "#2B7AB8",
+  regular: "#A05A00",
   deficiente: "#B03030",
 }[nivel] || "#4A5A6E");
 
 const nivelLabel = (nivel) => ({
-  excelente:  "Excelente",
-  muy_bueno:  "Muy bueno",
-  bueno:      "Bueno",
-  regular:    "Regular",
+  excelente: "Excelente",
+  muy_bueno: "Muy bueno",
+  bueno: "Bueno",
+  regular: "Regular",
   deficiente: "Deficiente",
 }[nivel] || nivel);
 
 const nivelCssKey = (nivel) => ({
-  excelente:  "excelente",
-  muy_bueno:  "muy-bueno",
-  bueno:      "bueno",
-  regular:    "regular",
+  excelente: "excelente",
+  muy_bueno: "muy-bueno",
+  bueno: "bueno",
+  regular: "regular",
   deficiente: "deficiente",
 }[nivel] || "regular");
 
@@ -49,7 +49,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   if (n === 0) return null;
 
   const angulo = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
-  const punto  = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
+  const punto = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
 
   const poligono = dims.map(([, info], i) => {
     const p = punto(i, (info.puntaje / 100) * r);
@@ -74,7 +74,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
         return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor} />;
       })}
       {dims.map(([, info], i) => {
-        const p      = punto(i, r + 22);
+        const p = punto(i, r + 22);
         const anchor = p.x < cx - 5 ? "end" : p.x > cx + 5 ? "start" : "middle";
         const nombre = info.nombre?.length > 14 ? info.nombre.slice(0, 14) + "…" : info.nombre;
         return (
@@ -107,7 +107,7 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
 function SeccionRecs({ dimension, recs, perfil_vark }) {
   const [abierta, setAbierta] = useState(false);
   const generales = recs.filter(r => r.estilo_vark === "general");
-  const vark      = recs.filter(r => r.estilo_vark !== "general");
+  const vark = recs.filter(r => r.estilo_vark !== "general");
 
   return (
     <div className="mer-rec-section">
@@ -177,6 +177,7 @@ export function MetodosEstudioResultado() {
     resultados_por_dimension,
     errores_detectados,
     recomendaciones,
+    cursosRecomendados,
     perfil_vark,
     tieneMejoras,
     tieneRecs,
@@ -403,6 +404,50 @@ export function MetodosEstudioResultado() {
                 {Object.entries(recomendaciones).map(([dim, recs]) => (
                   <SeccionRecs key={dim} dimension={dim} recs={recs} perfil_vark={perfil_vark || "VARK"} />
                 ))}
+              </div>
+            </div>
+          )}
+
+          {/* ── CURSOS RECOMENDADOS ── */}
+          {cursosRecomendados?.length > 0 && (
+            <div id="mer-cursos" className="mer-card">
+              <div className="mer-card-body" style={{ padding: "40px" }}>
+                <div className="mer-card-tag">
+                  <IoBookOutline size={11} /> Cursos recomendados
+                </div>
+                <h2 className="mer-card-title">Cursos para reforzar tus hábitos</h2>
+                <p className="mer-card-text" style={{ marginBottom: 28 }}>
+                  Estos cursos están alineados con tu perfil <strong>{perfil_vark}</strong> y
+                  las dimensiones donde puedes mejorar.
+                </p>
+                <div className="mer-cursos-grid">
+                  {cursosRecomendados.map((curso) => (
+                    <div key={curso.id_curso} className="mer-curso-card">
+                      {curso.foto
+                        ? <img src={curso.foto} alt={curso.titulo} className="mer-curso-img" />
+                        : (
+                          <div className="mer-curso-placeholder">
+                            {curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
+                          </div>
+                        )
+                      }
+                      <div className="mer-curso-body">
+                        <p className="mer-curso-title">{curso.titulo}</p>
+                        {curso.descripcion && (
+                          <p className="mer-curso-desc">
+                            {curso.descripcion.slice(0, 80)}{curso.descripcion.length > 80 ? "…" : ""}
+                          </p>
+                        )}
+                        <div className="mer-curso-meta">
+                          {curso.nombre_tutor && <span>{curso.nombre_tutor}</span>}
+                          {curso.nombre_dimension && (
+                            <span className="mer-curso-dim">{curso.nombre_dimension}</span>
+                          )}
+                        </div>
+                      </div>
+                    </div>
+                  ))}
+                </div>
               </div>
             </div>
           )}

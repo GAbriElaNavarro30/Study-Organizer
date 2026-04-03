@@ -14,6 +14,8 @@ const normalizarResultados = (data) => {
   return { ...data, resultados_por_dimension: obj };
 };
 
+
+
 export function useMetodosEstudioResultado() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -23,9 +25,13 @@ export function useMetodosEstudioResultado() {
       location.state?.puntaje_global !== undefined ? location.state : null
     )
   );
-  const [cargando,      setCargando]      = useState(!datos);
-  const [animado,       setAnimado]       = useState(false);
+  const [cargando, setCargando] = useState(!datos);
+  const [animado, setAnimado] = useState(false);
   const [activeSection, setActiveSection] = useState("mer-resumen");
+
+  const [cursosRecomendados, setCursosRecomendados] = useState(
+    location.state?.cursos_recomendados || []
+  );
 
   // ── Carga inicial ──
   useEffect(() => {
@@ -67,10 +73,12 @@ export function useMetodosEstudioResultado() {
   // ── Carga desde API si no vienen por location.state ──
   const cargarResultado = async () => {
     const id_intento = location.state?.id_intento;
+
     if (!id_intento) { navigate("/metodos-estudio"); return; }
     try {
       const { data } = await api.get(`/metodosestudio/resultado/${id_intento}`);
       setDatos(normalizarResultados(data));
+      setCursosRecomendados(data.cursos_recomendados || []);
     } catch {
       navigate("/metodos-estudio");
     } finally {
@@ -86,25 +94,28 @@ export function useMetodosEstudioResultado() {
 
   // ── Datos derivados ──
   const {
-    puntaje_global        = 0,
-    nivel_global          = "",
+    puntaje_global = 0,
+    nivel_global = "",
     resultados_por_dimension = {},
-    errores_detectados    = [],
-    recomendaciones       = {},
-    perfil_vark           = "",
+    errores_detectados = [],
+    recomendaciones = {},
+    perfil_vark = "",
+
   } = datos || {};
 
-  const tieneMejoras  = errores_detectados.length > 0;
-  const tieneRecs     = Object.keys(recomendaciones).length > 0;
-  const dimOrdenadas  = Object.entries(resultados_por_dimension)
+  const tieneMejoras = errores_detectados.length > 0;
+  const tieneRecs = Object.keys(recomendaciones).length > 0;
+  const cursosRecomendados_data = datos?.cursos_recomendados || cursosRecomendados;
+  const dimOrdenadas = Object.entries(resultados_por_dimension)
     .sort((a, b) => Number(a[0]) - Number(b[0]));
 
   // Secciones dinámicas del sidebar
   const sidebarSections = [
-    { label: "Resumen global",   id: "mer-resumen"  },
-    { label: "Por dimensión",    id: "mer-dims"     },
+    { label: "Resumen global", id: "mer-resumen" },
+    { label: "Por dimensión", id: "mer-dims" },
     ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
-    ...(tieneRecs    ? [{ label: "Recomendaciones",  id: "mer-recs"    }] : []),
+    ...(tieneRecs ? [{ label: "Recomendaciones", id: "mer-recs" }] : []),
+    ...(cursosRecomendados_data.length > 0 ? [{ label: "Cursos para ti", id: "mer-cursos" }] : []),
   ];
 
   return {
@@ -120,6 +131,7 @@ export function useMetodosEstudioResultado() {
     resultados_por_dimension,
     errores_detectados,
     recomendaciones,
+    cursosRecomendados: cursosRecomendados_data,
     perfil_vark,
     tieneMejoras,
     tieneRecs,
