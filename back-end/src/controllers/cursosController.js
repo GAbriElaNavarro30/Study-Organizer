@@ -1,10 +1,10 @@
-import { Curso } from "../models/Curso.js";               // ← faltaba
-import { SeccionCurso } from "../models/SeccionCurso.js";
-import { Contenido } from "../models/Contenido.js";
-import { PreguntaTest } from "../models/PreguntaTest.js";
-import { OpcionTest } from "../models/OpcionTest.js";
-import { db } from "../config/db.js";
-import cloudinary from "../config/cloudinary.js";         // ← faltaba
+import { Curso }         from "../models/Curso.js";
+import { SeccionCurso }  from "../models/SeccionCurso.js";
+import { Contenido }     from "../models/Contenido.js";
+import { PreguntaTest }  from "../models/PreguntaTest.js";
+import { OpcionTest }    from "../models/OpcionTest.js";
+import { db }            from "../config/db.js";
+import cloudinary        from "../config/cloudinary.js";
 
 // ─────────────────────────────────────────────────────────────
 // Helper
@@ -50,18 +50,17 @@ export const listarCursos = async (req, res) => {
 
 export const obtenerCurso = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
 
         const secciones = await SeccionCurso.getByCurso(id);
         for (const seccion of secciones) {
             seccion.contenidos = await Contenido.getBySeccion(seccion.id_seccion);
-            seccion.preguntas = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
+            seccion.preguntas  = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
         }
 
         curso.secciones = secciones;
@@ -77,18 +76,20 @@ export const crearCurso = async (req, res) => {
         const id_usuario = req.usuario.id;
         const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
 
-        if (!titulo?.trim()) {
+        // ── Validaciones (espejo del paso 1 del frontend) ──
+        if (!titulo?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título es obligatorio." });
-        }
+        if (!perfil_vark)
+            return res.status(400).json({ ok: false, mensaje: "El perfil VARK es obligatorio." });
 
         let foto = null;
         if (req.file) foto = await subirImagenCloudinary(req.file.buffer);
 
         const curso = new Curso({
-            titulo: titulo.trim(),
-            descripcion: descripcion?.trim() || null,
+            titulo:       titulo.trim(),
+            descripcion:  descripcion?.trim() || null,
             foto,
-            perfil_vark: perfil_vark || null,
+            perfil_vark:  perfil_vark || null,
             id_dimension: id_dimension || null,
             id_usuario,
         });
@@ -103,25 +104,29 @@ export const crearCurso = async (req, res) => {
 
 export const actualizarCurso = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
         const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
+
+        // ── Validaciones (espejo del paso 1 del frontend) ──
+        if (titulo !== undefined && !titulo.trim())
+            return res.status(400).json({ ok: false, mensaje: "El título no puede estar vacío." });
+        if (perfil_vark !== undefined && !perfil_vark)
+            return res.status(400).json({ ok: false, mensaje: "El perfil VARK es obligatorio." });
 
         const campos = {};
-        if (titulo !== undefined) campos.titulo = titulo.trim();
-        if (descripcion !== undefined) campos.descripcion = descripcion?.trim() || null;
-        if (perfil_vark !== undefined) campos.perfil_vark = perfil_vark || null;
+        if (titulo      !== undefined) campos.titulo       = titulo.trim();
+        if (descripcion !== undefined) campos.descripcion  = descripcion?.trim() || null;
+        if (perfil_vark !== undefined) campos.perfil_vark  = perfil_vark || null;
         if (id_dimension !== undefined) campos.id_dimension = id_dimension || null;
         if (req.file) campos.foto = await subirImagenCloudinary(req.file.buffer);
 
-        if (Object.keys(campos).length === 0) {
+        if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
-        }
 
         await Curso.update(id, campos);
         res.json({ ok: true, mensaje: "Curso actualizado." });
@@ -133,13 +138,12 @@ export const actualizarCurso = async (req, res) => {
 
 export const togglePublicarCurso = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
 
         const nuevo_estado = !curso.es_publicado;
         await Curso.update(id, { es_publicado: nuevo_estado });
@@ -152,13 +156,12 @@ export const togglePublicarCurso = async (req, res) => {
 
 export const eliminarCurso = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
 
         await Curso.delete(id);
         res.json({ ok: true, mensaje: "Curso eliminado." });
@@ -174,18 +177,17 @@ export const eliminarCurso = async (req, res) => {
 
 export const crearSeccion = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
         const { titulo_seccion, orden } = req.body;
 
-        if (!titulo_seccion?.trim()) {
+        // ── Validación (espejo del frontend: titulo_seccion requerido) ──
+        if (!titulo_seccion?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título de la sección es obligatorio." });
-        }
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
 
         let ordenFinal = orden;
         if (!ordenFinal) {
@@ -195,7 +197,11 @@ export const crearSeccion = async (req, res) => {
                 : 1;
         }
 
-        const seccion = new SeccionCurso({ titulo_seccion: titulo_seccion.trim(), orden: ordenFinal, id_curso: id });
+        const seccion = new SeccionCurso({
+            titulo_seccion: titulo_seccion.trim(),
+            orden: ordenFinal,
+            id_curso: id,
+        });
         const [result] = await seccion.save();
         res.status(201).json({ ok: true, id_seccion: result.insertId, orden: ordenFinal });
     } catch (error) {
@@ -209,13 +215,16 @@ export const actualizarSeccion = async (req, res) => {
         const { id } = req.params;
         const { titulo_seccion, orden } = req.body;
 
-        const campos = {};
-        if (titulo_seccion) campos.titulo_seccion = titulo_seccion.trim();
-        if (orden !== undefined) campos.orden = orden;
+        // ── Validación: título obligatorio (espejo del frontend) ──
+        if (titulo_seccion !== undefined && !titulo_seccion.trim())
+            return res.status(400).json({ ok: false, mensaje: "El título de la sección no puede estar vacío." });
 
-        if (Object.keys(campos).length === 0) {
+        const campos = {};
+        if (titulo_seccion !== undefined) campos.titulo_seccion = titulo_seccion.trim();
+        if (orden          !== undefined) campos.orden          = orden;
+
+        if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
-        }
 
         await SeccionCurso.update(id, campos);
         res.json({ ok: true, mensaje: "Sección actualizada." });
@@ -245,9 +254,9 @@ export const crearContenido = async (req, res) => {
         const { id } = req.params;
         const { titulo, contenido, orden } = req.body;
 
-        if (!titulo?.trim()) {
-            return res.status(400).json({ ok: false, mensaje: "El título del contenido es obligatorio." });
-        }
+        // ── Validación (espejo del frontend: titulo requerido) ──
+        if (!titulo?.trim())
+            return res.status(400).json({ ok: false, mensaje: "El título del bloque de contenido es obligatorio." });
 
         let ordenFinal = orden;
         if (!ordenFinal) {
@@ -257,7 +266,17 @@ export const crearContenido = async (req, res) => {
                 : 1;
         }
 
-        const bloque = new Contenido({ titulo: titulo.trim(), contenido: contenido?.trim() || null, orden: ordenFinal, id_seccion: id });
+        // Subir imagen si viene adjunta
+        let imagen_url = null;
+        if (req.file) imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
+
+        const bloque = new Contenido({
+            titulo:     titulo.trim(),
+            contenido:  contenido?.trim() || null,
+            orden:      ordenFinal,
+            id_seccion: id,
+            imagen_url,
+        });
         const [result] = await bloque.save();
         res.status(201).json({ ok: true, id_contenido: result.insertId, orden: ordenFinal });
     } catch (error) {
@@ -271,14 +290,21 @@ export const actualizarContenido = async (req, res) => {
         const { id } = req.params;
         const { titulo, contenido, orden } = req.body;
 
-        const campos = {};
-        if (titulo !== undefined) campos.titulo = titulo.trim();
-        if (contenido !== undefined) campos.contenido = contenido?.trim() || null;
-        if (orden !== undefined) campos.orden = orden;
+        // ── Validación (espejo del frontend: titulo requerido) ──
+        if (titulo !== undefined && !titulo.trim())
+            return res.status(400).json({ ok: false, mensaje: "El título del bloque de contenido no puede estar vacío." });
 
-        if (Object.keys(campos).length === 0) {
+        const campos = {};
+        if (titulo    !== undefined) campos.titulo    = titulo.trim();
+        if (contenido !== undefined) campos.contenido = contenido?.trim() || null;
+        if (orden     !== undefined) campos.orden     = orden;
+
+        // Subir imagen si viene adjunta
+        if (req.file)
+            campos.imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
+
+        if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
-        }
 
         await Contenido.update(id, campos);
         res.json({ ok: true, mensaje: "Contenido actualizado." });
@@ -308,24 +334,24 @@ export const crearPregunta = async (req, res) => {
         const { id } = req.params;
         const { texto_pregunta, opciones = [] } = req.body;
 
-        if (!texto_pregunta?.trim()) {
+        // ── Validaciones (espejo del frontend) ──
+        if (!texto_pregunta?.trim())
             return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta es obligatorio." });
-        }
-        if (opciones.length < 2) {
+        if (opciones.length < 2)
             return res.status(400).json({ ok: false, mensaje: "Debe haber al menos 2 opciones." });
-        }
-        if (!opciones.some((o) => o.es_correcta)) {
+        if (opciones.some((o) => !o.texto_opcion?.trim()))
+            return res.status(400).json({ ok: false, mensaje: "Todas las opciones deben tener texto." });
+        if (!opciones.some((o) => o.es_correcta))
             return res.status(400).json({ ok: false, mensaje: "Debe marcarse al menos una opción correcta." });
-        }
 
-        const pregunta = new PreguntaTest({ texto_pregunta: texto_pregunta.trim(), id_seccion: id });
+        const pregunta    = new PreguntaTest({ texto_pregunta: texto_pregunta.trim(), id_seccion: id });
         const [pregResult] = await pregunta.save();
-        const id_test = pregResult.insertId;
+        const id_test      = pregResult.insertId;
 
         for (const op of opciones) {
             const opcion = new OpcionTest({
                 texto_opcion: op.texto_opcion.trim(),
-                es_correcta: op.es_correcta ? true : false,
+                es_correcta:  Boolean(op.es_correcta),
                 id_test,
             });
             await opcion.save();
@@ -343,16 +369,27 @@ export const actualizarPregunta = async (req, res) => {
         const { id } = req.params;
         const { texto_pregunta, opciones = [] } = req.body;
 
-        if (texto_pregunta) {
-            await PreguntaTest.update(id, { texto_pregunta: texto_pregunta.trim() });
+        // ── Validaciones (espejo del frontend) ──
+        if (texto_pregunta !== undefined && !texto_pregunta.trim())
+            return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta no puede estar vacío." });
+        if (opciones.length > 0) {
+            if (opciones.length < 2)
+                return res.status(400).json({ ok: false, mensaje: "Debe haber al menos 2 opciones." });
+            if (opciones.some((o) => !o.texto_opcion?.trim()))
+                return res.status(400).json({ ok: false, mensaje: "Todas las opciones deben tener texto." });
+            if (!opciones.some((o) => o.es_correcta))
+                return res.status(400).json({ ok: false, mensaje: "Debe marcarse al menos una opción correcta." });
         }
+
+        if (texto_pregunta)
+            await PreguntaTest.update(id, { texto_pregunta: texto_pregunta.trim() });
 
         if (opciones.length > 0) {
             await OpcionTest.delete(id);
             for (const op of opciones) {
                 const opcion = new OpcionTest({
                     texto_opcion: op.texto_opcion.trim(),
-                    es_correcta: op.es_correcta ? true : false,
+                    es_correcta:  Boolean(op.es_correcta),
                     id_test: id,
                 });
                 await opcion.save();
@@ -395,19 +432,16 @@ export const listarDimensiones = async (req, res) => {
 
 export const archivarCurso = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id }     = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario) {
+        if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-        }
 
         const nuevo_estado = !curso.archivado;
-
-        // Si se archiva, se despublica automáticamente
         const campos = { archivado: nuevo_estado };
-        if (nuevo_estado) campos.es_publicado = false;
+        if (nuevo_estado) campos.es_publicado = false; // archivar despublica automáticamente
 
         await Curso.update(id, campos);
         res.json({ ok: true, archivado: nuevo_estado });

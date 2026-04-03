@@ -38,8 +38,6 @@ const STEPS = [
     { id: 3, label: "Publicar",  icon: IoEyeOutline },
 ];
 
-
-
 const uuid                = () => crypto.randomUUID();
 const crearContenidoVacio = () => ({ _id: uuid(), titulo: "", contenido: "", imagen_file: null, imagen_preview: null, imagen_url: "", imagen_crop: null, imagen_cropped_preview: null });
 const crearOpcionVacia    = () => ({ _id: uuid(), texto_opcion: "", es_correcta: false });
@@ -47,11 +45,6 @@ const crearPreguntaVacia  = () => ({ _id: uuid(), texto_pregunta: "", opciones: 
 const crearSeccionVacia   = () => ({ _id: uuid(), titulo_seccion: "", contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false, expanded: true });
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
-
-/* ─────────────────────────────────────────────────────────
-   APPLY CROP
-───────────────────────────────────────────────────────── */
-
 
 /* ─────────────────────────────────────────────────────────
    STEP INDICATOR
@@ -76,7 +69,7 @@ const StepIndicator = ({ paso }) => (
 );
 
 /* ─────────────────────────────────────────────────────────
-   IMAGE ADJUST — portada del curso
+   IMAGE ADJUST
 ───────────────────────────────────────────────────────── */
 const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 220 }) => {
     const containerRef = useRef(null);
@@ -144,7 +137,7 @@ const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 2
 };
 
 /* ─────────────────────────────────────────────────────────
-   IMAGE UPLOAD ZONE — portada del curso
+   IMAGE UPLOAD ZONE
 ───────────────────────────────────────────────────────── */
 const ImageUploadZone = ({ preview, url, zoom, posX, posY, onUpdate, height = 220, label = "Arrastra o haz clic para subir", hint = "JPG, PNG, WEBP — máx. 5 MB" }) => {
     const inputRef = useRef();
@@ -190,15 +183,6 @@ const ImageUploadZone = ({ preview, url, zoom, posX, posY, onUpdate, height = 22
         </div>
     );
 };
-
-/* ═══════════════════════════════════════════════════════════
-   CROP EDITOR — con resize handles en las 4 esquinas
-═══════════════════════════════════════════════════════════ */
-
-
-/* ─────────────────────────────────────────────────────────
-   CONTENT IMAGE UPLOAD
-───────────────────────────────────────────────────────── */
 
 /* ─────────────────────────────────────────────────────────
    VARK SELECTOR
@@ -296,79 +280,150 @@ const StepInfo = ({ datos, onChange, dimensiones, showErrors }) => (
 );
 
 /* ─────────────────────────────────────────────────────────
-   CONTENT BLOCK
+   CONTENT BLOCK — con validaciones visibles
 ───────────────────────────────────────────────────────── */
-const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete }) => (
-    <div className="content-block">
-        <div className="content-block-header">
-            <span className="content-block-num">Bloque {index + 1}</span>
-            {canDelete && <button className="btn-icon-sm danger" onClick={onDelete}><IoCloseOutline size={13} /></button>}
-        </div>
-        <div className="content-block-body">
-            <input className="ec-input ec-input-sm" value={con.titulo}
-                onChange={(e) => onUpdate({ titulo: e.target.value })}
-                placeholder="Título del bloque de contenido" />
-            <textarea className="ec-input ec-textarea ec-textarea-sm" value={con.contenido}
-                onChange={(e) => onUpdate({ contenido: e.target.value })}
-                placeholder="Escribe el contenido aquí…" rows={4} />
-            <div className="content-block-image">
-                <p className="content-image-label">
-                    <IoImageOutline size={12} /> Imagen del bloque <span className="opt">(opcional)</span>
-                </p>
-                <ContentImageUpload con={con} onUpdate={onUpdate} />
-            </div>
-        </div>
-    </div>
-);
-
-/* ─────────────────────────────────────────────────────────
-   QUESTION CARD
-───────────────────────────────────────────────────────── */
-const QuestionCard = ({ preg, index, onUpdate, onDelete }) => (
-    <div className="question-card">
-        <div className="question-header">
-            <span className="question-num">P{index + 1}</span>
-            <button className="btn-icon-sm danger" onClick={onDelete}><IoTrashOutline size={12} /></button>
-        </div>
-        <input className="ec-input ec-input-sm" value={preg.texto_pregunta}
-            onChange={(e) => onUpdate({ ...preg, texto_pregunta: e.target.value })}
-            placeholder="Escribe la pregunta…" />
-        <div className="options-list">
-            {preg.opciones.map((op, oi) => (
-                <div key={op._id} className="option-row">
-                    <button className={`option-radio ${op.es_correcta ? "correct" : ""}`}
-                        onClick={() => onUpdate({ ...preg, opciones: preg.opciones.map((o) => ({ ...o, es_correcta: o._id === op._id })) })}
-                        title="Marcar como correcta">
-                        {op.es_correcta ? <IoCheckmarkCircle size={18} /> : <IoEllipseOutline size={18} />}
+const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors }) => {
+    const tituloVacio = showErrors && !con.titulo.trim();
+    return (
+        <div className={`content-block ${tituloVacio ? "block-has-error" : ""}`}>
+            <div className="content-block-header">
+                <span className="content-block-num">Bloque {index + 1}</span>
+                {canDelete && (
+                    <button className="btn-icon-sm danger" onClick={onDelete}>
+                        <IoCloseOutline size={13} />
                     </button>
-                    <input className="ec-input ec-input-sm option-input" value={op.texto_opcion}
-                        onChange={(e) => onUpdate({ ...preg, opciones: preg.opciones.map((o) => o._id === op._id ? { ...o, texto_opcion: e.target.value } : o) })}
-                        placeholder={`Opción ${oi + 1}`} />
-                    {preg.opciones.length > 2 && (
-                        <button className="btn-icon-sm danger"
-                            onClick={() => onUpdate({ ...preg, opciones: preg.opciones.filter((o) => o._id !== op._id) })}>
-                            <IoCloseOutline size={11} />
-                        </button>
+                )}
+            </div>
+            <div className="content-block-body">
+                <div className="ec-field">
+                    <input
+                        className={`ec-input ec-input-sm ${tituloVacio ? "input-error" : ""}`}
+                        value={con.titulo}
+                        onChange={(e) => onUpdate({ titulo: e.target.value })}
+                        placeholder="Título del bloque de contenido"
+                    />
+                    {tituloVacio && (
+                        <p className="field-error-msg">
+                            <IoAlertCircleOutline size={13} /> El título del bloque es obligatorio
+                        </p>
                     )}
                 </div>
-            ))}
+                <textarea className="ec-input ec-textarea ec-textarea-sm" value={con.contenido}
+                    onChange={(e) => onUpdate({ contenido: e.target.value })}
+                    placeholder="Escribe el contenido aquí…" rows={4} />
+                <div className="content-block-image">
+                    <p className="content-image-label">
+                        <IoImageOutline size={12} /> Imagen del bloque <span className="opt">(opcional)</span>
+                    </p>
+                    <ContentImageUpload con={con} onUpdate={onUpdate} />
+                </div>
+            </div>
         </div>
-        <button className="btn-add-small"
-            onClick={() => onUpdate({ ...preg, opciones: [...preg.opciones, crearOpcionVacia()] })}>
-            <IoAddOutline size={12} /> Añadir opción
-        </button>
-    </div>
-);
+    );
+};
 
 /* ─────────────────────────────────────────────────────────
-   SECTION CARD
+   QUESTION CARD — con validaciones visibles
 ───────────────────────────────────────────────────────── */
-const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
+const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
+    const preguntaVacia   = showErrors && !preg.texto_pregunta.trim();
+    const sinCorrecta     = showErrors && !preg.opciones.some((o) => o.es_correcta);
+
+    return (
+        <div className={`question-card ${preguntaVacia || sinCorrecta ? "block-has-error" : ""}`}>
+            <div className="question-header">
+                <span className="question-num">P{index + 1}</span>
+                <button className="btn-icon-sm danger" onClick={onDelete}>
+                    <IoTrashOutline size={12} />
+                </button>
+            </div>
+
+            <div className="ec-field">
+                <input
+                    className={`ec-input ec-input-sm ${preguntaVacio ? "input-error" : ""}`}
+                    value={preg.texto_pregunta}
+                    onChange={(e) => onUpdate({ ...preg, texto_pregunta: e.target.value })}
+                    placeholder="Escribe la pregunta…"
+                />
+                {preguntaVacia && (
+                    <p className="field-error-msg">
+                        <IoAlertCircleOutline size={13} /> El texto de la pregunta es obligatorio
+                    </p>
+                )}
+            </div>
+
+            <div className="options-list">
+                {preg.opciones.map((op, oi) => {
+                    const opcionVacia = showErrors && !op.texto_opcion.trim();
+                    return (
+                        <div key={op._id} className="option-row">
+                            <button
+                                className={`option-radio ${op.es_correcta ? "correct" : ""}`}
+                                onClick={() => onUpdate({ ...preg, opciones: preg.opciones.map((o) => ({ ...o, es_correcta: o._id === op._id })) })}
+                                title="Marcar como correcta"
+                            >
+                                {op.es_correcta ? <IoCheckmarkCircle size={18} /> : <IoEllipseOutline size={18} />}
+                            </button>
+                            <div style={{ flex: 1 }}>
+                                <input
+                                    className={`ec-input ec-input-sm option-input ${opcionVacia ? "input-error" : ""}`}
+                                    value={op.texto_opcion}
+                                    onChange={(e) => onUpdate({ ...preg, opciones: preg.opciones.map((o) => o._id === op._id ? { ...o, texto_opcion: e.target.value } : o) })}
+                                    placeholder={`Opción ${oi + 1}`}
+                                />
+                                {opcionVacia && (
+                                    <p className="field-error-msg">
+                                        <IoAlertCircleOutline size={13} /> La opción no puede estar vacía
+                                    </p>
+                                )}
+                            </div>
+                            {preg.opciones.length > 2 && (
+                                <button className="btn-icon-sm danger"
+                                    onClick={() => onUpdate({ ...preg, opciones: preg.opciones.filter((o) => o._id !== op._id) })}>
+                                    <IoCloseOutline size={11} />
+                                </button>
+                            )}
+                        </div>
+                    );
+                })}
+            </div>
+
+            {sinCorrecta && (
+                <p className="field-error-msg">
+                    <IoAlertCircleOutline size={13} /> Marca al menos una opción como correcta
+                </p>
+            )}
+
+            <button className="btn-add-small"
+                onClick={() => onUpdate({ ...preg, opciones: [...preg.opciones, crearOpcionVacia()] })}>
+                <IoAddOutline size={12} /> Añadir opción
+            </button>
+        </div>
+    );
+};
+
+/* ─────────────────────────────────────────────────────────
+   SECTION CARD — con validaciones visibles
+───────────────────────────────────────────────────────── */
+const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete, showErrors }) => {
     const updCon  = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
     const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas:  sec.preguntas.map((p)  => p._id === pid ? upd : p) });
 
+    const tituloSeccionVacio = showErrors && !sec.titulo_seccion.trim();
+
+    /* ¿Hay algún error interno en esta sección? (para marcar el header) */
+    const tieneErrores = showErrors && (
+        tituloSeccionVacio ||
+        sec.contenidos.some((c) => !c.titulo.trim()) ||
+        sec.preguntas.some((p) =>
+            !p.texto_pregunta.trim() ||
+            p.opciones.some((o) => !o.texto_opcion.trim()) ||
+            !p.opciones.some((o) => o.es_correcta)
+        )
+    );
+
     return (
-        <div className={`seccion-card ${sec.expanded ? "expanded" : ""}`}>
+        <div className={`seccion-card ${sec.expanded ? "expanded" : ""} ${tieneErrores ? "seccion-has-error" : ""}`}>
             <div className="seccion-card-header" onClick={() => onUpdate({ ...sec, expanded: !sec.expanded })}>
                 <div className="seccion-header-left">
                     <span className="seccion-index">{String(index + 1).padStart(2, "0")}</span>
@@ -383,6 +438,9 @@ const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
                     </div>
                 </div>
                 <div className="seccion-header-right">
+                    {tieneErrores && !sec.expanded && (
+                        <IoAlertCircleOutline size={16} className="seccion-error-icon" />
+                    )}
                     {canDelete && (
                         <button className="btn-icon-sm danger" onClick={(e) => { e.stopPropagation(); onDelete(); }}>
                             <IoTrashOutline size={13} />
@@ -398,19 +456,30 @@ const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
                 <div className="seccion-body">
                     <div className="ec-field">
                         <label className="ec-label">Título de la sección <span className="req">*</span></label>
-                        <input className="ec-input" value={sec.titulo_seccion}
+                        <input
+                            className={`ec-input ${tituloSeccionVacio ? "input-error" : ""}`}
+                            value={sec.titulo_seccion}
                             onChange={(e) => onUpdate({ ...sec, titulo_seccion: e.target.value })}
                             placeholder="Ej. Introducción a los fundamentos"
-                            onClick={(e) => e.stopPropagation()} />
+                            onClick={(e) => e.stopPropagation()}
+                        />
+                        {tituloSeccionVacio && (
+                            <p className="field-error-msg">
+                                <IoAlertCircleOutline size={13} /> El título de la sección es obligatorio
+                            </p>
+                        )}
                     </div>
 
                     <div className="seccion-subgroup">
                         <p className="subgroup-label">Bloques de contenido</p>
                         {sec.contenidos.map((con, ci) => (
-                            <ContentBlock key={con._id} con={con} index={ci}
+                            <ContentBlock
+                                key={con._id} con={con} index={ci}
+                                showErrors={showErrors}
                                 onUpdate={(upd) => updCon(con._id, upd)}
                                 onDelete={() => onUpdate({ ...sec, contenidos: sec.contenidos.filter((c) => c._id !== con._id) })}
-                                canDelete={sec.contenidos.length > 1} />
+                                canDelete={sec.contenidos.length > 1}
+                            />
                         ))}
                         <button className="btn-add-secondary"
                             onClick={() => onUpdate({ ...sec, contenidos: [...sec.contenidos, crearContenidoVacio()] })}>
@@ -432,11 +501,16 @@ const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
                         </div>
                         {sec.mostrarTest && (
                             <div className="quiz-body">
-                                {sec.preguntas.length === 0 && <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>}
+                                {sec.preguntas.length === 0 && (
+                                    <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>
+                                )}
                                 {sec.preguntas.map((preg, pi) => (
-                                    <QuestionCard key={preg._id} preg={preg} index={pi}
+                                    <QuestionCard
+                                        key={preg._id} preg={preg} index={pi}
+                                        showErrors={showErrors}
                                         onUpdate={(upd) => updPreg(preg._id, upd)}
-                                        onDelete={() => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })} />
+                                        onDelete={() => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })}
+                                    />
                                 ))}
                                 <button className="btn-add-secondary"
                                     onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
@@ -454,7 +528,7 @@ const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
 /* ─────────────────────────────────────────────────────────
    STEP 2
 ───────────────────────────────────────────────────────── */
-const StepSecciones = ({ secciones, onChange }) => {
+const StepSecciones = ({ secciones, onChange, showErrors }) => {
     const updSec = (id, sec) => onChange(secciones.map((s) => s._id === id ? sec : s));
     return (
         <div className="ec-panel">
@@ -466,10 +540,13 @@ const StepSecciones = ({ secciones, onChange }) => {
                 </div>
                 <div className="secciones-list">
                     {secciones.map((sec, si) => (
-                        <SeccionCard key={sec._id} sec={sec} index={si}
+                        <SeccionCard
+                            key={sec._id} sec={sec} index={si}
+                            showErrors={showErrors}
                             onUpdate={(upd) => updSec(sec._id, upd)}
                             onDelete={() => onChange(secciones.filter((s) => s._id !== sec._id))}
-                            canDelete={secciones.length > 1} />
+                            canDelete={secciones.length > 1}
+                        />
                     ))}
                 </div>
                 <button className="btn-add-section" onClick={() => onChange([...secciones, crearSeccionVacia()])}>
@@ -645,6 +722,12 @@ export function EditorCurso() {
         setPaso((p) => p + 1);
     };
 
+    /* Al avanzar de paso, resetear showErrors para el nuevo paso */
+    const handlePrev = () => {
+        setShowErrors(false);
+        setPaso((p) => p - 1);
+    };
+
     const buildContenidoPayload = async (con, id_seccion, orden) => {
         if (con.imagen_cropped_file) {
             const fd = new FormData();
@@ -792,7 +875,7 @@ export function EditorCurso() {
             <main className="ec-main">
                 <div className="ec-content-wrap">
                     {paso === 1 && <StepInfo datos={infoCurso} onChange={handleInfoChange} dimensiones={dimensiones} showErrors={showErrors} />}
-                    {paso === 2 && <StepSecciones secciones={secciones} onChange={setSecciones} />}
+                    {paso === 2 && <StepSecciones secciones={secciones} onChange={setSecciones} showErrors={showErrors} />}
                     {paso === 3 && <StepRevision datos={infoCurso} secciones={secciones} />}
                     {error && (
                         <div className="ec-error-banner">
@@ -804,7 +887,7 @@ export function EditorCurso() {
             </main>
 
             <footer className="ec-footer">
-                <button className="ec-foot-btn ec-foot-btn--prev" disabled={paso === 1} onClick={() => setPaso((p) => p - 1)}>
+                <button className="ec-foot-btn ec-foot-btn--prev" disabled={paso === 1} onClick={handlePrev}>
                     Anterior
                 </button>
                 <div className="ec-foot-dots">

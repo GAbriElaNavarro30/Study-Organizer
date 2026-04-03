@@ -1533,3 +1533,34 @@
     .ec-footer   { padding: 0 14px; }
     .ec-foot-btn { padding: 8px 12px; font-size: 13px; }
 }
+
+/* ── Errores en sección ── */
+.seccion-card.seccion-has-error {
+    border-color: #FECACA;
+}
+
+.seccion-card.seccion-has-error .seccion-card-header {
+    background: #FFF5F5;
+}
+
+.seccion-error-icon {
+    color: #DC2626;
+    flex-shrink: 0;
+}
+
+/* ── Errores en bloque de contenido ── */
+.content-block.block-has-error {
+    border-color: #FECACA;
+    background: #FFFAFA;
+}
+
+/* ── Errores en pregunta ── */
+.question-card.block-has-error {
+    border-color: #FECACA;
+    background: #FFFAFA;
+}
+
+/* ── Asegurar que ec-field envuelva correctamente ── */
+.content-block-body .ec-field {
+    margin-bottom: 0;
+}

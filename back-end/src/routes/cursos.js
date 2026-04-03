@@ -9,7 +9,7 @@ import {
     actualizarCurso,
     togglePublicarCurso,
     eliminarCurso,
-    archivarCurso,          // ← nueva
+    archivarCurso,
     crearSeccion,
     actualizarSeccion,
     eliminarSeccion,
@@ -35,10 +35,10 @@ router.get("/dimensiones", listarDimensiones);
 // ─── Cursos ────────────────────────────────────────────────
 router.get    ("/cursos",                    listarCursos);
 router.get    ("/cursos/:id",                obtenerCurso);
-router.post   ("/cursos",     upload.single("foto"), crearCurso);
-router.put    ("/cursos/:id", upload.single("foto"), actualizarCurso);
+router.post   ("/cursos",                    upload.single("foto"), crearCurso);
+router.put    ("/cursos/:id",                upload.single("foto"), actualizarCurso);
 router.patch  ("/cursos/:id/publicar",       togglePublicarCurso);
-router.patch  ("/cursos/:id/archivar",       archivarCurso);       // ← nueva
+router.patch  ("/cursos/:id/archivar",       archivarCurso);
 router.delete ("/cursos/:id",                eliminarCurso);
 
 // ─── Secciones ─────────────────────────────────────────────
@@ -47,8 +47,9 @@ router.put    ("/secciones/:id",             actualizarSeccion);
 router.delete ("/secciones/:id",             eliminarSeccion);
 
 // ─── Contenido ─────────────────────────────────────────────
-router.post   ("/secciones/:id/contenidos",  crearContenido);
-router.put    ("/contenidos/:id",            actualizarContenido);
+// upload.single("imagen") en ambos verbos para que req.file esté disponible
+router.post   ("/secciones/:id/contenidos",  upload.single("imagen"), crearContenido);
+router.put    ("/contenidos/:id",            upload.single("imagen"), actualizarContenido);
 router.delete ("/contenidos/:id",            eliminarContenido);
 
 // ─── Test ──────────────────────────────────────────────────
