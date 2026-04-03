@@ -1,4 +1,4 @@
-import "../styles/preguntasFrecuentes.css";
+import "../styles/Preguntasfrecuentes.css";
 import { FaChevronDown } from "react-icons/fa";
 import { usePreguntasFrecuentes } from "../hooks/usePreguntasFrecuentes";
 import { Link } from "react-router-dom";
