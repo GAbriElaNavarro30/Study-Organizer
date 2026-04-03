@@ -10,39 +10,40 @@ import {
 import api from "../services/api";
 import "../styles/EditorCurso.css";
 import { ContentImageUpload } from "../components/ContentImageUpload_new";
+import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────────────────────── */
 const VARK_OPTIONS = [
-    { value: "V",    label: "Visual",                       letter: "V",    accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "A",    label: "Auditivo",                     letter: "A",    accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "R",    label: "Lectura / Escritura",          letter: "R",    accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "K",    label: "Kinestésico",                  letter: "K",    accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "VA",   label: "Visual-Auditivo",              letter: "VA",   accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "VR",   label: "Visual-Lectura",               letter: "VR",   accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "VK",   label: "Visual-Kinestésico",           letter: "VK",   accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "AR",   label: "Auditivo-Lectura",             letter: "AR",   accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "AK",   label: "Auditivo-Kinestésico",         letter: "AK",   accent: "#DC2626", bg: "#FEF2F2", border: "#FECACA" },
-    { value: "RK",   label: "Lectura-Kinestésico",          letter: "RK",   accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "VAR",  label: "Visual-Auditivo-Lectura",      letter: "VAR",  accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "VAK",  label: "Visual-Auditivo-Kinestésico",  letter: "VAK",  accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "VRK",  label: "Visual-Lectura-Kinestésico",   letter: "VRK",  accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "ARK",  label: "Auditivo-Lectura-Kinestésico", letter: "ARK",  accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "VARK", label: "Multimodal",                   letter: "★",    accent: "#0F172A", bg: "#F8FAFC", border: "#CBD5E1" },
+    { value: "V", label: "Visual", letter: "V", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "A", label: "Auditivo", letter: "A", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "R", label: "Lectura / Escritura", letter: "R", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "K", label: "Kinestésico", letter: "K", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "VA", label: "Visual-Auditivo", letter: "VA", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "VR", label: "Visual-Lectura", letter: "VR", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "VK", label: "Visual-Kinestésico", letter: "VK", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "AR", label: "Auditivo-Lectura", letter: "AR", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "AK", label: "Auditivo-Kinestésico", letter: "AK", accent: "#DC2626", bg: "#FEF2F2", border: "#FECACA" },
+    { value: "RK", label: "Lectura-Kinestésico", letter: "RK", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "VAR", label: "Visual-Auditivo-Lectura", letter: "VAR", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "VAK", label: "Visual-Auditivo-Kinestésico", letter: "VAK", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "VRK", label: "Visual-Lectura-Kinestésico", letter: "VRK", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "ARK", label: "Auditivo-Lectura-Kinestésico", letter: "ARK", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "VARK", label: "Multimodal", letter: "★", accent: "#0F172A", bg: "#F8FAFC", border: "#CBD5E1" },
 ];
 
 const STEPS = [
-    { id: 1, label: "Curso",     icon: IoBookOutline },
+    { id: 1, label: "Curso", icon: IoBookOutline },
     { id: 2, label: "Contenido", icon: IoLayersOutline },
-    { id: 3, label: "Publicar",  icon: IoEyeOutline },
+    { id: 3, label: "Publicar", icon: IoEyeOutline },
 ];
 
-const uuid                = () => crypto.randomUUID();
+const uuid = () => crypto.randomUUID();
 const crearContenidoVacio = () => ({ _id: uuid(), titulo: "", contenido: "", imagen_file: null, imagen_preview: null, imagen_url: "", imagen_crop: null, imagen_cropped_preview: null });
-const crearOpcionVacia    = () => ({ _id: uuid(), texto_opcion: "", es_correcta: false });
-const crearPreguntaVacia  = () => ({ _id: uuid(), texto_pregunta: "", opciones: [crearOpcionVacia(), crearOpcionVacia()] });
-const crearSeccionVacia   = () => ({ _id: uuid(), titulo_seccion: "", contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false, expanded: true });
+const crearOpcionVacia = () => ({ _id: uuid(), texto_opcion: "", es_correcta: false });
+const crearPreguntaVacia = () => ({ _id: uuid(), texto_pregunta: "", opciones: [crearOpcionVacia(), crearOpcionVacia()] });
+const crearSeccionVacia = () => ({ _id: uuid(), titulo_seccion: "", contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false, expanded: true });
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
@@ -52,8 +53,8 @@ const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 const StepIndicator = ({ paso }) => (
     <div className="ec-steps">
         {STEPS.map((s, i) => {
-            const Icon   = s.icon;
-            const done   = s.id < paso;
+            const Icon = s.icon;
+            const done = s.id < paso;
             const active = s.id === paso;
             return (
                 <div key={s.id} className="ec-step-item">
@@ -73,8 +74,8 @@ const StepIndicator = ({ paso }) => (
 ───────────────────────────────────────────────────────── */
 const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 220 }) => {
     const containerRef = useRef(null);
-    const dragging     = useRef(false);
-    const last         = useRef({ x: 0, y: 0 });
+    const dragging = useRef(false);
+    const last = useRef({ x: 0, y: 0 });
 
     const startDrag = (e) => {
         dragging.current = true;
@@ -225,12 +226,12 @@ const StepInfo = ({ datos, onChange, dimensiones, showErrors }) => (
                 zoom={datos.foto_zoom} posX={datos.foto_pos_x} posY={datos.foto_pos_y}
                 height={260} label="Sube la imagen de portada" hint="Ajusta con zoom y arrastra para recortar"
                 onUpdate={(u) => {
-                    if (u.imagen_file    !== undefined) onChange("foto_file",    u.imagen_file);
+                    if (u.imagen_file !== undefined) onChange("foto_file", u.imagen_file);
                     if (u.imagen_preview !== undefined) onChange("foto_preview", u.imagen_preview);
-                    if (u.imagen_url     !== undefined) onChange("foto_url",     u.imagen_url);
-                    if (u.imagen_zoom    !== undefined) onChange("foto_zoom",    u.imagen_zoom);
-                    if (u.imagen_pos_x   !== undefined) onChange("foto_pos_x",   u.imagen_pos_x);
-                    if (u.imagen_pos_y   !== undefined) onChange("foto_pos_y",   u.imagen_pos_y);
+                    if (u.imagen_url !== undefined) onChange("foto_url", u.imagen_url);
+                    if (u.imagen_zoom !== undefined) onChange("foto_zoom", u.imagen_zoom);
+                    if (u.imagen_pos_x !== undefined) onChange("foto_pos_x", u.imagen_pos_x);
+                    if (u.imagen_pos_y !== undefined) onChange("foto_pos_y", u.imagen_pos_y);
                 }}
             />
         </div>
@@ -326,8 +327,8 @@ const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors })
    QUESTION CARD — con validaciones visibles
 ───────────────────────────────────────────────────────── */
 const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
-    const preguntaVacia   = showErrors && !preg.texto_pregunta.trim();
-    const sinCorrecta     = showErrors && !preg.opciones.some((o) => o.es_correcta);
+    const preguntaVacia = showErrors && !preg.texto_pregunta.trim();
+    const sinCorrecta = showErrors && !preg.opciones.some((o) => o.es_correcta);
 
     return (
         <div className={`question-card ${preguntaVacia || sinCorrecta ? "block-has-error" : ""}`}>
@@ -340,7 +341,7 @@ const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
 
             <div className="ec-field">
                 <input
-                    className={`ec-input ec-input-sm ${preguntaVacio ? "input-error" : ""}`}
+                    className={`ec-input ec-input-sm ${preguntaVacia ? "input-error" : ""}`}
                     value={preg.texto_pregunta}
                     onChange={(e) => onUpdate({ ...preg, texto_pregunta: e.target.value })}
                     placeholder="Escribe la pregunta…"
@@ -406,12 +407,11 @@ const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
    SECTION CARD — con validaciones visibles
 ───────────────────────────────────────────────────────── */
 const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete, showErrors }) => {
-    const updCon  = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
-    const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas:  sec.preguntas.map((p)  => p._id === pid ? upd : p) });
+    const updCon = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
+    const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas: sec.preguntas.map((p) => p._id === pid ? upd : p) });
 
     const tituloSeccionVacio = showErrors && !sec.titulo_seccion.trim();
 
-    /* ¿Hay algún error interno en esta sección? (para marcar el header) */
     const tieneErrores = showErrors && (
         tituloSeccionVacio ||
         sec.contenidos.some((c) => !c.titulo.trim()) ||
@@ -624,18 +624,23 @@ const StepRevision = ({ datos, secciones }) => {
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export function EditorCurso() {
-    const navigate       = useNavigate();
+    const navigate = useNavigate();
     const [searchParams] = useSearchParams();
-    const id             = searchParams.get("id");
-    const modoEdicion    = Boolean(id);
+    const id = searchParams.get("id");
+    const modoEdicion = Boolean(id);
 
-    const [paso,                setPaso]                = useState(1);
-    const [guardando,           setGuardando]           = useState(false);
-    const [cargando,            setCargando]            = useState(modoEdicion);
-    const [error,               setError]               = useState(null);
-    const [showErrors,          setShowErrors]          = useState(false);
-    const [dimensiones,         setDimensiones]         = useState([]);
+    const [paso, setPaso] = useState(1);
+    const [guardando, setGuardando] = useState(false);
+    const [cargando, setCargando] = useState(modoEdicion);
+    const [error, setError] = useState(null);
+    const [showErrors, setShowErrors] = useState(false);
+    const [dimensiones, setDimensiones] = useState([]);
     const [seccionesOriginales, setSeccionesOriginales] = useState([]);
+    const [modalSalirOpen, setModalSalirOpen] = useState(false);
+    const [isDirty, setIsDirty] = useState(false);
+
+    // Ref para saber cuándo ya terminó la carga inicial y los cambios son del usuario
+    const initialLoadDone = useRef(false);
 
     const [infoCurso, setInfoCurso] = useState({
         titulo: "", descripcion: "", perfil_vark: "", id_dimension: "",
@@ -643,6 +648,22 @@ export function EditorCurso() {
         foto_zoom: 1, foto_pos_x: 50, foto_pos_y: 50,
     });
     const [secciones, setSecciones] = useState([crearSeccionVacia()]);
+
+    // En modo creación, el ref se activa de inmediato (no hay carga)
+    useEffect(() => {
+        if (!modoEdicion) {
+            setTimeout(() => { initialLoadDone.current = true; }, 0);
+        }
+    }, []);
+
+    // Marcar dirty solo cuando el usuario realmente cambia algo
+    useEffect(() => {
+        if (initialLoadDone.current) setIsDirty(true);
+    }, [infoCurso]);
+
+    useEffect(() => {
+        if (initialLoadDone.current) setIsDirty(true);
+    }, [secciones]);
 
     useEffect(() => {
         api.get("/cursos/dimensiones")
@@ -696,11 +717,18 @@ export function EditorCurso() {
                 setError(err.response?.data?.mensaje || err.message);
             } finally {
                 setCargando(false);
+                // Activar el ref DESPUÉS de que React procese los setState anteriores
+                setTimeout(() => { initialLoadDone.current = true; }, 0);
             }
         })();
     }, [id, modoEdicion]);
 
     const handleInfoChange = (campo, valor) => setInfoCurso((p) => ({ ...p, [campo]: valor }));
+
+    const handleSalir = () => {
+        if (isDirty) { setModalSalirOpen(true); return; }
+        navigate("/cursos-tutor");
+    };
 
     const canAdvance = () => {
         if (paso === 1) return infoCurso.titulo.trim().length > 0 && infoCurso.perfil_vark.length > 0;
@@ -722,7 +750,6 @@ export function EditorCurso() {
         setPaso((p) => p + 1);
     };
 
-    /* Al avanzar de paso, resetear showErrors para el nuevo paso */
     const handlePrev = () => {
         setShowErrors(false);
         setPaso((p) => p - 1);
@@ -731,10 +758,10 @@ export function EditorCurso() {
     const buildContenidoPayload = async (con, id_seccion, orden) => {
         if (con.imagen_cropped_file) {
             const fd = new FormData();
-            fd.append("titulo",    con.titulo);
+            fd.append("titulo", con.titulo);
             fd.append("contenido", con.contenido);
-            fd.append("orden",     orden);
-            fd.append("imagen",    con.imagen_cropped_file, "imagen_recortada.jpg");
+            fd.append("orden", orden);
+            fd.append("imagen", con.imagen_cropped_file, "imagen_recortada.jpg");
             return { useFormData: true, fd };
         }
         return {
@@ -746,10 +773,10 @@ export function EditorCurso() {
     const handleCrear = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
-        if (infoCurso.descripcion)  fd.append("descripcion",  infoCurso.descripcion.trim());
-        if (infoCurso.perfil_vark)  fd.append("perfil_vark",  infoCurso.perfil_vark);
+        if (infoCurso.descripcion) fd.append("descripcion", infoCurso.descripcion.trim());
+        if (infoCurso.perfil_vark) fd.append("perfil_vark", infoCurso.perfil_vark);
         if (infoCurso.id_dimension) fd.append("id_dimension", infoCurso.id_dimension);
-        if (infoCurso.foto_file)    fd.append("foto",         infoCurso.foto_file);
+        if (infoCurso.foto_file) fd.append("foto", infoCurso.foto_file);
         const { data: dc } = await api.post("/cursos/cursos", fd);
         if (!dc.ok) throw new Error(dc.mensaje);
         const id_curso = dc.id_curso;
@@ -761,7 +788,7 @@ export function EditorCurso() {
             const id_seccion = ds.id_seccion;
 
             for (let j = 0; j < sec.contenidos.length; j++) {
-                const con     = sec.contenidos[j];
+                const con = sec.contenidos[j];
                 const payload = await buildContenidoPayload(con, id_seccion, j + 1);
                 const { data: dcon } = payload.useFormData
                     ? await api.post(`/cursos/secciones/${id_seccion}/contenidos`, payload.fd)
@@ -781,9 +808,9 @@ export function EditorCurso() {
 
     const handleEditar = async () => {
         const fd = new FormData();
-        fd.append("titulo",       infoCurso.titulo.trim());
-        fd.append("descripcion",  infoCurso.descripcion?.trim() || "");
-        fd.append("perfil_vark",  infoCurso.perfil_vark || "");
+        fd.append("titulo", infoCurso.titulo.trim());
+        fd.append("descripcion", infoCurso.descripcion?.trim() || "");
+        fd.append("perfil_vark", infoCurso.perfil_vark || "");
         fd.append("id_dimension", infoCurso.id_dimension || "");
         if (infoCurso.foto_file) fd.append("foto", infoCurso.foto_file);
         const { data: dc } = await api.put(`/cursos/cursos/${id}`, fd);
@@ -805,13 +832,13 @@ export function EditorCurso() {
                 id_seccion = ds.id_seccion;
             }
 
-            const so   = seccionesOriginales.find((s) => s.id_seccion === sec.id_seccion);
+            const so = seccionesOriginales.find((s) => s.id_seccion === sec.id_seccion);
             const cAct = sec.contenidos.filter((c) => c.id_contenido).map((c) => c.id_contenido);
             for (const co of so?.contenidos || [])
                 if (!cAct.includes(co.id_contenido)) await api.delete(`/cursos/contenidos/${co.id_contenido}`);
 
             for (let j = 0; j < sec.contenidos.length; j++) {
-                const con     = sec.contenidos[j];
+                const con = sec.contenidos[j];
                 const payload = await buildContenidoPayload(con, id_seccion, j + 1);
                 if (con.id_contenido) {
                     payload.useFormData
@@ -850,6 +877,7 @@ export function EditorCurso() {
         setGuardando(true); setError(null);
         try {
             modoEdicion ? await handleEditar() : await handleCrear();
+            setIsDirty(false);
             navigate("/cursos-tutor");
         } catch (err) {
             setError(err.response?.data?.mensaje || err.message || "Ocurrió un error al guardar.");
@@ -865,8 +893,8 @@ export function EditorCurso() {
     return (
         <div className="ec-root">
             <header className="ec-topbar">
-                <button className="ec-back-btn" onClick={() => navigate("/cursos-tutor")}>
-                    <IoArrowBackOutline size={16} /><span>Mis cursos</span>
+                <button className="ec-back-btn" onClick={handleSalir}>
+                    <IoArrowBackOutline size={16} /><span>Volver</span>
                 </button>
                 <div className="ec-topbar-center"><StepIndicator paso={paso} /></div>
                 <div className="ec-topbar-title">{modoEdicion ? "Editando curso" : "Nuevo curso"}</div>
@@ -905,6 +933,12 @@ export function EditorCurso() {
                     </button>
                 }
             </footer>
+
+            <ModalConfirmarSalir
+                isOpen={modalSalirOpen}
+                onCancel={() => setModalSalirOpen(false)}
+                onConfirm={() => navigate("/cursos-tutor")}
+            />
         </div>
     );
 }

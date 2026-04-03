@@ -1,5 +1,5 @@
 import "../styles/modal-confirmar.css";
-
+ 
 export function ModalConfirmarSalir({ isOpen, onCancel, onConfirm }) {
     if (!isOpen) return null;
 

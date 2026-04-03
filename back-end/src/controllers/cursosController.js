@@ -1,10 +1,10 @@
-import { Curso }         from "../models/Curso.js";
-import { SeccionCurso }  from "../models/SeccionCurso.js";
-import { Contenido }     from "../models/Contenido.js";
-import { PreguntaTest }  from "../models/PreguntaTest.js";
-import { OpcionTest }    from "../models/OpcionTest.js";
-import { db }            from "../config/db.js";
-import cloudinary        from "../config/cloudinary.js";
+import { Curso } from "../models/Curso.js";
+import { SeccionCurso } from "../models/SeccionCurso.js";
+import { Contenido } from "../models/Contenido.js";
+import { PreguntaTest } from "../models/PreguntaTest.js";
+import { OpcionTest } from "../models/OpcionTest.js";
+import { db } from "../config/db.js";
+import cloudinary from "../config/cloudinary.js";
 
 // ─────────────────────────────────────────────────────────────
 // Helper
@@ -50,7 +50,7 @@ export const listarCursos = async (req, res) => {
 
 export const obtenerCurso = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
@@ -60,7 +60,7 @@ export const obtenerCurso = async (req, res) => {
         const secciones = await SeccionCurso.getByCurso(id);
         for (const seccion of secciones) {
             seccion.contenidos = await Contenido.getBySeccion(seccion.id_seccion);
-            seccion.preguntas  = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
+            seccion.preguntas = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
         }
 
         curso.secciones = secciones;
@@ -86,10 +86,10 @@ export const crearCurso = async (req, res) => {
         if (req.file) foto = await subirImagenCloudinary(req.file.buffer);
 
         const curso = new Curso({
-            titulo:       titulo.trim(),
-            descripcion:  descripcion?.trim() || null,
+            titulo: titulo.trim(),
+            descripcion: descripcion?.trim() || null,
             foto,
-            perfil_vark:  perfil_vark || null,
+            perfil_vark: perfil_vark || null,
             id_dimension: id_dimension || null,
             id_usuario,
         });
@@ -104,7 +104,7 @@ export const crearCurso = async (req, res) => {
 
 export const actualizarCurso = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
         const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
 
@@ -119,9 +119,9 @@ export const actualizarCurso = async (req, res) => {
             return res.status(400).json({ ok: false, mensaje: "El perfil VARK es obligatorio." });
 
         const campos = {};
-        if (titulo      !== undefined) campos.titulo       = titulo.trim();
-        if (descripcion !== undefined) campos.descripcion  = descripcion?.trim() || null;
-        if (perfil_vark !== undefined) campos.perfil_vark  = perfil_vark || null;
+        if (titulo !== undefined) campos.titulo = titulo.trim();
+        if (descripcion !== undefined) campos.descripcion = descripcion?.trim() || null;
+        if (perfil_vark !== undefined) campos.perfil_vark = perfil_vark || null;
         if (id_dimension !== undefined) campos.id_dimension = id_dimension || null;
         if (req.file) campos.foto = await subirImagenCloudinary(req.file.buffer);
 
@@ -138,7 +138,7 @@ export const actualizarCurso = async (req, res) => {
 
 export const togglePublicarCurso = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
@@ -156,7 +156,7 @@ export const togglePublicarCurso = async (req, res) => {
 
 export const eliminarCurso = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
@@ -177,7 +177,7 @@ export const eliminarCurso = async (req, res) => {
 
 export const crearSeccion = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
         const { titulo_seccion, orden } = req.body;
 
@@ -221,7 +221,7 @@ export const actualizarSeccion = async (req, res) => {
 
         const campos = {};
         if (titulo_seccion !== undefined) campos.titulo_seccion = titulo_seccion.trim();
-        if (orden          !== undefined) campos.orden          = orden;
+        if (orden !== undefined) campos.orden = orden;
 
         if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
@@ -271,9 +271,9 @@ export const crearContenido = async (req, res) => {
         if (req.file) imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
 
         const bloque = new Contenido({
-            titulo:     titulo.trim(),
-            contenido:  contenido?.trim() || null,
-            orden:      ordenFinal,
+            titulo: titulo.trim(),
+            contenido: contenido?.trim() || null,
+            orden: ordenFinal,
             id_seccion: id,
             imagen_url,
         });
@@ -295,9 +295,9 @@ export const actualizarContenido = async (req, res) => {
             return res.status(400).json({ ok: false, mensaje: "El título del bloque de contenido no puede estar vacío." });
 
         const campos = {};
-        if (titulo    !== undefined) campos.titulo    = titulo.trim();
+        if (titulo !== undefined) campos.titulo = titulo.trim();
         if (contenido !== undefined) campos.contenido = contenido?.trim() || null;
-        if (orden     !== undefined) campos.orden     = orden;
+        if (orden !== undefined) campos.orden = orden;
 
         // Subir imagen si viene adjunta
         if (req.file)
@@ -344,14 +344,14 @@ export const crearPregunta = async (req, res) => {
         if (!opciones.some((o) => o.es_correcta))
             return res.status(400).json({ ok: false, mensaje: "Debe marcarse al menos una opción correcta." });
 
-        const pregunta    = new PreguntaTest({ texto_pregunta: texto_pregunta.trim(), id_seccion: id });
+        const pregunta = new PreguntaTest({ texto_pregunta: texto_pregunta.trim(), id_seccion: id });
         const [pregResult] = await pregunta.save();
-        const id_test      = pregResult.insertId;
+        const id_test = pregResult.insertId;
 
         for (const op of opciones) {
             const opcion = new OpcionTest({
                 texto_opcion: op.texto_opcion.trim(),
-                es_correcta:  Boolean(op.es_correcta),
+                es_correcta: Boolean(op.es_correcta),
                 id_test,
             });
             await opcion.save();
@@ -389,7 +389,7 @@ export const actualizarPregunta = async (req, res) => {
             for (const op of opciones) {
                 const opcion = new OpcionTest({
                     texto_opcion: op.texto_opcion.trim(),
-                    es_correcta:  Boolean(op.es_correcta),
+                    es_correcta: Boolean(op.es_correcta),
                     id_test: id,
                 });
                 await opcion.save();
@@ -432,7 +432,7 @@ export const listarDimensiones = async (req, res) => {
 
 export const archivarCurso = async (req, res) => {
     try {
-        const { id }     = req.params;
+        const { id } = req.params;
         const id_usuario = req.usuario.id;
 
         const curso = await Curso.getById(id);
@@ -448,5 +448,109 @@ export const archivarCurso = async (req, res) => {
     } catch (error) {
         console.error("archivarCurso:", error);
         res.status(500).json({ ok: false, mensaje: "Error al archivar el curso." });
+    }
+};
+
+
+export const listarCursosRecomendados = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { perfil } = req.query;
+
+        if (!perfil)
+            return res.status(400).json({ ok: false, mensaje: "El perfil VARK es requerido." });
+
+        // Obtener el perfil guardado del estudiante si no se pasa por query
+        // Generar todas las combinaciones que contienen las letras del perfil
+        const letras = perfil.toUpperCase().split("").filter(l => ["V", "A", "R", "K"].includes(l));
+
+        if (letras.length === 0)
+            return res.status(400).json({ ok: false, mensaje: "Perfil VARK inválido." });
+
+        // Buscar cursos cuyo perfil_vark tenga al menos una letra en común con el perfil del estudiante
+        // Ordenados por coincidencia exacta primero, luego parcial
+        const placeholders = letras.map(() => "perfil_vark LIKE ?").join(" OR ");
+        const likeParams = letras.map(l => `%${l}%`);
+
+        const [rows] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.fecha_creacion,
+                d.nombre_dimension,
+                u.nombre AS nombre_tutor,
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+             FROM Curso c
+             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+             WHERE c.es_publicado = 1
+               AND c.archivado   = 0
+               AND c.id_usuario  != ?
+               AND (${placeholders})
+             ORDER BY
+               CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END,
+               c.fecha_creacion DESC
+             LIMIT 20`,
+            [id_usuario, ...likeParams, perfil.toUpperCase()]
+        );
+
+        res.json({ ok: true, cursos: rows });
+    } catch (error) {
+        console.error("listarCursosRecomendados:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener cursos recomendados." });
+    }
+};
+
+
+// cursosController.js — agregar al final
+
+export const listarCursosPorDimension = async (req, res) => {
+    try {
+        const { perfil, dimensiones } = req.query;
+
+        if (!perfil)
+            return res.status(400).json({ ok: false, mensaje: "El perfil VARK es requerido." });
+
+        const letras = perfil.toUpperCase().split("").filter(l => ["V", "A", "R", "K"].includes(l));
+        if (letras.length === 0)
+            return res.status(400).json({ ok: false, mensaje: "Perfil VARK inválido." });
+
+        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
+        const perfilParams = letras.map(l => `%${l}%`);
+
+        let dimFilter = "";
+        let dimParams = [];
+        if (dimensiones) {
+            const ids = dimensiones.split(",").map(Number).filter(Boolean);
+            if (ids.length > 0) {
+                dimFilter = `AND c.id_dimension IN (${ids.map(() => "?").join(",")})`;
+                dimParams = ids;
+            }
+        }
+
+        const [rows] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.fecha_creacion,
+                d.nombre_dimension, d.id_dimension,
+                u.nombre AS nombre_tutor,
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+             FROM Curso c
+             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+             WHERE c.es_publicado = 1
+               AND c.archivado   = 0
+               AND (${perfilPlaceholders})
+               ${dimFilter}
+             ORDER BY
+               CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END,
+               c.fecha_creacion DESC
+             LIMIT 12`,
+            [...perfilParams, ...dimParams, perfil.toUpperCase()]
+        );
+
+        res.json({ ok: true, cursos: rows });
+    } catch (error) {
+        console.error("listarCursosPorDimension:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener cursos recomendados." });
     }
 };

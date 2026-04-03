@@ -28,11 +28,12 @@ export const PERFIL_CONFIG = {
 };
 
 export const NAV_SECTIONS = [
-    { label: "Tu perfil", id: "sec-perfil" },
-    { label: "Puntajes", id: "sec-puntajes" },
-    { label: "Desglose", id: "sec-desglose" },
+    { label: "Tu perfil",       id: "sec-perfil" },
+    { label: "Puntajes",        id: "sec-puntajes" },
+    { label: "Desglose",        id: "sec-desglose" },
     { label: "Recomendaciones", id: "sec-recomendaciones" },
-    { label: "Historial", id: "sec-historial" },
+    { label: "Cursos para ti",  id: "sec-cursos" },
+    { label: "Historial",       id: "sec-historial" },
 ];
 
 // ─── HELPERS ──────────────────────────────────────────────────────────────────
@@ -57,12 +58,15 @@ export function useResultadosTestEA() {
     const [activeSection, setActiveSection] = useState(0);
     const [historial, setHistorial] = useState([]);
     const [cargandoHistorial, setCargandoHistorial] = useState(true);
+    const [cursosRecomendados, setCursosRecomendados] = useState([]);
+    const [cargandoCursosRecomendados, setCargandoCursosRecomendados] = useState(false);
 
     // ── Cargar datos ──
     useEffect(() => {
         // Caso 1: vienen por navigate() con state (justo después de terminar el test)
         if (location.state?.perfil_dominante) {
             setDatos(location.state);
+            setCursosRecomendados(location.state.cursos_recomendados || []);
             setCargando(false);
             setTimeout(() => setAnimado(true), 120);
             return;
@@ -79,6 +83,7 @@ export function useResultadosTestEA() {
                     porcentajes: data.porcentajes,
                     recomendaciones: data.recomendaciones || {},
                 });
+                setCursosRecomendados(data.cursos_recomendados || []);
             } catch {
                 setDatos(null);
             } finally {
@@ -159,6 +164,8 @@ export function useResultadosTestEA() {
         activeSection,
         historial,
         cargandoHistorial,
+        cursosRecomendados,
+        cargandoCursosRecomendados,
 
         // Derivados (null si no hay datos)
         ...derivados,

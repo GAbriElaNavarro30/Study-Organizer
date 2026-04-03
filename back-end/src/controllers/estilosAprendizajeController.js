@@ -4,6 +4,7 @@
 import axios from "axios";
 
 // modelos
+import { db } from "../config/db.js";
 import { PreguntaEA } from "../models/PreguntaEA.js";
 import { IntentoTest } from "../models/IntentoTest.js";
 import { RespuestasTestVARK } from "../models/RespuestasTestVARK.js";
@@ -83,31 +84,24 @@ export async function responder(req, res) {
 ========================================================================= */
 export async function obtenerResultado(req, res) {
     try {
-
-        // 1. trae las respuestas del intento de la bd
         const { id_intento } = req.query;
+        const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        if (!id_intento) {
+        if (!id_intento)
             return res.status(400).json({ error: "Falta el id_intento" });
-        }
 
-        // respuestas del intento
         const respuestas = await RespuestasTestVARK.getByIntento(id_intento);
 
-        if (!respuestas || respuestas.length === 0) {
+        if (!respuestas || respuestas.length === 0)
             return res.status(404).json({ mensaje: "No se encontraron respuestas del intento" });
-        }
 
-        if (respuestas.length < 16) {
+        if (respuestas.length < 16)
             return res.status(404).json({ mensaje: "No se encontraron las 16 respuestas del intento" });
-        }
 
-        // 2. extrae solo las categorias de las respuestas del intento y los manda al sistema experto
+        // 1. Llama a Python
         const categorias = respuestas.map(r => r.categoria);
-
         const pythonRes = await axios.post(`${PYTHON_URL}/ea/analizar`, { categorias });
 
-        // python devuelve:
         const {
             puntaje_v, puntaje_a, puntaje_r, puntaje_k,
             porcentaje_v, porcentaje_a, porcentaje_r, porcentaje_k,
@@ -116,25 +110,47 @@ export async function obtenerResultado(req, res) {
             recomendaciones,
         } = pythonRes.data;
 
-        // 3. guarda resultado en la bd - ver resultados
+        // 2. Guarda resultado en BD
         await new ResultadoTestEA({
-            puntaje_v,
-            puntaje_a,
-            puntaje_r,
-            puntaje_k,
-            perfil_dominante,
-            nombre_perfil,
-            id_intento,
+            puntaje_v, puntaje_a, puntaje_r, puntaje_k,
+            perfil_dominante, nombre_perfil, id_intento,
         }).save();
 
-        // 4. manda al frontend lo siguiente:
+        // 3. Consulta cursos recomendados por perfil VARK
+        const letras = perfil_dominante.split("").filter(l => ["V", "A", "R", "K"].includes(l));
+        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
+        const perfilParams = letras.map(l => `%${l}%`);
+
+        // 3. Consulta cursos recomendados por perfil VARK exacto
+        const [cursos] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.fecha_creacion,
+                d.nombre_dimension,
+                u.nombre AS nombre_tutor,
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+            FROM Curso c
+            LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+            LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+            WHERE c.es_publicado = 1
+            AND c.archivado   = 0
+            AND c.id_usuario  != ?
+            AND c.perfil_vark  = ?
+            ORDER BY c.fecha_creacion DESC
+            LIMIT 12`,
+            [id_usuario, perfil_dominante]
+        );
+
+        // 4. Devuelve todo al frontend
         res.json({
             perfil_dominante,
             nombre_perfil,
             puntajes: { v: puntaje_v, a: puntaje_a, r: puntaje_r, k: puntaje_k },
             porcentajes: { v: porcentaje_v, a: porcentaje_a, r: porcentaje_r, k: porcentaje_k },
             recomendaciones,
+            cursos_recomendados: cursos,
         });
+
     } catch (error) {
         console.error("Error al obtener resultado VARK:", error);
         res.status(500).json({ error: "Error interno del servidor" });
@@ -146,21 +162,15 @@ export async function obtenerResultado(req, res) {
 ============================================================= */
 export async function obtenerResultadoGuardado(req, res) {
     try {
-        // 1. obtiene id_usuario desde el token
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
-        // 2. obtiene el ultimo resultado del usuario
         const resultado = await ResultadoTestEA.getUltimoByUsuario(id_usuario);
-
-        if (!resultado) {
+        if (!resultado)
             return res.status(404).json({ mensaje: "El usuario aún no ha realizado el test" });
-        }
 
-        // 3. obtiene recomendaciones
         const pythonRes = await axios.get(`${PYTHON_URL}/ea/recomendaciones/${resultado.perfil_dominante}`);
         const recomendaciones = pythonRes.data.recomendaciones;
 
-        // 4. calcula porcentajes
         const total = resultado.puntaje_v + resultado.puntaje_a + resultado.puntaje_r + resultado.puntaje_k;
         const porcentajes = {
             v: total > 0 ? parseFloat(((resultado.puntaje_v / total) * 100).toFixed(2)) : 0,
@@ -169,18 +179,39 @@ export async function obtenerResultadoGuardado(req, res) {
             k: total > 0 ? parseFloat(((resultado.puntaje_k / total) * 100).toFixed(2)) : 0,
         };
 
+        // Consulta cursos recomendados
+        const letras = resultado.perfil_dominante.split("").filter(l => ["V", "A", "R", "K"].includes(l));
+        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
+        const perfilParams = letras.map(l => `%${l}%`);
+
+        const [cursos] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.fecha_creacion,
+                d.nombre_dimension,
+                u.nombre AS nombre_tutor,
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
+            FROM Curso c
+            LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+            LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+            WHERE c.es_publicado = 1
+            AND c.archivado   = 0
+            AND c.id_usuario  != ?
+            AND c.perfil_vark  = ?
+            ORDER BY c.fecha_creacion DESC
+            LIMIT 12`,
+            [id_usuario, resultado.perfil_dominante]
+        );
+
         res.json({
             perfil_dominante: resultado.perfil_dominante,
             nombre_perfil: resultado.nombre_perfil,
-            puntajes: {
-                v: resultado.puntaje_v,
-                a: resultado.puntaje_a,
-                r: resultado.puntaje_r,
-                k: resultado.puntaje_k,
-            },
+            puntajes: { v: resultado.puntaje_v, a: resultado.puntaje_a, r: resultado.puntaje_r, k: resultado.puntaje_k },
             porcentajes,
             recomendaciones,
+            cursos_recomendados: cursos,
         });
+
     } catch (error) {
         console.error("Error al obtener resultado guardado:", error);
         res.status(500).json({ error: "Error interno del servidor" });

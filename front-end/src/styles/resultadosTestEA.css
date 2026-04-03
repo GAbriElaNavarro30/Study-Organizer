@@ -1047,6 +1047,10 @@
         width: 100%;
         max-width: 320px;
     }
+
+    .res-cursos-grid {
+        grid-template-columns: 1fr 1fr;
+    }
 }
 
 @media (max-width: 480px) {
@@ -1078,6 +1082,10 @@
 
     .res-bar-row {
         grid-template-columns: 100px 1fr 44px;
+    }
+
+    .res-cursos-grid {
+        grid-template-columns: 1fr;
     }
 }
 
@@ -1251,7 +1259,7 @@
     transition: width 0.6s ease;
 }
 
-/* Responsive */
+/* Responsive historial */
 @media (max-width: 640px) {
     .res-historial-table thead th:nth-child(4),
     .res-historial-table thead th:nth-child(5),
@@ -1263,4 +1271,102 @@
     .res-historial-table tbody td:nth-child(7) {
         display: none;
     }
+}
+
+/* ================================================================
+   CURSOS RECOMENDADOS
+================================================================ */
+
+.res-cursos-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fill, minmax(220px, 1fr));
+    gap: 16px;
+}
+
+.res-curso-card {
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    overflow: hidden;
+    background: #fff;
+    transition: box-shadow 0.2s, transform 0.2s;
+    cursor: default;
+}
+
+.res-curso-card:hover {
+    box-shadow: 0 6px 24px rgba(0, 0, 0, 0.09);
+    transform: translateY(-2px);
+}
+
+.res-curso-cover {
+    position: relative;
+    height: 120px;
+    overflow: hidden;
+}
+
+.res-curso-cover-img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.res-curso-cover-placeholder {
+    width: 100%;
+    height: 100%;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.res-curso-vark-badge {
+    position: absolute;
+    top: 8px;
+    right: 8px;
+    border-radius: 20px;
+    padding: 2px 9px;
+    font-size: 10px;
+    font-weight: 700;
+    letter-spacing: 0.4px;
+}
+
+.res-curso-body {
+    padding: 14px 16px 16px;
+}
+
+.res-curso-title {
+    font-size: 13.5px;
+    font-weight: 700;
+    color: #1E293B;
+    margin: 0 0 6px;
+    line-height: 1.35;
+}
+
+.res-curso-desc {
+    font-size: 12px;
+    color: #64748B;
+    margin: 0 0 10px;
+    line-height: 1.5;
+}
+
+.res-curso-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    align-items: center;
+}
+
+.res-curso-meta-item {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    font-size: 11px;
+    color: #94A3B8;
+}
+
+.res-curso-dim-chip {
+    background: #F1F5F9;
+    color: #475569;
+    border-radius: 20px;
+    padding: 2px 8px;
+    font-size: 10.5px;
+    font-weight: 600;
 }

@@ -109,4 +109,4 @@ RECOMENDACIONES = {
         "Cambia de lugar o postura para mantener la concentración",
         "Aplica lo aprendido inmediatamente después de estudiarlo",
     ],
-}
+} 

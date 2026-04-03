@@ -3,9 +3,9 @@ import {
     IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline, IoArrowBackOutline,
     IoRefreshOutline, IoHomeOutline, IoCheckmarkCircleOutline,
     IoStarOutline, IoRibbonOutline, IoTrophyOutline, IoTimeOutline,
-    IoCalendarOutline,
+    IoCalendarOutline, IoBookOutline,
 } from "react-icons/io5";
-import {
+import { 
     useResultadosTestEA,
     PERFIL_CONFIG,
     NAV_SECTIONS,
@@ -37,7 +37,6 @@ function BarraSimple({ cfg, value, pct, animado }) {
                     style={{ width: animado ? `${pct}%` : "0%", background: `linear-gradient(90deg, ${cfg.colorMid}, ${cfg.color})` }}
                 />
             </div>
-            {/*<span className="res-bar-value">{value} <span className="res-bar-den">({pct}%)</span></span>*/}
             <span className="res-bar-value">
                 {value} <span className="res-bar-den">({typeof pct === 'number' ? pct.toFixed(2) : pct}%)</span>
             </span>
@@ -92,6 +91,76 @@ function LoadingState() {
     );
 }
 
+// ─── COLORES VARK PARA CURSOS ─────────────────────────────────────────────────
+
+const VARK_COLORS_REC = {
+    V:    { bg: "#DBEAFE", text: "#1D4ED8" },
+    A:    { bg: "#FEF9C3", text: "#854D0E" },
+    R:    { bg: "#DCFCE7", text: "#15803D" },
+    K:    { bg: "#FCE7F3", text: "#9D174D" },
+    VA:   { bg: "#EEF2FF", text: "#4338CA" },
+    VR:   { bg: "#ECFDF5", text: "#065F46" },
+    VK:   { bg: "#F3E8FF", text: "#6B21A8" },
+    AR:   { bg: "#FFFBEB", text: "#B45309" },
+    AK:   { bg: "#FFF1F2", text: "#BE123C" },
+    RK:   { bg: "#F0FDF4", text: "#166534" },
+    VAR:  { bg: "#EFF6FF", text: "#1E40AF" },
+    VAK:  { bg: "#F5F3FF", text: "#5B21B6" },
+    VRK:  { bg: "#ECFEFF", text: "#155E75" },
+    ARK:  { bg: "#FFF7ED", text: "#9A3412" },
+    VARK: { bg: "#F0F9FF", text: "#0369A1" },
+};
+
+// ─── TARJETA DE CURSO ─────────────────────────────────────────────────────────
+
+function CursoRecomendadoCard({ curso, primaryColor }) {
+    const hue  = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
+    const vark = VARK_COLORS_REC[curso.perfil_vark] || { bg: "#F1F5F9", text: "#64748B" };
+
+    return (
+        <div className="res-curso-card">
+            <div className="res-curso-cover">
+                {curso.foto
+                    ? <img src={curso.foto} alt={curso.titulo} className="res-curso-cover-img" />
+                    : (
+                        <div className="res-curso-cover-placeholder" style={{ background: `hsl(${hue},45%,88%)` }}>
+                            <span style={{ color: `hsl(${hue},40%,38%)`, fontSize: 28, fontWeight: 700, fontFamily: "'DM Serif Display', Georgia, serif" }}>
+                                {curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
+                            </span>
+                        </div>
+                    )
+                }
+                <span className="res-curso-vark-badge" style={{ background: vark.bg, color: vark.text }}>
+                    {curso.perfil_vark}
+                </span>
+            </div>
+            <div className="res-curso-body">
+                <p className="res-curso-title">{curso.titulo}</p>
+                {curso.descripcion && (
+                    <p className="res-curso-desc">
+                        {curso.descripcion.slice(0, 80)}{curso.descripcion.length > 80 ? "…" : ""}
+                    </p>
+                )}
+                <div className="res-curso-meta">
+                    {curso.nombre_tutor && (
+                        <span className="res-curso-meta-item">
+                            <IoRibbonOutline size={11} /> {curso.nombre_tutor}
+                        </span>
+                    )}
+                    {curso.total_secciones > 0 && (
+                        <span className="res-curso-meta-item">
+                            <IoBookOutline size={11} /> {curso.total_secciones} sección{curso.total_secciones !== 1 ? "es" : ""}
+                        </span>
+                    )}
+                    {curso.nombre_dimension && (
+                        <span className="res-curso-dim-chip">{curso.nombre_dimension}</span>
+                    )}
+                </div>
+            </div>
+        </div>
+    );
+}
+
 // ─── COMPONENTE PRINCIPAL ─────────────────────────────────────────────────────
 
 export function ResultadosTestEA() {
@@ -103,6 +172,8 @@ export function ResultadosTestEA() {
         activeSection,
         historial,
         cargandoHistorial,
+        cursosRecomendados,
+        cargandoCursosRecomendados,
 
         // Derivados
         perfil_dominante,
@@ -151,7 +222,6 @@ export function ResultadosTestEA() {
                 <div className="res-header-right">
                     <div className="res-header-stat"><IoRibbonOutline size={14} /> Perfil identificado</div>
                     <div className="res-header-stat"><IoAnalyticsOutline size={14} /> Modelo VARK</div>
-                    {/*<div className="res-header-stat"><IoBulbOutline size={14} /> Sistema experto</div>*/}
                 </div>
             </div>
 
@@ -316,6 +386,40 @@ export function ResultadosTestEA() {
                             </div>
                         </div>
                     )}
+
+                    {/* CURSOS RECOMENDADOS */}
+                    <div id="sec-cursos" className="res-card">
+                        <div className="res-card-body" style={{ padding: "40px" }}>
+                            <div className="res-card-tag">
+                                <IoBookOutline size={11} /> Cursos para tu perfil
+                            </div>
+                            <h2 className="res-card-title">Cursos recomendados para ti</h2>
+                            <p className="res-card-text" style={{ marginBottom: 28 }}>
+                                Estos cursos fueron diseñados para el perfil <strong>{nombrePerfil}</strong> y pueden ayudarte a potenciar tu estilo de aprendizaje.
+                            </p>
+
+                            {cargandoCursosRecomendados ? (
+                                <div className="res-historial-loading">
+                                    <div className="res-loading-dots"><span /><span /><span /></div>
+                                </div>
+                            ) : cursosRecomendados.length === 0 ? (
+                                <div className="res-historial-empty">
+                                    <IoBookOutline size={32} />
+                                    <p>Aún no hay cursos disponibles para tu perfil.</p>
+                                </div>
+                            ) : (
+                                <div className="res-cursos-grid">
+                                    {cursosRecomendados.map((curso) => (
+                                        <CursoRecomendadoCard
+                                            key={curso.id_curso}
+                                            curso={curso}
+                                            primaryColor={primary.colorMid}
+                                        />
+                                    ))}
+                                </div>
+                            )}
+                        </div>
+                    </div>
 
                     {/* HISTORIAL */}
                     <div id="sec-historial" className="res-card">

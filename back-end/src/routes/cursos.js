@@ -20,6 +20,7 @@ import {
     actualizarPregunta,
     eliminarPregunta,
     listarDimensiones,
+    listarCursosPorDimension
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -34,6 +35,7 @@ router.get("/dimensiones", listarDimensiones);
 
 // ─── Cursos ────────────────────────────────────────────────
 router.get    ("/cursos",                    listarCursos);
+router.get("/cursos/recomendados/por-dimension", listarCursosPorDimension);
 router.get    ("/cursos/:id",                obtenerCurso);
 router.post   ("/cursos",                    upload.single("foto"), crearCurso);
 router.put    ("/cursos/:id",                upload.single("foto"), actualizarCurso);
