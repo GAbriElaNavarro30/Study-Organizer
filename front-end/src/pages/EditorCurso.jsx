@@ -9,133 +9,49 @@ import {
 } from "react-icons/io5";
 import api from "../services/api";
 import "../styles/EditorCurso.css";
+import { ContentImageUpload } from "../components/ContentImageUpload_new";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────────────────────── */
 const VARK_OPTIONS = [
-    { value: "V", label: "Visual", letter: "V", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "A", label: "Auditivo", letter: "A", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "R", label: "Lectura / Escritura", letter: "R", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "K", label: "Kinestésico", letter: "K", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "VA", label: "Visual-Auditivo", letter: "VA", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "VR", label: "Visual-Lectura", letter: "VR", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "VK", label: "Visual-Kinestésico", letter: "VK", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "AR", label: "Auditivo-Lectura", letter: "AR", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "AK", label: "Auditivo-Kinestésico", letter: "AK", accent: "#DC2626", bg: "#FEF2F2", border: "#FECACA" },
-    { value: "RK", label: "Lectura-Kinestésico", letter: "RK", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "VAR", label: "Visual-Auditivo-Lectura", letter: "VAR", accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
-    { value: "VAK", label: "Visual-Auditivo-Kinestésico", letter: "VAK", accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
-    { value: "VRK", label: "Visual-Lectura-Kinestésico", letter: "VRK", accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
-    { value: "ARK", label: "Auditivo-Lectura-Kinestésico", letter: "ARK", accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
-    { value: "VARK", label: "Multimodal", letter: "★", accent: "#0F172A", bg: "#F8FAFC", border: "#CBD5E1" },
+    { value: "V",    label: "Visual",                       letter: "V",    accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "A",    label: "Auditivo",                     letter: "A",    accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "R",    label: "Lectura / Escritura",          letter: "R",    accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "K",    label: "Kinestésico",                  letter: "K",    accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "VA",   label: "Visual-Auditivo",              letter: "VA",   accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "VR",   label: "Visual-Lectura",               letter: "VR",   accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "VK",   label: "Visual-Kinestésico",           letter: "VK",   accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "AR",   label: "Auditivo-Lectura",             letter: "AR",   accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "AK",   label: "Auditivo-Kinestésico",         letter: "AK",   accent: "#DC2626", bg: "#FEF2F2", border: "#FECACA" },
+    { value: "RK",   label: "Lectura-Kinestésico",          letter: "RK",   accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "VAR",  label: "Visual-Auditivo-Lectura",      letter: "VAR",  accent: "#7C3AED", bg: "#F5F3FF", border: "#DDD6FE" },
+    { value: "VAK",  label: "Visual-Auditivo-Kinestésico",  letter: "VAK",  accent: "#1D4ED8", bg: "#EFF6FF", border: "#BFDBFE" },
+    { value: "VRK",  label: "Visual-Lectura-Kinestésico",   letter: "VRK",  accent: "#059669", bg: "#ECFDF5", border: "#A7F3D0" },
+    { value: "ARK",  label: "Auditivo-Lectura-Kinestésico", letter: "ARK",  accent: "#D97706", bg: "#FFFBEB", border: "#FDE68A" },
+    { value: "VARK", label: "Multimodal",                   letter: "★",    accent: "#0F172A", bg: "#F8FAFC", border: "#CBD5E1" },
 ];
 
 const STEPS = [
-    { id: 1, label: "Curso", icon: IoBookOutline },
+    { id: 1, label: "Curso",     icon: IoBookOutline },
     { id: 2, label: "Contenido", icon: IoLayersOutline },
-    { id: 3, label: "Publicar", icon: IoEyeOutline },
+    { id: 3, label: "Publicar",  icon: IoEyeOutline },
 ];
 
-const CROP_RATIOS = [
-    { label: "Libre", key: "free", w: null, h: null },
-    { label: "16 : 9", key: "16-9", w: 16, h: 9 },
-    { label: "4 : 3", key: "4-3", w: 4, h: 3 },
-    { label: "1 : 1", key: "1-1", w: 1, h: 1 },
-    { label: "3 : 4", key: "3-4", w: 3, h: 4 },
-    { label: "9 : 16", key: "9-16", w: 9, h: 16 },
-];
 
-const DEFAULT_CROP = {
-    offsetX: 0,
-    offsetY: 0,
-    zoom: 1,
-    ratioKey: "16-9",
-    frameW: 100,
-};
 
-const uuid = () => crypto.randomUUID();
+const uuid                = () => crypto.randomUUID();
 const crearContenidoVacio = () => ({ _id: uuid(), titulo: "", contenido: "", imagen_file: null, imagen_preview: null, imagen_url: "", imagen_crop: null, imagen_cropped_preview: null });
-const crearOpcionVacia = () => ({ _id: uuid(), texto_opcion: "", es_correcta: false });
-const crearPreguntaVacia = () => ({ _id: uuid(), texto_pregunta: "", opciones: [crearOpcionVacia(), crearOpcionVacia()] });
-const crearSeccionVacia = () => ({ _id: uuid(), titulo_seccion: "", contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false, expanded: true });
+const crearOpcionVacia    = () => ({ _id: uuid(), texto_opcion: "", es_correcta: false });
+const crearPreguntaVacia  = () => ({ _id: uuid(), texto_pregunta: "", opciones: [crearOpcionVacia(), crearOpcionVacia()] });
+const crearSeccionVacia   = () => ({ _id: uuid(), titulo_seccion: "", contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false, expanded: true });
 
 const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
 /* ─────────────────────────────────────────────────────────
-   APPLY CROP — renderiza el recorte en canvas y devuelve
-   una URL de datos (base64) lista para preview o un File
-   para subir al servidor.
-   
-   Parámetros:
-   • src       — URL de la imagen original (blob: o https:)
-   • crop      — objeto con { offsetX, offsetY, zoom, ratioKey, frameW }
-   • outW      — ancho de salida en px (default 1280)
-   • asFile    — si true devuelve File, si false devuelve dataURL
+   APPLY CROP
 ───────────────────────────────────────────────────────── */
-const applyCrop = (src, crop, outW = 1280, asFile = false) =>
-    new Promise((resolve, reject) => {
-        const img = new Image();
-        img.crossOrigin = "anonymous";
-        img.onload = () => {
-            const c = { ...DEFAULT_CROP, ...crop };
-            const ratio = CROP_RATIOS.find((r) => r.key === c.ratioKey) ?? CROP_RATIOS[1];
 
-            /* ── Mismo cálculo que CropEditor ── */
-            /* 1. Tamaño del "marco" de referencia (usamos 800px de ancho de referencia) */
-            const REF_W = 800;
-            const frameW = REF_W * (c.frameW / 100);
-            const frameH = ratio.w ? frameW * (ratio.h / ratio.w) : frameW * 0.5625;
-
-            /* 2. Escala base (image fits frame) */
-            const baseScale = Math.max(frameW / img.naturalWidth, frameH / img.naturalHeight);
-            const totalScale = baseScale * c.zoom;
-
-            /* 3. Coordenadas del recorte en px de la imagen ORIGINAL */
-            /* Centro de la imagen escalada respecto al marco */
-            const scaledW = img.naturalWidth * totalScale;
-            const scaledH = img.naturalHeight * totalScale;
-
-            /* Offset en coordenadas del canvas de la imagen escalada */
-            const imgLeft = (frameW - scaledW) / 2 + c.offsetX;
-            const imgTop = (frameH - scaledH) / 2 + c.offsetY;
-
-            /* Traducimos a coordenadas de la imagen original */
-            const srcX = (-imgLeft) / totalScale;
-            const srcY = (-imgTop) / totalScale;
-            const srcW = frameW / totalScale;
-            const srcH = frameH / totalScale;
-
-            /* 4. Canvas de salida */
-            const aspectRatio = ratio.w ? ratio.h / ratio.w : frameH / frameW;
-            const outH = Math.round(outW * aspectRatio);
-
-            const canvas = document.createElement("canvas");
-            canvas.width = outW;
-            canvas.height = outH;
-            const ctx = canvas.getContext("2d");
-
-            ctx.drawImage(
-                img,
-                clamp(srcX, 0, img.naturalWidth),
-                clamp(srcY, 0, img.naturalHeight),
-                Math.min(srcW, img.naturalWidth - clamp(srcX, 0, img.naturalWidth)),
-                Math.min(srcH, img.naturalHeight - clamp(srcY, 0, img.naturalHeight)),
-                0, 0, outW, outH,
-            );
-
-            if (asFile) {
-                canvas.toBlob((blob) => {
-                    if (!blob) { reject(new Error("Canvas toBlob failed")); return; }
-                    resolve(new File([blob], "imagen_recortada.jpg", { type: "image/jpeg" }));
-                }, "image/jpeg", 0.92);
-            } else {
-                resolve(canvas.toDataURL("image/jpeg", 0.92));
-            }
-        };
-        img.onerror = reject;
-        img.src = src;
-    });
 
 /* ─────────────────────────────────────────────────────────
    STEP INDICATOR
@@ -143,8 +59,8 @@ const applyCrop = (src, crop, outW = 1280, asFile = false) =>
 const StepIndicator = ({ paso }) => (
     <div className="ec-steps">
         {STEPS.map((s, i) => {
-            const Icon = s.icon;
-            const done = s.id < paso;
+            const Icon   = s.icon;
+            const done   = s.id < paso;
             const active = s.id === paso;
             return (
                 <div key={s.id} className="ec-step-item">
@@ -164,13 +80,17 @@ const StepIndicator = ({ paso }) => (
 ───────────────────────────────────────────────────────── */
 const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 220 }) => {
     const containerRef = useRef(null);
-    const dragging = useRef(false);
-    const last = useRef({ x: 0, y: 0 });
+    const dragging     = useRef(false);
+    const last         = useRef({ x: 0, y: 0 });
 
     const startDrag = (e) => {
         dragging.current = true;
-        last.current = { x: e.touches ? e.touches[0].clientX : e.clientX, y: e.touches ? e.touches[0].clientY : e.clientY };
+        last.current = {
+            x: e.touches ? e.touches[0].clientX : e.clientX,
+            y: e.touches ? e.touches[0].clientY : e.clientY,
+        };
     };
+
     const onMove = useCallback((e) => {
         if (!dragging.current) return;
         const cx = e.touches ? e.touches[0].clientX : e.clientX;
@@ -184,6 +104,7 @@ const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 2
         onPosX(clamp(posX - dx * sens * 0.5, 0, 100));
         onPosY(clamp(posY - dy * sens * 0.5, 0, 100));
     }, [posX, posY, zoom, onPosX, onPosY]);
+
     const stopDrag = () => { dragging.current = false; };
 
     useEffect(() => {
@@ -233,6 +154,7 @@ const ImageUploadZone = ({ preview, url, zoom, posX, posY, onUpdate, height = 22
         if (!file?.type.startsWith("image/")) return;
         onUpdate({ imagen_file: file, imagen_preview: URL.createObjectURL(file), imagen_zoom: 1, imagen_pos_x: 50, imagen_pos_y: 50 });
     };
+
     const current = preview || url;
 
     return (
@@ -270,404 +192,13 @@ const ImageUploadZone = ({ preview, url, zoom, posX, posY, onUpdate, height = 22
 };
 
 /* ═══════════════════════════════════════════════════════════
-   CROP EDITOR — estilo WhatsApp
+   CROP EDITOR — con resize handles en las 4 esquinas
 ═══════════════════════════════════════════════════════════ */
-const CropEditor = ({ src, crop, onChange }) => {
-    const wrapRef = useRef(null);
-    const imgRef = useRef(null);
-    const dragging = useRef(false);        // arrastrar imagen
-    const resizing = useRef(null);         // "tl"|"tr"|"bl"|"br" | null
-    const lastPos = useRef({ x: 0, y: 0 });
-    const startFrameW = useRef(0);            // frameW al inicio del resize
-    const startMouseX = useRef(0);            // X del mouse al inicio del resize
 
-    const [imgNat, setImgNat] = useState({ w: 1, h: 1 });
-    const [framePx, setFramePx] = useState({ w: 560, h: 315 });
-
-    const c = { ...DEFAULT_CROP, ...crop };
-    const ratio = CROP_RATIOS.find((r) => r.key === c.ratioKey) ?? CROP_RATIOS[1];
-
-    /* ── Medir el contenedor y actualizar framePx ── */
-    useEffect(() => {
-        const measure = () => {
-            if (!wrapRef.current) return;
-            const cw = wrapRef.current.offsetWidth;
-            const fw = cw * (c.frameW / 100);
-            const fh = ratio.w ? fw * (ratio.h / ratio.w) : fw * 0.5625;
-            setFramePx({ w: fw, h: Math.round(fh) });
-        };
-        measure();
-        const ro = new ResizeObserver(measure);
-        if (wrapRef.current) ro.observe(wrapRef.current);
-        return () => ro.disconnect();
-    }, [c.frameW, c.ratioKey, ratio]);
-
-    /* ── Cálculos derivados ── */
-    const baseScale = Math.max(framePx.w / Math.max(imgNat.w, 1), framePx.h / Math.max(imgNat.h, 1));
-    const totalScale = baseScale * c.zoom;
-    const scaledW = imgNat.w * totalScale;
-    const scaledH = imgNat.h * totalScale;
-    const maxOX = Math.max(0, (scaledW - framePx.w) / 2);
-    const maxOY = Math.max(0, (scaledH - framePx.h) / 2);
-
-    /* ── Inicio de arrastre de imagen ── */
-    const startDrag = (e) => {
-        if (resizing.current) return;   // no iniciar drag si ya hay resize activo
-        e.preventDefault();
-        dragging.current = true;
-        lastPos.current = {
-            x: e.touches ? e.touches[0].clientX : e.clientX,
-            y: e.touches ? e.touches[0].clientY : e.clientY,
-        };
-    };
-
-    /* ── Inicio de resize desde una esquina ── */
-    const startResize = (corner) => (e) => {
-        e.preventDefault();
-        e.stopPropagation();
-        resizing.current = corner;
-        startFrameW.current = c.frameW;
-        startMouseX.current = e.touches ? e.touches[0].clientX : e.clientX;
-    };
-
-    /* ── Movimiento (imagen O resize) ── */
-    const onMove = useCallback((e) => {
-        const cx = e.touches ? e.touches[0].clientX : e.clientX;
-        const cy = e.touches ? e.touches[0].clientY : e.clientY;
-
-        /* RESIZE — ajusta frameW según el delta horizontal del mouse */
-        if (resizing.current) {
-            if (!wrapRef.current) return;
-            const containerW = wrapRef.current.offsetWidth;
-            const dx = cx - startMouseX.current;
-
-            /* Las esquinas derechas amplían al mover derecha;
-               las izquierdas amplían al mover izquierda (dx invertido) */
-            const dir = resizing.current.includes("r") ? 1 : -1;
-            /* Dos lados cambian a la vez (espejo) → multiplicar × 2 */
-            const delta = dir * dx * 2;
-            const newPx = clamp(
-                (startFrameW.current / 100) * containerW + delta,
-                containerW * 0.25,   // mínimo 25% del contenedor
-                containerW,          // máximo 100%
-            );
-            const newFW = Math.round((newPx / containerW) * 100);
-
-            onChange({ ...c, frameW: newFW, offsetX: 0, offsetY: 0 });
-            return;
-        }
-
-        /* DRAG — mueve la imagen dentro del marco */
-        if (!dragging.current) return;
-        const dx = cx - lastPos.current.x;
-        const dy = cy - lastPos.current.y;
-        lastPos.current = { x: cx, y: cy };
-        onChange({
-            ...c,
-            offsetX: clamp(c.offsetX + dx, -maxOX, maxOX),
-            offsetY: clamp(c.offsetY + dy, -maxOY, maxOY),
-        });
-    }, [c, maxOX, maxOY, onChange]);
-
-    const stopAll = () => {
-        dragging.current = false;
-        resizing.current = null;
-    };
-
-    useEffect(() => {
-        window.addEventListener("mousemove", onMove);
-        window.addEventListener("mouseup", stopAll);
-        window.addEventListener("touchmove", onMove, { passive: false });
-        window.addEventListener("touchend", stopAll);
-        return () => {
-            window.removeEventListener("mousemove", onMove);
-            window.removeEventListener("mouseup", stopAll);
-            window.removeEventListener("touchmove", onMove);
-            window.removeEventListener("touchend", stopAll);
-        };
-    }, [onMove]);
-
-    /* ── Handlers para zoom y proporciones ── */
-    const handleZoom = (z) => {
-        const bs = Math.max(framePx.w / Math.max(imgNat.w, 1), framePx.h / Math.max(imgNat.h, 1));
-        const ts = bs * z;
-        const mox = Math.max(0, (imgNat.w * ts - framePx.w) / 2);
-        const moy = Math.max(0, (imgNat.h * ts - framePx.h) / 2);
-        onChange({ ...c, zoom: z, offsetX: clamp(c.offsetX, -mox, mox), offsetY: clamp(c.offsetY, -moy, moy) });
-    };
-
-    const handleRatio = (key) => onChange({ ...c, ratioKey: key, offsetX: 0, offsetY: 0 });
-    const handleFrameW = (w) => onChange({ ...c, frameW: w, offsetX: 0, offsetY: 0 });
-
-    const imgTransform = `translate(${c.offsetX}px, ${c.offsetY}px) scale(${totalScale})`;
-    const frameHeight = ratio.w ? framePx.w * (ratio.h / ratio.w) : framePx.w * 0.5625;
-
-    return (
-        <div className="crop-editor" ref={wrapRef}>
-
-            {/* ── Selector de proporción ── */}
-            <div className="crop-ratio-bar">
-                <span className="crop-ratio-label">Proporción</span>
-                <div className="crop-ratio-pills">
-                    {CROP_RATIOS.map((r) => (
-                        <button key={r.key}
-                            className={`crop-ratio-pill ${c.ratioKey === r.key ? "active" : ""}`}
-                            onClick={() => handleRatio(r.key)}>
-                            {r.label}
-                        </button>
-                    ))}
-                </div>
-            </div>
-
-            {/* ── Escenario ── */}
-            <div className="crop-stage">
-                {/* Sombras laterales fuera del marco */}
-                <div className="crop-side-shadow crop-side-shadow--left"
-                    style={{ width: `calc((100% - ${c.frameW}%) / 2)` }} />
-                <div className="crop-side-shadow crop-side-shadow--right"
-                    style={{ width: `calc((100% - ${c.frameW}%) / 2)` }} />
-
-                {/* Marco de recorte */}
-                <div className="crop-frame-wrap" style={{ width: `${c.frameW}%`, height: frameHeight }}>
-
-                    {/* Imagen arrastrable */}
-                    <div className="crop-img-container"
-                        onMouseDown={startDrag}
-                        onTouchStart={startDrag}>
-                        <img
-                            ref={imgRef}
-                            src={src}
-                            alt="recorte"
-                            className="crop-img"
-                            draggable={false}
-                            style={{ transformOrigin: "center center", transform: imgTransform }}
-                            onLoad={(e) => setImgNat({ w: e.target.naturalWidth, h: e.target.naturalHeight })}
-                        />
-                    </div>
-
-                    {/* Cuadrícula de regla de tercios */}
-                    <div className="crop-grid" aria-hidden="true">
-                        <div className="crop-grid-line crop-grid-line--v1" />
-                        <div className="crop-grid-line crop-grid-line--v2" />
-                        <div className="crop-grid-line crop-grid-line--h1" />
-                        <div className="crop-grid-line crop-grid-line--h2" />
-                    </div>
-
-                    {/* Borde blanco del marco */}
-                    <div className="crop-frame-border" aria-hidden="true" />
-
-                    {/* Hint de arrastre */}
-                    <div className="crop-drag-hint">Arrastra para ajustar</div>
-
-                    {/* ── HANDLES de resize en las 4 esquinas ── */}
-                    {["tl", "tr", "bl", "br"].map((corner) => (
-                        <div
-                            key={corner}
-                            className={`crop-resize-handle crop-resize-handle--${corner}`}
-                            onMouseDown={startResize(corner)}
-                            onTouchStart={startResize(corner)}
-                            title="Arrastra para redimensionar"
-                        >
-                            {/* L-shape visual de la esquina */}
-                            <div className="crop-handle-l" />
-                        </div>
-                    ))}
-                </div>
-            </div>
-
-            {/* ── Controles de ancho y zoom ── */}
-            <div className="crop-controls">
-                <div className="crop-ctrl-row">
-                    <IoContractOutline size={13} className="crop-ctrl-icon" />
-                    <span className="crop-ctrl-lbl">Ancho</span>
-                    <input type="range" min="30" max="100" step="5" value={c.frameW}
-                        onChange={(e) => handleFrameW(Number(e.target.value))}
-                        className="crop-ctrl-slider" />
-                    <span className="crop-ctrl-val">{c.frameW}%</span>
-                </div>
-                <div className="crop-ctrl-row">
-                    <IoExpandOutline size={13} className="crop-ctrl-icon" />
-                    <span className="crop-ctrl-lbl">Zoom</span>
-                    <input type="range" min="1" max="4" step="0.02" value={c.zoom}
-                        onChange={(e) => handleZoom(parseFloat(e.target.value))}
-                        className="crop-ctrl-slider" />
-                    <span className="crop-ctrl-val">{Math.round(c.zoom * 100)}%</span>
-                </div>
-                <button className="crop-reset-btn"
-                    onClick={() => onChange({ ...DEFAULT_CROP, ratioKey: c.ratioKey })}>
-                    Restablecer
-                </button>
-            </div>
-        </div>
-    );
-};
 
 /* ─────────────────────────────────────────────────────────
    CONTENT IMAGE UPLOAD
-   
-   Flujo completo:
-   1. Usuario sube imagen → se muestra CropEditor en modo "edición"
-   2. Usuario ajusta recorte → los datos quedan en imagen_crop
-   3. Al presionar "Aplicar recorte" → applyCrop() renderiza el canvas
-      y guarda imagen_cropped_preview (dataURL para mostrar) +
-      imagen_cropped_file (File para subir al servidor)
-   4. Se muestra la imagen ya recortada con opción de "Editar recorte"
-      para volver al paso 2
 ───────────────────────────────────────────────────────── */
-const ContentImageUpload = ({ con, onUpdate }) => {
-    const inputRef = useRef();
-    const [drag, setDrag] = useState(false);
-    const [editando, setEditando] = useState(false);
-    const [aplicando, setAplicando] = useState(false);
-
-    const processFile = (file) => {
-        if (!file?.type.startsWith("image/")) return;
-        onUpdate({
-            imagen_file: file,
-            imagen_preview: URL.createObjectURL(file),
-            imagen_url: "",
-            imagen_crop: { ...DEFAULT_CROP },
-            imagen_cropped_preview: null,
-            imagen_cropped_file: null,
-        });
-        setEditando(true); // abre automáticamente el editor
-    };
-
-    /* Aplicar el recorte: canvas → dataURL + File */
-    const handleAplicar = async () => {
-        const src = con.imagen_preview || con.imagen_url;
-        if (!src) return;
-        setAplicando(true);
-        try {
-            const [dataURL, file] = await Promise.all([
-                applyCrop(src, con.imagen_crop, 1280, false),
-                applyCrop(src, con.imagen_crop, 1280, true),
-            ]);
-            onUpdate({ imagen_cropped_preview: dataURL, imagen_cropped_file: file });
-            setEditando(false);
-        } catch (err) {
-            console.error("Error al aplicar recorte:", err);
-        } finally {
-            setAplicando(false);
-        }
-    };
-
-    const handleEliminar = () => {
-        onUpdate({
-            imagen_file: null,
-            imagen_preview: null,
-            imagen_url: "",
-            imagen_crop: null,
-            imagen_cropped_preview: null,
-            imagen_cropped_file: null,
-        });
-        setEditando(false);
-    };
-
-    const hasSrc = !!(con.imagen_preview || con.imagen_url);
-    const hasCropped = !!con.imagen_cropped_preview;
-
-    /* ── Sin imagen → zona de drop ── */
-    if (!hasSrc) return (
-        <div className="img-upload-root">
-            <div className={`img-drop-zone img-drop-zone--content ${drag ? "dragging" : ""}`}
-                onClick={() => inputRef.current.click()}
-                onDragOver={(e) => { e.preventDefault(); setDrag(true); }}
-                onDragLeave={() => setDrag(false)}
-                onDrop={(e) => { e.preventDefault(); setDrag(false); processFile(e.dataTransfer.files[0]); }}>
-                <IoImageOutline size={26} />
-                <p>Agregar imagen al bloque</p>
-                <small>Arrastra o haz clic · Ajusta el recorte como en WhatsApp</small>
-            </div>
-            <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
-                onChange={(e) => processFile(e.target.files[0])} />
-        </div>
-    );
-
-    return (
-        <div className="img-upload-root">
-
-            {/* ── Modo EDITOR de recorte ── */}
-            {editando && (
-                <div className="crop-editing-panel">
-                    <div className="crop-editing-header">
-                        <div className="crop-editing-title">
-                            <IoCropOutline size={14} />
-                            <span>Ajustar recorte</span>
-                        </div>
-                        {hasCropped && (
-                            <button className="crop-cancel-btn" onClick={() => setEditando(false)}>
-                                Cancelar
-                            </button>
-                        )}
-                    </div>
-
-                    <CropEditor
-                        src={con.imagen_preview || con.imagen_url}
-                        crop={con.imagen_crop ?? DEFAULT_CROP}
-                        onChange={(crop) => onUpdate({ imagen_crop: crop })}
-                    />
-
-                    <div className="crop-editing-actions">
-                        <button
-                            className="crop-apply-btn"
-                            onClick={handleAplicar}
-                            disabled={aplicando}
-                        >
-                            {aplicando
-                                ? <><div className="btn-spinner" /> Procesando…</>
-                                : <><IoCheckmarkOutline size={14} /> Aplicar recorte</>
-                            }
-                        </button>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Modo PREVIEW del recorte ya aplicado ── */}
-            {!editando && hasCropped && (
-                <div className="crop-result-panel">
-                    <div className="crop-result-preview">
-                        <img
-                            src={con.imagen_cropped_preview}
-                            alt="imagen recortada"
-                            className="crop-result-img"
-                        />
-                        <div className="crop-result-badge">
-                            <IoCropOutline size={11} /> Recortada
-                        </div>
-                    </div>
-                </div>
-            )}
-
-            {/* ── Sin recorte aplicado aún (imagen cargada pero no recortada) ── */}
-            {!editando && !hasCropped && (
-                <div className="crop-pending-notice">
-                    <IoCropOutline size={14} />
-                    <span>Imagen cargada — ajusta el recorte para continuar</span>
-                </div>
-            )}
-
-            {/* ── Acciones siempre visibles cuando hay imagen ── */}
-            {!editando && (
-                <div className="img-upload-actions">
-                    <button className="img-action-btn" onClick={() => setEditando(true)}>
-                        <IoCropOutline size={13} />
-                        {hasCropped ? "Editar recorte" : "Recortar imagen"}
-                    </button>
-                    <button className="img-action-btn" onClick={() => inputRef.current.click()}>
-                        <IoCloudUploadOutline size={13} /> Cambiar imagen
-                    </button>
-                    <button className="img-action-btn img-action-btn--danger" onClick={handleEliminar}>
-                        <IoTrashOutline size={13} /> Eliminar
-                    </button>
-                </div>
-            )}
-
-            <input ref={inputRef} type="file" accept="image/*" style={{ display: "none" }}
-                onChange={(e) => processFile(e.target.files[0])} />
-        </div>
-    );
-};
 
 /* ─────────────────────────────────────────────────────────
    VARK SELECTOR
@@ -710,12 +241,12 @@ const StepInfo = ({ datos, onChange, dimensiones, showErrors }) => (
                 zoom={datos.foto_zoom} posX={datos.foto_pos_x} posY={datos.foto_pos_y}
                 height={260} label="Sube la imagen de portada" hint="Ajusta con zoom y arrastra para recortar"
                 onUpdate={(u) => {
-                    if (u.imagen_file !== undefined) onChange("foto_file", u.imagen_file);
+                    if (u.imagen_file    !== undefined) onChange("foto_file",    u.imagen_file);
                     if (u.imagen_preview !== undefined) onChange("foto_preview", u.imagen_preview);
-                    if (u.imagen_url !== undefined) onChange("foto_url", u.imagen_url);
-                    if (u.imagen_zoom !== undefined) onChange("foto_zoom", u.imagen_zoom);
-                    if (u.imagen_pos_x !== undefined) onChange("foto_pos_x", u.imagen_pos_x);
-                    if (u.imagen_pos_y !== undefined) onChange("foto_pos_y", u.imagen_pos_y);
+                    if (u.imagen_url     !== undefined) onChange("foto_url",     u.imagen_url);
+                    if (u.imagen_zoom    !== undefined) onChange("foto_zoom",    u.imagen_zoom);
+                    if (u.imagen_pos_x   !== undefined) onChange("foto_pos_x",   u.imagen_pos_x);
+                    if (u.imagen_pos_y   !== undefined) onChange("foto_pos_y",   u.imagen_pos_y);
                 }}
             />
         </div>
@@ -833,8 +364,8 @@ const QuestionCard = ({ preg, index, onUpdate, onDelete }) => (
    SECTION CARD
 ───────────────────────────────────────────────────────── */
 const SeccionCard = ({ sec, index, onUpdate, onDelete, canDelete }) => {
-    const updCon = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
-    const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas: sec.preguntas.map((p) => p._id === pid ? upd : p) });
+    const updCon  = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
+    const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas:  sec.preguntas.map((p)  => p._id === pid ? upd : p) });
 
     return (
         <div className={`seccion-card ${sec.expanded ? "expanded" : ""}`}>
@@ -966,7 +497,11 @@ const StepRevision = ({ datos, secciones }) => {
                     {datos.foto_preview && (
                         <div className="revision-cover">
                             <img src={datos.foto_preview} alt="portada"
-                                style={{ transform: `scale(${datos.foto_zoom ?? 1})`, objectPosition: `${datos.foto_pos_x ?? 50}% ${datos.foto_pos_y ?? 50}%`, transformOrigin: `${datos.foto_pos_x ?? 50}% ${datos.foto_pos_y ?? 50}%` }} />
+                                style={{
+                                    transform: `scale(${datos.foto_zoom ?? 1})`,
+                                    objectPosition: `${datos.foto_pos_x ?? 50}% ${datos.foto_pos_y ?? 50}%`,
+                                    transformOrigin: `${datos.foto_pos_x ?? 50}% ${datos.foto_pos_y ?? 50}%`,
+                                }} />
                         </div>
                     )}
                     <div className="revision-info">
@@ -992,10 +527,9 @@ const StepRevision = ({ datos, secciones }) => {
                                     {s.contenidos.length} bloque{s.contenidos.length !== 1 ? "s" : ""}
                                     {s.preguntas.length > 0 && ` · ${s.preguntas.length} pregunta${s.preguntas.length !== 1 ? "s" : ""}`}
                                 </small>
-                                {/* Mini-preview de imágenes recortadas */}
-                                {s.contenidos.some(c => c.imagen_cropped_preview) && (
+                                {s.contenidos.some((c) => c.imagen_cropped_preview) && (
                                     <div className="revision-img-thumbs">
-                                        {s.contenidos.filter(c => c.imagen_cropped_preview).map(c => (
+                                        {s.contenidos.filter((c) => c.imagen_cropped_preview).map((c) => (
                                             <img key={c._id} src={c.imagen_cropped_preview} alt="" className="revision-img-thumb" />
                                         ))}
                                     </div>
@@ -1013,17 +547,17 @@ const StepRevision = ({ datos, secciones }) => {
    MAIN COMPONENT
 ═══════════════════════════════════════════════════════════ */
 export function EditorCurso() {
-    const navigate = useNavigate();
+    const navigate       = useNavigate();
     const [searchParams] = useSearchParams();
-    const id = searchParams.get("id");
-    const modoEdicion = Boolean(id);
+    const id             = searchParams.get("id");
+    const modoEdicion    = Boolean(id);
 
-    const [paso, setPaso] = useState(1);
-    const [guardando, setGuardando] = useState(false);
-    const [cargando, setCargando] = useState(modoEdicion);
-    const [error, setError] = useState(null);
-    const [showErrors, setShowErrors] = useState(false);
-    const [dimensiones, setDimensiones] = useState([]);
+    const [paso,                setPaso]                = useState(1);
+    const [guardando,           setGuardando]           = useState(false);
+    const [cargando,            setCargando]            = useState(modoEdicion);
+    const [error,               setError]               = useState(null);
+    const [showErrors,          setShowErrors]          = useState(false);
+    const [dimensiones,         setDimensiones]         = useState([]);
     const [seccionesOriginales, setSeccionesOriginales] = useState([]);
 
     const [infoCurso, setInfoCurso] = useState({
@@ -1096,7 +630,11 @@ export function EditorCurso() {
         if (paso === 2) return secciones.every(
             (s) => s.titulo_seccion.trim() &&
                 s.contenidos.every((c) => c.titulo.trim()) &&
-                s.preguntas.every((p) => p.texto_pregunta.trim() && p.opciones.every((o) => o.texto_opcion.trim()) && p.opciones.some((o) => o.es_correcta))
+                s.preguntas.every((p) =>
+                    p.texto_pregunta.trim() &&
+                    p.opciones.every((o) => o.texto_opcion.trim()) &&
+                    p.opciones.some((o) => o.es_correcta)
+                )
         );
         return true;
     };
@@ -1107,18 +645,15 @@ export function EditorCurso() {
         setPaso((p) => p + 1);
     };
 
-    /* ── Construye payload para contenido, usando el File recortado si existe ── */
     const buildContenidoPayload = async (con, id_seccion, orden) => {
-        /* Si hay archivo recortado, subirlo como FormData */
         if (con.imagen_cropped_file) {
             const fd = new FormData();
-            fd.append("titulo", con.titulo);
+            fd.append("titulo",    con.titulo);
             fd.append("contenido", con.contenido);
-            fd.append("orden", orden);
-            fd.append("imagen", con.imagen_cropped_file, "imagen_recortada.jpg");
+            fd.append("orden",     orden);
+            fd.append("imagen",    con.imagen_cropped_file, "imagen_recortada.jpg");
             return { useFormData: true, fd };
         }
-        /* Sin imagen nueva: solo JSON */
         return {
             useFormData: false,
             body: { titulo: con.titulo, contenido: con.contenido, orden, imagen_crop: con.imagen_crop ?? null },
@@ -1128,10 +663,10 @@ export function EditorCurso() {
     const handleCrear = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
-        if (infoCurso.descripcion) fd.append("descripcion", infoCurso.descripcion.trim());
-        if (infoCurso.perfil_vark) fd.append("perfil_vark", infoCurso.perfil_vark);
+        if (infoCurso.descripcion)  fd.append("descripcion",  infoCurso.descripcion.trim());
+        if (infoCurso.perfil_vark)  fd.append("perfil_vark",  infoCurso.perfil_vark);
         if (infoCurso.id_dimension) fd.append("id_dimension", infoCurso.id_dimension);
-        if (infoCurso.foto_file) fd.append("foto", infoCurso.foto_file);
+        if (infoCurso.foto_file)    fd.append("foto",         infoCurso.foto_file);
         const { data: dc } = await api.post("/cursos/cursos", fd);
         if (!dc.ok) throw new Error(dc.mensaje);
         const id_curso = dc.id_curso;
@@ -1143,7 +678,7 @@ export function EditorCurso() {
             const id_seccion = ds.id_seccion;
 
             for (let j = 0; j < sec.contenidos.length; j++) {
-                const con = sec.contenidos[j];
+                const con     = sec.contenidos[j];
                 const payload = await buildContenidoPayload(con, id_seccion, j + 1);
                 const { data: dcon } = payload.useFormData
                     ? await api.post(`/cursos/secciones/${id_seccion}/contenidos`, payload.fd)
@@ -1163,9 +698,9 @@ export function EditorCurso() {
 
     const handleEditar = async () => {
         const fd = new FormData();
-        fd.append("titulo", infoCurso.titulo.trim());
-        fd.append("descripcion", infoCurso.descripcion?.trim() || "");
-        fd.append("perfil_vark", infoCurso.perfil_vark || "");
+        fd.append("titulo",       infoCurso.titulo.trim());
+        fd.append("descripcion",  infoCurso.descripcion?.trim() || "");
+        fd.append("perfil_vark",  infoCurso.perfil_vark || "");
         fd.append("id_dimension", infoCurso.id_dimension || "");
         if (infoCurso.foto_file) fd.append("foto", infoCurso.foto_file);
         const { data: dc } = await api.put(`/cursos/cursos/${id}`, fd);
@@ -1187,13 +722,13 @@ export function EditorCurso() {
                 id_seccion = ds.id_seccion;
             }
 
-            const so = seccionesOriginales.find((s) => s.id_seccion === sec.id_seccion);
+            const so   = seccionesOriginales.find((s) => s.id_seccion === sec.id_seccion);
             const cAct = sec.contenidos.filter((c) => c.id_contenido).map((c) => c.id_contenido);
             for (const co of so?.contenidos || [])
                 if (!cAct.includes(co.id_contenido)) await api.delete(`/cursos/contenidos/${co.id_contenido}`);
 
             for (let j = 0; j < sec.contenidos.length; j++) {
-                const con = sec.contenidos[j];
+                const con     = sec.contenidos[j];
                 const payload = await buildContenidoPayload(con, id_seccion, j + 1);
                 if (con.id_contenido) {
                     payload.useFormData
@@ -1239,7 +774,9 @@ export function EditorCurso() {
     };
 
     if (cargando) return (
-        <div className="ec-root"><div className="ec-loading"><div className="ec-spinner" /><p>Cargando curso…</p></div></div>
+        <div className="ec-root">
+            <div className="ec-loading"><div className="ec-spinner" /><p>Cargando curso…</p></div>
+        </div>
     );
 
     return (
@@ -1278,7 +815,10 @@ export function EditorCurso() {
                 {paso < STEPS.length
                     ? <button className="ec-foot-btn ec-foot-btn--next" onClick={handleNext}>Siguiente</button>
                     : <button className="ec-foot-btn ec-foot-btn--save" disabled={guardando} onClick={handleGuardar}>
-                        {guardando ? <><div className="btn-spinner" /> Guardando…</> : <><IoCheckmarkOutline size={15} /> {modoEdicion ? "Guardar cambios" : "Crear curso"}</>}
+                        {guardando
+                            ? <><div className="btn-spinner" /> Guardando…</>
+                            : <><IoCheckmarkOutline size={15} /> {modoEdicion ? "Guardar cambios" : "Crear curso"}</>
+                        }
                     </button>
                 }
             </footer>
