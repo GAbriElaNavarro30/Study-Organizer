@@ -120,7 +120,7 @@ export function useMetodosEstudioResultado() {
     { label: "Por dimensión", id: "mer-dims" },
     ...(tieneMejoras ? [{ label: "Posibles mejoras", id: "mer-errores" }] : []),
     ...(tieneRecs ? [{ label: "Recomendaciones", id: "mer-recs" }] : []),
-    ...(cursosRecomendados_data.length > 0 ? [{ label: "Cursos para ti", id: "mer-cursos" }] : []),
+    { label: "Cursos para ti", id: "mer-cursos" },
   ];
 
   return {

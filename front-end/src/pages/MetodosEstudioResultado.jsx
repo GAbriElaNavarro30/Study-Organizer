@@ -409,33 +409,41 @@ export function MetodosEstudioResultado() {
           )}
 
           {/* ── CURSOS RECOMENDADOS ── */}
-          {cursosRecomendados?.length > 0 && (
-            <div id="mer-cursos" className="mer-card">
-              <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
-                <div className="mer-card-tag" style={{ margin: "0 auto 18px" }}>
-                  <IoBookOutline size={11} /> Cursos recomendados
-                </div>
-                <h2 className="mer-card-title">
-                  Tienes {cursosRecomendados.length} curso{cursosRecomendados.length !== 1 ? "s" : ""} recomendado{cursosRecomendados.length !== 1 ? "s" : ""}
-                </h2>
-                <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto 28px" }}>
-                  Basados en tu perfil{" "}
-                  {perfil_vark && (
-                    <strong>{perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</strong>
-                  )}{" "}
-                  y las dimensiones donde puedes mejorar.
-                </p>
-                <div style={{ display: "flex", justifyContent: "center" }}>  {/* 👈 wrapper */}
-                  <button
-                    className="mer-start-btn"
-                    onClick={() => navigate("/cursos")}
-                  >
-                    <IoBookOutline size={15} /> Ver cursos recomendados
-                  </button>
-                </div>
+          <div id="mer-cursos" className="mer-card">
+            <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
+              <div className="mer-card-tag" style={{ margin: "0 auto 18px" }}>
+                <IoBookOutline size={11} /> Cursos recomendados
               </div>
+
+              {cursosRecomendados?.length > 0 ? (
+                <>
+                  <h2 className="mer-card-title">
+                    Tienes {cursosRecomendados.length} curso{cursosRecomendados.length !== 1 ? "s" : ""} recomendado{cursosRecomendados.length !== 1 ? "s" : ""}
+                  </h2>
+                  <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto 28px" }}>
+                    Basados en tu perfil{" "}
+                    {perfil_vark && (
+                      <strong>{perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</strong>
+                    )}{" "}
+                    y las dimensiones donde puedes mejorar.
+                  </p>
+                  <div style={{ display: "flex", justifyContent: "center" }}>
+                    <button className="mer-start-btn" onClick={() => navigate("/cursos")}>
+                      <IoBookOutline size={15} /> Ver cursos recomendados
+                    </button>
+                  </div>
+                </>
+              ) : (
+                <>
+                  <h2 className="mer-card-title">0 cursos recomendados</h2>
+                  <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto" }}>
+                    Por el momento no encontramos cursos que coincidan con tu perfil
+                    y las dimensiones que puedes mejorar. Pronto habrá más cursos disponibles.
+                  </p>
+                </>
+              )}
             </div>
-          )}
+          </div>
 
           {/* ── CTA ── */}
           <div className="mer-cta-wrapper">
@@ -457,4 +465,4 @@ export function MetodosEstudioResultado() {
       </div>
     </div>
   );
-}
+} 

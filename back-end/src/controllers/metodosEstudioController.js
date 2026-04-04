@@ -125,56 +125,33 @@ export async function responder(req, res) {
     const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
-    if (criterios?.perfil) {
-      if (criterios.dimensiones?.length > 0) {
-        // Intento 1: perfil + dimensiones débiles (decisión del sistema experto)
-        const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
-        const [cursos] = await conn.query(
-          `SELECT
-              c.id_curso, c.titulo, c.descripcion, c.foto,
-              c.perfil_vark, c.fecha_creacion,
-              d.nombre_dimension,
-              u.nombre AS nombre_tutor,
-              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-           FROM Curso c
-           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-           WHERE c.es_publicado  = 1
-             AND c.archivado     = 0
-             AND c.id_usuario   != ?
-             AND c.perfil_vark   = ?
-             AND c.id_dimension IN (${dimPlaceholders})
-           ORDER BY c.fecha_creacion DESC
-           LIMIT 12`,
-          [id_usuario, criterios.perfil, ...criterios.dimensiones]
-        );
-        cursos_recomendados = cursos;
-      }
+    if (criterios?.perfil_exacto && criterios.dimensiones?.length > 0) {
+      const todosPerfiles = [criterios.perfil_exacto, ...(criterios.perfiles_afines || [])];
+      const placeholders = todosPerfiles.map(() => "?").join(",");
+      const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
 
-      // Intento 2 (fallback): solo perfil
-      if (cursos_recomendados.length === 0) {
-        const [cursosFallback] = await conn.query(
-          `SELECT
-              c.id_curso, c.titulo, c.descripcion, c.foto,
-              c.perfil_vark, c.fecha_creacion,
-              d.nombre_dimension,
-              u.nombre AS nombre_tutor,
-              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-           FROM Curso c
-           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-           WHERE c.es_publicado = 1
-             AND c.archivado   = 0
-             AND c.id_usuario  != ?
-             AND c.perfil_vark  = ?
-           ORDER BY c.fecha_creacion DESC
-           LIMIT 12`,
-          [id_usuario, criterios.perfil]
-        );
-        cursos_recomendados = cursosFallback;
-      }
+      const [cursos] = await conn.query(
+        `SELECT
+            c.id_curso, c.titulo, c.descripcion, c.foto,
+            c.perfil_vark, c.fecha_creacion,
+            d.nombre_dimension,
+            u.nombre AS nombre_tutor,
+            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+            CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
+         FROM Curso c
+         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+         WHERE c.es_publicado  = 1
+           AND c.archivado     = 0
+           AND c.id_usuario   != ?
+           AND c.perfil_vark   IN (${placeholders})
+           AND c.id_dimension  IN (${dimPlaceholders})
+         ORDER BY prioridad ASC, c.fecha_creacion DESC
+         LIMIT 12`,
+        [criterios.perfil_exacto, id_usuario, ...todosPerfiles, ...criterios.dimensiones]
+      );
+      cursos_recomendados = cursos;
     }
-
     res.json({
       id_intento,
       perfil_vark,
@@ -237,56 +214,33 @@ export async function obtenerResultado(req, res) {
     const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
-    if (criterios?.perfil) {
-      if (criterios.dimensiones?.length > 0) {
-        // Intento 1: perfil + dimensiones débiles (decisión del sistema experto)
-        const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
-        const [cursos] = await db.query(
-          `SELECT
-              c.id_curso, c.titulo, c.descripcion, c.foto,
-              c.perfil_vark, c.fecha_creacion,
-              d.nombre_dimension,
-              u.nombre AS nombre_tutor,
-              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-           FROM Curso c
-           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-           WHERE c.es_publicado  = 1
-             AND c.archivado     = 0
-             AND c.id_usuario   != ?
-             AND c.perfil_vark   = ?
-             AND c.id_dimension IN (${dimPlaceholders})
-           ORDER BY c.fecha_creacion DESC
-           LIMIT 12`,
-          [id_usuario, criterios.perfil, ...criterios.dimensiones]
-        );
-        cursos_recomendados = cursos;
-      }
+    if (criterios?.perfil_exacto && criterios.dimensiones?.length > 0) {
+      const todosPerfiles = [criterios.perfil_exacto, ...(criterios.perfiles_afines || [])];
+      const placeholders = todosPerfiles.map(() => "?").join(",");
+      const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
 
-      // Intento 2 (fallback): solo perfil
-      if (cursos_recomendados.length === 0) {
-        const [cursosFallback] = await db.query(
-          `SELECT
-              c.id_curso, c.titulo, c.descripcion, c.foto,
-              c.perfil_vark, c.fecha_creacion,
-              d.nombre_dimension,
-              u.nombre AS nombre_tutor,
-              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-           FROM Curso c
-           LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-           LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-           WHERE c.es_publicado = 1
-             AND c.archivado   = 0
-             AND c.id_usuario  != ?
-             AND c.perfil_vark  = ?
-           ORDER BY c.fecha_creacion DESC
-           LIMIT 12`,
-          [id_usuario, criterios.perfil]
-        );
-        cursos_recomendados = cursosFallback;
-      }
+      const [cursos] = await db.query(
+        `SELECT
+            c.id_curso, c.titulo, c.descripcion, c.foto,
+            c.perfil_vark, c.fecha_creacion,
+            d.nombre_dimension,
+            u.nombre AS nombre_tutor,
+            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+            CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
+         FROM Curso c
+         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+         WHERE c.es_publicado  = 1
+           AND c.archivado     = 0
+           AND c.id_usuario   != ?
+           AND c.perfil_vark   IN (${placeholders})
+           AND c.id_dimension  IN (${dimPlaceholders})
+         ORDER BY prioridad ASC, c.fecha_creacion DESC
+         LIMIT 12`,
+        [criterios.perfil_exacto, id_usuario, ...todosPerfiles, ...criterios.dimensiones]
+      );
+      cursos_recomendados = cursos;
     }
-
     res.json({
       id_intento: Number(id_intento),
       perfil_vark,

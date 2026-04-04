@@ -3,7 +3,7 @@ from experta import KnowledgeEngine, Rule, MATCH, TEST, NOT
 from hechos.hechos_me import (
     PuntajeDimension, PreguntaConError, PerfilVARK,
     ErrorDetectado, RecomendacionME,
-    ERRORES_POR_PREGUNTA, RECOMENDACIONES_GENERALES, RECOMENDACIONES_VARK,
+    ERRORES_POR_PREGUNTA, RECOMENDACIONES_GENERALES, RECOMENDACIONES_VARK, TODOS_LOS_PERFILES,
     CriteriosCurso,
 )
 
@@ -113,33 +113,31 @@ class MotorMetodosEstudio(KnowledgeEngine):
           
           
                 
-    # ── BLOQUE 6: Criterios de cursos — con perfil VARK conocido ──
-    # Acumula dimensiones débiles y declara los criterios al final.
-    @Rule(
-        PerfilVARK(perfil=MATCH.perfil),
-        salience=1,
-    )
+    # ── BLOQUE 6: Con perfil VARK conocido ──
+    @Rule(PerfilVARK(perfil=MATCH.perfil), salience=1)
     def criterios_cursos_con_perfil(self, perfil):
-        # Recolectar dimensiones deficientes y regulares de la WM
         dimensiones_debiles = [
             fact["id_dimension"]
             for fact in self.facts.values()
             if isinstance(fact, PuntajeDimension)
             and fact["nivel"] in ("deficiente", "regular")
         ]
+        # Deducir perfiles afines igual que el motor EA
+        afines = [
+            p for p in TODOS_LOS_PERFILES
+            if p != perfil and any(letra in p for letra in perfil)
+        ]
         self.declare(CriteriosCurso(
-            perfil=perfil,
+            perfil_exacto=perfil,
+            perfiles_afines=afines,
             dimensiones=dimensiones_debiles,
         ))
 
-    # ── BLOQUE 7: Criterios de cursos — sin perfil VARK ──
-    # Si el estudiante no hizo el test VARK, no se puede recomendar por perfil.
-    @Rule(
-        NOT(PerfilVARK()),
-        salience=1,
-    )
+    # ── BLOQUE 7: Sin perfil VARK ──
+    @Rule(NOT(PerfilVARK()), salience=1)
     def criterios_cursos_sin_perfil(self):
         self.declare(CriteriosCurso(
-            perfil="",
+            perfil_exacto="",
+            perfiles_afines=[],
             dimensiones=[],
         ))

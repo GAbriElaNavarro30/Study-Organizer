@@ -123,7 +123,8 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
             criterios_cursos = {
-                "perfil":      fact["perfil"],
+                "perfil_exacto":   fact["perfil_exacto"],
+                "perfiles_afines": fact["perfiles_afines"],
                 "dimensiones": fact["dimensiones"],
             }
             break
