@@ -146,38 +146,34 @@ export function MetodosEstudio() {
               </div>
             </div>
             <div className="mei-intro-grid">
-              <div className="mei-intro-item">
-                <div className="mei-intro-item-num">01</div>
-                <p className="mei-intro-item-title">¿Por qué es importante analizarlos?</p>
-                <p className="mei-intro-item-desc">
-                  Muchos estudiantes estudian de forma ineficiente sin saberlo. Identificar qué hábitos
-                  te perjudican es el primer paso para mejorar tu rendimiento de forma sostenida.
-                </p>
-              </div>
-              <div className="mei-intro-item">
-                <div className="mei-intro-item-num">02</div>
-                <p className="mei-intro-item-title">¿Qué obtienes con este test?</p>
-                <p className="mei-intro-item-desc">
-                  Un diagnóstico detallado de 9 dimensiones clave, errores detectados en tus hábitos
-                  actuales y recomendaciones según tu perfil VARK.
-                </p>
-              </div>
-              <div className="mei-intro-item">
-                <div className="mei-intro-item-num">03</div>
-                <p className="mei-intro-item-title">Fundamento académico</p>
-                <p className="mei-intro-item-desc">
-                  Basado en el <strong>CHTE</strong> de Álvarez y Fernández, y en el <strong>LASSI</strong>,
-                  dos de los instrumentos más utilizados y validados para evaluar hábitos de estudio.
-                </p>
-              </div>
-              <div className="mei-intro-item">
-                <div className="mei-intro-item-num">04</div>
-                <p className="mei-intro-item-title">Integración con tu perfil VARK</p>
-                <p className="mei-intro-item-desc">
-                  Las recomendaciones que recibirás están alineadas con tu estilo de aprendizaje
-                  dominante, haciendo el diagnóstico más preciso y útil para ti.
-                </p>
-              </div>
+              {[
+                {
+                  n: "01",
+                  t: "¿Por qué es importante analizarlos?",
+                  d: "Muchos estudiantes estudian de forma ineficiente sin saberlo. Identificar qué hábitos te perjudican es el primer paso para mejorar tu rendimiento de forma sostenida.",
+                },
+                {
+                  n: "02",
+                  t: "¿Qué obtienes con este test?",
+                  d: "Un diagnóstico detallado de 9 dimensiones clave, errores detectados en tus hábitos actuales y recomendaciones según tu perfil VARK.",
+                },
+                {
+                  n: "03",
+                  t: "Fundamento académico",
+                  d: "Basado en el CHTE de Álvarez y Fernández, y en el LASSI, dos de los instrumentos más utilizados y validados para evaluar hábitos de estudio.",
+                },
+                {
+                  n: "04",
+                  t: "Integración con tu perfil VARK",
+                  d: "Las recomendaciones que recibirás están alineadas con tu estilo de aprendizaje dominante, haciendo el diagnóstico más preciso y útil para ti.",
+                },
+              ].map((item) => (
+                <div key={item.n} className="mei-intro-item">
+                  <div className="mei-intro-item-num">{item.n}</div>
+                  <p className="mei-intro-item-title">{item.t}</p>
+                  <p className="mei-intro-item-desc">{item.d}</p>
+                </div>
+              ))}
             </div>
           </div>
 
@@ -228,7 +224,7 @@ export function MetodosEstudio() {
                     { n: "02", t: "Análisis", d: "El sistema evalúa tus respuestas dimensión por dimensión." },
                     { n: "03", t: "Errores detectados", d: "Identificamos los hábitos y métodos que afectan tu rendimiento académico." },
                     { n: "04", t: "Recomendaciones", d: "Sugerencias adaptadas a tu perfil de aprendizaje VARK dominante." },
-                  ].map(s => (
+                  ].map((s) => (
                     <div key={s.n} className="mei-step">
                       <span className="mei-step-num">{s.n}</span>
                       <div>

@@ -17,10 +17,14 @@ export const nivelCssKey = (p) =>
 export const formatPuntaje = (p) => (Math.floor(Number(p) * 100) / 100).toFixed(2);
 
 // ── Formato de fecha ──
-export const formatFecha = (f) => new Date(f).toLocaleString("es-MX", {
-    day: "2-digit", month: "short", year: "numeric",
-    hour: "2-digit", minute: "2-digit",
-});
+export const formatFecha = (f) =>
+    new Date(f).toLocaleString("es-MX", {
+        day: "2-digit",
+        month: "short",
+        year: "numeric",
+        hour: "2-digit",
+        minute: "2-digit",
+    });
 
 // ── Hook principal ──
 export function useMetodosEstudioHistorial() {
@@ -31,7 +35,8 @@ export function useMetodosEstudioHistorial() {
     const [animado, setAnimado] = useState(false);
 
     useEffect(() => {
-        api.get("/metodosestudio/historial")
+        api
+            .get("/metodosestudio/historial")
             .then(({ data }) => setIntentos(data.historial || []))
             .catch(() => { })
             .finally(() => {
@@ -39,6 +44,9 @@ export function useMetodosEstudioHistorial() {
                 setTimeout(() => setAnimado(true), 120);
             });
     }, []);
+
+    // ── Scroll al inicio al montar ──
+    useEffect(() => { window.scrollTo(0, 0); }, []);
 
     const mejorIntento = intentos.length
         ? intentos.reduce((a, b) =>

@@ -74,22 +74,14 @@ export function useMetodosEstudio() {
             behavior: "smooth",
             block: "start",
         });
-        // Liberar bloqueo cuando termina el scroll
         setTimeout(() => { scrollingRef.current = false; }, 900);
     };
 
     return {
-        // Refs
         mobileRef,
-
-        // Estados
         activeSection,
         animado,
-
-        // Constantes
         NAV_SECTIONS,
-
-        // Acciones
         navigate,
         irASeccion,
     };

@@ -14,8 +14,6 @@ const normalizarResultados = (data) => {
   return { ...data, resultados_por_dimension: obj };
 };
 
-
-
 export function useMetodosEstudioResultado() {
   const location = useLocation();
   const navigate = useNavigate();
@@ -28,7 +26,6 @@ export function useMetodosEstudioResultado() {
   const [cargando, setCargando] = useState(!datos);
   const [animado, setAnimado] = useState(false);
   const [activeSection, setActiveSection] = useState("mer-resumen");
-
   const [cursosRecomendados, setCursosRecomendados] = useState(
     location.state?.cursos_recomendados || []
   );
@@ -39,27 +36,28 @@ export function useMetodosEstudioResultado() {
     else setTimeout(() => setAnimado(true), 120);
   }, []);
 
+  // ── Scroll al inicio al montar ──
+  useEffect(() => { window.scrollTo(0, 0); }, []);
+
   // ── IntersectionObserver para marcar sección activa en sidebar ──
   useEffect(() => {
-    if (!datos || !animado) return; // 👈 espera a que el DOM esté listo
+    if (!datos || !animado) return;
 
     const sectionIds = [
       "mer-resumen",
       "mer-dims",
       "mer-errores",
       "mer-recs",
-      "mer-cursos", // 👈 agregado
+      "mer-cursos",
     ];
 
     const observer = new IntersectionObserver(
       (entries) => {
         const visible = entries
-          .filter(e => e.isIntersecting)
+          .filter((e) => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
 
-        if (visible.length > 0) {
-          setActiveSection(visible[0].target.id);
-        }
+        if (visible.length > 0) setActiveSection(visible[0].target.id);
       },
       {
         threshold: [0.1, 0.3, 0.5],
@@ -67,7 +65,7 @@ export function useMetodosEstudioResultado() {
       }
     );
 
-    sectionIds.forEach(id => {
+    sectionIds.forEach((id) => {
       const el = document.getElementById(id);
       if (el) observer.observe(el);
     });
@@ -78,7 +76,6 @@ export function useMetodosEstudioResultado() {
   // ── Carga desde API si no vienen por location.state ──
   const cargarResultado = async () => {
     const id_intento = location.state?.id_intento;
-
     if (!id_intento) { navigate("/metodos-estudio"); return; }
     try {
       const { data } = await api.get(`/metodosestudio/resultado/${id_intento}`);
@@ -105,7 +102,6 @@ export function useMetodosEstudioResultado() {
     errores_detectados = [],
     recomendaciones = {},
     perfil_vark = "",
-
   } = datos || {};
 
   const tieneMejoras = errores_detectados.length > 0;
@@ -114,7 +110,7 @@ export function useMetodosEstudioResultado() {
   const dimOrdenadas = Object.entries(resultados_por_dimension)
     .sort((a, b) => Number(a[0]) - Number(b[0]));
 
-  // Secciones dinámicas del sidebar
+  // ── Secciones dinámicas del sidebar ──
   const sidebarSections = [
     { label: "Resumen global", id: "mer-resumen" },
     { label: "Por dimensión", id: "mer-dims" },

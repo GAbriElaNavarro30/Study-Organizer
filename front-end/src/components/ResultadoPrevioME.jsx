@@ -1,6 +1,6 @@
 // src/components/ResultadoPrevioME.jsx
 import { IoBarChartOutline, IoArrowForwardOutline } from "react-icons/io5";
-import "../styles/ResultadoPrevio.css"; // reutiliza los mismos estilos
+import "../styles/ResultadoPrevio.css";
 import { useResultadoPrevioME } from "../hooks/useResultadoPrevioME";
 
 export function ResultadoPrevioME() {

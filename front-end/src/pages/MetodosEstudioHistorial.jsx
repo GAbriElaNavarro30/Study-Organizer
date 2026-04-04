@@ -1,7 +1,5 @@
 // src/pages/MetodosEstudio/MetodosEstudioHistorial.jsx
-import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
-import api from "../services/api.js";
 import {
   IoCalendarOutline, IoArrowForwardOutline, IoRefreshOutline,
   IoHomeOutline, IoBarChartOutline, IoTimeOutline,
@@ -102,7 +100,7 @@ export function MetodosEstudioHistorial() {
                   <IoCalendarOutline size={11} /> Todos los intentos
                 </div>
                 <h2 className="meh-card-title">Tu evolución en el tiempo</h2>
-                <p className="meh-card-text" style={{ marginBottom: 24 }}>
+                <p className="meh-card-text meh-card-text--spaced">
                   Haz clic en cualquier intento para ver el detalle de tus resultados.
                 </p>
                 <div className="meh-table-wrap">
@@ -133,7 +131,7 @@ export function MetodosEstudioHistorial() {
                               }
                             </td>
                             <td className="meh-col-fecha">
-                              <IoCalendarOutline size={13} style={{ flexShrink: 0 }} />
+                              <IoCalendarOutline size={13} className="meh-col-fecha-icon" />
                               {formatFecha(intento.fecha_intento)}
                             </td>
                             <td>

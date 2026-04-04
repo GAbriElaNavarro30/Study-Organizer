@@ -1,3 +1,5 @@
+/* src/styles/ResultadoPrevio.css */
+
 .resultado-previo {
     margin-top: 24px;
     border-radius: 14px;
@@ -108,7 +110,9 @@
     box-shadow: 0 4px 14px rgba(28, 90, 144, 0.2);
 }
 
-.resultado-previo__btn:active { transform: translateY(0); }
+.resultado-previo__btn:active {
+    transform: translateY(0);
+}
 
 /* ============= RESPONSIVIDAD ============== */
 @media (max-width: 640px) {

@@ -85,8 +85,9 @@ export function MetodosEstudioTest() {
         />
       )}
 
-      {/* ── Música de fondo ── */}
-      {/*<iframe
+      {/* ── Música de fondo (desactivada) ── */}
+      {/*
+      <iframe
         ref={iframeRef}
         src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
         allow="autoplay"
@@ -99,7 +100,8 @@ export function MetodosEstudioTest() {
         title={muted ? "Activar música" : "Silenciar"}
       >
         {muted ? <IoVolumeMuteOutline size={20} /> : <IoMusicalNotesOutline size={20} />}
-      </button>*/}
+      </button>
+      */}
 
       {/* ── HEADER ── */}
       <div className="met-header">
@@ -194,13 +196,13 @@ export function MetodosEstudioTest() {
                       <div className="met-pregunta-top">
                         <span className="met-pregunta-num">{pi + 1}</span>
                         <p className="met-pregunta-texto">{p.texto_pregunta}</p>
-                        {/*p.es_negativa && (
+                        {/* p.es_negativa && (
                           <span className="met-negativa-badge">¡Atención!</span>
-                        )*/}
+                        ) */}
                       </div>
 
                       <div className="met-opciones">
-                        {p.opciones.map(op => {
+                        {p.opciones.map((op) => {
                           const isSelected = seleccionada?.id_opcion === op.id_opcion;
                           return (
                             <button

@@ -53,24 +53,22 @@ export function useMetodosEstudioTest() {
     /**
      * Toggle selection:
      * - Si la opción ya está seleccionada → desmarcar (elimina la key)
-     * - Si es diferente → seleccionar la nueva (solo 1 a la vez)
+     * - Si es diferente             → seleccionar la nueva (solo 1 a la vez)
      */
     const seleccionarRespuesta = (id_pregunta, opcion) => {
-        setRespuestas(prev => {
+        setRespuestas((prev) => {
             const actual = prev[id_pregunta];
-            // Mismo id_opcion → deseleccionar
             if (actual?.id_opcion === opcion.id_opcion) {
                 const { [id_pregunta]: _, ...resto } = prev;
                 return resto;
             }
-            // Distinto → reemplazar (solo 1 selección por pregunta)
             return { ...prev, [id_pregunta]: opcion };
         });
     };
 
     // ── Verifica si toda una dimensión está completa ──
     const dimCompleta = (dim) =>
-        dim?.preguntas?.every(p => respuestas[p.id_pregunta]);
+        dim?.preguntas?.every((p) => respuestas[p.id_pregunta]);
 
     // ── Navegar entre dimensiones y hacer scroll al top ──
     const irA = (index) => {
@@ -89,8 +87,8 @@ export function useMetodosEstudioTest() {
         setEnviando(true);
         setError(null);
         try {
-            const todasPreguntas = dimensiones.flatMap(d => d.preguntas);
-            const payload = todasPreguntas.map(p => {
+            const todasPreguntas = dimensiones.flatMap((d) => d.preguntas);
+            const payload = todasPreguntas.map((p) => {
                 const r = respuestas[p.id_pregunta];
                 return {
                     id_pregunta: p.id_pregunta,
@@ -101,8 +99,8 @@ export function useMetodosEstudioTest() {
                 };
             });
             const { data } = await api.post("/metodosestudio/guardar-respuestas", { respuestas: payload });
-            setDatosResultado(data);        // guarda los datos
-            setMostrarAlertExito(true);     // muestra el alert
+            setDatosResultado(data);
+            setMostrarAlertExito(true);
         } catch (err) {
             setError(err.response?.data?.error || "Error al enviar el test.");
         } finally {
@@ -130,7 +128,7 @@ export function useMetodosEstudioTest() {
         : 0;
 
     const dim = dimensiones[dimActual];
-    const preguntasRestantes = dim?.preguntas?.filter(p => !respuestas[p.id_pregunta]).length || 0;
+    const preguntasRestantes = dim?.preguntas?.filter((p) => !respuestas[p.id_pregunta]).length || 0;
 
     return {
         // Refs

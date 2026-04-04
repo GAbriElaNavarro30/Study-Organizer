@@ -49,7 +49,10 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   if (n === 0) return null;
 
   const angulo = (i) => (Math.PI * 2 * i) / n - Math.PI / 2;
-  const punto = (i, radio) => ({ x: cx + radio * Math.cos(angulo(i)), y: cy + radio * Math.sin(angulo(i)) });
+  const punto = (i, radio) => ({
+    x: cx + radio * Math.cos(angulo(i)),
+    y: cy + radio * Math.sin(angulo(i)),
+  });
 
   const poligono = dims.map(([, info], i) => {
     const p = punto(i, (info.puntaje / 100) * r);
@@ -58,8 +61,9 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
 
   return (
     <svg viewBox="0 0 320 320" className="mer-radar">
-      {[25, 50, 75, 100].map(pct => (
-        <polygon key={pct}
+      {[25, 50, 75, 100].map((pct) => (
+        <polygon
+          key={pct}
           points={dims.map((_, i) => { const p = punto(i, (pct / 100) * r); return `${p.x},${p.y}`; }).join(" ")}
           fill="none" stroke="rgba(43,122,184,0.15)" strokeWidth="1"
         />
@@ -96,7 +100,13 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
         <span className={`mer-barra-nivel mer-nivel-${nivelCssKey(nivel)}`}>{nivelLabel(nivel)}</span>
       </div>
       <div className="mer-barra-track">
-        <div className="mer-barra-fill" style={{ width: animado ? `${puntaje}%` : "0%", background: nivelColor(nivel) }} />
+        <div
+          className="mer-barra-fill"
+          style={{
+            width: animado ? `${puntaje}%` : "0%",
+            background: nivelColor(nivel),
+          }}
+        />
       </div>
       <span className="mer-barra-pct">{formatPuntaje(puntaje)}%</span>
     </div>
@@ -106,12 +116,12 @@ function BarraDimension({ nombre, puntaje, nivel, animado }) {
 // ── Sección expandible recomendaciones ──
 function SeccionRecs({ dimension, recs, perfil_vark }) {
   const [abierta, setAbierta] = useState(false);
-  const generales = recs.filter(r => r.estilo_vark === "general");
-  const vark = recs.filter(r => r.estilo_vark !== "general");
+  const generales = recs.filter((r) => r.estilo_vark === "general");
+  const vark = recs.filter((r) => r.estilo_vark !== "general");
 
   return (
     <div className="mer-rec-section">
-      <button className="mer-rec-toggle" onClick={() => setAbierta(v => !v)}>
+      <button className="mer-rec-toggle" onClick={() => setAbierta((v) => !v)}>
         <span>{dimension}</span>
         {abierta ? <IoChevronUpOutline size={16} /> : <IoChevronDownOutline size={16} />}
       </button>
@@ -122,7 +132,9 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
               <p className="mer-rec-cat">Recomendaciones generales</p>
               <ul className="mer-rec-list">
                 {generales.map((r, i) => (
-                  <li key={i}><IoCheckmarkCircleOutline size={14} className="mer-rec-check" /> {r.texto}</li>
+                  <li key={i}>
+                    <IoCheckmarkCircleOutline size={14} className="mer-rec-check" /> {r.texto}
+                  </li>
                 ))}
               </ul>
             </>
@@ -130,12 +142,15 @@ function SeccionRecs({ dimension, recs, perfil_vark }) {
           {vark.length > 0 && (
             <>
               <p className="mer-rec-cat">
-                Según tu perfil VARK ({perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")})
+                Según tu perfil VARK ({perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")})
               </p>
               <ul className="mer-rec-list mer-rec-vark">
                 {vark.map((r, i) => (
                   <li key={i}>
-                    <span className="mer-vark-pill" style={{ background: VARK_COLORS[r.estilo_vark] || "#2B7AB8" }}>
+                    <span
+                      className="mer-vark-pill"
+                      style={{ background: VARK_COLORS[r.estilo_vark] || "#2B7AB8" }}
+                    >
                       {r.estilo_vark}
                     </span>
                     {r.texto}
@@ -166,12 +181,9 @@ function LoadingState() {
 // ══════════════════════════════════════════════
 export function MetodosEstudioResultado() {
   const {
-    // Estados
     cargando,
     animado,
     activeSection,
-
-    // Datos derivados
     puntaje_global,
     nivel_global,
     resultados_por_dimension,
@@ -183,8 +195,6 @@ export function MetodosEstudioResultado() {
     tieneRecs,
     dimOrdenadas,
     sidebarSections,
-
-    // Acciones
     navigate,
     irASeccion,
   } = useMetodosEstudioResultado();
@@ -194,7 +204,7 @@ export function MetodosEstudioResultado() {
   return (
     <div className={`mer-app ${animado ? "mer-animated" : ""}`}>
 
-      {/* HEADER */}
+      {/* ── HEADER ── */}
       <div className="mer-header">
         <div className="mer-header-left">
           <button className="mer-back-btn" onClick={() => navigate("/metodos-estudio")}>
@@ -209,13 +219,13 @@ export function MetodosEstudioResultado() {
           <div className="mer-header-stat"><IoBarChartOutline size={14} /> Análisis CHTE y LASSI</div>
           {perfil_vark && (
             <div className="mer-header-stat">
-              <IoAnalyticsOutline size={14} /> Perfil: {perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}
+              <IoAnalyticsOutline size={14} /> Perfil: {perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")}
             </div>
           )}
         </div>
       </div>
 
-      {/* LAYOUT */}
+      {/* ── LAYOUT ── */}
       <div className="mer-layout">
 
         {/* ── SIDEBAR ── */}
@@ -249,20 +259,20 @@ export function MetodosEstudioResultado() {
         {/* ── MAIN ── */}
         <main className="mer-main">
 
-          {/* CHIPS */}
+          {/* ── CHIPS ── */}
           <div className="mer-banner">
             <div className="mer-chip">
               <IoBarChartOutline size={14} />
               <span>Puntaje: {formatPuntaje(puntaje_global)}%</span>
             </div>
-            <div className="mer-chip" style={{ color: nivelColor(nivel_global) }}>
+            <div className={`mer-chip mer-chip--nivel-${nivelCssKey(nivel_global)}`}>
               <IoAnalyticsOutline size={14} />
               <span>{nivelLabel(nivel_global)}</span>
             </div>
             {perfil_vark && (
               <div className="mer-chip">
                 <IoBulbOutline size={14} />
-                <span>VARK: {perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</span>
+                <span>VARK: {perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")}</span>
               </div>
             )}
             {tieneMejoras && (
@@ -284,19 +294,19 @@ export function MetodosEstudioResultado() {
                 <p className="mer-card-text">
                   Obtuviste un puntaje global de <strong>{formatPuntaje(puntaje_global)}%</strong>,
                   lo que corresponde a un nivel{" "}
-                  <strong style={{ color: nivelColor(nivel_global) }}>{nivelLabel(nivel_global)}</strong>{" "}
+                  <strong className={`mer-nivel-${nivelCssKey(nivel_global)}`}>{nivelLabel(nivel_global)}</strong>{" "}
                   en tus hábitos de estudio.
                 </p>
                 {perfil_vark && (
-                  <p className="mer-card-text" style={{ marginTop: 12 }}>
+                  <p className="mer-card-text mer-card-text--spaced">
                     Tus recomendaciones han sido personalizadas según tu perfil VARK dominante:{" "}
-                    <strong>{perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</strong>.
+                    <strong>{perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")}</strong>.
                   </p>
                 )}
               </div>
               <div className="mer-card-deco">
-                <div className="mer-score-ring" style={{ borderColor: nivelColor(nivel_global) }}>
-                  <span className="mer-score-num" style={{ color: nivelColor(nivel_global) }}>
+                <div className={`mer-score-ring mer-score-ring--${nivelCssKey(nivel_global)}`}>
+                  <span className={`mer-score-num mer-nivel-${nivelCssKey(nivel_global)}`}>
                     {formatPuntaje(puntaje_global)}
                   </span>
                   <span className="mer-score-label">/ 100</span>
@@ -307,10 +317,10 @@ export function MetodosEstudioResultado() {
 
           {/* ── POR DIMENSIÓN ── */}
           <div id="mer-dims" className="mer-card">
-            <div className="mer-card-body" style={{ padding: "40px" }}>
+            <div className="mer-card-body">
               <div className="mer-card-tag"><IoAnalyticsOutline size={11} /> Por dimensión</div>
               <h2 className="mer-card-title">Distribución por dimensión</h2>
-              <p className="mer-card-text" style={{ marginBottom: 28 }}>
+              <p className="mer-card-text mer-card-text--spaced-lg">
                 Cada barra representa tu puntaje en esa dimensión del CHTE y LASSI.
               </p>
               <div className="mer-charts-grid">
@@ -339,12 +349,12 @@ export function MetodosEstudioResultado() {
           {/* ── POSIBLES MEJORAS ── */}
           {tieneMejoras && (
             <div id="mer-errores" className="mer-card">
-              <div className="mer-card-body" style={{ padding: "40px" }}>
+              <div className="mer-card-body">
                 <div className="mer-card-tag mer-tag-warn">
                   <IoAlertCircleOutline size={11} /> Posibles mejoras
                 </div>
                 <h2 className="mer-card-title">Áreas de oportunidad</h2>
-                <p className="mer-card-text" style={{ marginBottom: 24 }}>
+                <p className="mer-card-text mer-card-text--spaced-lg">
                   El sistema experto identificó los siguientes aspectos que podrías trabajar para mejorar tus hábitos:
                 </p>
                 <div className="mer-errores-grid">
@@ -362,8 +372,8 @@ export function MetodosEstudioResultado() {
           {/* ── SIN MEJORAS ── */}
           {!tieneMejoras && (
             <div className="mer-card">
-              <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
-                <IoCheckmarkCircleOutline size={48} style={{ color: "#1A6E3C", marginBottom: 12 }} />
+              <div className="mer-card-body mer-card-body--centered">
+                <IoCheckmarkCircleOutline size={48} className="mer-success-icon" />
                 <h2 className="mer-card-title">¡Excelentes hábitos!</h2>
                 <p className="mer-card-text">
                   No se detectaron hábitos negativos frecuentes en tus respuestas.
@@ -376,11 +386,10 @@ export function MetodosEstudioResultado() {
           {/* ── RECOMENDACIONES ── */}
           {tieneRecs && (
             <div id="mer-recs" className="mer-card">
-              <div className="mer-card-body" style={{ padding: "40px" }}>
+              <div className="mer-card-body">
                 <div className="mer-card-tag"><IoBulbOutline size={11} /> Recomendaciones</div>
                 <h2 className="mer-card-title">Recomendaciones personalizadas</h2>
 
-                {/* Aviso si no tiene perfil VARK */}
                 {(!perfil_vark || perfil_vark === "VARK") && (
                   <div className="mer-vark-aviso">
                     <IoAlertCircleOutline size={16} />
@@ -398,7 +407,7 @@ export function MetodosEstudioResultado() {
                   </div>
                 )}
 
-                <p className="mer-card-text" style={{ marginBottom: 20 }}>
+                <p className="mer-card-text mer-card-text--spaced-lg">
                   Haz clic en cada dimensión para ver las sugerencias adaptadas a tu perfil.
                 </p>
                 {Object.entries(recomendaciones).map(([dim, recs]) => (
@@ -410,8 +419,8 @@ export function MetodosEstudioResultado() {
 
           {/* ── CURSOS RECOMENDADOS ── */}
           <div id="mer-cursos" className="mer-card">
-            <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
-              <div className="mer-card-tag" style={{ margin: "0 auto 18px" }}>
+            <div className="mer-card-body mer-card-body--centered">
+              <div className="mer-card-tag mer-card-tag--centered">
                 <IoBookOutline size={11} /> Cursos recomendados
               </div>
 
@@ -420,14 +429,14 @@ export function MetodosEstudioResultado() {
                   <h2 className="mer-card-title">
                     Tienes {cursosRecomendados.length} curso{cursosRecomendados.length !== 1 ? "s" : ""} recomendado{cursosRecomendados.length !== 1 ? "s" : ""}
                   </h2>
-                  <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto 28px" }}>
+                  <p className="mer-card-text mer-card-text--narrow mer-card-text--spaced-lg">
                     Basados en tu perfil{" "}
                     {perfil_vark && (
-                      <strong>{perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</strong>
+                      <strong>{perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")}</strong>
                     )}{" "}
                     y las dimensiones donde puedes mejorar.
                   </p>
-                  <div style={{ display: "flex", justifyContent: "center" }}>
+                  <div className="mer-cursos-cta">
                     <button className="mer-start-btn" onClick={() => navigate("/cursos")}>
                       <IoBookOutline size={15} /> Ver cursos recomendados
                     </button>
@@ -436,10 +445,29 @@ export function MetodosEstudioResultado() {
               ) : (
                 <>
                   <h2 className="mer-card-title">0 cursos recomendados</h2>
-                  <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto" }}>
-                    Por el momento no encontramos cursos que coincidan con tu perfil
-                    y las dimensiones que puedes mejorar. Pronto habrá más cursos disponibles.
-                  </p>
+
+                  {(!perfil_vark || perfil_vark === "VARK") ? (
+                    <>
+                      <p className="mer-card-text mer-card-text--narrow mer-card-text--spaced-lg">
+                        Para recibir recomendaciones de cursos necesitas completar primero
+                        el test de Estilos de Aprendizaje.
+                      </p>
+                      <div className="mer-cursos-vark-cta">
+                        <button
+                          className="mer-start-btn mer-start-btn--vark"
+                          onClick={() => navigate("/test-estilos-aprendizaje")}
+                        >
+                          <IoBookOutline size={15} /> Realizar test VARK
+                        </button>
+                      </div>
+                    </>
+                  ) : (
+                    <p className="mer-card-text mer-card-text--narrow">
+                      Por el momento no encontramos cursos que coincidan con tu perfil{" "}
+                      <strong>{perfil_vark.split("").map((l) => VARK_LABELS[l] || l).join(" · ")}</strong>{" "}
+                      y las dimensiones que puedes mejorar. Pronto habrá más cursos disponibles.
+                    </p>
+                  )}
                 </>
               )}
             </div>
@@ -456,13 +484,10 @@ export function MetodosEstudioResultado() {
             <button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/historial-metodos-estudio")}>
               <IoCalendarOutline size={15} /> Ver historial
             </button>
-            {/*<button className="mer-start-btn mer-start-btn--outline" onClick={() => navigate("/cursos")}>
-              <IoBookOutline size={15} /> Ver cursos
-            </button>*/}
           </div>
 
         </main>
       </div>
     </div>
   );
-} 
+}
