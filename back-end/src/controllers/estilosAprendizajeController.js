@@ -120,25 +120,28 @@ export async function obtenerResultado(req, res) {
         const criterios = pythonRes.data.criterios_cursos;
         let cursos = [];
 
-        if (criterios?.perfil) {
+        if (criterios?.perfil_exacto) {
+            const todosPerfiles = [criterios.perfil_exacto, ...(criterios.perfiles_afines || [])];
+            const placeholders = todosPerfiles.map(() => "?").join(",");
+
             const [rows] = await db.query(
                 `SELECT
-                    c.id_curso, c.titulo, c.descripcion, c.foto,
-                    c.perfil_vark, c.fecha_creacion,
-                    d.nombre_dimension,
-                    u.nombre AS nombre_tutor,
-                    (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-                 FROM Curso c
-                 LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-                 LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-                 WHERE c.es_publicado = 1
-                   AND c.archivado   = 0
-                   AND c.id_usuario  != ?
-                   AND c.perfil_vark  = ?
-                   AND c.id_dimension IS NULL
-                 ORDER BY c.fecha_creacion DESC
-                 LIMIT 12`,
-                [id_usuario, criterios.perfil]
+            c.id_curso, c.titulo, c.descripcion, c.foto,
+            c.perfil_vark, c.fecha_creacion,
+            d.nombre_dimension,
+            u.nombre AS nombre_tutor,
+            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+            CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
+         FROM Curso c
+         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+         WHERE c.es_publicado = 1
+           AND c.archivado    = 0
+           AND c.id_usuario  != ?
+           AND c.perfil_vark  IN (${placeholders})
+         ORDER BY prioridad ASC, c.fecha_creacion DESC
+         LIMIT 12`,
+                [criterios.perfil_exacto, id_usuario, ...todosPerfiles]
             );
             cursos = rows;
         }
@@ -185,25 +188,28 @@ export async function obtenerResultadoGuardado(req, res) {
         const criterios = pythonRes.data.criterios_cursos;
         let cursos = [];
 
-        if (criterios?.perfil) {
+        if (criterios?.perfil_exacto) {
+            const todosPerfiles = [criterios.perfil_exacto, ...(criterios.perfiles_afines || [])];
+            const placeholders = todosPerfiles.map(() => "?").join(",");
+
             const [rows] = await db.query(
                 `SELECT
-                    c.id_curso, c.titulo, c.descripcion, c.foto,
-                    c.perfil_vark, c.fecha_creacion,
-                    d.nombre_dimension,
-                    u.nombre AS nombre_tutor,
-                    (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
-                 FROM Curso c
-                 LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-                 LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-                 WHERE c.es_publicado = 1
-                   AND c.archivado   = 0
-                   AND c.id_usuario  != ?
-                   AND c.perfil_vark  = ?
-                   AND c.id_dimension IS NULL
-                 ORDER BY c.fecha_creacion DESC
-                 LIMIT 12`,
-                [id_usuario, criterios.perfil]
+            c.id_curso, c.titulo, c.descripcion, c.foto,
+            c.perfil_vark, c.fecha_creacion,
+            d.nombre_dimension,
+            u.nombre AS nombre_tutor,
+            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+            CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
+         FROM Curso c
+         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+         WHERE c.es_publicado = 1
+           AND c.archivado    = 0
+           AND c.id_usuario  != ?
+           AND c.perfil_vark  IN (${placeholders})
+         ORDER BY prioridad ASC, c.fecha_creacion DESC
+         LIMIT 12`,
+                [criterios.perfil_exacto, id_usuario, ...todosPerfiles]
             );
             cursos = rows;
         }
@@ -238,4 +244,4 @@ export async function obtenerHistorial(req, res) {
         console.error("Error al obtener historial:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
-}
+} 

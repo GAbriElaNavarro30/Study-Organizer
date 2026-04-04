@@ -5,7 +5,7 @@ export class IntentoTest {
         this.tipo_test   = tipo_test;   // 'estilos_aprendizaje' | 'metodos_estudio'
         this.id_usuario  = id_usuario;
     }
- 
+
     // se crea un intento en la bd con el tipo test y el id_uduario
     async save() {
         const [result] = await db.query(

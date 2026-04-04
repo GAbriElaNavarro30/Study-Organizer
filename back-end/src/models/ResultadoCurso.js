@@ -3,16 +3,20 @@ import { db } from "../config/db.js";
 
 export class ResultadoCurso {
     constructor({ total_preguntas, respuestas_correctas, porcentaje, id_intento }) {
-        this.total_preguntas      = total_preguntas;
+        this.total_preguntas = total_preguntas;
         this.respuestas_correctas = respuestas_correctas;
-        this.porcentaje           = porcentaje;
-        this.id_intento           = id_intento;
+        this.porcentaje = porcentaje;
+        this.id_intento = id_intento;
     }
 
     async save() {
         return await db.query(
             `INSERT INTO Resultado_Curso (total_preguntas, respuestas_correctas, porcentaje, id_intento)
-             VALUES (?, ?, ?, ?)`,
+         VALUES (?, ?, ?, ?)
+         ON DUPLICATE KEY UPDATE
+           total_preguntas      = VALUES(total_preguntas),
+           respuestas_correctas = VALUES(respuestas_correctas),
+           porcentaje           = VALUES(porcentaje)`,
             [
                 this.total_preguntas,
                 this.respuestas_correctas,

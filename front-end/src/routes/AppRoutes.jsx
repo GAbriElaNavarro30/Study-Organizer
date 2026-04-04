@@ -28,6 +28,9 @@ import { MetodosEstudio } from "../pages/MetodosEstudio";
 import { CursosE } from "../pages/CursosE";
 import { CursosT } from "../pages/CursosT";
 import { EditorCurso } from "../pages/EditorCurso";
+import { CursoDetalle } from "../pages/CursoDetalle";
+import { CursoVisor } from "../pages/CursoVisor";
+import { CursoResultado } from "../pages/CursoResultado.jsx";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
 import { CorreoAlternativo } from "../pages/CorreoAlternativo";
@@ -203,6 +206,39 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <EditorCurso />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos-detalle"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursoDetalle />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos-visor"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursoVisor />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos/resultado"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursoResultado />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

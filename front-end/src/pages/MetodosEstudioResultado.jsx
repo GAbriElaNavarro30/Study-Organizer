@@ -411,42 +411,27 @@ export function MetodosEstudioResultado() {
           {/* ── CURSOS RECOMENDADOS ── */}
           {cursosRecomendados?.length > 0 && (
             <div id="mer-cursos" className="mer-card">
-              <div className="mer-card-body" style={{ padding: "40px" }}>
-                <div className="mer-card-tag">
+              <div className="mer-card-body" style={{ padding: "40px", textAlign: "center" }}>
+                <div className="mer-card-tag" style={{ margin: "0 auto 18px" }}>
                   <IoBookOutline size={11} /> Cursos recomendados
                 </div>
-                <h2 className="mer-card-title">Cursos para reforzar tus hábitos</h2>
-                <p className="mer-card-text" style={{ marginBottom: 28 }}>
-                  Estos cursos están alineados con tu perfil <strong>{perfil_vark}</strong> y
-                  las dimensiones donde puedes mejorar.
+                <h2 className="mer-card-title">
+                  Tienes {cursosRecomendados.length} curso{cursosRecomendados.length !== 1 ? "s" : ""} recomendado{cursosRecomendados.length !== 1 ? "s" : ""}
+                </h2>
+                <p className="mer-card-text" style={{ maxWidth: 420, margin: "0 auto 28px" }}>
+                  Basados en tu perfil{" "}
+                  {perfil_vark && (
+                    <strong>{perfil_vark.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</strong>
+                  )}{" "}
+                  y las dimensiones donde puedes mejorar.
                 </p>
-                <div className="mer-cursos-grid">
-                  {cursosRecomendados.map((curso) => (
-                    <div key={curso.id_curso} className="mer-curso-card">
-                      {curso.foto
-                        ? <img src={curso.foto} alt={curso.titulo} className="mer-curso-img" />
-                        : (
-                          <div className="mer-curso-placeholder">
-                            {curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
-                          </div>
-                        )
-                      }
-                      <div className="mer-curso-body">
-                        <p className="mer-curso-title">{curso.titulo}</p>
-                        {curso.descripcion && (
-                          <p className="mer-curso-desc">
-                            {curso.descripcion.slice(0, 80)}{curso.descripcion.length > 80 ? "…" : ""}
-                          </p>
-                        )}
-                        <div className="mer-curso-meta">
-                          {curso.nombre_tutor && <span>{curso.nombre_tutor}</span>}
-                          {curso.nombre_dimension && (
-                            <span className="mer-curso-dim">{curso.nombre_dimension}</span>
-                          )}
-                        </div>
-                      </div>
-                    </div>
-                  ))}
+                <div style={{ display: "flex", justifyContent: "center" }}>  {/* 👈 wrapper */}
+                  <button
+                    className="mer-start-btn"
+                    onClick={() => navigate("/cursos")}
+                  >
+                    <IoBookOutline size={15} /> Ver cursos recomendados
+                  </button>
                 </div>
               </div>
             </div>

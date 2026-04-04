@@ -4,7 +4,7 @@ from experta import KnowledgeEngine, Rule, MATCH, TEST, AND, NOT, OR
 # hechos
 from hechos.hechos_ea import (
     PuntajesVARK, PerfilDominante, Recomendacion, # hechos derivados WM
-    PERFILES, RECOMENDACIONES, # consulta hechos estaticos
+    PERFILES, RECOMENDACIONES, TODOS_LOS_PERFILES,# consulta hechos estaticos
     CriteriosCurso,
 )
 
@@ -184,16 +184,23 @@ class MotorVARK(KnowledgeEngine):
             if letra in RECOMENDACIONES: # letra = A, letra = R ¿existe?
                 for texto in RECOMENDACIONES[letra]: 
                     self.declare(Recomendacion(estilo=letra, texto=texto))  # delcara 20 hechos en total en la WM del motor 
-                    
+        
     # ── BLOQUE 6: Criterios de cursos recomendados ──
-    # Se dispara cuando ya existe un PerfilDominante en la WM.
-    # Declara los criterios para que Node.js busque los cursos.
+
     @Rule(
-        PerfilDominante(perfil=MATCH.perfil),
+        PerfilDominante(perfil=MATCH.perfil_usuario),
         salience=1,
     )
-    def criterios_cursos(self, perfil):
+    def deducir_perfiles_compatibles(self, perfil_usuario):
+        afines = []
+        for perfil_curso in TODOS_LOS_PERFILES:
+            if perfil_curso == perfil_usuario:
+                continue
+            if any(letra in perfil_curso for letra in perfil_usuario):
+                afines.append(perfil_curso)
+
         self.declare(CriteriosCurso(
-            perfil=perfil,
-            dimensiones=[],  # EA no filtra por dimensión
+            perfil_exacto=perfil_usuario,
+            perfiles_afines=afines,
+            dimensiones=[],
         ))

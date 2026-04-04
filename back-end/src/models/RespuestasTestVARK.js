@@ -11,7 +11,7 @@ export class RespuestasTestVARK {
         );
         return result;
     }
- 
+
     // ver respuestar de un intento
     static async getByIntento(id_intento) {
         const [rows] = await db.query(

@@ -5,7 +5,7 @@ import {
     IoStarOutline, IoRibbonOutline, IoTrophyOutline, IoTimeOutline,
     IoCalendarOutline, IoBookOutline,
 } from "react-icons/io5";
-import { 
+import {
     useResultadosTestEA,
     PERFIL_CONFIG,
     NAV_SECTIONS,
@@ -94,27 +94,27 @@ function LoadingState() {
 // ─── COLORES VARK PARA CURSOS ─────────────────────────────────────────────────
 
 const VARK_COLORS_REC = {
-    V:    { bg: "#DBEAFE", text: "#1D4ED8" },
-    A:    { bg: "#FEF9C3", text: "#854D0E" },
-    R:    { bg: "#DCFCE7", text: "#15803D" },
-    K:    { bg: "#FCE7F3", text: "#9D174D" },
-    VA:   { bg: "#EEF2FF", text: "#4338CA" },
-    VR:   { bg: "#ECFDF5", text: "#065F46" },
-    VK:   { bg: "#F3E8FF", text: "#6B21A8" },
-    AR:   { bg: "#FFFBEB", text: "#B45309" },
-    AK:   { bg: "#FFF1F2", text: "#BE123C" },
-    RK:   { bg: "#F0FDF4", text: "#166534" },
-    VAR:  { bg: "#EFF6FF", text: "#1E40AF" },
-    VAK:  { bg: "#F5F3FF", text: "#5B21B6" },
-    VRK:  { bg: "#ECFEFF", text: "#155E75" },
-    ARK:  { bg: "#FFF7ED", text: "#9A3412" },
+    V: { bg: "#DBEAFE", text: "#1D4ED8" },
+    A: { bg: "#FEF9C3", text: "#854D0E" },
+    R: { bg: "#DCFCE7", text: "#15803D" },
+    K: { bg: "#FCE7F3", text: "#9D174D" },
+    VA: { bg: "#EEF2FF", text: "#4338CA" },
+    VR: { bg: "#ECFDF5", text: "#065F46" },
+    VK: { bg: "#F3E8FF", text: "#6B21A8" },
+    AR: { bg: "#FFFBEB", text: "#B45309" },
+    AK: { bg: "#FFF1F2", text: "#BE123C" },
+    RK: { bg: "#F0FDF4", text: "#166534" },
+    VAR: { bg: "#EFF6FF", text: "#1E40AF" },
+    VAK: { bg: "#F5F3FF", text: "#5B21B6" },
+    VRK: { bg: "#ECFEFF", text: "#155E75" },
+    ARK: { bg: "#FFF7ED", text: "#9A3412" },
     VARK: { bg: "#F0F9FF", text: "#0369A1" },
 };
 
 // ─── TARJETA DE CURSO ─────────────────────────────────────────────────────────
 
 function CursoRecomendadoCard({ curso, primaryColor }) {
-    const hue  = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
+    const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
     const vark = VARK_COLORS_REC[curso.perfil_vark] || { bg: "#F1F5F9", text: "#64748B" };
 
     return (
@@ -389,14 +389,11 @@ export function ResultadosTestEA() {
 
                     {/* CURSOS RECOMENDADOS */}
                     <div id="sec-cursos" className="res-card">
-                        <div className="res-card-body" style={{ padding: "40px" }}>
-                            <div className="res-card-tag">
+                        <div className="res-card-body" style={{ padding: "40px", textAlign: "center" }}>
+                            <div className="res-card-tag" style={{ margin: "0 auto 18px" }}>
                                 <IoBookOutline size={11} /> Cursos para tu perfil
                             </div>
                             <h2 className="res-card-title">Cursos recomendados para ti</h2>
-                            <p className="res-card-text" style={{ marginBottom: 28 }}>
-                                Estos cursos fueron diseñados para el perfil <strong>{nombrePerfil}</strong> y pueden ayudarte a potenciar tu estilo de aprendizaje.
-                            </p>
 
                             {cargandoCursosRecomendados ? (
                                 <div className="res-historial-loading">
@@ -408,15 +405,20 @@ export function ResultadosTestEA() {
                                     <p>Aún no hay cursos disponibles para tu perfil.</p>
                                 </div>
                             ) : (
-                                <div className="res-cursos-grid">
-                                    {cursosRecomendados.map((curso) => (
-                                        <CursoRecomendadoCard
-                                            key={curso.id_curso}
-                                            curso={curso}
-                                            primaryColor={primary.colorMid}
-                                        />
-                                    ))}
-                                </div>
+                                <>
+                                    <p className="res-card-text" style={{ maxWidth: 420, margin: "0 auto 28px" }}>
+                                        Tienes <strong>{cursosRecomendados.length}</strong> curso{cursosRecomendados.length !== 1 ? "s" : ""} recomendado{cursosRecomendados.length !== 1 ? "s" : ""} para tu perfil{" "}
+                                        <strong>{nombrePerfil}</strong>.
+                                    </p>
+                                    <div style={{ display: "flex", justifyContent: "center" }}>
+                                        <button
+                                            className="res-start-btn"
+                                            onClick={() => navigate("/cursos")}
+                                        >
+                                            <IoBookOutline size={15} /> Ver cursos recomendados
+                                        </button>
+                                    </div>
+                                </>
                             )}
                         </div>
                     </div>
@@ -530,4 +532,4 @@ export function ResultadosTestEA() {
             </div>
         </div>
     );
-}
+} 

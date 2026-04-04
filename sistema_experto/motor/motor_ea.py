@@ -3,7 +3,7 @@
 # hechos
 from hechos.hechos_ea import (
     PuntajesVARK, PerfilDominante, Recomendacion, RECOMENDACIONES,
-    CriteriosCurso, 
+    CriteriosCurso, PERFILES,
 )
 
 # reglas
@@ -84,7 +84,8 @@ def procesar_respuestas(categorias: list[str]) -> dict:
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
             criterios_cursos = {
-                "perfil":      fact["perfil"],
+                "perfil_exacto":   fact["perfil_exacto"],
+                "perfiles_afines": fact["perfiles_afines"],
                 "dimensiones": fact["dimensiones"],
             }
             break
@@ -116,4 +117,35 @@ def obtener_recomendaciones_perfil(perfil: str) -> dict[str, list[str]]:
     for letra in perfil:
         if letra in RECOMENDACIONES:
             resultado[letra] = RECOMENDACIONES[letra]
-    return resultado 
+    return resultado   
+
+
+def obtener_criterios_perfil(perfil: str) -> dict:
+    """
+    Dispara el motor con el perfil ya conocido para obtener
+    los criterios de cursos sin necesidad de procesar respuestas.
+    """
+    perfil = perfil.upper()
+
+    motor = MotorVARK()
+    motor.reset()
+
+    # Declaramos directamente el PerfilDominante — saltamos el bloque de puntajes
+    motor.declare(PerfilDominante(
+        perfil=perfil,
+        nombre=PERFILES.get(perfil, perfil)
+    ))
+
+    motor.run()
+
+    # Recoger el CriteriosCurso que generaron las reglas
+    for fact in motor.facts.values():
+        if isinstance(fact, CriteriosCurso):
+            return {
+                "perfil_exacto":   fact["perfil_exacto"],
+                "perfiles_afines": fact["perfiles_afines"],
+                "dimensiones":     fact["dimensiones"],
+            }
+
+    # Fallback por si algo falla
+    return {"perfil_exacto": perfil, "perfiles_afines": [], "dimensiones": []}

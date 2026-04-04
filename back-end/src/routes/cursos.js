@@ -20,23 +20,39 @@ import {
     actualizarPregunta,
     eliminarPregunta,
     listarDimensiones,
-    listarCursosPorDimension
+    listarCursosPorDimension,
+    misCursos,
+    obtenerCursoEstudiante,
+    inscribirseACurso,
+    cancelarInscripcion,
+    iniciarIntento,
+    marcarContenidoVisto,
+    guardarRespuestasTest,
+    obtenerResultadoCurso
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
-const upload  = multer({ storage });
+const upload = multer({ storage });
 
 const router = Router();
 
 router.use(verificarToken);
 
 // ─── Catálogo ──────────────────────────────────────────────
-router.get("/dimensiones", listarDimensiones);
+router.get("/dimensiones",                   listarDimensiones);
+
+// ─── Detalle estudiante (ANTES de /cursos/:id) ─────────────
+router.get("/detalle",                       obtenerCursoEstudiante);
+
+// ─── Progreso e Intentos (ANTES de /cursos/:id) ────────────
+router.post("/intentos",                     iniciarIntento);
+router.post("/progreso/:id_contenido",       marcarContenidoVisto);
+router.post("/test/respuestas",              guardarRespuestasTest);
 
 // ─── Cursos ────────────────────────────────────────────────
 router.get    ("/cursos",                    listarCursos);
-router.get("/cursos/recomendados/por-dimension", listarCursosPorDimension);
-router.get    ("/cursos/:id",                obtenerCurso);
+router.get    ("/recomendados/por-dimension",listarCursosPorDimension);
+router.get    ("/cursos/:id",                obtenerCurso);           // ← al final
 router.post   ("/cursos",                    upload.single("foto"), crearCurso);
 router.put    ("/cursos/:id",                upload.single("foto"), actualizarCurso);
 router.patch  ("/cursos/:id/publicar",       togglePublicarCurso);
@@ -49,7 +65,6 @@ router.put    ("/secciones/:id",             actualizarSeccion);
 router.delete ("/secciones/:id",             eliminarSeccion);
 
 // ─── Contenido ─────────────────────────────────────────────
-// upload.single("imagen") en ambos verbos para que req.file esté disponible
 router.post   ("/secciones/:id/contenidos",  upload.single("imagen"), crearContenido);
 router.put    ("/contenidos/:id",            upload.single("imagen"), actualizarContenido);
 router.delete ("/contenidos/:id",            eliminarContenido);
@@ -58,5 +73,12 @@ router.delete ("/contenidos/:id",            eliminarContenido);
 router.post   ("/secciones/:id/preguntas",   crearPregunta);
 router.put    ("/preguntas/:id",             actualizarPregunta);
 router.delete ("/preguntas/:id",             eliminarPregunta);
+
+// ─── Inscripciones ─────────────────────────────────────────
+router.get    ("/inscripciones/mis-cursos",  misCursos);
+router.post   ("/inscripciones",             inscribirseACurso);
+router.delete ("/inscripciones",             cancelarInscripcion);
+
+router.get("/resultado", obtenerResultadoCurso);
 
 export default router;

@@ -41,13 +41,18 @@ export function useMetodosEstudioResultado() {
 
   // ── IntersectionObserver para marcar sección activa en sidebar ──
   useEffect(() => {
-    if (!datos) return;
+    if (!datos || !animado) return; // 👈 espera a que el DOM esté listo
 
-    const sectionIds = ["mer-resumen", "mer-dims", "mer-errores", "mer-recs"];
+    const sectionIds = [
+      "mer-resumen",
+      "mer-dims",
+      "mer-errores",
+      "mer-recs",
+      "mer-cursos", // 👈 agregado
+    ];
 
     const observer = new IntersectionObserver(
       (entries) => {
-        // De todas las secciones visibles, toma la con mayor ratio de intersección
         const visible = entries
           .filter(e => e.isIntersecting)
           .sort((a, b) => b.intersectionRatio - a.intersectionRatio);
@@ -68,7 +73,7 @@ export function useMetodosEstudioResultado() {
     });
 
     return () => observer.disconnect();
-  }, [datos]); // re-observa cuando los datos estén disponibles
+  }, [datos, animado]);
 
   // ── Carga desde API si no vienen por location.state ──
   const cargarResultado = async () => {

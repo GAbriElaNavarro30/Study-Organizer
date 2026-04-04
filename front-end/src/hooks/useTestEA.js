@@ -2,7 +2,7 @@
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js"; // axios 
-
+ 
 // ─── DATOS ───────────────────────────────────────────────────────────────────
 // Los id de cada opción deben coincidir con los id reales en Opcion_VARK de la BD
 

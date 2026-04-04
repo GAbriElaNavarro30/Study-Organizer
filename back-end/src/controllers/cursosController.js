@@ -3,6 +3,12 @@ import { SeccionCurso } from "../models/SeccionCurso.js";
 import { Contenido } from "../models/Contenido.js";
 import { PreguntaTest } from "../models/PreguntaTest.js";
 import { OpcionTest } from "../models/OpcionTest.js";
+import { Inscripcion } from "../models/Inscripcion.js";
+import { IntentoCurso } from "../models/IntentoCurso.js";
+import { Progreso } from "../models/Progreso.js";
+import { RespuestaTestCurso } from "../models/RespuestaTestCurso.js";
+import { ResultadoCurso } from "../models/ResultadoCurso.js";
+
 import { db } from "../config/db.js";
 import cloudinary from "../config/cloudinary.js";
 
@@ -57,10 +63,15 @@ export const obtenerCurso = async (req, res) => {
         if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
 
-        const secciones = await SeccionCurso.getByCurso(id);
+        const [secciones, todosContenidos, todasPreguntas] = await Promise.all([
+            SeccionCurso.getByCurso(id),
+            Contenido.getByCurso(id),
+            PreguntaTest.getByCursoConOpciones(id),
+        ]);
+
         for (const seccion of secciones) {
-            seccion.contenidos = await Contenido.getBySeccion(seccion.id_seccion);
-            seccion.preguntas = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
+            seccion.contenidos = todosContenidos.filter(c => c.id_seccion === seccion.id_seccion);
+            seccion.preguntas = todasPreguntas.filter(p => p.id_seccion === seccion.id_seccion);
         }
 
         curso.secciones = secciones;
@@ -514,9 +525,6 @@ export const listarCursosPorDimension = async (req, res) => {
         if (letras.length === 0)
             return res.status(400).json({ ok: false, mensaje: "Perfil VARK inválido." });
 
-        const perfilPlaceholders = letras.map(() => "c.perfil_vark LIKE ?").join(" OR ");
-        const perfilParams = letras.map(l => `%${l}%`);
-
         let dimFilter = "";
         let dimParams = [];
         if (dimensiones) {
@@ -532,25 +540,295 @@ export const listarCursosPorDimension = async (req, res) => {
                 c.id_curso, c.titulo, c.descripcion, c.foto,
                 c.perfil_vark, c.fecha_creacion,
                 d.nombre_dimension, d.id_dimension,
-                u.nombre AS nombre_tutor,
+                CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
                 (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
              FROM Curso c
              LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
              LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
              WHERE c.es_publicado = 1
                AND c.archivado   = 0
-               AND (${perfilPlaceholders})
+               AND c.perfil_vark = ?
                ${dimFilter}
-             ORDER BY
-               CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END,
-               c.fecha_creacion DESC
+             ORDER BY c.fecha_creacion DESC
              LIMIT 12`,
-            [...perfilParams, ...dimParams, perfil.toUpperCase()]
+            [perfil.toUpperCase(), ...dimParams]  // coincidencia exacta
         );
 
         res.json({ ok: true, cursos: rows });
     } catch (error) {
         console.error("listarCursosPorDimension:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener cursos recomendados." });
+    }
+};
+
+export const misCursos = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const cursos = await Inscripcion.getByUsuario(id_usuario);
+        res.json({ ok: true, cursos });
+    } catch (error) {
+        console.error("misCursos:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener tus cursos." });
+    }
+};
+
+// cursosController.js
+export const obtenerCursoEstudiante = async (req, res) => {
+    try {
+        const { id } = req.query;
+        const id_usuario = req.usuario.id;
+
+        const [rows] = await db.query(
+            `SELECT
+                c.*,
+                d.nombre_dimension,
+                u.nombre        AS nombre_tutor,
+                u.apellido      AS apellido_tutor,
+                u.foto_perfil   AS foto_tutor,
+                u.descripcion   AS descripcion_tutor,
+                u.correo_electronico AS correo_tutor,
+                u.telefono      AS telefono_tutor
+             FROM Curso c
+             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+             WHERE c.id_curso = ?`,
+            [id]
+        );
+
+        const curso = rows[0];
+        if (!curso)
+            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
+
+        const secciones = await SeccionCurso.getByCurso(id);
+        for (const seccion of secciones) {
+            seccion.contenidos = await Contenido.getBySeccion(seccion.id_seccion);
+            seccion.preguntas = await PreguntaTest.getBySeccionConOpciones(seccion.id_seccion);
+        }
+
+        curso.tutor = {
+            nombre: `${curso.nombre_tutor} ${curso.apellido_tutor}`.trim(),
+            foto: curso.foto_tutor || null,
+            descripcion: curso.descripcion_tutor || null,
+            correo: curso.correo_tutor || null,
+            telefono: curso.telefono_tutor || null,
+        };
+        curso.secciones = secciones;
+
+        // ── Inscripción ──
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id);
+        const inscrito = !!inscripcion;
+
+        // ── Progreso real desde Intento_Curso ──
+        let progreso = null;
+        if (inscrito) {
+            const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
+            const total = secciones.reduce((a, s) => a + (s.contenidos?.length || 0), 0);
+
+            if (intento) {
+                const progresoRows = await Progreso.getByIntento(intento.id_intento);
+                const vistos = progresoRows.filter(p => p.visto).length;
+                const pct = total > 0 ? Math.round((vistos / total) * 100) : 0;
+                progreso = {
+                    id_intento: intento.id_intento,
+                    total,
+                    vistos,
+                    porcentaje: pct,
+                    completado: intento.completado,
+                    contenidos_vistos: progresoRows.filter(p => p.visto).map(p => p.id_contenido),
+                };
+            } else {
+                progreso = { total, vistos: 0, porcentaje: 0, completado: false, contenidos_vistos: [] };
+            }
+        }
+
+        res.json({ ok: true, curso, inscrito, progreso });
+    } catch (error) {
+        console.error("obtenerCursoEstudiante:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener el curso." });
+    }
+};
+
+
+
+export const inscribirseACurso = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.body;
+
+        if (!id_curso)
+            return res.status(400).json({ ok: false, mensaje: "El id_curso es requerido." });
+
+        // Verificar que el curso exista y esté publicado
+        const curso = await Curso.getById(id_curso);
+        if (!curso || !curso.es_publicado || curso.archivado)
+            return res.status(404).json({ ok: false, mensaje: "Curso no disponible." });
+
+        // Verificar que no esté ya inscrito
+        const yaInscrito = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (yaInscrito)
+            return res.status(400).json({ ok: false, mensaje: "Ya estás inscrito en este curso." });
+
+        const inscripcion = new Inscripcion({ id_usuario, id_curso });
+        await inscripcion.save();
+        res.status(201).json({ ok: true, mensaje: "Inscripción exitosa." });
+    } catch (error) {
+        console.error("inscribirseACurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al inscribirse." });
+    }
+};
+
+export const cancelarInscripcion = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.body;
+
+        if (!id_curso)
+            return res.status(400).json({ ok: false, mensaje: "El id_curso es requerido." });
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (!inscripcion)
+            return res.status(404).json({ ok: false, mensaje: "No estás inscrito en este curso." });
+
+        await Inscripcion.delete(inscripcion.id_inscripcion);
+        res.json({ ok: true, mensaje: "Inscripción cancelada." });
+    } catch (error) {
+        console.error("cancelarInscripcion:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al cancelar la inscripción." });
+    }
+};
+
+export const iniciarIntento = async (req, res) => {
+    console.log(">>> iniciarIntento llamado", req.body);
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.body;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        console.log(">>> inscripcion para intento:", inscripcion);
+        if (!inscripcion)
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito en este curso." });
+
+        const intentos = await IntentoCurso.getByInscripcion(inscripcion.id_inscripcion);
+        const numero_intento = intentos.length + 1;
+        console.log(">>> numero_intento:", numero_intento);
+
+        const intento = new IntentoCurso({ numero_intento, id_inscripcion: inscripcion.id_inscripcion });
+        const [result] = await intento.save();
+        console.log(">>> intento creado:", result.insertId);
+
+        res.status(201).json({ ok: true, id_intento: result.insertId, numero_intento });
+    } catch (error) {
+        console.error("iniciarIntento ERROR:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al iniciar el intento." });
+    }
+};
+
+// POST /progreso/:id_contenido — marcar contenido como visto
+export const marcarContenidoVisto = async (req, res) => {
+    console.log(">>> marcarContenidoVisto llamado", req.params, req.body);
+    try {
+        const { id_contenido } = req.params;
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.body;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        console.log(">>> inscripcion:", inscripcion);
+        if (!inscripcion)
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+
+        const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
+        console.log(">>> intento:", intento);
+        if (!intento)
+            return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
+
+        await Progreso.marcarVisto(intento.id_intento, id_contenido);
+        console.log(">>> visto marcado");
+
+        const pct = await Progreso.getPorcentajeCompletado(intento.id_intento, id_curso);
+        console.log(">>> porcentaje:", pct);
+
+        if (pct === 100 && !intento.completado)
+            await IntentoCurso.completar(intento.id_intento);
+
+        res.json({ ok: true, porcentaje: pct, completado: pct === 100 });
+    } catch (error) {
+        console.error("marcarContenidoVisto ERROR:", error); // ← ver el error real
+        res.status(500).json({ ok: false, mensaje: "Error al marcar contenido." });
+    }
+};
+
+// POST /test/respuestas — guardar respuestas del cuestionario
+export const guardarRespuestasTest = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso, respuestas } = req.body;
+        // respuestas: [{ id_test, id_opcion }]
+
+        if (!id_curso || !respuestas?.length)
+            return res.status(400).json({ ok: false, mensaje: "Datos incompletos." });
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (!inscripcion)
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+
+        const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
+        if (!intento)
+            return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
+
+        // Evaluar correctas
+        await db.query("DELETE FROM Respuesta_Test_Curso WHERE id_intento = ?", [intento.id_intento]);
+
+        let correctas = 0;
+        const filas = [];
+        for (const r of respuestas) {
+            const [[opcion]] = await db.query(
+                "SELECT es_correcta FROM Opcion_Test WHERE id_opcion = ?",
+                [r.id_opcion]
+            );
+            const es_correcta = opcion?.es_correcta ? 1 : 0;
+            if (es_correcta) correctas++;
+            filas.push({ es_correcta, id_test: r.id_test, id_opcion: r.id_opcion });
+        }
+
+        await RespuestaTestCurso.saveMany(intento.id_intento, filas);
+
+        // Guardar resultado
+        const total = respuestas.length;
+        const porcentaje = total > 0 ? parseFloat(((correctas / total) * 100).toFixed(2)) : 0;
+
+        const resultado = new ResultadoCurso({
+            total_preguntas: total,
+            respuestas_correctas: correctas,
+            porcentaje,
+            id_intento: intento.id_intento,
+        });
+        await resultado.save();
+
+        res.json({ ok: true, correctas, total, porcentaje });
+    } catch (error) {
+        console.error("guardarRespuestasTest:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al guardar respuestas." });
+    }
+};
+
+export const obtenerResultadoCurso = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.query;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (!inscripcion)
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+
+        const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
+        if (!intento)
+            return res.status(404).json({ ok: false, mensaje: "No hay intento." });
+
+        const resultado = await ResultadoCurso.getByIntento(intento.id_intento);
+
+        res.json({ ok: true, resultado: resultado || null });
+    } catch (error) {
+        console.error("obtenerResultadoCurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener el resultado." });
     }
 };

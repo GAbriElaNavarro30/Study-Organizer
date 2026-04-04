@@ -1,6 +1,6 @@
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
-from motor.motor_ea import procesar_respuestas, obtener_recomendaciones_perfil
+from motor.motor_ea import procesar_respuestas, obtener_recomendaciones_perfil, obtener_criterios_perfil
 
 router = APIRouter(prefix="/ea", tags=["Estilos de Aprendizaje"])
 
@@ -23,10 +23,11 @@ def obtener_recomendaciones(perfil: str):
     resultado = obtener_recomendaciones_perfil(perfil)
     if not resultado:
         raise HTTPException(status_code=404, detail=f"Perfil '{perfil.upper()}' no reconocido")
+
+    # El motor decide los criterios, no un diccionario manual
+    criterios = obtener_criterios_perfil(perfil)
+
     return {
         "recomendaciones": resultado,
-        "criterios_cursos": {
-            "perfil": perfil.upper(),
-            "dimensiones": []
-        }
+        "criterios_cursos": criterios,
     }

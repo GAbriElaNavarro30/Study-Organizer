@@ -10,7 +10,7 @@ export class OpcionVARK {
         );
         return rows;
     }
- 
+
     // una opcion por medio de su id
     static async getById(id_opcion) {
         const [rows] = await db.query(

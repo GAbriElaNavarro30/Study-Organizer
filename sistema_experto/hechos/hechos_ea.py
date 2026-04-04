@@ -111,8 +111,15 @@ RECOMENDACIONES = {
     ],
 } 
 
+# hecho 6. lista de todos los perfiles posibles del dominio VARK
+TODOS_LOS_PERFILES = [
+    "V", "A", "R", "K",
+    "VA", "VR", "VK", "AR", "AK", "RK",
+    "VAR", "VAK", "VRK", "ARK", "VARK"
+]
 
 class CriteriosCurso(Fact):
     """Criterios que el motor determinó para recomendar cursos."""
-    perfil      = Field(str, mandatory=True)
-    dimensiones = Field(list, mandatory=False)  # None = sin filtro por dimensión
+    perfil_exacto   = Field(str,  mandatory=True)
+    perfiles_afines = Field(list, mandatory=True)  # perfiles que contienen al menos una letra del perfil
+    dimensiones = Field(list, mandatory=False)  # None = sin filtro por dimensión  

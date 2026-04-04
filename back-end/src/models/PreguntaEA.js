@@ -10,7 +10,7 @@ export class PreguntaEA {
         );
         return rows;
     }
- 
+
     // una pregunta especifica
     static async getById(id_pregunta) {
         const [rows] = await db.query(
