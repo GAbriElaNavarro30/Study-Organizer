@@ -40,7 +40,20 @@ export const listarCursos = async (req, res) => {
                 c.id_curso, c.titulo, c.descripcion, c.foto,
                 c.perfil_vark, c.es_publicado, c.archivado,
                 c.fecha_creacion, c.fecha_actualizacion,
-                d.nombre_dimension
+                d.nombre_dimension,
+
+                (
+                    SELECT COUNT(*)
+                    FROM Seccion_Curso sc
+                    WHERE sc.id_curso = c.id_curso
+                ) AS total_secciones,
+
+                (
+                    SELECT COUNT(*)
+                    FROM Inscripcion i
+                    WHERE i.id_curso = c.id_curso
+                ) AS total_estudiantes
+
              FROM Curso c
              LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
              WHERE c.id_usuario = ?

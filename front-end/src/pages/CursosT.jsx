@@ -2,11 +2,11 @@
 import { useState, useRef, useEffect } from "react";
 import {
     IoAdd, IoSearch, IoGridOutline, IoListOutline, IoCreateOutline,
-    IoEye, IoEyeOff, IoBookOutline, IoCalendarOutline, IoTimeOutline,
-    IoWarningOutline,
-    IoChevronBackOutline, IoChevronForwardOutline, IoSchoolOutline,
-    IoCheckmarkCircle, IoEllipseOutline, IoEllipsisVertical,
-    IoArchiveOutline, IoTrashOutline, IoFunnelOutline,
+    IoEye, IoEyeOff, IoBookOutline,
+    IoWarningOutline, IoChevronBackOutline, IoChevronForwardOutline,
+    IoSchoolOutline, IoCheckmarkCircle, IoEllipseOutline,
+    IoEllipsisVertical, IoArchiveOutline, IoTrashOutline, IoFunnelOutline,
+    IoCloseCircle, IoLayersOutline,
 } from "react-icons/io5";
 import ReactDOM from "react-dom";
 import { ModalEliminar } from "../components/ModalEliminar";
@@ -19,11 +19,11 @@ import { useCursosT } from "../hooks/useCursosT";
    CONSTANTES
 ───────────────────────────────────────────────────────── */
 const VARK_COLORS = {
-    V: { bg: "#DBEAFE", text: "#1D4ED8", label: "Visual" },
+    V: { bg: "#DBEAFE", text: "#1E40AF", label: "Visual" },
     A: { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
-    R: { bg: "#DCFCE7", text: "#15803D", label: "Lectura/Escritura" },
+    R: { bg: "#DCFCE7", text: "#065F46", label: "Lectura/Escritura" },
     K: { bg: "#FCE7F3", text: "#9D174D", label: "Kinestésico" },
-    VA: { bg: "#EEF2FF", text: "#4338CA", label: "Visual-Auditivo" },
+    VA: { bg: "#EEF2FF", text: "#3730A3", label: "Visual-Auditivo" },
     VR: { bg: "#ECFDF5", text: "#065F46", label: "Visual-Lectura" },
     VK: { bg: "#F3E8FF", text: "#6B21A8", label: "Visual-Kinestésico" },
     AR: { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
@@ -37,10 +37,10 @@ const VARK_COLORS = {
 };
 
 const FILTROS = [
-    { key: "todos", label: "Todos", color: "#3B82F6", bg: "#EBF3FD", dot: "#3B82F6" },
-    { key: "publicado", label: "Publicados", color: "#16A34A", bg: "#EFF8F1", dot: "#16A34A" },
-    { key: "borrador", label: "Borradores", color: "#F59E0B", bg: "#FFFBEB", dot: "#F59E0B" },
-    { key: "archivado", label: "Archivados", color: "#7C3AED", bg: "#F5F3FF", dot: "#7C3AED" },
+    { key: "todos", label: "Todos", dot: "#94A3B8" },
+    { key: "publicado", label: "Publicados", dot: "#059669" },
+    { key: "borrador", label: "Borradores", dot: "#94A3B8" },
+    { key: "archivado", label: "Archivados", dot: "#7C3AED" },
 ];
 
 /* ─────────────────────────────────────────────────────────
@@ -53,76 +53,99 @@ const fmtDate = (iso) => {
     });
 };
 
+const PLACEHOLDER_PALETTES = [
+    { bg: "#DBEAFE", text: "#1E40AF" },
+    { bg: "#D1FAE5", text: "#065F46" },
+    { bg: "#FCE7F3", text: "#9D174D" },
+    { bg: "#EDE9FE", text: "#5B21B6" },
+    { bg: "#FEF3C7", text: "#92400E" },
+    { bg: "#CFFAFE", text: "#155E75" },
+    { bg: "#FFE4E6", text: "#9F1239" },
+    { bg: "#DCFCE7", text: "#14532D" },
+];
+
+const getPlaceholderPalette = (titulo = "") => {
+    const idx = (titulo.charCodeAt(0) || 65) % PLACEHOLDER_PALETTES.length;
+    return PLACEHOLDER_PALETTES[idx];
+};
+
 /* ─────────────────────────────────────────────────────────
-   SUB-COMPONENTES
+   COURSE AVATAR
 ───────────────────────────────────────────────────────── */
-const CourseAvatar = ({ titulo, foto, size = 56 }) => {
-    const initials = titulo?.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase();
-    const hue = ((titulo?.charCodeAt(0) || 65) * 7) % 360;
+const CourseAvatar = ({ titulo, foto, size = 38 }) => {
+    const initials = titulo?.split(" ").slice(0, 2).map((w) => w[0]).join("").toUpperCase() || "?";
+    const palette = getPlaceholderPalette(titulo);
+
     if (foto) return (
         <img src={foto} alt={titulo}
-            style={{ width: size, height: size, borderRadius: 10, objectFit: "cover", flexShrink: 0 }} />
+            style={{ width: size, height: size, borderRadius: 8, objectFit: "cover", flexShrink: 0 }} />
     );
     return (
         <div style={{
-            width: size, height: size, borderRadius: 10, flexShrink: 0,
-            background: `hsl(${hue},55%,88%)`, color: `hsl(${hue},45%,38%)`,
+            width: size, height: size, borderRadius: 8, flexShrink: 0,
+            background: palette.bg, color: palette.text,
             fontSize: size * 0.32, fontWeight: 700,
             display: "flex", alignItems: "center", justifyContent: "center",
-            letterSpacing: 1, fontFamily: "'DM Serif Display', Georgia, serif",
+            letterSpacing: 0.5,
         }}>
             {initials}
         </div>
     );
 };
 
+/* ─────────────────────────────────────────────────────────
+   VARK BADGE
+───────────────────────────────────────────────────────── */
 const VarkBadge = ({ perfil }) => {
     const info = VARK_COLORS[perfil] || { bg: "#F1F5F9", text: "#64748B", label: perfil };
     return (
-        <span style={{
-            background: info.bg, color: info.text, borderRadius: 20, padding: "3px 10px",
-            fontSize: 11, fontWeight: 700, display: "inline-flex", alignItems: "center",
-            gap: 4, letterSpacing: 0.3,
-        }}>
-            <span style={{ opacity: 0.5 }}>◆</span>{info.label}
+        <span className="vark-pill" style={{ background: info.bg, color: info.text }}>
+            ◆ {info.label}
         </span>
     );
 };
 
+/* ─────────────────────────────────────────────────────────
+   DIMENSION BADGE  ← nuevo
+───────────────────────────────────────────────────────── */
+const DimBadge = ({ nombre }) => {
+    if (!nombre) return null;
+    return (
+        <span className="dim-badge">
+            <IoLayersOutline size={10} />
+            {nombre}
+        </span>
+    );
+};
+
+/* ─────────────────────────────────────────────────────────
+   STATUS BADGE
+───────────────────────────────────────────────────────── */
 const StatusBadge = ({ publicado, archivado }) => {
     if (archivado) return (
-        <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700,
-            background: "#F5F3FF", color: "#7C3AED", whiteSpace: "nowrap", flexShrink: 0,
-        }}>
-            <IoArchiveOutline size={11} /> Archivado
+        <span className="status-badge status-badge--arch">
+            <IoArchiveOutline size={10} /> Archivado
         </span>
     );
     return (
-        <span style={{
-            display: "inline-flex", alignItems: "center", gap: 4,
-            borderRadius: 20, padding: "3px 10px", fontSize: 11, fontWeight: 700,
-            background: publicado ? "#EFF8F1" : "#F1F5F9",
-            color: publicado ? "#16A34A" : "#94A3B8",
-            whiteSpace: "nowrap", flexShrink: 0,
-        }}>
-            {publicado ? <IoCheckmarkCircle size={11} /> : <IoEllipseOutline size={11} />}
+        <span className={`status-badge ${publicado ? "status-badge--pub" : "status-badge--draft"}`}>
+            {publicado ? <IoCheckmarkCircle size={10} /> : <IoEllipseOutline size={10} />}
             {publicado ? "Publicado" : "Borrador"}
         </span>
     );
 };
 
-/* ── Menú ⋯ ─────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   MENÚ ⋯
+───────────────────────────────────────────────────────── */
 const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) => {
     const [abierto, setAbierto] = useState(false);
     const [pos, setPos] = useState({ top: 0, left: 0 });
     const triggerRef = useRef(null);
     const dropdownRef = useRef(null);
     const rafRef = useRef(null);
-
-    const DROPDOWN_W = 172;
-    const DROPDOWN_H = 160;
+    const DROPDOWN_W = 168;
+    const DROPDOWN_H = 155;
 
     const actualizarPos = () => {
         if (!triggerRef.current) return;
@@ -136,11 +159,8 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
     };
 
     useEffect(() => {
-        if (abierto) {
-            rafRef.current = requestAnimationFrame(actualizarPos);
-        } else {
-            cancelAnimationFrame(rafRef.current);
-        }
+        if (abierto) { rafRef.current = requestAnimationFrame(actualizarPos); }
+        else { cancelAnimationFrame(rafRef.current); }
         return () => cancelAnimationFrame(rafRef.current);
     }, [abierto]);
 
@@ -157,133 +177,179 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
 
     const abrirMenu = (e) => { e.stopPropagation(); setAbierto((prev) => !prev); };
 
-    const dropdown = abierto
-        ? ReactDOM.createPortal(
-            <div ref={dropdownRef} className="menu-opciones__dropdown" style={{ top: pos.top, left: pos.left }}>
-                <button className="menu-opciones__item" onClick={() => { setAbierto(false); onEdit(curso); }}>
-                    <IoCreateOutline size={14} /> Editar
+    const dropdown = abierto ? ReactDOM.createPortal(
+        <div ref={dropdownRef} className="menu-opciones__dropdown" style={{ top: pos.top, left: pos.left }}>
+            <button className="menu-opciones__item" onClick={() => { setAbierto(false); onEdit(curso); }}>
+                <IoCreateOutline size={14} /> Editar
+            </button>
+            {!curso.archivado && (
+                <button className="menu-opciones__item" onClick={() => { setAbierto(false); onTogglePublish(curso); }}>
+                    {curso.es_publicado ? <IoEyeOff size={14} /> : <IoEye size={14} />}
+                    {curso.es_publicado ? "Despublicar" : "Publicar"}
                 </button>
-                {!curso.archivado && (
-                    <button className="menu-opciones__item" onClick={() => { setAbierto(false); onTogglePublish(curso); }}>
-                        {curso.es_publicado ? <IoEyeOff size={14} /> : <IoEye size={14} />}
-                        {curso.es_publicado ? "Despublicar" : "Publicar"}
-                    </button>
-                )}
-                <button className="menu-opciones__item" onClick={() => { setAbierto(false); onArchivar(curso); }}>
-                    <IoArchiveOutline size={14} />
-                    {curso.archivado ? "Desarchivar" : "Archivar"}
-                </button>
-                <div className="menu-opciones__divider" />
-                <button className="menu-opciones__item menu-opciones__item--danger"
-                    onClick={() => { setAbierto(false); onEliminar(curso); }}>
-                    <IoTrashOutline size={14} /> Eliminar
-                </button>
-            </div>,
-            document.body
-        )
-        : null;
+            )}
+            <button className="menu-opciones__item" onClick={() => { setAbierto(false); onArchivar(curso); }}>
+                <IoArchiveOutline size={14} />
+                {curso.archivado ? "Desarchivar" : "Archivar"}
+            </button>
+            <div className="menu-opciones__divider" />
+            <button className="menu-opciones__item menu-opciones__item--danger"
+                onClick={() => { setAbierto(false); onEliminar(curso); }}>
+                <IoTrashOutline size={14} /> Eliminar
+            </button>
+        </div>,
+        document.body
+    ) : null;
 
     return (
         <div className="menu-opciones" ref={triggerRef}>
             <button className="menu-opciones__trigger" onClick={abrirMenu} title="Más opciones">
-                <IoEllipsisVertical size={17} />
+                <IoEllipsisVertical size={16} />
             </button>
             {dropdown}
         </div>
     );
 };
 
-/* ── Tarjeta ─────────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   CURSO CARD — vista mosaico
+───────────────────────────────────────────────────────── */
 const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVistaPrevia }) => {
-    const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
+    const palette = getPlaceholderPalette(curso.titulo);
+    const initials = curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase() || "?";
 
     return (
-        <div className={`curso-card ${curso.archivado ? "curso-card--archivado" : ""}`}
+        <div
+            className={`curso-card ${curso.archivado ? "curso-card--archivado" : ""}`}
             onDoubleClick={() => onVistaPrevia(curso)}
             style={{ cursor: "pointer" }}
         >
+            {/* Portada */}
             <div className="curso-card__cover">
                 {curso.foto ? (
                     <img src={curso.foto} alt={curso.titulo} className="curso-card__cover-img" />
                 ) : (
-                    <div className="curso-card__cover-placeholder" style={{ background: `hsl(${hue},45%,88%)` }}>
-                        <span style={{ color: `hsl(${hue},40%,38%)`, fontFamily: "'DM Serif Display', Georgia, serif", fontSize: 32, fontWeight: 700 }}>
-                            {curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
+                    <div className="curso-card__cover-placeholder" style={{ background: palette.bg }}>
+                        <span className="curso-card__cover-initials" style={{ color: palette.text }}>
+                            {initials}
                         </span>
                     </div>
                 )}
                 <div className="curso-card__cover-overlay">
                     <StatusBadge publicado={curso.es_publicado} archivado={curso.archivado} />
-                    <MenuOpciones curso={curso} onEdit={onEdit}
-                        onTogglePublish={onTogglePublish} onArchivar={onArchivar} onEliminar={onEliminar} />
+                    <MenuOpciones
+                        curso={curso} onEdit={onEdit}
+                        onTogglePublish={onTogglePublish}
+                        onArchivar={onArchivar}
+                        onEliminar={onEliminar}
+                    />
                 </div>
             </div>
 
+            {/* Cuerpo */}
             <div className="curso-card__body">
                 <p className="curso-card__title">{curso.titulo}</p>
+
+                {/* ── Dimensión ← nuevo ── */}
+                {curso.nombre_dimension && (
+                    <DimBadge nombre={curso.nombre_dimension} />
+                )}
+
                 {curso.descripcion && (
                     <p className="curso-card__desc">
-                        {curso.descripcion.slice(0, 90)}{curso.descripcion.length > 90 ? "…" : ""}
+                        {curso.descripcion.length > 80
+                            ? curso.descripcion.slice(0, 80) + "…"
+                            : curso.descripcion}
                     </p>
                 )}
             </div>
 
+            {/* Footer */}
             <div className="curso-card__footer">
-                <div style={{ display: "flex", gap: 6, flexWrap: "wrap", alignItems: "center" }}>
-                    {curso.perfil_vark && <VarkBadge perfil={curso.perfil_vark} />}
-                    {curso.dimensiones?.map((d, i) => (
-                        <span key={i} className="dim-chip">{d}</span>
-                    ))}
+                <div className="curso-card__stats">
+                    <div className="curso-card__stat">
+                        <span className="curso-card__stat-val">{curso.total_secciones ?? "—"}</span>
+                        <span className="curso-card__stat-lbl">Secciones</span>
+                    </div>
+                    <div className="curso-card__stat">
+                        <span className="curso-card__stat-val">{curso.total_estudiantes ?? "—"}</span>
+                        <span className="curso-card__stat-lbl">Estudiantes</span>
+                    </div>
                 </div>
-                <div className="curso-card__dates">
-                    <span className="curso-card__date-item">
-                        <IoCalendarOutline size={12} />{fmtDate(curso.fecha_creacion)}
-                    </span>
-                    <span className="curso-card__date-item">
-                        <IoTimeOutline size={12} />{fmtDate(curso.fecha_actualizacion)}
-                    </span>
+                <div className="curso-card__meta">
+                    {curso.perfil_vark
+                        ? <VarkBadge perfil={curso.perfil_vark} />
+                        : <span />}
+                    <span className="curso-card__date">{fmtDate(curso.fecha_actualizacion)}</span>
                 </div>
             </div>
         </div>
     );
 };
 
-/* ── Fila tabla ──────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   CURSO ROW — vista lista
+───────────────────────────────────────────────────────── */
 const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVistaPrevia }) => (
-    <tr className={`table-row ${curso.archivado ? "table-row--archivado" : ""}`}
+    <tr
+        className={`table-row ${curso.archivado ? "table-row--archivado" : ""}`}
         onDoubleClick={() => onVistaPrevia(curso)}
         style={{ cursor: "pointer" }}
     >
         <td className="td">
-            <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                <CourseAvatar titulo={curso.titulo} foto={curso.foto} size={38} />
+            <div style={{ display: "flex", alignItems: "center", gap: 11 }}>
+                <CourseAvatar titulo={curso.titulo} foto={curso.foto} size={40} />
                 <div>
                     <p className="row-title">{curso.titulo}</p>
-                    <p className="row-desc">{curso.descripcion?.slice(0, 50)}{curso.descripcion?.length > 50 ? "…" : ""}</p>
+                    {/* ── Dimensión ← nuevo ── */}
+                    {curso.nombre_dimension && (
+                        <DimBadge nombre={curso.nombre_dimension} />
+                    )}
+                    {curso.descripcion && (
+                        <p className="row-desc">
+                            {curso.descripcion.length > 50
+                                ? curso.descripcion.slice(0, 50) + "…"
+                                : curso.descripcion}
+                        </p>
+                    )}
                 </div>
             </div>
         </td>
-        <td className="td"><StatusBadge publicado={curso.es_publicado} archivado={curso.archivado} /></td>
+        <td className="td">
+            <StatusBadge publicado={curso.es_publicado} archivado={curso.archivado} />
+        </td>
         <td className="td">
             {curso.perfil_vark
                 ? <VarkBadge perfil={curso.perfil_vark} />
                 : <span style={{ color: "#CBD5E1", fontSize: 12 }}>—</span>}
         </td>
         <td className="td">
-            <div style={{ display: "flex", gap: 4, flexWrap: "wrap" }}>
-                {curso.dimensiones?.map((d, i) => <span key={i} className="dim-chip">{d}</span>)}
+            <div className="row-stat">
+                <span className="row-stat-val">{curso.total_secciones ?? "—"}</span>
+                <span className="row-stat-lbl">secciones</span>
             </div>
         </td>
-        <td className="td date-cell">{fmtDate(curso.fecha_creacion)}</td>
+        <td className="td">
+            <div className="row-stat">
+                <span className="row-stat-val">{curso.total_estudiantes ?? "—"}</span>
+                <span className="row-stat-lbl">inscritos</span>
+            </div>
+        </td>
         <td className="td date-cell">{fmtDate(curso.fecha_actualizacion)}</td>
         <td className="td">
-            <MenuOpciones curso={curso} onEdit={onEdit}
-                onTogglePublish={onTogglePublish} onArchivar={onArchivar} onEliminar={onEliminar} />
+            <MenuOpciones
+                curso={curso} onEdit={onEdit}
+                onTogglePublish={onTogglePublish}
+                onArchivar={onArchivar}
+                onEliminar={onEliminar}
+            />
         </td>
     </tr>
 );
 
-/* ── Paginación ──────────────────────────────────────────── */
+/* ─────────────────────────────────────────────────────────
+   PAGINACIÓN
+───────────────────────────────────────────────────────── */
 const Paginacion = ({ pagina, totalPaginas, total, desde, hasta, onCambiar }) => (
     <div className="pagination">
         <span className="pagination__info">
@@ -291,42 +357,57 @@ const Paginacion = ({ pagina, totalPaginas, total, desde, hasta, onCambiar }) =>
         </span>
         <div className="pagination__controls">
             <button className="page-btn" disabled={pagina === 1} onClick={() => onCambiar(pagina - 1)}>
-                <IoChevronBackOutline size={15} />
+                <IoChevronBackOutline size={14} />
             </button>
             {Array.from({ length: totalPaginas }, (_, i) => i + 1).map((p) => (
-                <button key={p} className={`page-btn ${p === pagina ? "page-btn--active" : ""}`} onClick={() => onCambiar(p)}>
+                <button
+                    key={p}
+                    className={`page-btn ${p === pagina ? "page-btn--active" : ""}`}
+                    onClick={() => onCambiar(p)}
+                >
                     {p}
                 </button>
             ))}
             <button className="page-btn" disabled={pagina === totalPaginas} onClick={() => onCambiar(pagina + 1)}>
-                <IoChevronForwardOutline size={15} />
+                <IoChevronForwardOutline size={14} />
             </button>
         </div>
         <span className="pagination__spacer" />
     </div>
 );
 
-/* ── Panel lateral ───────────────────────────────────────── */
-const PanelFiltros = ({ cursos, filtroEstado, onFiltro }) => {
+/* ─────────────────────────────────────────────────────────
+   PANEL FILTROS  ← ampliado con VARK y Dimensión
+───────────────────────────────────────────────────────── */
+const PanelFiltros = ({
+    cursos,
+    filtroEstado, onFiltro,
+    filtroVark, onFiltroVark,
+    filtroDimension, onFiltroDim,
+    varkDisponibles, dimensionesDisponibles,
+    onLimpiar,
+}) => {
     const conteo = {
-        todos: cursos.length,
+        todos: cursos.filter((c) => !c.archivado).length,
         publicado: cursos.filter((c) => c.es_publicado && !c.archivado).length,
         borrador: cursos.filter((c) => !c.es_publicado && !c.archivado).length,
         archivado: cursos.filter((c) => c.archivado).length,
     };
 
+    const hayFiltrosExtra = filtroVark || filtroDimension;
+
     return (
         <aside className="panel-filtros">
+            {/* ── Estado ── */}
             <div className="panel-filtros__header">
-                <IoFunnelOutline size={13} />
-                <span>Filtrar</span>
+                <IoFunnelOutline size={12} />
+                <span>Estado</span>
             </div>
             <nav className="panel-filtros__nav">
                 {FILTROS.map((f) => (
                     <button
                         key={f.key}
                         className={`filtro-btn ${filtroEstado === f.key ? "filtro-btn--activo" : ""}`}
-                        style={{ "--fc": f.color, "--fb": f.bg }}
                         onClick={() => onFiltro(f.key)}
                     >
                         <span className="filtro-btn__dot" style={{ background: f.dot }} />
@@ -335,6 +416,61 @@ const PanelFiltros = ({ cursos, filtroEstado, onFiltro }) => {
                     </button>
                 ))}
             </nav>
+
+            {/* ── Separador ── */}
+            <div className="panel-filtros__sep" />
+
+            {/* ── Perfil VARK ── */}
+            <div className="panel-filtros__header">
+                <span>Perfil VARK</span>
+            </div>
+            <div className="panel-filtros__select-wrap">
+                <select
+                    className="panel-filtros__select"
+                    value={filtroVark || ""}
+                    onChange={(e) => onFiltroVark(e.target.value || null)}
+                >
+                    <option value="">Todos los perfiles</option>
+                    {varkDisponibles.map((v) => {
+                        const info = VARK_COLORS[v] || {};
+                        return (
+                            <option key={v} value={v}>
+                                {info.label || v}
+                            </option>
+                        );
+                    })}
+                </select>
+            </div>
+
+            {/* ── Dimensión ── */}
+            {dimensionesDisponibles.length > 0 && (
+                <>
+                    <div className="panel-filtros__header" style={{ marginTop: 12 }}>
+                        <IoLayersOutline size={12} />
+                        <span>Dimensión</span>
+                    </div>
+                    <div className="panel-filtros__select-wrap">
+                        <select
+                            className="panel-filtros__select"
+                            value={filtroDimension || ""}
+                            onChange={(e) => onFiltroDim(e.target.value || null)}
+                        >
+                            <option value="">Todas las dimensiones</option>
+                            {dimensionesDisponibles.map((d) => (
+                                <option key={d} value={d}>{d}</option>
+                            ))}
+                        </select>
+                    </div>
+                </>
+            )}
+
+            {/* ── Botón limpiar filtros extra ── */}
+            {hayFiltrosExtra && (
+                <button className="filtros-limpiar-btn" onClick={onLimpiar}>
+                    <IoCloseCircle size={13} />
+                    Limpiar filtros
+                </button>
+            )}
         </aside>
     );
 };
@@ -344,149 +480,157 @@ const PanelFiltros = ({ cursos, filtroEstado, onFiltro }) => {
 ═══════════════════════════════════════════════════════════ */
 export function CursosT() {
     const {
-        // Estado
-        cursos,
-        cargando,
-        error,
-        busqueda,
-        vista,
-        porPagina,
-        pagina,
-        filtroEstado,
-        modalPublicar,
-        modalArchivar,
-        modalEliminar,
-
-        // Datos derivados
-        paginados,
-        totalPaginas,
-        desde,
-        hasta,
-        filtrados,
-        totalPublicados,
-        totalBorradores,
-        totalArchivados,
-
-        // Setters simples
-        setVista,
-        setPagina,
-
-        // Handlers
-        handleBusqueda,
-        handlePorPagina,
-        handleFiltro,
-        handleTogglePublish,
-        handleArchivar,
-        handleEliminar,
-        handleConfirmPublicar,
-        handleConfirmArchivar,
-        handleConfirmarEliminar,
-
-        // Navegación
-        fetchCursos,
-        irACrear,
-        irAEditar,
-        irAVistaPrevia,
-
-        // Cerrar modales
-        cerrarModalPublicar,
-        cerrarModalArchivar,
-        cerrarModalEliminar,
+        cursos, cargando, error, busqueda, vista, porPagina, pagina,
+        filtroEstado, filtroVark, filtroDimension,
+        modalPublicar, modalArchivar, modalEliminar,
+        paginados, totalPaginas, desde, hasta, filtrados,
+        totalPublicados, totalBorradores, totalArchivados,
+        varkDisponibles, dimensionesDisponibles,
+        setVista, setPagina,
+        handleBusqueda, handlePorPagina, handleFiltro,
+        handleFiltroVark, handleFiltroDim, limpiarFiltrosExtra,
+        handleTogglePublish, handleArchivar, handleEliminar,
+        handleConfirmPublicar, handleConfirmArchivar, handleConfirmarEliminar,
+        fetchCursos, irACrear, irAEditar, irAVistaPrevia,
+        cerrarModalPublicar, cerrarModalArchivar, cerrarModalEliminar,
     } = useCursosT();
 
     return (
         <div className="cursos-root">
 
-            {/* ══ HEADER ══════════════════════════════════ */}
+            {/* ══ HEADER ══════════════════════════════════════════ */}
             <header className="header-curso">
-                <div className="page-eyebrow">
-                    <IoSchoolOutline size={13} /> Panel del tutor
-                </div>
-                <div className="header-curso__row">
+                <div className="header-curso__top">
                     <div>
-                        <h1 className="page-title">Mis Cursos</h1>
-                        <p className="page-sub">Gestiona, edita y publica cursos para estudiantes</p>
+                        <div className="page-eyebrow">
+                            <IoSchoolOutline size={12} /> Panel del tutor
+                        </div>
+                        <h1 className="page-title">Mis cursos</h1>
+                        <p className="page-sub">Gestiona, edita y publica cursos para tus estudiantes</p>
                     </div>
-                    <div className="page-header_derecha">
-                        {[
-                            { label: "Total", val: cursos.length, mod: "total" },
-                            { label: "Publicados", val: totalPublicados, mod: "pub" },
-                            { label: "Borradores", val: totalBorradores, mod: "draft" },
-                            { label: "Archivados", val: totalArchivados, mod: "arch" },
-                        ].map((s) => (
-                            <div key={s.label} className={`stat-card stat-card--${s.mod}`}>
-                                <p className="stat-card__val">{s.val}</p>
-                                <p className="stat-card__lbl">{s.label}</p>
-                            </div>
-                        ))}
+                    <button className="btn-primary-curso" onClick={irACrear}>
+                        <IoAdd size={17} /> Crear curso
+                    </button>
+                </div>
+
+                <div className="header-stats">
+                    <div className="hstat">
+                        <span className="hstat__val">{cursos.length}</span>
+                        <span className="hstat__lbl">Total</span>
+                    </div>
+                    <div className="hstat">
+                        <span className="hstat__val hstat__val--pub">{totalPublicados}</span>
+                        <span className="hstat__lbl">Publicados</span>
+                    </div>
+                    <div className="hstat">
+                        <span className="hstat__val hstat__val--draft">{totalBorradores}</span>
+                        <span className="hstat__lbl">Borradores</span>
+                    </div>
+                    <div className="hstat">
+                        <span className="hstat__val hstat__val--arch">{totalArchivados}</span>
+                        <span className="hstat__lbl">Archivados</span>
                     </div>
                 </div>
             </header>
 
-            {/* ══ BODY ════════════════════════════════════ */}
+            {/* ══ BODY ════════════════════════════════════════════ */}
             <div className="cursos-layout">
 
-                <PanelFiltros cursos={cursos} filtroEstado={filtroEstado} onFiltro={handleFiltro} />
+                <PanelFiltros
+                    cursos={cursos}
+                    filtroEstado={filtroEstado} onFiltro={handleFiltro}
+                    filtroVark={filtroVark} onFiltroVark={handleFiltroVark}
+                    filtroDimension={filtroDimension} onFiltroDim={handleFiltroDim}
+                    varkDisponibles={varkDisponibles}
+                    dimensionesDisponibles={dimensionesDisponibles}
+                    onLimpiar={limpiarFiltrosExtra}
+                />
 
                 <main className="panel-curso">
 
                     {/* Toolbar */}
                     <div className="toolbar-opciones">
-                        <button className="btn-primary-curso" onClick={irACrear}>
-                            <IoAdd size={17} /> Crear curso
-                        </button>
                         <div className="toolbar-opciones-right">
                             <div className="search-wrap">
-                                <span className="search-icon"><IoSearch size={15} /></span>
+                                <span className="search-icon"><IoSearch size={14} /></span>
                                 <input
                                     className="search-input"
                                     value={busqueda}
                                     onChange={(e) => handleBusqueda(e.target.value)}
-                                    placeholder="Buscar por título, descripción o perfil…"
+                                    placeholder="Buscar por título, descripción o perfil VARK…"
                                 />
                                 {busqueda && (
                                     <button className="search-clear" onClick={() => handleBusqueda("")}>✕</button>
                                 )}
                             </div>
                             <div className="view-toggle">
-                                <button className={`view-btn ${vista === "mosaic" ? "view-btn--active" : ""}`}
-                                    onClick={() => setVista("mosaic")} title="Mosaico">
-                                    <IoGridOutline size={16} />
+                                <button
+                                    className={`view-btn ${vista === "mosaic" ? "view-btn--active" : ""}`}
+                                    onClick={() => setVista("mosaic")} title="Mosaico"
+                                >
+                                    <IoGridOutline size={15} />
                                 </button>
-                                <button className={`view-btn ${vista === "list" ? "view-btn--active" : ""}`}
-                                    onClick={() => setVista("list")} title="Lista">
-                                    <IoListOutline size={16} />
+                                <button
+                                    className={`view-btn ${vista === "list" ? "view-btn--active" : ""}`}
+                                    onClick={() => setVista("list")} title="Lista"
+                                >
+                                    <IoListOutline size={15} />
                                 </button>
                             </div>
                             <div className="per-page-wrap">
                                 <span className="per-page-lbl">Mostrar</span>
-                                <select className="per-page-select" value={porPagina}
-                                    onChange={(e) => handlePorPagina(Number(e.target.value))}>
-                                    {[4, 8, 12, 16, 20].map((n) => <option key={n} value={n}>{n}</option>)}
+                                <select
+                                    className="per-page-select"
+                                    value={porPagina}
+                                    onChange={(e) => handlePorPagina(Number(e.target.value))}
+                                >
+                                    {[4, 8, 12, 16, 20].map((n) => (
+                                        <option key={n} value={n}>{n}</option>
+                                    ))}
                                 </select>
                             </div>
                         </div>
                     </div>
 
-                    {/* Cuerpo */}
+                    {/* ── Chips de filtros activos ── */}
+                    {(filtroVark || filtroDimension) && (
+                        <div className="filtros-activos">
+                            {filtroVark && (
+                                <span className="filtro-chip">
+                                    VARK: {VARK_COLORS[filtroVark]?.label || filtroVark}
+                                    <button onClick={() => handleFiltroVark(null)}>✕</button>
+                                </span>
+                            )}
+                            {filtroDimension && (
+                                <span className="filtro-chip">
+                                    Dimensión: {filtroDimension}
+                                    <button onClick={() => handleFiltroDim(null)}>✕</button>
+                                </span>
+                            )}
+                        </div>
+                    )}
+
+                    {/* Contenido principal */}
                     {cargando ? (
                         <div className="cursos-empty">
-                            <div className="cursos-empty__icon"><IoBookOutline size={26} /></div>
+                            <div className="cursos-empty__icon"><IoBookOutline size={24} /></div>
                             <p className="cursos-empty__title">Cargando cursos…</p>
                         </div>
                     ) : error ? (
                         <div className="cursos-empty">
-                            <div className="cursos-empty__icon"><IoWarningOutline size={26} /></div>
+                            <div className="cursos-empty__icon"><IoWarningOutline size={24} /></div>
                             <p className="cursos-empty__title">Ocurrió un error</p>
                             <p className="cursos-empty__text">{error}</p>
-                            <button className="btn-primary-curso" style={{ marginTop: 14 }} onClick={fetchCursos}>
+                            <button className="btn-primary-curso" style={{ marginTop: 16 }} onClick={fetchCursos}>
                                 Reintentar
                             </button>
                         </div>
                     ) : paginados.length === 0 ? (
                         <div className="cursos-empty">
-                            <div className="cursos-empty__icon"><IoBookOutline size={26} /></div>
-                            <p className="cursos-empty__title">{busqueda ? "Sin resultados" : "Nada aquí todavía"}</p>
+                            <div className="cursos-empty__icon"><IoBookOutline size={24} /></div>
+                            <p className="cursos-empty__title">
+                                {busqueda ? "Sin resultados" : "Sin cursos aquí todavía"}
+                            </p>
                             <p className="cursos-empty__text">
                                 {busqueda
                                     ? `No se encontraron cursos con "${busqueda}"`
@@ -497,16 +641,21 @@ export function CursosT() {
                         <div className="cursos-grid-wrapper">
                             <div className="cursos-grid">
                                 {paginados.map((c) => (
-                                    <CursoCard key={c.id_curso} curso={c}
+                                    <CursoCard
+                                        key={c.id_curso} curso={c}
                                         onEdit={irAEditar}
                                         onTogglePublish={handleTogglePublish}
                                         onArchivar={handleArchivar}
                                         onEliminar={handleEliminar}
-                                        onVistaPrevia={irAVistaPrevia} />
+                                        onVistaPrevia={irAVistaPrevia}
+                                    />
                                 ))}
                             </div>
-                            <Paginacion pagina={pagina} totalPaginas={totalPaginas}
-                                total={filtrados.length} desde={desde} hasta={hasta} onCambiar={setPagina} />
+                            <Paginacion
+                                pagina={pagina} totalPaginas={totalPaginas}
+                                total={filtrados.length} desde={desde} hasta={hasta}
+                                onCambiar={setPagina}
+                            />
                         </div>
                     ) : (
                         <div className="cursos-grid-wrapper">
@@ -515,51 +664,55 @@ export function CursosT() {
                                     <table className="cursos-table">
                                         <thead>
                                             <tr>
-                                                {["Curso", "Estado", "VARK", "Dimensiones", "Creado", "Modificado", ""].map((h) => (
+                                                {["Curso", "Estado", "VARK", "Secciones", "Estudiantes", "Última edición", ""].map((h) => (
                                                     <th key={h} className="th">{h}</th>
                                                 ))}
                                             </tr>
                                         </thead>
                                         <tbody>
                                             {paginados.map((c) => (
-                                                <CursoRow key={c.id_curso} curso={c}
+                                                <CursoRow
+                                                    key={c.id_curso} curso={c}
                                                     onEdit={irAEditar}
                                                     onTogglePublish={handleTogglePublish}
                                                     onArchivar={handleArchivar}
                                                     onEliminar={handleEliminar}
-                                                    onVistaPrevia={irAVistaPrevia} />
+                                                    onVistaPrevia={irAVistaPrevia}
+                                                />
                                             ))}
                                         </tbody>
                                     </table>
                                 </div>
                             </div>
-                            <Paginacion pagina={pagina} totalPaginas={totalPaginas}
-                                total={filtrados.length} desde={desde} hasta={hasta} onCambiar={setPagina} />
+                            <Paginacion
+                                pagina={pagina} totalPaginas={totalPaginas}
+                                total={filtrados.length} desde={desde} hasta={hasta}
+                                onCambiar={setPagina}
+                            />
                         </div>
                     )}
-
                 </main>
             </div>
 
-            {/* ══ MODALES ══════════════════════════════════ */}
+            {/* ══ MODALES ═════════════════════════════════════════ */}
             <ModalPublicar
                 isOpen={!!modalPublicar}
                 curso={modalPublicar}
                 onConfirm={handleConfirmPublicar}
-                onClose={cerrarModalPublicar} />
-
+                onClose={cerrarModalPublicar}
+            />
             <ModalArchivar
                 isOpen={!!modalArchivar}
                 curso={modalArchivar}
                 onConfirm={handleConfirmArchivar}
-                onClose={cerrarModalArchivar} />
-
+                onClose={cerrarModalArchivar}
+            />
             <ModalEliminar
                 isOpen={!!modalEliminar}
                 nombreUsuario={modalEliminar?.titulo}
                 onConfirm={handleConfirmarEliminar}
-                onClose={cerrarModalEliminar} />
-
+                onClose={cerrarModalEliminar}
+            />
         </div>
     );
 }

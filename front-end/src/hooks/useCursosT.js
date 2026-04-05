@@ -3,6 +3,9 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
+// Todos los perfiles VARK posibles del sistema (fuente de verdad estática)
+const TODOS_PERFILES_VARK = ["V", "A", "R", "K", "VA", "VR", "VK", "AR", "AK", "RK", "VAR", "VAK", "VRK", "ARK", "VARK"];
+
 export function useCursosT() {
     const navigate = useNavigate();
 
@@ -14,9 +17,15 @@ export function useCursosT() {
     const [porPagina, setPorPagina] = useState(8);
     const [pagina, setPagina] = useState(1);
     const [filtroEstado, setFiltroEstado] = useState("todos");
-    const [modalPublicar, setModalPublicar] = useState(null); // curso | null
-    const [modalArchivar, setModalArchivar] = useState(null); // curso | null
-    const [modalEliminar, setModalEliminar] = useState(null); // curso | null
+    // ── Nuevos filtros ──────────────────────────────────────
+    const [filtroVark, setFiltroVark] = useState(null);
+    const [filtroDimension, setFiltroDimension] = useState(null);
+    // ── Dimensiones del sistema (todas, desde el backend) ───
+    const [todasLasDimensiones, setTodasLasDimensiones] = useState([]);
+    // ───────────────────────────────────────────────────────
+    const [modalPublicar, setModalPublicar] = useState(null);
+    const [modalArchivar, setModalArchivar] = useState(null);
+    const [modalEliminar, setModalEliminar] = useState(null);
 
     const fetchCursos = async () => {
         try {
@@ -36,25 +45,60 @@ export function useCursosT() {
         }
     };
 
-    useEffect(() => { fetchCursos(); }, []);
+    // Carga todas las dimensiones del sistema (endpoint ya existente)
+    const fetchDimensiones = async () => {
+        try {
+            const { data } = await api.get("/cursos/dimensiones");
+            setTodasLasDimensiones(data.dimensiones || []);
+        } catch (err) {
+            // Si falla, caemos back a las dimensiones derivadas de los cursos
+            console.warn("No se pudieron cargar las dimensiones del sistema:", err);
+        }
+    };
 
+    useEffect(() => {
+        fetchCursos();
+        fetchDimensiones();
+    }, []);
+
+    // ── Selectores de filtro: usan datos del sistema completo ─
+    //    varkDisponibles → los 15 perfiles siempre disponibles
+    const varkDisponibles = TODOS_PERFILES_VARK;
+
+    //    dimensionesDisponibles → todas las del sistema; si el fetch
+    //    falló, se degrada gracefully a las que tienen los cursos del tutor
+    const dimensionesDisponibles = useMemo(() => {
+        if (todasLasDimensiones.length > 0) {
+            return todasLasDimensiones.map((d) => d.nombre_dimension).sort();
+        }
+        // Fallback: derivar de los cursos cargados
+        const set = new Set(cursos.map((c) => c.nombre_dimension).filter(Boolean));
+        return Array.from(set).sort();
+    }, [todasLasDimensiones, cursos]);
+
+    // ── Filtrado principal ───────────────────────────────────
     const filtrados = useMemo(() => {
         const q = busqueda.toLowerCase();
         return cursos.filter((c) => {
-            const ok =
+            const okBusqueda =
                 c.titulo.toLowerCase().includes(q) ||
                 c.descripcion?.toLowerCase().includes(q) ||
                 c.perfil_vark?.toLowerCase().includes(q);
 
-            const estado =
+            const okEstado =
                 filtroEstado === "todos" ? !c.archivado :
                     filtroEstado === "publicado" ? (c.es_publicado && !c.archivado) :
                         filtroEstado === "borrador" ? (!c.es_publicado && !c.archivado) :
                             filtroEstado === "archivado" ? c.archivado : true;
 
-            return ok && estado;
+            const okVark = !filtroVark || c.perfil_vark === filtroVark;
+
+            const okDimension =
+                !filtroDimension || c.nombre_dimension === filtroDimension;
+
+            return okBusqueda && okEstado && okVark && okDimension;
         });
-    }, [cursos, busqueda, filtroEstado]);
+    }, [cursos, busqueda, filtroEstado, filtroVark, filtroDimension]);
 
     const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
     const paginados = filtrados.slice((pagina - 1) * porPagina, pagina * porPagina);
@@ -65,12 +109,20 @@ export function useCursosT() {
     const totalBorradores = cursos.filter((c) => !c.es_publicado && !c.archivado).length;
     const totalArchivados = cursos.filter((c) => c.archivado).length;
 
-    // ── Handlers de filtros y paginación ──
+    // ── Handlers filtros y paginación ───────────────────────
     const handleBusqueda = (v) => { setBusqueda(v); setPagina(1); };
     const handlePorPagina = (n) => { setPorPagina(n); setPagina(1); };
     const handleFiltro = (k) => { setFiltroEstado(k); setPagina(1); };
+    const handleFiltroVark = (v) => { setFiltroVark(v); setPagina(1); };
+    const handleFiltroDim = (v) => { setFiltroDimension(v); setPagina(1); };
 
-    // ── Handlers de modales ──
+    const limpiarFiltrosExtra = () => {
+        setFiltroVark(null);
+        setFiltroDimension(null);
+        setPagina(1);
+    };
+
+    // ── Handlers modales ────────────────────────────────────
     const handleTogglePublish = (curso) => setModalPublicar(curso);
     const handleArchivar = (curso) => setModalArchivar(curso);
     const handleEliminar = (curso) => setModalEliminar(curso);
@@ -105,55 +157,33 @@ export function useCursosT() {
         setModalEliminar(null);
     };
 
-    // ── Navegación ──
+    // ── Navegación ──────────────────────────────────────────
     const irACrear = () => navigate("/editor-curso");
     const irAEditar = (c) => navigate(`/editor-curso?id=${c.id_curso}`);
     const irAVistaPrevia = (c) => navigate(`/cursos-visor-tutor?id=${c.id_curso}`);
 
     return {
         // Estado
-        cursos,
-        cargando,
-        error,
-        busqueda,
-        vista,
-        porPagina,
-        pagina,
-        filtroEstado,
-        modalPublicar,
-        modalArchivar,
-        modalEliminar,
+        cursos, cargando, error, busqueda, vista, porPagina, pagina,
+        filtroEstado, filtroVark, filtroDimension,
+        modalPublicar, modalArchivar, modalEliminar,
 
         // Datos derivados
-        filtrados,
-        paginados,
-        totalPaginas,
-        desde,
-        hasta,
-        totalPublicados,
-        totalBorradores,
-        totalArchivados,
+        filtrados, paginados, totalPaginas, desde, hasta,
+        totalPublicados, totalBorradores, totalArchivados,
+        varkDisponibles, dimensionesDisponibles,
 
         // Setters simples
-        setVista,
-        setPagina,
+        setVista, setPagina,
 
         // Handlers
-        handleBusqueda,
-        handlePorPagina,
-        handleFiltro,
-        handleTogglePublish,
-        handleArchivar,
-        handleEliminar,
-        handleConfirmPublicar,
-        handleConfirmArchivar,
-        handleConfirmarEliminar,
+        handleBusqueda, handlePorPagina, handleFiltro,
+        handleFiltroVark, handleFiltroDim, limpiarFiltrosExtra,
+        handleTogglePublish, handleArchivar, handleEliminar,
+        handleConfirmPublicar, handleConfirmArchivar, handleConfirmarEliminar,
 
         // Navegación
-        fetchCursos,
-        irACrear,
-        irAEditar,
-        irAVistaPrevia,
+        fetchCursos, irACrear, irAEditar, irAVistaPrevia,
 
         // Cerrar modales
         cerrarModalPublicar: () => setModalPublicar(null),
