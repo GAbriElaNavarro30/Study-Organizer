@@ -30,6 +30,7 @@ import { CursosT } from "../pages/CursosT";
 import { EditorCurso } from "../pages/EditorCurso";
 import { CursoDetalle } from "../pages/CursoDetalle";
 import { CursoVisor } from "../pages/CursoVisor";
+import { CursoVisorTutor } from "../pages/CursoVisorTutor";
 import { CursoResultado } from "../pages/CursoResultado.jsx";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
@@ -228,6 +229,17 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <CursoVisor />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route
+                    path="/cursos-visor-tutor"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <CursoVisorTutor />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

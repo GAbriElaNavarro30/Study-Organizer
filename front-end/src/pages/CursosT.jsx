@@ -1,6 +1,5 @@
-import { useState, useMemo, useEffect, useRef } from "react";
-import { useNavigate } from "react-router-dom";
-import api from "../services/api";
+// src/pages/CursosT.jsx
+import { useState, useRef, useEffect } from "react";
 import {
     IoAdd, IoSearch, IoGridOutline, IoListOutline, IoCreateOutline,
     IoEye, IoEyeOff, IoBookOutline, IoCalendarOutline, IoTimeOutline,
@@ -14,6 +13,7 @@ import { ModalEliminar } from "../components/ModalEliminar";
 import { ModalArchivar } from "../components/ModalArchivar";
 import { ModalPublicar } from "../components/ModalPublicar";
 import "../styles/CursosT.css";
+import { useCursosT } from "../hooks/useCursosT";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTES
@@ -127,13 +127,10 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
     const actualizarPos = () => {
         if (!triggerRef.current) return;
         const rect = triggerRef.current.getBoundingClientRect();
-
         const desbordaDerecha = rect.left + DROPDOWN_W > window.innerWidth - 8;
         const left = desbordaDerecha ? rect.right - DROPDOWN_W : rect.left;
-
         const desbordaAbajo = rect.bottom + DROPDOWN_H > window.innerHeight - 8;
         const top = desbordaAbajo ? rect.top - DROPDOWN_H : rect.bottom + 5;
-
         setPos({ top, left });
         rafRef.current = requestAnimationFrame(actualizarPos);
     };
@@ -158,31 +155,21 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
         return () => document.removeEventListener("mousedown", cerrar);
     }, []);
 
-    const abrirMenu = (e) => {
-        e.stopPropagation();
-        setAbierto((prev) => !prev);
-    };
+    const abrirMenu = (e) => { e.stopPropagation(); setAbierto((prev) => !prev); };
 
     const dropdown = abierto
         ? ReactDOM.createPortal(
-            <div
-                ref={dropdownRef}
-                className="menu-opciones__dropdown"
-                style={{ top: pos.top, left: pos.left }}
-            >
-                <button className="menu-opciones__item"
-                    onClick={() => { setAbierto(false); onEdit(curso); }}>
+            <div ref={dropdownRef} className="menu-opciones__dropdown" style={{ top: pos.top, left: pos.left }}>
+                <button className="menu-opciones__item" onClick={() => { setAbierto(false); onEdit(curso); }}>
                     <IoCreateOutline size={14} /> Editar
                 </button>
                 {!curso.archivado && (
-                    <button className="menu-opciones__item"
-                        onClick={() => { setAbierto(false); onTogglePublish(curso); }}>
+                    <button className="menu-opciones__item" onClick={() => { setAbierto(false); onTogglePublish(curso); }}>
                         {curso.es_publicado ? <IoEyeOff size={14} /> : <IoEye size={14} />}
                         {curso.es_publicado ? "Despublicar" : "Publicar"}
                     </button>
                 )}
-                <button className="menu-opciones__item"
-                    onClick={() => { setAbierto(false); onArchivar(curso); }}>
+                <button className="menu-opciones__item" onClick={() => { setAbierto(false); onArchivar(curso); }}>
                     <IoArchiveOutline size={14} />
                     {curso.archivado ? "Desarchivar" : "Archivar"}
                 </button>
@@ -198,11 +185,7 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
 
     return (
         <div className="menu-opciones" ref={triggerRef}>
-            <button
-                className="menu-opciones__trigger"
-                onClick={abrirMenu}
-                title="Más opciones"
-            >
+            <button className="menu-opciones__trigger" onClick={abrirMenu} title="Más opciones">
                 <IoEllipsisVertical size={17} />
             </button>
             {dropdown}
@@ -211,12 +194,14 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
 };
 
 /* ── Tarjeta ─────────────────────────────────────────────── */
-const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) => {
+const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVistaPrevia }) => {
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
 
     return (
-        <div className={`curso-card ${curso.archivado ? "curso-card--archivado" : ""}`}>
-            {/* Banner de portada */}
+        <div className={`curso-card ${curso.archivado ? "curso-card--archivado" : ""}`}
+            onDoubleClick={() => onVistaPrevia(curso)}
+            style={{ cursor: "pointer" }}
+        >
             <div className="curso-card__cover">
                 {curso.foto ? (
                     <img src={curso.foto} alt={curso.titulo} className="curso-card__cover-img" />
@@ -234,7 +219,6 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) =
                 </div>
             </div>
 
-            {/* Contenido */}
             <div className="curso-card__body">
                 <p className="curso-card__title">{curso.titulo}</p>
                 {curso.descripcion && (
@@ -265,8 +249,11 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) =
 };
 
 /* ── Fila tabla ──────────────────────────────────────────── */
-const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) => (
-    <tr className={`table-row ${curso.archivado ? "table-row--archivado" : ""}`}>
+const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVistaPrevia }) => (
+    <tr className={`table-row ${curso.archivado ? "table-row--archivado" : ""}`}
+        onDoubleClick={() => onVistaPrevia(curso)}
+        style={{ cursor: "pointer" }}
+    >
         <td className="td">
             <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
                 <CourseAvatar titulo={curso.titulo} foto={curso.foto} size={38} />
@@ -356,104 +343,56 @@ const PanelFiltros = ({ cursos, filtroEstado, onFiltro }) => {
    COMPONENTE PRINCIPAL
 ═══════════════════════════════════════════════════════════ */
 export function CursosT() {
-    const navigate = useNavigate();
+    const {
+        // Estado
+        cursos,
+        cargando,
+        error,
+        busqueda,
+        vista,
+        porPagina,
+        pagina,
+        filtroEstado,
+        modalPublicar,
+        modalArchivar,
+        modalEliminar,
 
-    const [cursos, setCursos] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
-    const [busqueda, setBusqueda] = useState("");
-    const [vista, setVista] = useState("mosaic");
-    const [porPagina, setPorPagina] = useState(8);
-    const [pagina, setPagina] = useState(1);
-    const [filtroEstado, setFiltroEstado] = useState("todos");
-    const [modalPublicar, setModalPublicar] = useState(null); // curso | null
-    const [modalArchivar, setModalArchivar] = useState(null); // curso | null
-    const [modalEliminar, setModalEliminar] = useState(null); // curso | null
+        // Datos derivados
+        paginados,
+        totalPaginas,
+        desde,
+        hasta,
+        filtrados,
+        totalPublicados,
+        totalBorradores,
+        totalArchivados,
 
-    const fetchCursos = async () => {
-        try {
-            setCargando(true);
-            setError(null);
-            const { data } = await api.get("/cursos/cursos");
-            const normalizados = data.cursos.map((c) => ({
-                ...c,
-                dimensiones: c.nombre_dimension ? [c.nombre_dimension] : [],
-                archivado: Boolean(c.archivado),
-            }));
-            setCursos(normalizados);
-        } catch (err) {
-            setError(err.response?.data?.mensaje || "Error al cargar los cursos.");
-        } finally {
-            setCargando(false);
-        }
-    };
+        // Setters simples
+        setVista,
+        setPagina,
 
-    useEffect(() => { fetchCursos(); }, []);
+        // Handlers
+        handleBusqueda,
+        handlePorPagina,
+        handleFiltro,
+        handleTogglePublish,
+        handleArchivar,
+        handleEliminar,
+        handleConfirmPublicar,
+        handleConfirmArchivar,
+        handleConfirmarEliminar,
 
-    const filtrados = useMemo(() => {
-        const q = busqueda.toLowerCase();
-        return cursos.filter((c) => {
-            const ok =
-                c.titulo.toLowerCase().includes(q) ||
-                c.descripcion?.toLowerCase().includes(q) ||
-                c.perfil_vark?.toLowerCase().includes(q);
+        // Navegación
+        fetchCursos,
+        irACrear,
+        irAEditar,
+        irAVistaPrevia,
 
-            const estado =
-                filtroEstado === "todos" ? !c.archivado :
-                    filtroEstado === "publicado" ? (c.es_publicado && !c.archivado) :
-                        filtroEstado === "borrador" ? (!c.es_publicado && !c.archivado) :
-                            filtroEstado === "archivado" ? c.archivado : true;
-
-            return ok && estado;
-        });
-    }, [cursos, busqueda, filtroEstado]);
-
-    const totalPaginas = Math.max(1, Math.ceil(filtrados.length / porPagina));
-    const paginados = filtrados.slice((pagina - 1) * porPagina, pagina * porPagina);
-    const desde = filtrados.length === 0 ? 0 : (pagina - 1) * porPagina + 1;
-    const hasta = Math.min(pagina * porPagina, filtrados.length);
-
-    const handleBusqueda = (v) => { setBusqueda(v); setPagina(1); };
-    const handlePorPagina = (n) => { setPorPagina(n); setPagina(1); };
-    const handleFiltro = (k) => { setFiltroEstado(k); setPagina(1); };
-
-    const handleTogglePublish = (curso) => setModalPublicar(curso);
-    const handleArchivar = (curso) => setModalArchivar(curso);
-    const handleEliminar = (curso) => setModalEliminar(curso);
-
-    const handleConfirmPublicar = async () => {
-        try {
-            await api.patch(`/cursos/cursos/${modalPublicar.id_curso}/publicar`);
-            await fetchCursos();
-        } catch (err) {
-            console.error("Error al cambiar publicación:", err.response?.data);
-        }
-        setModalPublicar(null);
-    };
-
-    const handleConfirmArchivar = async () => {
-        try {
-            await api.patch(`/cursos/cursos/${modalArchivar.id_curso}/archivar`);
-            await fetchCursos();
-        } catch (err) {
-            console.error("Error al archivar:", err.response?.data);
-        }
-        setModalArchivar(null);
-    };
-
-    const handleConfirmarEliminar = async () => {
-        try {
-            await api.delete(`/cursos/cursos/${modalEliminar.id_curso}`);
-            await fetchCursos();
-        } catch (err) {
-            console.error("Error al eliminar:", err.response?.data);
-        }
-        setModalEliminar(null);
-    };
-
-    const totalPublicados = cursos.filter((c) => c.es_publicado && !c.archivado).length;
-    const totalBorradores = cursos.filter((c) => !c.es_publicado && !c.archivado).length;
-    const totalArchivados = cursos.filter((c) => c.archivado).length;
+        // Cerrar modales
+        cerrarModalPublicar,
+        cerrarModalArchivar,
+        cerrarModalEliminar,
+    } = useCursosT();
 
     return (
         <div className="cursos-root">
@@ -493,7 +432,7 @@ export function CursosT() {
 
                     {/* Toolbar */}
                     <div className="toolbar-opciones">
-                        <button className="btn-primary-curso" onClick={() => navigate("/editor-curso")}>
+                        <button className="btn-primary-curso" onClick={irACrear}>
                             <IoAdd size={17} /> Crear curso
                         </button>
                         <div className="toolbar-opciones-right">
@@ -559,10 +498,11 @@ export function CursosT() {
                             <div className="cursos-grid">
                                 {paginados.map((c) => (
                                     <CursoCard key={c.id_curso} curso={c}
-                                        onEdit={(c) => navigate(`/editor-curso?id=${c.id_curso}`)}
+                                        onEdit={irAEditar}
                                         onTogglePublish={handleTogglePublish}
                                         onArchivar={handleArchivar}
-                                        onEliminar={handleEliminar} />
+                                        onEliminar={handleEliminar}
+                                        onVistaPrevia={irAVistaPrevia} />
                                 ))}
                             </div>
                             <Paginacion pagina={pagina} totalPaginas={totalPaginas}
@@ -583,10 +523,11 @@ export function CursosT() {
                                         <tbody>
                                             {paginados.map((c) => (
                                                 <CursoRow key={c.id_curso} curso={c}
-                                                    onEdit={(c) => navigate(`/editor-curso?id=${c.id_curso}`)}
+                                                    onEdit={irAEditar}
                                                     onTogglePublish={handleTogglePublish}
                                                     onArchivar={handleArchivar}
-                                                    onEliminar={handleEliminar} />
+                                                    onEliminar={handleEliminar}
+                                                    onVistaPrevia={irAVistaPrevia} />
                                             ))}
                                         </tbody>
                                     </table>
@@ -605,19 +546,19 @@ export function CursosT() {
                 isOpen={!!modalPublicar}
                 curso={modalPublicar}
                 onConfirm={handleConfirmPublicar}
-                onClose={() => setModalPublicar(null)} />
+                onClose={cerrarModalPublicar} />
 
             <ModalArchivar
                 isOpen={!!modalArchivar}
                 curso={modalArchivar}
                 onConfirm={handleConfirmArchivar}
-                onClose={() => setModalArchivar(null)} />
+                onClose={cerrarModalArchivar} />
 
             <ModalEliminar
                 isOpen={!!modalEliminar}
                 nombreUsuario={modalEliminar?.titulo}
                 onConfirm={handleConfirmarEliminar}
-                onClose={() => setModalEliminar(null)} />
+                onClose={cerrarModalEliminar} />
 
         </div>
     );

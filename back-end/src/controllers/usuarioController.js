@@ -274,7 +274,7 @@ export const login = async (req, res) => {
             httpOnly: true,
             secure: esProduccion,
             sameSite: esProduccion ? "none" : "lax",
-            maxAge: 2 * 60 * 60 * 1000,
+            maxAge: 8 * 60 * 60 * 1000,
             path: "/"
         });
 

@@ -11,6 +11,8 @@ import api from "../services/api";
 import "../styles/EditorCurso.css";
 import { ContentImageUpload } from "../components/ContentImageUpload_new";
 import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTS
@@ -638,6 +640,7 @@ export function EditorCurso() {
     const [seccionesOriginales, setSeccionesOriginales] = useState([]);
     const [modalSalirOpen, setModalSalirOpen] = useState(false);
     const [isDirty, setIsDirty] = useState(false);
+    const [showSuccessAlert, setShowSuccessAlert] = useState(false);
 
     // Ref para saber cuándo ya terminó la carga inicial y los cambios son del usuario
     const initialLoadDone = useRef(false);
@@ -876,9 +879,15 @@ export function EditorCurso() {
     const handleGuardar = async () => {
         setGuardando(true); setError(null);
         try {
-            modoEdicion ? await handleEditar() : await handleCrear();
-            setIsDirty(false);
-            navigate("/cursos-tutor");
+            if (modoEdicion) {
+                await handleEditar();
+                setIsDirty(false);
+                navigate("/cursos-tutor");
+            } else {
+                await handleCrear();
+                setIsDirty(false);
+                setShowSuccessAlert(true); // 👈 mostrar alerta
+            }
         } catch (err) {
             setError(err.response?.data?.mensaje || err.message || "Ocurrió un error al guardar.");
         } finally { setGuardando(false); }
@@ -939,6 +948,19 @@ export function EditorCurso() {
                 onCancel={() => setModalSalirOpen(false)}
                 onConfirm={() => navigate("/cursos-tutor")}
             />
+
+            {showSuccessAlert && (
+                <CustomAlert
+                    type="success"
+                    title="¡Curso creado!"
+                    logo={logo}
+                    message="Tu curso se ha creado correctamente."
+                    onClose={() => {
+                        setShowSuccessAlert(false);
+                        navigate("/cursos-tutor");
+                    }}
+                />
+            )}
         </div>
     );
 }

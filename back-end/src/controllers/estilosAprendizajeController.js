@@ -132,16 +132,16 @@ export async function obtenerResultado(req, res) {
             u.nombre AS nombre_tutor,
             (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
             CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
-         FROM Curso c
-         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-         WHERE c.es_publicado  = 1
-           AND c.archivado     = 0
-           AND c.id_usuario   != ?
-           AND c.perfil_vark   IN (${placeholders})
-           AND c.id_dimension  IS NULL
-         ORDER BY prioridad ASC, c.fecha_creacion DESC
-         LIMIT 12`,
+            FROM Curso c
+            LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+            LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+            WHERE c.es_publicado  = 1
+            AND c.archivado     = 0
+            AND c.id_usuario   != ?
+            AND c.perfil_vark   IN (${placeholders})
+            AND c.id_dimension  IS NULL
+            ORDER BY prioridad ASC, c.fecha_creacion DESC
+            LIMIT 12`,
                 [criterios.perfil_exacto, id_usuario, ...todosPerfiles]
             );
             cursos = rows;
