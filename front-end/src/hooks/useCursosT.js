@@ -17,15 +17,17 @@ export function useCursosT() {
     const [porPagina, setPorPagina] = useState(8);
     const [pagina, setPagina] = useState(1);
     const [filtroEstado, setFiltroEstado] = useState("todos");
-    // ── Nuevos filtros ──────────────────────────────────────
     const [filtroVark, setFiltroVark] = useState(null);
     const [filtroDimension, setFiltroDimension] = useState(null);
-    // ── Dimensiones del sistema (todas, desde el backend) ───
     const [todasLasDimensiones, setTodasLasDimensiones] = useState([]);
-    // ───────────────────────────────────────────────────────
     const [modalPublicar, setModalPublicar] = useState(null);
     const [modalArchivar, setModalArchivar] = useState(null);
     const [modalEliminar, setModalEliminar] = useState(null);
+
+    // ── Alert de éxito ──────────────────────────────────────
+    const [alert, setAlert] = useState(null); // { title, message } | null
+    const cerrarAlert = () => setAlert(null);
+    // ───────────────────────────────────────────────────────
 
     const fetchCursos = async () => {
         try {
@@ -51,7 +53,6 @@ export function useCursosT() {
             const { data } = await api.get("/cursos/dimensiones");
             setTodasLasDimensiones(data.dimensiones || []);
         } catch (err) {
-            // Si falla, caemos back a las dimensiones derivadas de los cursos
             console.warn("No se pudieron cargar las dimensiones del sistema:", err);
         }
     };
@@ -61,17 +62,15 @@ export function useCursosT() {
         fetchDimensiones();
     }, []);
 
-    // ── Selectores de filtro: usan datos del sistema completo ─
-    //    varkDisponibles → los 15 perfiles siempre disponibles
+    // varkDisponibles → los 15 perfiles siempre disponibles
     const varkDisponibles = TODOS_PERFILES_VARK;
 
-    //    dimensionesDisponibles → todas las del sistema; si el fetch
-    //    falló, se degrada gracefully a las que tienen los cursos del tutor
+    // dimensionesDisponibles → todas las del sistema;
+    // si el fetch falló, se degrada a las que tienen los cursos del tutor
     const dimensionesDisponibles = useMemo(() => {
         if (todasLasDimensiones.length > 0) {
             return todasLasDimensiones.map((d) => d.nombre_dimension).sort();
         }
-        // Fallback: derivar de los cursos cargados
         const set = new Set(cursos.map((c) => c.nombre_dimension).filter(Boolean));
         return Array.from(set).sort();
     }, [todasLasDimensiones, cursos]);
@@ -92,9 +91,7 @@ export function useCursosT() {
                             filtroEstado === "archivado" ? c.archivado : true;
 
             const okVark = !filtroVark || c.perfil_vark === filtroVark;
-
-            const okDimension =
-                !filtroDimension || c.nombre_dimension === filtroDimension;
+            const okDimension = !filtroDimension || c.nombre_dimension === filtroDimension;
 
             return okBusqueda && okEstado && okVark && okDimension;
         });
@@ -148,13 +145,21 @@ export function useCursosT() {
     };
 
     const handleConfirmarEliminar = async () => {
+        // Capturamos los datos ANTES de limpiar el modal para no perderlos
+        const { id_curso, titulo } = modalEliminar;
+        setModalEliminar(null);
+
         try {
-            await api.delete(`/cursos/cursos/${modalEliminar.id_curso}`);
+            await api.delete(`/cursos/cursos/${id_curso}`);
             await fetchCursos();
+            // ── Disparar alert de éxito ─────────────────────
+            setAlert({
+                title: "Curso eliminado",
+                message: `"${titulo}" se eliminó correctamente.`,
+            });
         } catch (err) {
             console.error("Error al eliminar:", err.response?.data);
         }
-        setModalEliminar(null);
     };
 
     // ── Navegación ──────────────────────────────────────────
@@ -167,6 +172,7 @@ export function useCursosT() {
         cursos, cargando, error, busqueda, vista, porPagina, pagina,
         filtroEstado, filtroVark, filtroDimension,
         modalPublicar, modalArchivar, modalEliminar,
+        alert, cerrarAlert,                          // ← alert expuesto
 
         // Datos derivados
         filtrados, paginados, totalPaginas, desde, hasta,

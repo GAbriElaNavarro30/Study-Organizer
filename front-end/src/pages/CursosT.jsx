@@ -12,8 +12,10 @@ import ReactDOM from "react-dom";
 import { ModalEliminar } from "../components/ModalEliminar";
 import { ModalArchivar } from "../components/ModalArchivar";
 import { ModalPublicar } from "../components/ModalPublicar";
-import "../styles/CursosT.css";
+import { CustomAlert } from "../components/CustomAlert";   // ← nuevo
+import logo from "../assets/imagenes/logotipo.png";         // ← nuevo
 import { useCursosT } from "../hooks/useCursosT";
+import "../styles/CursosT.css";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTES
@@ -106,7 +108,7 @@ const VarkBadge = ({ perfil }) => {
 };
 
 /* ─────────────────────────────────────────────────────────
-   DIMENSION BADGE  ← nuevo
+   DIMENSION BADGE
 ───────────────────────────────────────────────────────── */
 const DimBadge = ({ nombre }) => {
     if (!nombre) return null;
@@ -249,12 +251,7 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
             {/* Cuerpo */}
             <div className="curso-card__body">
                 <p className="curso-card__title">{curso.titulo}</p>
-
-                {/* ── Dimensión ← nuevo ── */}
-                {curso.nombre_dimension && (
-                    <DimBadge nombre={curso.nombre_dimension} />
-                )}
-
+                {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
                 {curso.descripcion && (
                     <p className="curso-card__desc">
                         {curso.descripcion.length > 80
@@ -277,9 +274,7 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
                     </div>
                 </div>
                 <div className="curso-card__meta">
-                    {curso.perfil_vark
-                        ? <VarkBadge perfil={curso.perfil_vark} />
-                        : <span />}
+                    {curso.perfil_vark ? <VarkBadge perfil={curso.perfil_vark} /> : <span />}
                     <span className="curso-card__date">{fmtDate(curso.fecha_actualizacion)}</span>
                 </div>
             </div>
@@ -301,10 +296,7 @@ const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVi
                 <CourseAvatar titulo={curso.titulo} foto={curso.foto} size={40} />
                 <div>
                     <p className="row-title">{curso.titulo}</p>
-                    {/* ── Dimensión ← nuevo ── */}
-                    {curso.nombre_dimension && (
-                        <DimBadge nombre={curso.nombre_dimension} />
-                    )}
+                    {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
                     {curso.descripcion && (
                         <p className="row-desc">
                             {curso.descripcion.length > 50
@@ -377,7 +369,7 @@ const Paginacion = ({ pagina, totalPaginas, total, desde, hasta, onCambiar }) =>
 );
 
 /* ─────────────────────────────────────────────────────────
-   PANEL FILTROS  ← ampliado con VARK y Dimensión
+   PANEL FILTROS
 ───────────────────────────────────────────────────────── */
 const PanelFiltros = ({
     cursos,
@@ -433,11 +425,7 @@ const PanelFiltros = ({
                     <option value="">Todos los perfiles</option>
                     {varkDisponibles.map((v) => {
                         const info = VARK_COLORS[v] || {};
-                        return (
-                            <option key={v} value={v}>
-                                {info.label || v}
-                            </option>
-                        );
+                        return <option key={v} value={v}>{info.label || v}</option>;
                     })}
                 </select>
             </div>
@@ -464,7 +452,7 @@ const PanelFiltros = ({
                 </>
             )}
 
-            {/* ── Botón limpiar filtros extra ── */}
+            {/* ── Limpiar filtros extra ── */}
             {hayFiltrosExtra && (
                 <button className="filtros-limpiar-btn" onClick={onLimpiar}>
                     <IoCloseCircle size={13} />
@@ -483,6 +471,7 @@ export function CursosT() {
         cursos, cargando, error, busqueda, vista, porPagina, pagina,
         filtroEstado, filtroVark, filtroDimension,
         modalPublicar, modalArchivar, modalEliminar,
+        alert, cerrarAlert,                          // ← desestructurados
         paginados, totalPaginas, desde, hasta, filtrados,
         totalPublicados, totalBorradores, totalArchivados,
         varkDisponibles, dimensionesDisponibles,
@@ -592,7 +581,7 @@ export function CursosT() {
                         </div>
                     </div>
 
-                    {/* ── Chips de filtros activos ── */}
+                    {/* Chips de filtros activos */}
                     {(filtroVark || filtroDimension) && (
                         <div className="filtros-activos">
                             {filtroVark && (
@@ -713,6 +702,17 @@ export function CursosT() {
                 onConfirm={handleConfirmarEliminar}
                 onClose={cerrarModalEliminar}
             />
+
+            {/* ══ ALERT DE ÉXITO AL ELIMINAR ══════════════════════ */}
+            {alert && (
+                <CustomAlert
+                    type="success"
+                    title={alert.title}
+                    message={alert.message}
+                    logo={logo}
+                    onClose={cerrarAlert}
+                />
+            )}
         </div>
     );
 }
