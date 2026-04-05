@@ -186,7 +186,7 @@ class MotorVARK(KnowledgeEngine):
                     self.declare(Recomendacion(estilo=letra, texto=texto))  # delcara 20 hechos en total en la WM del motor 
         
     # ── BLOQUE 6: Criterios de cursos recomendados ──
-
+ 
     @Rule(
         PerfilDominante(perfil=MATCH.perfil_usuario),
         salience=1,

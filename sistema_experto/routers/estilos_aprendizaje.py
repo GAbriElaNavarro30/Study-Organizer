@@ -30,4 +30,4 @@ def obtener_recomendaciones(perfil: str):
     return {
         "recomendaciones": resultado,
         "criterios_cursos": criterios,
-    }
+    } 
