@@ -9,7 +9,7 @@ import {
     IoCloseCircle, IoLayersOutline,
 } from "react-icons/io5";
 import ReactDOM from "react-dom";
-import { ModalEliminar } from "../components/ModalEliminar";
+import { ModalEliminarCurso } from "../components/ModalEliminarCurso";
 import { ModalArchivar } from "../components/ModalArchivar";
 import { ModalPublicar } from "../components/ModalPublicar";
 import { CustomAlert } from "../components/CustomAlert";   // ← nuevo
@@ -696,9 +696,9 @@ export function CursosT() {
                 onConfirm={handleConfirmArchivar}
                 onClose={cerrarModalArchivar}
             />
-            <ModalEliminar
+            <ModalEliminarCurso
                 isOpen={!!modalEliminar}
-                nombreUsuario={modalEliminar?.titulo}
+                curso={modalEliminar}   // ← el objeto completo
                 onConfirm={handleConfirmarEliminar}
                 onClose={cerrarModalEliminar}
             />

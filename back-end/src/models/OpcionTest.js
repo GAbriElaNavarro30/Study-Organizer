@@ -4,8 +4,8 @@ import { db } from "../config/db.js";
 export class OpcionTest {
     constructor({ texto_opcion, es_correcta = false, id_test }) {
         this.texto_opcion = texto_opcion;
-        this.es_correcta  = es_correcta;
-        this.id_test      = id_test;
+        this.es_correcta = es_correcta;
+        this.id_test = id_test;
     }
 
     async save() {
@@ -33,12 +33,16 @@ export class OpcionTest {
     }
 
     static async update(id, campos) {
-        const keys   = Object.keys(campos).map(k => `${k} = ?`).join(", ");
+        const keys = Object.keys(campos).map(k => `${k} = ?`).join(", ");
         const values = [...Object.values(campos), id];
         return await db.query(`UPDATE Opcion_Test SET ${keys} WHERE id_opcion = ?`, values);
     }
 
     static async delete(id) {
         return await db.query("DELETE FROM Opcion_Test WHERE id_opcion = ?", [id]);
+    }
+
+    static async deleteByPregunta(id_test) {
+        return await db.query("DELETE FROM Opcion_Test WHERE id_test = ?", [id_test]);
     }
 }

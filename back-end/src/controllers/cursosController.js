@@ -103,8 +103,21 @@ export const crearCurso = async (req, res) => {
         // ── Validaciones (espejo del paso 1 del frontend) ──
         if (!titulo?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título es obligatorio." });
+        if (titulo.trim().length > 200)
+            return res.status(400).json({ ok: false, mensaje: "El título no puede superar los 200 caracteres." });
+        if (titulo.trim().length < 5)
+            return res.status(400).json({ ok: false, mensaje: "El título debe tener al menos 5 caracteres." });
+        if (descripcion && descripcion.trim().length > 500)
+            return res.status(400).json({ ok: false, mensaje: "La descripción no puede superar los 500 caracteres." });
         if (!perfil_vark)
             return res.status(400).json({ ok: false, mensaje: "El perfil VARK es obligatorio." });
+
+        const [existing] = await db.query(
+            "SELECT id_curso FROM Curso WHERE titulo = ? AND id_usuario = ?",
+            [titulo.trim(), id_usuario]
+        );
+        if (existing.length > 0)
+            return res.status(409).json({ ok: false, mensaje: "Ya tienes un curso con ese título." });
 
         let foto = null;
         if (req.file) foto = await subirImagenCloudinary(req.file.buffer);
@@ -139,8 +152,23 @@ export const actualizarCurso = async (req, res) => {
         // ── Validaciones (espejo del paso 1 del frontend) ──
         if (titulo !== undefined && !titulo.trim())
             return res.status(400).json({ ok: false, mensaje: "El título no puede estar vacío." });
+        if (titulo !== undefined && titulo.trim().length > 200)
+            return res.status(400).json({ ok: false, mensaje: "El título no puede superar los 200 caracteres." });
+        if (titulo !== undefined && titulo.trim().length < 5)
+            return res.status(400).json({ ok: false, mensaje: "El título debe tener al menos 5 caracteres." });
+        if (descripcion !== undefined && descripcion && descripcion.trim().length > 500)
+            return res.status(400).json({ ok: false, mensaje: "La descripción no puede superar los 500 caracteres." });
         if (perfil_vark !== undefined && !perfil_vark)
             return res.status(400).json({ ok: false, mensaje: "El perfil VARK es obligatorio." });
+
+        if (titulo !== undefined) {
+            const [existing] = await db.query(
+                "SELECT id_curso FROM Curso WHERE titulo = ? AND id_usuario = ? AND id_curso != ?",
+                [titulo.trim(), id_usuario, id]
+            );
+            if (existing.length > 0)
+                return res.status(409).json({ ok: false, mensaje: "Ya tienes un curso con ese título." });
+        }
 
         const campos = {};
         if (titulo !== undefined) campos.titulo = titulo.trim();
@@ -203,7 +231,7 @@ export const crearSeccion = async (req, res) => {
     try {
         const { id } = req.params;
         const id_usuario = req.usuario.id;
-        const { titulo_seccion, orden } = req.body;
+        const { titulo_seccion, descripcion_seccion, orden } = req.body;
 
         // ── Validación (espejo del frontend: titulo_seccion requerido) ──
         if (!titulo_seccion?.trim())
@@ -223,6 +251,7 @@ export const crearSeccion = async (req, res) => {
 
         const seccion = new SeccionCurso({
             titulo_seccion: titulo_seccion.trim(),
+            descripcion_seccion: descripcion_seccion?.trim() || null,
             orden: ordenFinal,
             id_curso: id,
         });
@@ -237,7 +266,7 @@ export const crearSeccion = async (req, res) => {
 export const actualizarSeccion = async (req, res) => {
     try {
         const { id } = req.params;
-        const { titulo_seccion, orden } = req.body;
+        const { titulo_seccion, descripcion_seccion, orden } = req.body;
 
         // ── Validación: título obligatorio (espejo del frontend) ──
         if (titulo_seccion !== undefined && !titulo_seccion.trim())
@@ -245,6 +274,7 @@ export const actualizarSeccion = async (req, res) => {
 
         const campos = {};
         if (titulo_seccion !== undefined) campos.titulo_seccion = titulo_seccion.trim();
+        if (descripcion_seccion !== undefined) campos.descripcion_seccion = descripcion_seccion?.trim() || null;
         if (orden !== undefined) campos.orden = orden;
 
         if (Object.keys(campos).length === 0)
@@ -279,8 +309,7 @@ export const crearContenido = async (req, res) => {
         const { titulo, contenido, orden } = req.body;
 
         // ── Validación (espejo del frontend: titulo requerido) ──
-        if (!titulo?.trim())
-            return res.status(400).json({ ok: false, mensaje: "El título del bloque de contenido es obligatorio." });
+        
 
         let ordenFinal = orden;
         if (!ordenFinal) {
@@ -315,8 +344,7 @@ export const actualizarContenido = async (req, res) => {
         const { titulo, contenido, orden } = req.body;
 
         // ── Validación (espejo del frontend: titulo requerido) ──
-        if (titulo !== undefined && !titulo.trim())
-            return res.status(400).json({ ok: false, mensaje: "El título del bloque de contenido no puede estar vacío." });
+        
 
         const campos = {};
         if (titulo !== undefined) campos.titulo = titulo.trim();
@@ -409,7 +437,7 @@ export const actualizarPregunta = async (req, res) => {
             await PreguntaTest.update(id, { texto_pregunta: texto_pregunta.trim() });
 
         if (opciones.length > 0) {
-            await OpcionTest.delete(id);
+            await OpcionTest.deleteByPregunta(id);
             for (const op of opciones) {
                 const opcion = new OpcionTest({
                     texto_opcion: op.texto_opcion.trim(),

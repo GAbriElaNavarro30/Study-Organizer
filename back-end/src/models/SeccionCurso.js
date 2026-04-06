@@ -2,17 +2,18 @@
 import { db } from "../config/db.js";
 
 export class SeccionCurso {
-    constructor({ titulo_seccion, orden, id_curso }) {
+    constructor({ titulo_seccion, descripcion_seccion = null, orden, id_curso }) {
         this.titulo_seccion = titulo_seccion;
-        this.orden          = orden;
-        this.id_curso       = id_curso;
+        this.descripcion_seccion = descripcion_seccion;
+        this.orden = orden;
+        this.id_curso = id_curso;
     }
 
     async save() {
         return await db.query(
-            `INSERT INTO Seccion_Curso (titulo_seccion, orden, id_curso)
-             VALUES (?, ?, ?)`,
-            [this.titulo_seccion, this.orden, this.id_curso]
+            `INSERT INTO Seccion_Curso (titulo_seccion, descripcion_seccion, orden, id_curso)
+             VALUES (?, ?, ?, ?)`,
+            [this.titulo_seccion, this.descripcion_seccion, this.orden, this.id_curso]
         );
     }
 
@@ -33,7 +34,7 @@ export class SeccionCurso {
     }
 
     static async update(id, campos) {
-        const keys   = Object.keys(campos).map(k => `${k} = ?`).join(", ");
+        const keys = Object.keys(campos).map(k => `${k} = ?`).join(", ");
         const values = [...Object.values(campos), id];
         return await db.query(`UPDATE Seccion_Curso SET ${keys} WHERE id_seccion = ?`, values);
     }

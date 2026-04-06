@@ -1,133 +1,298 @@
-/* ══════════════════════════════════════════════
-   ModalArchivar.css
-══════════════════════════════════════════════ */
+/* src/components/ModalArchivar.css */
 
-/* ── Overlay ─────────────────────────────────── */
-.modal-archivar__overlay {
+/* ── Overlay ── */
+.marc-overlay {
     position: fixed;
     inset: 0;
     z-index: 1000;
-    background: rgba(15, 41, 66, 0.28);
+    background: rgba(15, 23, 42, 0.45);
     backdrop-filter: blur(5px);
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 16px;
+    animation: marc-fade-in 0.18s ease;
 }
 
-/* ── Caja principal ──────────────────────────── */
-.modal-archivar__box {
+@keyframes marc-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ── Card ── */
+.marc-card {
     background: #FFFFFF;
-    border-radius: 20px;
-    padding: 32px;
-    width: min(380px, 100%);
-    box-shadow: 0 20px 56px rgba(15, 41, 66, 0.16);
+    border-radius: 16px;
+    width: min(400px, 100%);
+    box-shadow: 0 20px 56px rgba(15, 23, 42, 0.16);
+    overflow: hidden;
+    animation: marc-slide-up 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+@keyframes marc-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(16px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ── Acento superior ── */
+.marc-accent {
+    height: 4px;
+}
+
+.marc-accent--arch {
+    background: #7C3AED;
+}
+
+.marc-accent--unarch {
+    background: #0EA5E9;
+}
+
+/* ── Inner ── */
+.marc-inner {
+    padding: 28px 26px 24px;
     display: flex;
     flex-direction: column;
-    align-items: center;
-    text-align: center;
-    gap: 0;
+    gap: 18px;
 }
 
-/* ── Ícono ───────────────────────────────────── */
-.modal-archivar__icon {
-    width: 48px;
-    height: 48px;
-    border-radius: 50%;
-    background: #F5F3FF;
-    color: #7C3AED;
+/* ── Encabezado ── */
+.marc-top {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.marc-badge {
+    width: 46px;
+    height: 46px;
+    border-radius: 12px;
     display: flex;
     align-items: center;
     justify-content: center;
-    margin-bottom: 14px;
     flex-shrink: 0;
 }
 
-/* ── Título ──────────────────────────────────── */
-.modal-archivar__title {
-    font-family: 'DM Serif Display', Georgia, serif;
-    font-size: 20px;
-    color: #0F2942;
-    margin: 0 0 8px;
-    line-height: 1.2;
+.marc-badge--arch {
+    background: #F5F3FF;
 }
 
-/* ── Mensaje ─────────────────────────────────── */
-.modal-archivar__msg {
-    font-size: 13.5px;
-    color: #64748B;
-    line-height: 1.6;
-    margin: 0 0 22px;
+.marc-badge--unarch {
+    background: #F0F9FF;
 }
 
-.modal-archivar__msg strong {
-    color: #334155;
-    font-weight: 600;
-}
-
-/* ── Footer ──────────────────────────────────── */
-.modal-archivar__footer {
+.marc-heads {
     display: flex;
-    gap: 10px;
-    width: 100%;
+    flex-direction: column;
+    gap: 3px;
 }
 
-/* ── Botón cancelar ──────────────────────────── */
-.modal-archivar__btn-cancel {
-    flex: 1;
-    padding: 10px 0;
+.marc-title {
+    font-size: 16px;
+    font-weight: 700;
+    color: #0F172A;
+    line-height: 1.25;
+    margin: 0;
+}
+
+.marc-sub {
+    font-size: 12px;
+    color: #94A3B8;
+    margin: 0;
+}
+
+/* ── Divisor ── */
+.marc-divider {
+    height: 1px;
     background: #F1F5F9;
-    color: #64748B;
-    border: none;
+    margin: 0 -26px;
+}
+
+/* ── Tarjeta del curso ── */
+.marc-course-card {
+    background: #F8FAFC;
+    border: 1px solid #E2E8F0;
     border-radius: 10px;
-    font-size: 13.5px;
+    padding: 12px 14px;
+    display: flex;
+    align-items: center;
+    gap: 12px;
+}
+
+.marc-avatar {
+    width: 38px;
+    height: 38px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    letter-spacing: 0.5px;
+}
+
+.marc-avatar--img {
+    object-fit: cover;
+}
+
+.marc-course-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    min-width: 0;
+}
+
+.marc-course-name {
+    font-size: 13px;
     font-weight: 600;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.15s;
+    color: #1E293B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
-.modal-archivar__btn-cancel:hover {
-    background: #E2E8F0;
+.marc-course-meta {
+    font-size: 11px;
+    color: #94A3B8;
 }
 
-/* ── Botón confirmar ─────────────────────────── */
-.modal-archivar__btn-confirm {
-    flex: 2;
-    padding: 10px 0;
-    background: #7C3AED;
-    color: #FFFFFF;
-    border: none;
-    border-radius: 10px;
-    font-size: 13.5px;
+/* ── Cuerpo ── */
+.marc-body {
+    font-size: 13px;
+    color: #64748B;
+    line-height: 1.65;
+    margin: 0;
+}
+
+/* ── Pills ── */
+.marc-pill-row {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.marc-pill {
+    font-size: 11px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 20px;
+    display: flex;
+    align-items: center;
+    gap: 5px;
+}
+
+.marc-pill--arch {
+    background: #F5F3FF;
+    color: #6D28D9;
+}
+
+.marc-pill--unarch {
+    background: #F0F9FF;
+    color: #0369A1;
+}
+
+.marc-pill--info {
+    background: #F1F5F9;
+    color: #475569;
+}
+
+/* ── Acciones ── */
+.marc-actions {
+    display: flex;
+    gap: 8px;
+    padding-top: 2px;
+}
+
+/* Cancelar */
+.marc-btn-cancel {
+    flex: 1;
+    height: 38px;
+    border-radius: 8px;
+    border: 1.5px solid #CBD5E1;
+    background: #F8FAFC;
+    color: #475569;
+    font-size: 13px;
     font-weight: 500;
     font-family: inherit;
     cursor: pointer;
-    box-shadow: 0 3px 12px rgba(124, 58, 237, 0.28);
-    transition: background 0.15s, transform 0.15s, box-shadow 0.15s;
+    transition: background 0.15s, border-color 0.15s, color 0.15s;
 }
 
-.modal-archivar__btn-confirm:hover {
-    background: #6D28D9;
-    transform: translateY(-1px);
-    box-shadow: 0 5px 16px rgba(124, 58, 237, 0.36);
+.marc-btn-cancel:hover {
+    background: #F1F5F9;
+    border-color: #94A3B8;
+    color: #1E293B;
 }
 
-.modal-archivar__btn-confirm:active {
+.marc-btn-cancel:active {
+    background: #E2E8F0;
+}
+
+/* Confirmar — base */
+.marc-btn-confirm {
+    flex: 2;
+    height: 38px;
+    border-radius: 8px;
+    border: none;
+    color: #fff;
+    font-size: 13px;
+    font-weight: 600;
+    font-family: inherit;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 7px;
+    transition: background 0.15s, transform 0.1s;
+}
+
+.marc-btn-confirm:active {
     transform: translateY(0);
 }
 
-/* ── Responsive ──────────────────────────────── */
+/* Confirmar — archivar */
+.marc-btn-confirm--arch {
+    background: #7C3AED;
+}
+
+.marc-btn-confirm--arch:hover {
+    background: #6D28D9;
+    transform: translateY(-1px);
+}
+
+/* Confirmar — desarchivar */
+.marc-btn-confirm--unarch {
+    background: #0EA5E9;
+}
+
+.marc-btn-confirm--unarch:hover {
+    background: #0284C7;
+    transform: translateY(-1px);
+}
+
+/* ── Responsive ── */
 @media (max-width: 600px) {
-    .modal-archivar__box {
-        padding: 24px 20px;
+    .marc-inner {
+        padding: 24px 20px 20px;
     }
 
-    .modal-archivar__title {
-        font-size: 18px;
+    .marc-title {
+        font-size: 15px;
     }
 
-    .modal-archivar__msg {
-        font-size: 13px;
+    .marc-body {
+        font-size: 12.5px;
     }
 }
