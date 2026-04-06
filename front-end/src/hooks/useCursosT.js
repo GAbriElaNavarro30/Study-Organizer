@@ -60,6 +60,17 @@ export function useCursosT() {
     useEffect(() => {
         fetchCursos();
         fetchDimensiones();
+
+        // Mostrar alert si venimos de editar un curso
+        const params = new URLSearchParams(window.location.search);
+        if (params.get("actualizado") === "1") {
+            setAlert({
+                title: "Curso actualizado",
+                message: "Los cambios se guardaron correctamente.",
+            });
+            // Limpiar el query param sin recargar
+            window.history.replaceState({}, "", window.location.pathname);
+        }
     }, []);
 
     // varkDisponibles → los 15 perfiles siempre disponibles

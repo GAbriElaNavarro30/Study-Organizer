@@ -31,10 +31,10 @@ const VARK_COLORS = {
     AR: { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
     AK: { bg: "#FFF1F2", text: "#BE123C", label: "Auditivo-Kinestésico" },
     RK: { bg: "#F0FDF4", text: "#166534", label: "Lectura-Kinestésico" },
-    VAR: { bg: "#EFF6FF", text: "#1E40AF", label: "V-A-Lectura" },
-    VAK: { bg: "#F5F3FF", text: "#5B21B6", label: "V-A-Kinestésico" },
-    VRK: { bg: "#ECFEFF", text: "#155E75", label: "V-L-Kinestésico" },
-    ARK: { bg: "#FFF7ED", text: "#9A3412", label: "A-L-Kinestésico" },
+    VAR: { bg: "#EFF6FF", text: "#1E40AF", label: "Visual-Auditivo-Lectura" },
+    VAK: { bg: "#F5F3FF", text: "#5B21B6", label: "Visual-Autitivo-Kinestésico" },
+    VRK: { bg: "#ECFEFF", text: "#155E75", label: "Visual-Lectura-Kinestésico" },
+    ARK: { bg: "#FFF7ED", text: "#9A3412", label: "Auditivo-Lectura-Kinestésico" },
     VARK: { bg: "#F0F9FF", text: "#0369A1", label: "Multimodal" },
 };
 

@@ -1100,6 +1100,7 @@ export function EditorCurso() {
     const [seccionActivaIdx, setSeccionActivaIdx] = useState(0);
 
     const initialLoadDone = useRef(false);
+    const skipNextDirty = useRef(false);
 
     const [infoCurso, setInfoCurso] = useState({
         titulo: "", descripcion: "", perfil_vark: "", id_dimension: "",
@@ -1200,7 +1201,11 @@ export function EditorCurso() {
                 setError(err.response?.data?.mensaje || err.message);
             } finally {
                 setCargando(false);
-                setTimeout(() => { initialLoadDone.current = true; }, 0);
+                setTimeout(() => {
+                    initialLoadDone.current = true;
+                    skipNextDirty.current = true; // ← agregar
+                    setIsDirty(false);
+                }, 0);
             }
         })();
     }, [id, modoEdicion]);
@@ -1212,8 +1217,12 @@ export function EditorCurso() {
     ────────────────────────────────────────────────────── */
     useEffect(() => {
         if (!initialLoadDone.current) return;
-        setIsDirty(true);
+        if (skipNextDirty.current) {
+            skipNextDirty.current = false;
+            return;
+        }
         guardarBorrador(infoCurso, secciones, modoEdicion ? id : null, paso, seccionActivaIdx);
+        setIsDirty(true);
     }, [infoCurso, secciones, paso, seccionActivaIdx]); // eslint-disable-line react-hooks/exhaustive-deps
 
     /* ──────────────────────────────────────────────────────
@@ -1485,7 +1494,7 @@ export function EditorCurso() {
                 await handleEditar();
                 limpiarBorrador(id);
                 setIsDirty(false);
-                navigate("/cursos-tutor");
+                setShowSuccessAlert(true);
             } else {
                 await handleCrear();
                 limpiarBorrador(null);
@@ -1599,13 +1608,12 @@ export function EditorCurso() {
                     navigate("/cursos-tutor");
                 }}
             />
-
             {showSuccessAlert && (
                 <CustomAlert
                     type="success"
-                    title="¡Curso creado!"
+                    title={modoEdicion ? "¡Curso actualizado!" : "¡Curso creado!"}
                     logo={logo}
-                    message="Tu curso se ha creado correctamente."
+                    message={modoEdicion ? "Los cambios se guardaron correctamente." : "Tu curso se ha creado correctamente."}
                     onClose={() => { setShowSuccessAlert(false); navigate("/cursos-tutor"); }}
                 />
             )}
