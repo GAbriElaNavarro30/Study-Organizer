@@ -7,11 +7,13 @@ import {
     IoLayersOutline, IoEyeOutline, IoSparkles, IoCopyOutline,
     IoDocumentTextOutline, IoSchoolOutline, IoBrushOutline, IoListOutline,
     IoChevronDownOutline, IoChevronForwardOutline, IoChevronBackOutline,
+    IoLockClosedOutline,
 } from "react-icons/io5";
 import api from "../services/api";
 import "../styles/EditorCurso.css";
 import { ContentImageUpload } from "../components/ContentImageUpload_new";
 import { ModalConfirmarSalir } from "../components/ModalConfirmarSalir";
+import { ModalConfirmarEliminar } from "../components/ModalConfirmarEliminar"; // <-- NUEVO
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
 
@@ -97,14 +99,11 @@ const base64ToFile = (base64, filename = "imagen.jpg") => {
         const u8arr = new Uint8Array(n);
         while (n--) u8arr[n] = bstr.charCodeAt(n);
         return new File([u8arr], filename, { type: mime });
-    } catch {
-        return null;
-    }
+    } catch { return null; }
 };
 
 /* ─────────────────────────────────────────────────────────
    LOCAL STORAGE — BORRADOR
-   Claves separadas para modo crear vs. modo editar (por id)
 ───────────────────────────────────────────────────────── */
 const STORAGE_KEY_INFO = "ec_infoCurso";
 const STORAGE_KEY_SECCIONES = "ec_secciones";
@@ -112,73 +111,34 @@ const STORAGE_KEY_PASO = "ec_paso";
 const STORAGE_KEY_SECCION_ACTIVA = "ec_seccion_activa";
 const STORAGE_KEY_EDIT_PREFIX = "ec_edit_";
 
-/** Devuelve las claves de localStorage según si es edición o creación */
 const getStorageKeys = (cursoId = null) => ({
-    info: cursoId
-        ? `${STORAGE_KEY_EDIT_PREFIX}info_${cursoId}`
-        : STORAGE_KEY_INFO,
-    secciones: cursoId
-        ? `${STORAGE_KEY_EDIT_PREFIX}secs_${cursoId}`
-        : STORAGE_KEY_SECCIONES,
-    paso: cursoId
-        ? `${STORAGE_KEY_EDIT_PREFIX}paso_${cursoId}`
-        : STORAGE_KEY_PASO,
-    seccionActiva: cursoId
-        ? `${STORAGE_KEY_EDIT_PREFIX}secact_${cursoId}`
-        : STORAGE_KEY_SECCION_ACTIVA,
+    info: cursoId ? `${STORAGE_KEY_EDIT_PREFIX}info_${cursoId}` : STORAGE_KEY_INFO,
+    secciones: cursoId ? `${STORAGE_KEY_EDIT_PREFIX}secs_${cursoId}` : STORAGE_KEY_SECCIONES,
+    paso: cursoId ? `${STORAGE_KEY_EDIT_PREFIX}paso_${cursoId}` : STORAGE_KEY_PASO,
+    seccionActiva: cursoId ? `${STORAGE_KEY_EDIT_PREFIX}secact_${cursoId}` : STORAGE_KEY_SECCION_ACTIVA,
 });
 
-/**
- * Guarda el borrador en localStorage.
- * - Las imágenes de contenido se convierten a base64 si son File/blob.
- * - La foto de portada también.
- * - cursoId: null → modo crear, string/number → modo editar
- * - paso: número del paso activo
- * - seccionActiva: índice de la sección activa en el paso 2
- */
 const guardarBorrador = async (info, secs, cursoId = null, paso = null, seccionActiva = null) => {
     try {
         const keys = getStorageKeys(cursoId);
+        const fotoPreviewGuardable = info.foto_preview?.startsWith("data:") ? info.foto_preview : null;
+        const infoLimpia = { ...info, foto_file: null, foto_preview: fotoPreviewGuardable };
 
-        // ── Portada ──
-        const fotoPreviewGuardable =
-            info.foto_preview?.startsWith("data:") ? info.foto_preview : null;
-
-        const infoLimpia = {
-            ...info,
-            foto_file: null,
-            foto_preview: fotoPreviewGuardable,
-        };
-
-        // ── Secciones: convertir imágenes de contenido a base64 ──
         const seccionesLimpias = await Promise.all(
             secs.map(async (s) => ({
                 ...s,
                 contenidos: await Promise.all(
                     s.contenidos.map(async (c) => {
-                        let imagenPersistible =
-                            c.imagen_cropped_preview?.startsWith("data:")
-                                ? c.imagen_cropped_preview
-                                : c.imagen_url || null;
+                        let imagenPersistible = c.imagen_cropped_preview?.startsWith("data:")
+                            ? c.imagen_cropped_preview
+                            : c.imagen_url || null;
 
-                        // Prioridad 1: archivo recortado nuevo
                         if (c.imagen_cropped_file instanceof File) {
-                            try {
-                                imagenPersistible = await fileToBase64(c.imagen_cropped_file);
-                            } catch { /* mantener valor anterior */ }
-                        }
-                        // Prioridad 2: preview ya es base64
-                        else if (c.imagen_preview?.startsWith("data:")) {
+                            try { imagenPersistible = await fileToBase64(c.imagen_cropped_file); } catch { }
+                        } else if (c.imagen_preview?.startsWith("data:")) {
                             imagenPersistible = c.imagen_preview;
-                        }
-                        // Prioridad 3: preview es blob pero tenemos el File
-                        else if (
-                            c.imagen_preview?.startsWith("blob:") &&
-                            c.imagen_file instanceof File
-                        ) {
-                            try {
-                                imagenPersistible = await fileToBase64(c.imagen_file);
-                            } catch { /* mantener valor anterior */ }
+                        } else if (c.imagen_preview?.startsWith("blob:") && c.imagen_file instanceof File) {
+                            try { imagenPersistible = await fileToBase64(c.imagen_file); } catch { }
                         }
 
                         return {
@@ -196,17 +156,11 @@ const guardarBorrador = async (info, secs, cursoId = null, paso = null, seccionA
 
         localStorage.setItem(keys.info, JSON.stringify(infoLimpia));
         localStorage.setItem(keys.secciones, JSON.stringify(seccionesLimpias));
-
-        // ── Persistir paso activo y sección activa ──
         if (paso !== null) localStorage.setItem(keys.paso, String(paso));
         if (seccionActiva !== null) localStorage.setItem(keys.seccionActiva, String(seccionActiva));
-
-    } catch (e) {
-        console.error("Error guardando borrador:", e);
-    }
+    } catch (e) { console.error("Error guardando borrador:", e); }
 };
 
-/** Carga el borrador desde localStorage */
 const cargarBorrador = (cursoId = null) => {
     try {
         const keys = getStorageKeys(cursoId);
@@ -220,12 +174,9 @@ const cargarBorrador = (cursoId = null) => {
             paso: paso ? parseInt(paso, 10) : null,
             seccionActiva: seccionActiva !== null ? parseInt(seccionActiva, 10) : null,
         };
-    } catch {
-        return { info: null, secciones: null, paso: null, seccionActiva: null };
-    }
+    } catch { return { info: null, secciones: null, paso: null, seccionActiva: null }; }
 };
 
-/** Elimina el borrador de localStorage */
 const limpiarBorrador = (cursoId = null) => {
     try {
         const keys = getStorageKeys(cursoId);
@@ -301,8 +252,7 @@ const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 2
 
     return (
         <div className="img-adjust-root">
-            <div className="img-preview-box" style={{ height }}
-                onMouseDown={startDrag} onTouchStart={startDrag}>
+            <div className="img-preview-box" style={{ height }} onMouseDown={startDrag} onTouchStart={startDrag}>
                 <img src={src} alt="preview" className="img-preview-img" draggable={false}
                     style={{
                         transform: `scale(${zoom})`,
@@ -328,9 +278,11 @@ const ImageAdjust = ({ src, zoom, posX, posY, onZoom, onPosX, onPosY, height = 2
 
 /* ─────────────────────────────────────────────────────────
    IMAGE UPLOAD ZONE
+   ⚠️  Ahora recibe `onRequestDeleteImagen` para el botón
+       "Eliminar" → abre el modal en el padre.
 ───────────────────────────────────────────────────────── */
 const ImageUploadZone = ({
-    preview, url, zoom, posX, posY, onUpdate,
+    preview, url, zoom, posX, posY, onUpdate, onRequestDeleteImagen,
     height = 220,
     label = "Arrastra o haz clic para subir",
     hint = "JPG, PNG, WEBP — máx. 5 MB",
@@ -360,8 +312,11 @@ const ImageUploadZone = ({
                         <button className="img-action-btn" onClick={() => inputRef.current.click()}>
                             <IoCloudUploadOutline size={13} /> Cambiar imagen
                         </button>
-                        <button className="img-action-btn img-action-btn--danger"
-                            onClick={() => onUpdate({ imagen_file: null, imagen_preview: null, imagen_url: "", imagen_zoom: 1, imagen_pos_x: 50, imagen_pos_y: 50 })}>
+                        {/* ── Botón eliminar imagen → abre modal ── */}
+                        <button
+                            className="img-action-btn img-action-btn--danger"
+                            onClick={onRequestDeleteImagen}
+                        >
                             <IoTrashOutline size={13} /> Eliminar
                         </button>
                     </div>
@@ -487,7 +442,7 @@ const CourseCardPreview = ({ datos, secciones, dimensiones }) => {
 /* ─────────────────────────────────────────────────────────
    STEP 1
 ───────────────────────────────────────────────────────── */
-const StepInfo = ({ datos, onChange, dimensiones, secciones, showErrors, tituloDuplicado, onLimpiarDuplicado }) => (
+const StepInfo = ({ datos, onChange, dimensiones, secciones, showErrors, tituloDuplicado, onLimpiarDuplicado, onRequestDeletePortada }) => (
     <div className="ec-panel">
         <div className="step1-grid">
             <div className="panel-section step1-cover-section">
@@ -504,6 +459,8 @@ const StepInfo = ({ datos, onChange, dimensiones, secciones, showErrors, tituloD
                     height={150}
                     label="Sube la imagen de portada"
                     hint="Ajusta con zoom y arrastra"
+                    /* ── Al hacer clic en "Eliminar" abre el modal ── */
+                    onRequestDeleteImagen={onRequestDeletePortada}
                     onUpdate={(u) => {
                         if (u.imagen_file !== undefined) onChange("foto_file", u.imagen_file);
                         if (u.imagen_preview !== undefined) onChange("foto_preview", u.imagen_preview);
@@ -588,8 +545,10 @@ const StepInfo = ({ datos, onChange, dimensiones, secciones, showErrors, tituloD
 
 /* ─────────────────────────────────────────────────────────
    CONTENT BLOCK
+   ⚠️  Recibe `onRequestDelete` y `onRequestDeleteImagen`
+       para abrir el modal en el padre.
 ───────────────────────────────────────────────────────── */
-const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors }) => (
+const ContentBlock = ({ con, index, onUpdate, onRequestDelete, onRequestDeleteImagen, canDelete, showErrors }) => (
     <div className="content-block">
         <div className="content-block-header">
             <div className="content-block-tag">
@@ -597,7 +556,7 @@ const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors })
                 Bloque {index + 1}
             </div>
             {canDelete && (
-                <button className="btn-icon-sm danger" onClick={onDelete} title="Eliminar bloque">
+                <button className="btn-icon-sm danger" onClick={onRequestDelete} title="Eliminar bloque">
                     <IoTrashOutline size={13} />
                 </button>
             )}
@@ -620,7 +579,12 @@ const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors })
                 <p className="content-image-label">
                     <IoImageOutline size={12} /> Imagen <span className="opt">(opcional)</span>
                 </p>
-                <ContentImageUpload con={con} onUpdate={onUpdate} />
+                {/* Pasamos el callback de eliminar imagen al ContentImageUpload */}
+                <ContentImageUpload
+                    con={con}
+                    onUpdate={onUpdate}
+                    onRequestDeleteImagen={onRequestDeleteImagen}
+                />
             </div>
         </div>
     </div>
@@ -628,8 +592,9 @@ const ContentBlock = ({ con, index, onUpdate, onDelete, canDelete, showErrors })
 
 /* ─────────────────────────────────────────────────────────
    QUESTION CARD
+   ⚠️  Recibe `onRequestDelete` para abrir el modal.
 ───────────────────────────────────────────────────────── */
-const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
+const QuestionCard = ({ preg, index, onUpdate, onRequestDelete, showErrors }) => {
     const preguntaVacia = showErrors && !preg.texto_pregunta.trim();
     const sinCorrecta = showErrors && !preg.opciones.some((o) => o.es_correcta);
 
@@ -639,7 +604,7 @@ const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
                 <div className="question-num-badge">
                     <IoHelpCircleOutline size={11} /> P{index + 1}
                 </div>
-                <button className="btn-icon-sm danger" onClick={onDelete}>
+                <button className="btn-icon-sm danger" onClick={onRequestDelete}>
                     <IoTrashOutline size={12} />
                 </button>
             </div>
@@ -710,232 +675,367 @@ const QuestionCard = ({ preg, index, onUpdate, onDelete, showErrors }) => {
 
 /* ─────────────────────────────────────────────────────────
    SECTION EDITOR PANEL
+   Estado local del modal de eliminación:
+     modalElim = { open, tipo, nombre, onConfirm }
 ───────────────────────────────────────────────────────── */
-const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors }) => {
+const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }) => {
     const updCon = (cid, upd) => onUpdate({ ...sec, contenidos: sec.contenidos.map((c) => c._id === cid ? { ...c, ...upd } : c) });
     const updPreg = (pid, upd) => onUpdate({ ...sec, preguntas: sec.preguntas.map((p) => p._id === pid ? upd : p) });
 
+    // ── Estado modal de eliminación local ──
+    const [modalElim, setModalElim] = useState({ open: false, tipo: "generico", nombre: "", onConfirm: null });
+    const abrirModalElim = (tipo, nombre, onConfirm) => setModalElim({ open: true, tipo, nombre, onConfirm });
+    const cerrarModalElim = () => setModalElim((m) => ({ ...m, open: false }));
+
     const tituloSeccionVacio = showErrors && !sec.titulo_seccion.trim();
-    const tieneErrores = showErrors && (
-        tituloSeccionVacio ||
-        sec.preguntas.some((p) =>
+    const hayPreguntasBloqueadas = tieneInscritos && sec.preguntas.some((p) => p.id_test);
+
+    const preguntasNuevasConError = showErrors && sec.mostrarTest && sec.preguntas
+        .filter((p) => !p.id_test)
+        .some((p) =>
             !p.texto_pregunta.trim() ||
             p.opciones.some((o) => !o.texto_opcion.trim()) ||
             !p.opciones.some((o) => o.es_correcta)
-        )
-    );
+        );
+
+    const tieneErrores = tituloSeccionVacio || preguntasNuevasConError;
 
     return (
-        <div className={`seccion-editor-panel ${tieneErrores ? "has-error" : ""}`}>
-            <div className="seccion-editor-header">
-                <div className="seccion-editor-title">
-                    <span className="seccion-editor-num">{String(index + 1).padStart(2, "0")}</span>
-                    <span className="seccion-editor-name">
-                        {sec.titulo_seccion || <em style={{ color: "#94A3B8", fontWeight: 400 }}>Sin título</em>}
-                    </span>
-                </div>
-            </div>
+        <>
+            {/* ── Modal de confirmación de eliminación ── */}
+            <ModalConfirmarEliminar
+                isOpen={modalElim.open}
+                onClose={cerrarModalElim}
+                onConfirm={modalElim.onConfirm}
+                tipo={modalElim.tipo}
+                nombre={modalElim.nombre}
+            />
 
-            <div className="seccion-fields-grid">
-                <div className="ec-field">
-                    <label className="ec-label">Título de la sección <span className="req">*</span></label>
-                    <input
-                        className={`ec-input ${tituloSeccionVacio ? "input-error" : ""}`}
-                        value={sec.titulo_seccion}
-                        onChange={(e) => onUpdate({ ...sec, titulo_seccion: e.target.value })}
-                        placeholder="Ej. Introducción a los fundamentos"
-                    />
-                    {tituloSeccionVacio && (
-                        <p className="field-error-msg"><IoAlertCircleOutline size={13} /> El título es obligatorio</p>
+            <div className={`seccion-editor-panel ${tieneErrores ? "has-error" : ""}`}>
+                <div className="seccion-editor-header">
+                    <div className="seccion-editor-title">
+                        <span className="seccion-editor-num">{String(index + 1).padStart(2, "0")}</span>
+                        <span className="seccion-editor-name">
+                            {sec.titulo_seccion || <em style={{ color: "#94A3B8", fontWeight: 400 }}>Sin título</em>}
+                        </span>
+                    </div>
+                </div>
+
+                <div className="seccion-fields-grid">
+                    <div className="ec-field">
+                        <label className="ec-label">Título de la sección <span className="req">*</span></label>
+                        <input
+                            className={`ec-input ${tituloSeccionVacio ? "input-error" : ""}`}
+                            value={sec.titulo_seccion}
+                            onChange={(e) => onUpdate({ ...sec, titulo_seccion: e.target.value })}
+                            placeholder="Ej. Introducción a los fundamentos"
+                        />
+                        {tituloSeccionVacio && (
+                            <p className="field-error-msg"><IoAlertCircleOutline size={13} /> El título es obligatorio</p>
+                        )}
+                    </div>
+                    <div className="ec-field">
+                        <label className="ec-label">Descripción <span className="opt">(opcional)</span></label>
+                        <textarea
+                            className="ec-input ec-textarea ec-textarea-sm"
+                            value={sec.descripcion_seccion || ""}
+                            onChange={(e) => onUpdate({ ...sec, descripcion_seccion: e.target.value })}
+                            placeholder="¿Qué aprenderá el estudiante en esta sección?"
+                            rows={3}
+                            maxLength={300}
+                        />
+                        <span className="ec-counter">{(sec.descripcion_seccion || "").length}/300</span>
+                    </div>
+                </div>
+
+                {/* ── Bloques de contenido ── */}
+                <div className="seccion-subgroup">
+                    <p className="subgroup-label"><IoListOutline size={12} /> Bloques de contenido</p>
+                    <div className="contenidos-grid">
+                        {sec.contenidos.map((con, ci) => (
+                            <ContentBlock
+                                key={con._id} con={con} index={ci}
+                                showErrors={showErrors}
+                                onUpdate={(upd) => updCon(con._id, upd)}
+                                canDelete={sec.contenidos.length > 1}
+                                /* ── Eliminar bloque → modal ── */
+                                onRequestDelete={() =>
+                                    abrirModalElim(
+                                        "bloque",
+                                        con.titulo || `Bloque ${ci + 1}`,
+                                        () => onUpdate({ ...sec, contenidos: sec.contenidos.filter((c) => c._id !== con._id) })
+                                    )
+                                }
+                                /* ── Eliminar imagen del bloque → modal ── */
+                                onRequestDeleteImagen={() =>
+                                    abrirModalElim(
+                                        "imagen",
+                                        con.titulo || `Bloque ${ci + 1}`,
+                                        () => updCon(con._id, {
+                                            imagen_file: null, imagen_preview: null,
+                                            imagen_url: "", imagen_zoom: 1,
+                                            imagen_pos_x: 50, imagen_pos_y: 50,
+                                            imagen_cropped_preview: null, imagen_cropped_file: null,
+                                        })
+                                    )
+                                }
+                            />
+                        ))}
+                    </div>
+                    <button className="btn-add-secondary"
+                        onClick={() => onUpdate({ ...sec, contenidos: [...sec.contenidos, crearContenidoVacio()] })}>
+                        <IoAddOutline size={13} /> Nuevo bloque de contenido
+                    </button>
+                </div>
+
+                {/* ── Cuestionario ── */}
+                <div className="seccion-subgroup">
+                    <div className="quiz-toggle-row">
+                        <div className="quiz-toggle-info">
+                            <IoHelpCircleOutline size={14} />
+                            <p className="subgroup-label">Cuestionario</p>
+                            {hayPreguntasBloqueadas && sec.mostrarTest && (
+                                <span style={{
+                                    display: "inline-flex", alignItems: "center", gap: 4,
+                                    fontSize: 11, color: "#64748B",
+                                    background: "#F1F5F9", border: "1px solid #E2E8F0",
+                                    borderRadius: 6, padding: "2px 7px", marginLeft: 6,
+                                }}>
+                                    <IoLockClosedOutline size={11} /> Solo lectura
+                                </span>
+                            )}
+                        </div>
+                        <label className="ec-switch">
+                            <input
+                                type="checkbox"
+                                checked={sec.mostrarTest}
+                                onChange={(e) => {
+                                    const activando = e.target.checked;
+                                    if (!activando && sec.preguntas.length > 0) {
+                                        // ── Desactivar cuestionario que ya tiene preguntas → modal ──
+                                        abrirModalElim(
+                                            "cuestionario",
+                                            sec.titulo_seccion || `Sección ${index + 1}`,
+                                            () => onUpdate({ ...sec, mostrarTest: false, preguntas: [] })
+                                        );
+                                    } else {
+                                        onUpdate({ ...sec, mostrarTest: activando, preguntas: activando ? sec.preguntas : [] });
+                                    }
+                                }}
+                            />
+                            <span className="ec-switch-track" />
+                        </label>
+                    </div>
+
+                    {hayPreguntasBloqueadas && sec.mostrarTest && (
+                        <div style={{
+                            display: "flex", alignItems: "flex-start", gap: 8,
+                            background: "#FFF7ED", border: "1px solid #FED7AA",
+                            borderRadius: 8, padding: "10px 12px", marginTop: 10,
+                        }}>
+                            <IoAlertCircleOutline size={15} style={{ color: "#EA580C", flexShrink: 0, marginTop: 1 }} />
+                            <p style={{ fontSize: 12, color: "#9A3412", margin: 0, lineHeight: 1.5 }}>
+                                Las preguntas existentes no pueden editarse ni eliminarse individualmente porque hay estudiantes inscritos.
+                                Puedes agregar nuevas preguntas o eliminar el cuestionario completo desactivando el interruptor.
+                            </p>
+                        </div>
+                    )}
+
+                    {sec.mostrarTest && (
+                        <div className="quiz-body">
+                            {sec.preguntas.length === 0 && (
+                                <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>
+                            )}
+                            <div className="preguntas-grid">
+                                {sec.preguntas.map((preg, pi) => (
+                                    hayPreguntasBloqueadas && preg.id_test ? (
+                                        /* Pregunta bloqueada (solo lectura) */
+                                        <div key={preg._id} className="question-card" style={{ opacity: 0.72 }}>
+                                            <div className="question-header">
+                                                <div className="question-num-badge">
+                                                    <IoHelpCircleOutline size={11} /> P{pi + 1}
+                                                </div>
+                                                <span style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}>
+                                                    <IoLockClosedOutline size={11} /> Solo lectura
+                                                </span>
+                                            </div>
+                                            <p style={{ fontSize: 13, color: "#334155", margin: "4px 0 10px", fontWeight: 500 }}>
+                                                {preg.texto_pregunta}
+                                            </p>
+                                            <div className="options-list" style={{ pointerEvents: "none" }}>
+                                                {preg.opciones.map((op) => (
+                                                    <div key={op._id} className="option-row">
+                                                        <span className={`option-radio ${op.es_correcta ? "correct" : ""}`}>
+                                                            {op.es_correcta ? <IoCheckmarkCircle size={18} /> : <IoEllipseOutline size={18} />}
+                                                        </span>
+                                                        <span style={{ fontSize: 13, color: "#475569" }}>{op.texto_opcion}</span>
+                                                    </div>
+                                                ))}
+                                            </div>
+                                        </div>
+                                    ) : (
+                                        /* Pregunta nueva → editable y con modal al eliminar */
+                                        <QuestionCard
+                                            key={preg._id} preg={preg} index={pi}
+                                            showErrors={showErrors}
+                                            onUpdate={(upd) => updPreg(preg._id, upd)}
+                                            onRequestDelete={() =>
+                                                abrirModalElim(
+                                                    "pregunta",
+                                                    preg.texto_pregunta.trim()
+                                                        ? (preg.texto_pregunta.length > 60
+                                                            ? preg.texto_pregunta.slice(0, 60) + "…"
+                                                            : preg.texto_pregunta)
+                                                        : `Pregunta ${pi + 1}`,
+                                                    () => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })
+                                                )
+                                            }
+                                        />
+                                    )
+                                ))}
+                            </div>
+                            <button className="btn-add-secondary"
+                                onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
+                                <IoAddOutline size={13} /> Nueva pregunta
+                            </button>
+                        </div>
                     )}
                 </div>
-                <div className="ec-field">
-                    <label className="ec-label">Descripción <span className="opt">(opcional)</span></label>
-                    <textarea
-                        className="ec-input ec-textarea ec-textarea-sm"
-                        value={sec.descripcion_seccion || ""}
-                        onChange={(e) => onUpdate({ ...sec, descripcion_seccion: e.target.value })}
-                        placeholder="¿Qué aprenderá el estudiante en esta sección?"
-                        rows={3}
-                        maxLength={300}
-                    />
-                    <span className="ec-counter">{(sec.descripcion_seccion || "").length}/300</span>
-                </div>
             </div>
-
-            <div className="seccion-subgroup">
-                <p className="subgroup-label"><IoListOutline size={12} /> Bloques de contenido</p>
-                <div className="contenidos-grid">
-                    {sec.contenidos.map((con, ci) => (
-                        <ContentBlock
-                            key={con._id} con={con} index={ci}
-                            showErrors={showErrors}
-                            onUpdate={(upd) => updCon(con._id, upd)}
-                            onDelete={() => onUpdate({ ...sec, contenidos: sec.contenidos.filter((c) => c._id !== con._id) })}
-                            canDelete={sec.contenidos.length > 1}
-                        />
-                    ))}
-                </div>
-                <button className="btn-add-secondary"
-                    onClick={() => onUpdate({ ...sec, contenidos: [...sec.contenidos, crearContenidoVacio()] })}>
-                    <IoAddOutline size={13} /> Nuevo bloque de contenido
-                </button>
-            </div>
-
-            <div className="seccion-subgroup">
-                <div className="quiz-toggle-row">
-                    <div className="quiz-toggle-info">
-                        <IoHelpCircleOutline size={14} />
-                        <p className="subgroup-label">Cuestionario</p>
-                    </div>
-                    <label className="ec-switch">
-                        <input type="checkbox" checked={sec.mostrarTest}
-                            onChange={(e) => onUpdate({ ...sec, mostrarTest: e.target.checked })} />
-                        <span className="ec-switch-track" />
-                    </label>
-                </div>
-                {sec.mostrarTest && (
-                    <div className="quiz-body">
-                        {sec.preguntas.length === 0 && (
-                            <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>
-                        )}
-                        <div className="preguntas-grid">
-                            {sec.preguntas.map((preg, pi) => (
-                                <QuestionCard
-                                    key={preg._id} preg={preg} index={pi}
-                                    showErrors={showErrors}
-                                    onUpdate={(upd) => updPreg(preg._id, upd)}
-                                    onDelete={() => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })}
-                                />
-                            ))}
-                        </div>
-                        <button className="btn-add-secondary"
-                            onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
-                            <IoAddOutline size={13} /> Nueva pregunta
-                        </button>
-                    </div>
-                )}
-            </div>
-        </div>
+        </>
     );
 };
 
 /* ─────────────────────────────────────────────────────────
    STEP 2
-   — activaIdxExterno y onActivaChange permiten que el padre
-     persista qué sección estaba activa al hacer refresh
 ───────────────────────────────────────────────────────── */
-const StepSecciones = ({ secciones, onChange, showErrors, activaIdxExterno = 0, onActivaChange }) => {
+const StepSecciones = ({ secciones, onChange, showErrors, activaIdxExterno = 0, onActivaChange, tieneInscritos }) => {
     const [activaIdx, setActivaIdx] = useState(activaIdxExterno);
 
-    // Sincronizar solo al montar (restaurar desde borrador)
-    useEffect(() => {
-        setActivaIdx(activaIdxExterno);
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    // Modal de eliminación de SECCIÓN (vive aquí para poder cambiar la sección activa tras eliminar)
+    const [modalElimSec, setModalElimSec] = useState({ open: false, nombre: "", onConfirm: null });
 
-    const cambiarActiva = (idx) => {
-        setActivaIdx(idx);
-        onActivaChange?.(idx);
-    };
+    useEffect(() => { setActivaIdx(activaIdxExterno); }, []); // eslint-disable-line
 
+    const cambiarActiva = (idx) => { setActivaIdx(idx); onActivaChange?.(idx); };
     const updSec = (id, sec) => onChange(secciones.map((s) => s._id === id ? sec : s));
     const secActiva = secciones[activaIdx] ?? secciones[0];
 
-    const seccionTieneError = (sec) =>
-        showErrors && (
-            !sec.titulo_seccion.trim() ||
-            sec.preguntas.some((p) =>
-                !p.texto_pregunta.trim() ||
-                p.opciones.some((o) => !o.texto_opcion.trim()) ||
-                !p.opciones.some((o) => o.es_correcta)
-            )
+    const seccionTieneError = (sec) => {
+        if (!showErrors) return false;
+        if (!sec.titulo_seccion.trim()) return true;
+        if (!sec.mostrarTest) return false;
+        const preguntasNuevas = sec.preguntas.filter((p) => !p.id_test);
+        return preguntasNuevas.some((p) =>
+            !p.texto_pregunta.trim() ||
+            p.opciones.some((o) => !o.texto_opcion.trim()) ||
+            !p.opciones.some((o) => o.es_correcta)
         );
+    };
 
     return (
-        <div className="step2-layout">
-            <div className="secciones-index">
-                <div className="secciones-index-header">
-                    <div className="section-tag-row">
-                        <span className="section-num"><IoLayersOutline size={14} /></span>
-                        <span className="secciones-index-title">Secciones</span>
-                    </div>
-                    <p className="secciones-index-sub">
-                        {secciones.length} sección{secciones.length !== 1 ? "es" : ""}
-                    </p>
-                </div>
-                <div className="secciones-index-list">
-                    {secciones.map((sec, si) => (
-                        <div
-                            key={sec._id}
-                            className={`seccion-index-card ${si === activaIdx ? "active" : ""} ${seccionTieneError(sec) ? "has-error" : ""}`}
-                            onClick={() => cambiarActiva(si)}
-                        >
-                            <span className="seccion-index-num">{String(si + 1).padStart(2, "0")}</span>
-                            <div className="seccion-index-info">
-                                {sec.titulo_seccion
-                                    ? <span className="seccion-index-name">{sec.titulo_seccion}</span>
-                                    : <span className="seccion-index-name placeholder">Sin título</span>}
-                                <span className="seccion-index-meta">
-                                    <IoDocumentTextOutline size={10} />
-                                    {sec.contenidos.length} bloque{sec.contenidos.length !== 1 ? "s" : ""}
-                                    {sec.preguntas.length > 0 && <>&nbsp;·&nbsp;{sec.preguntas.length} preg.</>}
-                                </span>
-                            </div>
-                            <div className="seccion-index-actions">
-                                {secciones.length > 1 && (
-                                    <button
-                                        className="btn-icon-sm danger"
-                                        onClick={(e) => {
-                                            e.stopPropagation();
-                                            const newSecs = secciones.filter((s) => s._id !== sec._id);
-                                            onChange(newSecs);
-                                            const newIdx = Math.min(si, newSecs.length - 1);
-                                            cambiarActiva(newIdx);
-                                        }}
-                                        title="Eliminar sección"
-                                    >
-                                        <IoTrashOutline size={12} />
-                                    </button>
-                                )}
-                                {seccionTieneError(sec) && (
-                                    <IoAlertCircleOutline size={14} style={{ color: "#DC2626", flexShrink: 0 }} />
-                                )}
-                            </div>
-                        </div>
-                    ))}
-                </div>
-                <button className="btn-add-section"
-                    onClick={() => {
-                        const nueva = crearSeccionVacia();
-                        onChange([...secciones, nueva]);
-                        cambiarActiva(secciones.length);
-                    }}>
-                    <IoAddOutline size={15} /> Agregar sección
-                </button>
-            </div>
+        <>
+            {/* ── Modal eliminar sección ── */}
+            <ModalConfirmarEliminar
+                isOpen={modalElimSec.open}
+                onClose={() => setModalElimSec((m) => ({ ...m, open: false }))}
+                onConfirm={modalElimSec.onConfirm}
+                tipo="seccion"
+                nombre={modalElimSec.nombre}
+            />
 
-            <div className="seccion-editor-wrap">
-                {secActiva ? (
-                    <SeccionEditorPanel
-                        key={secActiva._id}
-                        sec={secActiva}
-                        index={activaIdx}
-                        showErrors={showErrors}
-                        onUpdate={(upd) => updSec(secActiva._id, upd)}
-                    />
-                ) : (
-                    <div className="seccion-editor-empty">
-                        <div className="seccion-editor-empty-icon"><IoLayersOutline size={28} /></div>
-                        <p className="seccion-editor-empty-text">Selecciona una sección para editarla</p>
+            <div className="step2-layout">
+                <div className="secciones-index">
+                    <div className="secciones-index-header">
+                        <div className="section-tag-row">
+                            <span className="section-num"><IoLayersOutline size={14} /></span>
+                            <span className="secciones-index-title">Secciones</span>
+                        </div>
+                        <p className="secciones-index-sub">
+                            {secciones.length} sección{secciones.length !== 1 ? "es" : ""}
+                        </p>
                     </div>
-                )}
+                    <div className="secciones-index-list">
+                        {secciones.map((sec, si) => (
+                            <div
+                                key={sec._id}
+                                className={`seccion-index-card ${si === activaIdx ? "active" : ""} ${seccionTieneError(sec) ? "has-error" : ""}`}
+                                onClick={() => cambiarActiva(si)}
+                            >
+                                <span className="seccion-index-num">{String(si + 1).padStart(2, "0")}</span>
+                                <div className="seccion-index-info">
+                                    {sec.titulo_seccion
+                                        ? <span className="seccion-index-name">{sec.titulo_seccion}</span>
+                                        : <span className="seccion-index-name placeholder">Sin título</span>}
+                                    <span className="seccion-index-meta">
+                                        <IoDocumentTextOutline size={10} />
+                                        {sec.contenidos.length} bloque{sec.contenidos.length !== 1 ? "s" : ""}
+                                        {sec.preguntas.length > 0 && <>&nbsp;·&nbsp;{sec.preguntas.length} preg.</>}
+                                    </span>
+                                </div>
+                                <div className="seccion-index-actions">
+                                    {secciones.length > 1 && (
+                                        <button
+                                            className="btn-icon-sm danger"
+                                            onClick={(e) => {
+                                                e.stopPropagation();
+                                                /* ── Abrir modal eliminar sección ── */
+                                                setModalElimSec({
+                                                    open: true,
+                                                    nombre: sec.titulo_seccion || `Sección ${si + 1}`,
+                                                    onConfirm: () => {
+                                                        const newSecs = secciones.filter((s) => s._id !== sec._id);
+                                                        onChange(newSecs);
+                                                        cambiarActiva(Math.min(si, newSecs.length - 1));
+                                                    },
+                                                });
+                                            }}
+                                            title="Eliminar sección"
+                                        >
+                                            <IoTrashOutline size={12} />
+                                        </button>
+                                    )}
+                                    {seccionTieneError(sec) && (
+                                        <IoAlertCircleOutline size={14} style={{ color: "#DC2626", flexShrink: 0 }} />
+                                    )}
+                                </div>
+                            </div>
+                        ))}
+                    </div>
+                    <button className="btn-add-section"
+                        onClick={() => {
+                            const nueva = crearSeccionVacia();
+                            onChange([...secciones, nueva]);
+                            cambiarActiva(secciones.length);
+                        }}>
+                        <IoAddOutline size={15} /> Agregar sección
+                    </button>
+                </div>
+
+                <div className="seccion-editor-wrap">
+                    {secActiva ? (
+                        <SeccionEditorPanel
+                            key={secActiva._id}
+                            sec={secActiva}
+                            index={activaIdx}
+                            showErrors={showErrors}
+                            tieneInscritos={tieneInscritos}
+                            onUpdate={(upd) => updSec(secActiva._id, upd)}
+                        />
+                    ) : (
+                        <div className="seccion-editor-empty">
+                            <div className="seccion-editor-empty-icon"><IoLayersOutline size={28} /></div>
+                            <p className="seccion-editor-empty-text">Selecciona una sección para editarla</p>
+                        </div>
+                    )}
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
 /* ─────────────────────────────────────────────────────────
-   STEP 3 — PREVIEW
+   STEP 3 — PREVIEW  (sin cambios)
 ───────────────────────────────────────────────────────── */
 const StepPreview = ({ datos, secciones, dimensiones }) => {
     const [secActiva, setSecActiva] = useState(0);
@@ -1095,9 +1195,11 @@ export function EditorCurso() {
     const [isDirty, setIsDirty] = useState(false);
     const [showSuccessAlert, setShowSuccessAlert] = useState(false);
     const [tituloDuplicado, setTituloDuplicado] = useState(false);
-
-    // ── Estado de sección activa elevado al padre para persistirlo ──
+    const [tieneInscritos, setTieneInscritos] = useState(false);
     const [seccionActivaIdx, setSeccionActivaIdx] = useState(0);
+
+    // ── Modal eliminar portada (vive en el componente raíz) ──
+    const [modalElimPortada, setModalElimPortada] = useState(false);
 
     const initialLoadDone = useRef(false);
     const skipNextDirty = useRef(false);
@@ -1109,9 +1211,7 @@ export function EditorCurso() {
     });
     const [secciones, setSecciones] = useState([crearSeccionVacia()]);
 
-    /* ──────────────────────────────────────────────────────
-       CARGA INICIAL — modo CREAR: restaurar borrador
-    ────────────────────────────────────────────────────── */
+    /* ── Carga inicial CREAR ── */
     useEffect(() => {
         if (!modoEdicion) {
             const { info, secciones: secsGuardadas, paso: pasoGuardado, seccionActiva } = cargarBorrador(null);
@@ -1121,11 +1221,9 @@ export function EditorCurso() {
             if (seccionActiva !== null) setSeccionActivaIdx(seccionActiva);
             setTimeout(() => { initialLoadDone.current = true; }, 0);
         }
-    }, []); // eslint-disable-line react-hooks/exhaustive-deps
+    }, []); // eslint-disable-line
 
-    /* ──────────────────────────────────────────────────────
-       CARGA INICIAL — modo EDITAR: servidor + posible borrador
-    ────────────────────────────────────────────────────── */
+    /* ── Carga inicial EDITAR ── */
     useEffect(() => {
         if (!modoEdicion) return;
         (async () => {
@@ -1136,17 +1234,15 @@ export function EditorCurso() {
                 const c = data.curso;
 
                 setSeccionesOriginales(c.secciones || []);
+                setTieneInscritos(Number(c.total_estudiantes ?? 0) > 0);
 
                 const borrador = cargarBorrador(id);
-
                 if (borrador.info) {
-                    // Restaurar borrador (cambios no guardados del usuario)
                     setInfoCurso(borrador.info);
                     if (borrador.secciones) setSecciones(borrador.secciones);
                     if (borrador.paso) setPaso(borrador.paso);
                     if (borrador.seccionActiva !== null) setSeccionActivaIdx(borrador.seccionActiva);
                 } else {
-                    // Sin borrador: cargar datos frescos del servidor
                     setInfoCurso({
                         titulo: c.titulo || "",
                         descripcion: c.descripcion || "",
@@ -1155,88 +1251,68 @@ export function EditorCurso() {
                         foto_file: null,
                         foto_preview: c.foto || null,
                         foto_url: c.foto || null,
-                        foto_zoom: 1,
-                        foto_pos_x: 50,
-                        foto_pos_y: 50,
+                        foto_zoom: 1, foto_pos_x: 50, foto_pos_y: 50,
                     });
-
                     if (c.secciones?.length > 0) {
-                        setSecciones(
-                            c.secciones.map((s) => ({
-                                _id: String(s.id_seccion),
-                                id_seccion: s.id_seccion,
-                                titulo_seccion: s.titulo_seccion || "",
-                                descripcion_seccion: s.descripcion_seccion || "",
-                                mostrarTest: (s.preguntas?.length || 0) > 0,
-                                contenidos: s.contenidos?.length > 0
-                                    ? s.contenidos.map((con) => ({
-                                        _id: String(con.id_contenido),
-                                        id_contenido: con.id_contenido,
-                                        titulo: con.titulo || "",
-                                        contenido: con.contenido || "",
-                                        imagen_file: null,
-                                        imagen_preview: null,
-                                        imagen_url: con.imagen_url || "",
-                                        imagen_crop: con.imagen_crop || null,
-                                        imagen_cropped_preview: con.imagen_url || null,
-                                        imagen_cropped_file: null,
-                                    }))
-                                    : [crearContenidoVacio()],
-                                preguntas: (s.preguntas || []).map((p) => ({
-                                    _id: String(p.id_test),
-                                    id_test: p.id_test,
-                                    texto_pregunta: p.texto_pregunta || "",
-                                    opciones: (p.opciones || []).map((o) => ({
-                                        _id: String(o.id_opcion),
-                                        id_opcion: o.id_opcion,
-                                        texto_opcion: o.texto_opcion || "",
-                                        es_correcta: Boolean(o.es_correcta),
-                                    })),
+                        setSecciones(c.secciones.map((s) => ({
+                            _id: String(s.id_seccion),
+                            id_seccion: s.id_seccion,
+                            titulo_seccion: s.titulo_seccion || "",
+                            descripcion_seccion: s.descripcion_seccion || "",
+                            mostrarTest: (s.preguntas?.length || 0) > 0,
+                            contenidos: s.contenidos?.length > 0
+                                ? s.contenidos.map((con) => ({
+                                    _id: String(con.id_contenido),
+                                    id_contenido: con.id_contenido,
+                                    titulo: con.titulo || "",
+                                    contenido: con.contenido || "",
+                                    imagen_file: null,
+                                    imagen_preview: null,
+                                    imagen_url: con.imagen_url || "",
+                                    imagen_crop: con.imagen_crop || null,
+                                    imagen_cropped_preview: con.imagen_url || null,
+                                    imagen_cropped_file: null,
+                                }))
+                                : [crearContenidoVacio()],
+                            preguntas: (s.preguntas || []).map((p) => ({
+                                _id: String(p.id_test),
+                                id_test: p.id_test,
+                                texto_pregunta: p.texto_pregunta || "",
+                                opciones: (p.opciones || []).map((o) => ({
+                                    _id: String(o.id_opcion),
+                                    id_opcion: o.id_opcion,
+                                    texto_opcion: o.texto_opcion || "",
+                                    es_correcta: Boolean(o.es_correcta),
                                 })),
-                            }))
-                        );
+                            })),
+                        })));
                     }
                 }
             } catch (err) {
                 setError(err.response?.data?.mensaje || err.message);
             } finally {
                 setCargando(false);
-                setTimeout(() => {
-                    initialLoadDone.current = true;
-                    skipNextDirty.current = true; // ← agregar
-                    setIsDirty(false);
-                }, 0);
+                setTimeout(() => { initialLoadDone.current = true; skipNextDirty.current = true; setIsDirty(false); }, 0);
             }
         })();
     }, [id, modoEdicion]);
 
-    /* ──────────────────────────────────────────────────────
-       AUTO-GUARDAR BORRADOR
-       Un único efecto unificado que persiste info, secciones,
-       paso activo y sección activa en localStorage.
-    ────────────────────────────────────────────────────── */
+    /* ── Auto-guardar borrador ── */
     useEffect(() => {
         if (!initialLoadDone.current) return;
-        if (skipNextDirty.current) {
-            skipNextDirty.current = false;
-            return;
-        }
+        if (skipNextDirty.current) { skipNextDirty.current = false; return; }
         guardarBorrador(infoCurso, secciones, modoEdicion ? id : null, paso, seccionActivaIdx);
         setIsDirty(true);
-    }, [infoCurso, secciones, paso, seccionActivaIdx]); // eslint-disable-line react-hooks/exhaustive-deps
+    }, [infoCurso, secciones, paso, seccionActivaIdx]); // eslint-disable-line
 
-    /* ──────────────────────────────────────────────────────
-       DIMENSIONES
-    ────────────────────────────────────────────────────── */
+    /* ── Dimensiones ── */
     useEffect(() => {
         api.get("/cursos/dimensiones")
             .then(({ data }) => { if (data.ok) setDimensiones(data.dimensiones); })
             .catch(console.error);
     }, []);
 
-    /* ──────────────────────────────────────────────────────
-       handleInfoChange
-    ────────────────────────────────────────────────────── */
+    /* ── handleInfoChange ── */
     const handleInfoChange = async (campo, valor) => {
         if (campo === "foto_file" && valor instanceof File) {
             try {
@@ -1256,20 +1332,22 @@ export function EditorCurso() {
         navigate("/cursos-tutor");
     };
 
+    /* ── canAdvance ── */
     const canAdvance = () => {
-        if (paso === 1) {
+        if (paso === 1)
             return infoCurso.titulo.trim().length >= 5 &&
                 infoCurso.titulo.trim().length <= 200 &&
                 infoCurso.perfil_vark.length > 0;
-        }
-        if (paso === 2) return secciones.every(
-            (s) => s.titulo_seccion.trim() &&
-                s.preguntas.every((p) =>
-                    p.texto_pregunta.trim() &&
-                    p.opciones.every((o) => o.texto_opcion.trim()) &&
-                    p.opciones.some((o) => o.es_correcta)
-                )
-        );
+        if (paso === 2) return secciones.every((s) => {
+            if (!s.titulo_seccion.trim()) return false;
+            if (!s.mostrarTest) return true;
+            const preguntasNuevas = s.preguntas.filter((p) => !p.id_test);
+            return preguntasNuevas.every((p) =>
+                p.texto_pregunta.trim() &&
+                p.opciones.every((o) => o.texto_opcion.trim()) &&
+                p.opciones.some((o) => o.es_correcta)
+            );
+        });
         return true;
     };
 
@@ -1307,10 +1385,9 @@ export function EditorCurso() {
 
     const handlePrev = () => setPaso((p) => p - 1);
 
-    /* ──────────────────────────────────────────────────────
-       BUILD CONTENIDO PAYLOAD
-    ────────────────────────────────────────────────────── */
+    /* ── buildContenidoPayload ── */
     const buildContenidoPayload = async (con, id_seccion, orden) => {
+        // Tiene archivo recortado nuevo → subir
         if (con.imagen_cropped_file) {
             const fd = new FormData();
             fd.append("titulo", con.titulo);
@@ -1320,10 +1397,8 @@ export function EditorCurso() {
             return { useFormData: true, fd };
         }
 
-        if (
-            con.imagen_cropped_preview?.startsWith("data:") &&
-            !con.imagen_url
-        ) {
+        // Tiene preview en base64 sin URL en BD → recuperar y subir
+        if (con.imagen_cropped_preview?.startsWith("data:") && !con.imagen_url) {
             const fileRecuperado = base64ToFile(con.imagen_cropped_preview, "imagen_borrador.jpg");
             if (fileRecuperado) {
                 const fd = new FormData();
@@ -1335,6 +1410,13 @@ export function EditorCurso() {
             }
         }
 
+        // ── NUEVO: imagen eliminada → tenía URL en BD pero ya no tiene nada
+        const imagenEliminada =
+            !con.imagen_cropped_preview &&
+            !con.imagen_preview &&
+            !con.imagen_url &&
+            !con.imagen_cropped_file;
+
         return {
             useFormData: false,
             body: {
@@ -1342,27 +1424,25 @@ export function EditorCurso() {
                 contenido: con.contenido,
                 orden,
                 imagen_crop: con.imagen_crop ?? null,
+                // Solo mandar el flag si efectivamente había una imagen en BD
+                ...(imagenEliminada && con.id_contenido ? { eliminar_imagen: true } : {}),
             },
         };
     };
 
-    /* ──────────────────────────────────────────────────────
-       CREAR CURSO
-    ────────────────────────────────────────────────────── */
+    /* ── handleCrear ── */
     const handleCrear = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
         if (infoCurso.descripcion) fd.append("descripcion", infoCurso.descripcion.trim());
         if (infoCurso.perfil_vark) fd.append("perfil_vark", infoCurso.perfil_vark);
         if (infoCurso.id_dimension) fd.append("id_dimension", infoCurso.id_dimension);
-
         if (infoCurso.foto_file) {
             fd.append("foto", infoCurso.foto_file);
         } else if (infoCurso.foto_preview?.startsWith("data:")) {
             const fileRecuperado = base64ToFile(infoCurso.foto_preview, "portada.jpg");
             if (fileRecuperado) fd.append("foto", fileRecuperado);
         }
-
         const { data: dc } = await api.post("/cursos/cursos", fd);
         if (!dc.ok) throw new Error(dc.mensaje);
         const id_curso = dc.id_curso;
@@ -1386,26 +1466,33 @@ export function EditorCurso() {
                 if (!dcon.ok) throw new Error(dcon.mensaje);
             }
 
-            for (const preg of sec.preguntas) {
-                const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
-                    texto_pregunta: preg.texto_pregunta,
-                    opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
-                });
-                if (!dp.ok) throw new Error(dp.mensaje);
+            if (sec.mostrarTest) {
+                for (const preg of sec.preguntas) {
+                    const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
+                        texto_pregunta: preg.texto_pregunta,
+                        opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
+                    });
+                    if (!dp.ok) throw new Error(dp.mensaje);
+                }
             }
         }
     };
 
-    /* ──────────────────────────────────────────────────────
-       EDITAR CURSO
-    ────────────────────────────────────────────────────── */
+    /* ── handleEditar ── */
     const handleEditar = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
         fd.append("descripcion", infoCurso.descripcion?.trim() || "");
         fd.append("perfil_vark", infoCurso.perfil_vark || "");
         fd.append("id_dimension", infoCurso.id_dimension || "");
-        if (infoCurso.foto_file) fd.append("foto", infoCurso.foto_file);
+
+        if (infoCurso.foto_file) {
+            // Nueva imagen seleccionada
+            fd.append("foto", infoCurso.foto_file);
+        } else if (!infoCurso.foto_preview && !infoCurso.foto_url) {
+            // ── NUEVO: el usuario eliminó la portada → avisar al backend
+            fd.append("eliminar_foto", "true");
+        }
 
         const { data: dc } = await api.put(`/cursos/cursos/${id}`, fd);
         if (!dc.ok) throw new Error(dc.mensaje);
@@ -1435,7 +1522,6 @@ export function EditorCurso() {
             }
 
             const so = seccionesOriginales.find((s) => s.id_seccion === sec.id_seccion);
-
             const cAct = sec.contenidos.filter((c) => c.id_contenido).map((c) => c.id_contenido);
             for (const co of so?.contenidos || [])
                 if (!cAct.includes(co.id_contenido)) await api.delete(`/cursos/contenidos/${co.id_contenido}`);
@@ -1455,52 +1541,64 @@ export function EditorCurso() {
                 }
             }
 
-            const pAct = sec.preguntas.filter((p) => p.id_test).map((p) => p.id_test);
-            for (const po of so?.preguntas || [])
-                if (!pAct.includes(po.id_test)) await api.delete(`/cursos/preguntas/${po.id_test}`);
+            const preguntasOriginales = so?.preguntas || [];
+            const hayPreguntasEnBD = preguntasOriginales.length > 0;
 
-            for (const preg of sec.preguntas) {
-                if (preg.id_test) {
-                    const original = so?.preguntas?.find((p) => p.id_test === preg.id_test);
-                    const cambio = !original ||
-                        original.texto_pregunta !== preg.texto_pregunta ||
-                        JSON.stringify(original.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: Boolean(o.es_correcta) }))) !==
-                        JSON.stringify(preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: Boolean(o.es_correcta) })));
-                    if (cambio) {
-                        await api.put(`/cursos/preguntas/${preg.id_test}`, {
+            if (!sec.mostrarTest && hayPreguntasEnBD) {
+                await api.delete(`/cursos/secciones/${id_seccion}/cuestionario`);
+            } else if (sec.mostrarTest) {
+                if (!tieneInscritos || !hayPreguntasEnBD) {
+                    const pAct = sec.preguntas.filter((p) => p.id_test).map((p) => p.id_test);
+                    for (const po of preguntasOriginales)
+                        if (!pAct.includes(po.id_test)) await api.delete(`/cursos/preguntas/${po.id_test}`);
+
+                    for (const preg of sec.preguntas) {
+                        if (preg.id_test) {
+                            const original = preguntasOriginales.find((p) => p.id_test === preg.id_test);
+                            const cambio = !original ||
+                                original.texto_pregunta !== preg.texto_pregunta ||
+                                JSON.stringify(original.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: Boolean(o.es_correcta) }))) !==
+                                JSON.stringify(preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: Boolean(o.es_correcta) })));
+                            if (cambio) {
+                                await api.put(`/cursos/preguntas/${preg.id_test}`, {
+                                    texto_pregunta: preg.texto_pregunta,
+                                    opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
+                                });
+                            }
+                        } else {
+                            const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
+                                texto_pregunta: preg.texto_pregunta,
+                                opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
+                            });
+                            if (!dp.ok) throw new Error(dp.mensaje);
+                        }
+                    }
+                } else {
+                    for (const preg of sec.preguntas.filter((p) => !p.id_test)) {
+                        const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
                             texto_pregunta: preg.texto_pregunta,
                             opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
                         });
+                        if (!dp.ok) throw new Error(dp.mensaje);
                     }
-                } else {
-                    const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
-                        texto_pregunta: preg.texto_pregunta,
-                        opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
-                    });
-                    if (!dp.ok) throw new Error(dp.mensaje);
                 }
             }
         }
     };
 
-    /* ──────────────────────────────────────────────────────
-       GUARDAR (crear o editar)
-    ────────────────────────────────────────────────────── */
+    /* ── handleGuardar ── */
     const handleGuardar = async () => {
-        setGuardando(true);
-        setError(null);
+        setGuardando(true); setError(null);
         try {
             if (modoEdicion) {
                 await handleEditar();
                 limpiarBorrador(id);
-                setIsDirty(false);
-                setShowSuccessAlert(true);
             } else {
                 await handleCrear();
                 limpiarBorrador(null);
-                setIsDirty(false);
-                setShowSuccessAlert(true);
             }
+            setIsDirty(false);
+            setShowSuccessAlert(true);
         } catch (err) {
             setError(err.response?.data?.mensaje || err.message || "Ocurrió un error al guardar.");
         } finally {
@@ -1508,9 +1606,7 @@ export function EditorCurso() {
         }
     };
 
-    /* ──────────────────────────────────────────────────────
-       RENDER — Loading
-    ────────────────────────────────────────────────────── */
+    /* ── Render loading ── */
     if (cargando) return (
         <div className="ec-root">
             <div className="ec-loading">
@@ -1520,11 +1616,22 @@ export function EditorCurso() {
         </div>
     );
 
-    /* ──────────────────────────────────────────────────────
-       RENDER — Main
-    ────────────────────────────────────────────────────── */
+    /* ── Render main ── */
     return (
         <div className="ec-root">
+            {/* ── Modal eliminar portada ── */}
+            <ModalConfirmarEliminar
+                isOpen={modalElimPortada}
+                onClose={() => setModalElimPortada(false)}
+                onConfirm={() => {
+                    handleInfoChange("foto_url", null);
+                    handleInfoChange("foto_preview", null);
+                    handleInfoChange("foto_file", null);
+                }}
+                tipo="imagen"
+                nombre="Portada del curso"
+            />
+
             <header className="ec-topbar">
                 <button className="ec-back-btn" onClick={handleSalir}>
                     <IoArrowBackOutline size={15} /><span>Volver</span>
@@ -1546,6 +1653,8 @@ export function EditorCurso() {
                             showErrors={showErrors || tituloDuplicado}
                             tituloDuplicado={tituloDuplicado}
                             onLimpiarDuplicado={() => setTituloDuplicado(false)}
+                            /* ── Solicitar eliminación de portada ── */
+                            onRequestDeletePortada={() => setModalElimPortada(true)}
                         />
                     )}
                     {paso === 2 && (
@@ -1555,6 +1664,7 @@ export function EditorCurso() {
                             showErrors={showErrors}
                             activaIdxExterno={seccionActivaIdx}
                             onActivaChange={setSeccionActivaIdx}
+                            tieneInscritos={tieneInscritos}
                         />
                     )}
                     {paso === 3 && (

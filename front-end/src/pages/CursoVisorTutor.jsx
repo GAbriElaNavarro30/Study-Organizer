@@ -8,32 +8,33 @@ import {
     IoEyeOutline, IoLayersOutline, IoAlertCircleOutline,
     IoPeopleOutline, IoBarChartOutline, IoPersonOutline,
     IoTrophyOutline, IoTimeOutline, IoSchoolOutline,
+    IoChevronBackOutline, IoChevronForwardOutline,
 } from "react-icons/io5";
 import api from "../services/api";
 import "../styles/CursoVisorTutor.css";
 
 const VARK_COLORS = {
-    V:    { bg: "#DBEAFE", text: "#1D4ED8", label: "Visual" },
-    A:    { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
-    R:    { bg: "#DCFCE7", text: "#15803D", label: "Lectura/Escritura" },
-    K:    { bg: "#FCE7F3", text: "#9D174D", label: "Kinestésico" },
-    VA:   { bg: "#EEF2FF", text: "#4338CA", label: "Visual-Auditivo" },
-    VR:   { bg: "#ECFDF5", text: "#065F46", label: "Visual-Lectura" },
-    VK:   { bg: "#F3E8FF", text: "#6B21A8", label: "Visual-Kinestésico" },
-    AR:   { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
-    AK:   { bg: "#FFF1F2", text: "#BE123C", label: "Auditivo-Kinestésico" },
-    RK:   { bg: "#F0FDF4", text: "#166534", label: "Lectura-Kinestésico" },
-    VAR:  { bg: "#EFF6FF", text: "#1E40AF", label: "V-A-Lectura" },
-    VAK:  { bg: "#F5F3FF", text: "#5B21B6", label: "V-A-Kinestésico" },
-    VRK:  { bg: "#ECFEFF", text: "#155E75", label: "V-L-Kinestésico" },
-    ARK:  { bg: "#FFF7ED", text: "#9A3412", label: "A-L-Kinestésico" },
+    V: { bg: "#DBEAFE", text: "#1D4ED8", label: "Visual" },
+    A: { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
+    R: { bg: "#DCFCE7", text: "#15803D", label: "Lectura/Escritura" },
+    K: { bg: "#FCE7F3", text: "#9D174D", label: "Kinestésico" },
+    VA: { bg: "#EEF2FF", text: "#4338CA", label: "Visual-Auditivo" },
+    VR: { bg: "#ECFDF5", text: "#065F46", label: "Visual-Lectura" },
+    VK: { bg: "#F3E8FF", text: "#6B21A8", label: "Visual-Kinestésico" },
+    AR: { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
+    AK: { bg: "#FFF1F2", text: "#BE123C", label: "Auditivo-Kinestésico" },
+    RK: { bg: "#F0FDF4", text: "#166534", label: "Lectura-Kinestésico" },
+    VAR: { bg: "#EFF6FF", text: "#1E40AF", label: "V-A-Lectura" },
+    VAK: { bg: "#F5F3FF", text: "#5B21B6", label: "V-A-Kinestésico" },
+    VRK: { bg: "#ECFEFF", text: "#155E75", label: "V-L-Kinestésico" },
+    ARK: { bg: "#FFF7ED", text: "#9A3412", label: "A-L-Kinestésico" },
     VARK: { bg: "#F0F9FF", text: "#0369A1", label: "Multimodal" },
 };
 
 const TABS = [
-    { key: "contenido",    label: "Contenido",    icon: IoBookOutline },
-    { key: "estudiantes",  label: "Estudiantes",  icon: IoPeopleOutline },
-    { key: "resultados",   label: "Resultados",   icon: IoBarChartOutline },
+    { key: "contenido", label: "Contenido", icon: IoBookOutline },
+    { key: "estudiantes", label: "Estudiantes", icon: IoPeopleOutline },
+    { key: "resultados", label: "Resultados", icon: IoBarChartOutline },
 ];
 
 /* ── Pregunta de quiz (solo lectura) ─────────────────────── */
@@ -85,55 +86,138 @@ const PreguntaVisor = ({ preg, index }) => {
 };
 
 /* ── Sección expandible ──────────────────────────────────── */
-const SeccionVisor = ({ sec, index }) => {
-    const [abierta, setAbierta] = useState(index === 0);
+/* ── Tab: Contenido (estilo preview del editor) ─────────── */
+const TabContenido = ({ secciones }) => {
+    const [secActiva, setSecActiva] = useState(0);
+
+    const handlePrev = () => setSecActiva((p) => Math.max(0, p - 1));
+    const handleNext = () => setSecActiva((p) => Math.min(secciones.length - 1, p + 1));
+
+    const sec = secciones[secActiva] ?? secciones[0];
+
+    if (!secciones || secciones.length === 0) {
+        return (
+            <div className="vct-empty">
+                <IoLayersOutline size={32} />
+                <p>Este curso no tiene secciones aún.</p>
+            </div>
+        );
+    }
 
     return (
-        <div className={`vct-seccion ${abierta ? "vct-seccion--abierta" : ""}`}>
-            <button className="vct-seccion__header" onClick={() => setAbierta(v => !v)}>
-                <div className="vct-seccion__header-left">
-                    <span className="vct-seccion__num">{String(index + 1).padStart(2, "0")}</span>
-                    <div>
-                        <p className="vct-seccion__titulo">{sec.titulo_seccion || "Sin título"}</p>
-                        <p className="vct-seccion__meta">
-                            {sec.contenidos?.length || 0} bloque{sec.contenidos?.length !== 1 ? "s" : ""}
-                            {sec.preguntas?.length > 0 && ` · ${sec.preguntas.length} pregunta${sec.preguntas.length !== 1 ? "s" : ""}`}
-                        </p>
+        <div className="vct-preview-root">
+            {/* Layout sidebar + contenido */}
+            <div className="vct-preview-layout">
+                {/* Sidebar */}
+                <div className="vct-preview-sidebar">
+                    <div className="vct-preview-sidebar-title">
+                        <IoLayersOutline size={11} />
+                        {secciones.length} sección{secciones.length !== 1 ? "es" : ""}
                     </div>
+                    {secciones.map((s, i) => (
+                        <button
+                            key={s._id || s.id_seccion}
+                            className={`vct-preview-sec-btn ${i === secActiva ? "active" : ""}`}
+                            onClick={() => setSecActiva(i)}
+                        >
+                            <span className="vct-preview-sec-num">{i + 1}</span>
+                            <div className="vct-preview-sec-info">
+                                <span className="vct-preview-sec-label">
+                                    {s.titulo_seccion || <em>Sin título</em>}
+                                </span>
+                                <span className="vct-preview-sec-meta">
+                                    {/*s.contenidos?.length || 0} bloque{s.contenidos?.length !== 1 ? "s" : ""*/}
+                                    {s.preguntas?.length > 0 && ` ${s.preguntas.length} preg.`}
+                                </span>
+                            </div>
+                        </button>
+                    ))}
                 </div>
-                {abierta ? <IoChevronUpOutline size={18} /> : <IoChevronDownOutline size={18} />}
-            </button>
 
-            {abierta && (
-                <div className="vct-seccion__body">
-                    {sec.contenidos?.map((con) => (
-                        <div key={con._id || con.id_contenido} className="vct-bloque">
-                            <h4 className="vct-bloque__titulo">{con.titulo}</h4>
-                            {con.contenido && <p className="vct-bloque__texto">{con.contenido}</p>}
-                            {(con.imagen_url || con.imagen_cropped_preview) && (
-                                <div className="vct-bloque__img-wrap">
-                                    <img
-                                        src={con.imagen_url || con.imagen_cropped_preview}
-                                        alt={con.titulo}
-                                        className="vct-bloque__img"
-                                    />
+                {/* Contenido principal */}
+                <div className="vct-preview-content">
+                    {sec && (
+                        <>
+                            <div>
+                                <div className="vct-preview-section-title">
+                                    {sec.titulo_seccion || <em>Sin título</em>}
+                                </div>
+                                {sec.descripcion_seccion && (
+                                    <div className="vct-preview-section-desc">
+                                        {sec.descripcion_seccion}
+                                    </div>
+                                )}
+                            </div>
+
+                            <div className="vct-preview-blocks">
+                                {sec.contenidos?.map((con) => (
+                                    <div key={con._id || con.id_contenido} className="vct-preview-block">
+                                        {con.titulo && (
+                                            <div className="vct-preview-block-title">{con.titulo}</div>
+                                        )}
+                                        {con.contenido && (
+                                            <div className="vct-preview-block-text">{con.contenido}</div>
+                                        )}
+                                        {(con.imagen_url || con.imagen_cropped_preview) && (
+                                            <img
+                                                src={con.imagen_url || con.imagen_cropped_preview}
+                                                alt={con.titulo || "imagen"}
+                                                className="vct-preview-block-img"
+                                            />
+                                        )}
+                                    </div>
+                                ))}
+                            </div>
+
+                            {sec.mostrarTest !== false && sec.preguntas?.length > 0 && (
+                                <div className="vct-preview-quiz">
+                                    <div className="vct-preview-quiz-header">
+                                        <IoHelpCircleOutline size={13} /> Cuestionario de la sección
+                                    </div>
+                                    {sec.preguntas.map((preg, pi) => (
+                                        <PreguntaVisor
+                                            key={preg._id || preg.id_test}
+                                            preg={preg}
+                                            index={pi}
+                                        />
+                                    ))}
                                 </div>
                             )}
-                        </div>
-                    ))}
-                    {sec.preguntas?.length > 0 && (
-                        <div className="vct-quiz">
-                            <div className="vct-quiz__header">
-                                <IoHelpCircleOutline size={16} />
-                                <span>Cuestionario de la sección</span>
-                            </div>
-                            {sec.preguntas.map((preg, pi) => (
-                                <PreguntaVisor key={preg._id || preg.id_test} preg={preg} index={pi} />
-                            ))}
-                        </div>
+                        </>
                     )}
                 </div>
-            )}
+            </div>
+
+            {/* Navegación inferior */}
+            <div className="vct-preview-nav">
+                <button
+                    className="vct-preview-nav-btn"
+                    disabled={secActiva === 0}
+                    onClick={handlePrev}
+                >
+                    <IoChevronBackOutline size={14} /> Anterior
+                </button>
+                <div className="vct-preview-nav-progress">
+                    <div className="vct-preview-nav-dots">
+                        {secciones.map((_, i) => (
+                            <div
+                                key={i}
+                                className={`vct-preview-nav-dot ${i === secActiva ? "active" : i < secActiva ? "done" : ""}`}
+                                onClick={() => setSecActiva(i)}
+                                style={{ cursor: "pointer" }}
+                            />
+                        ))}
+                    </div>
+                    <span>Sección {secActiva + 1} de {secciones.length}</span>
+                </div>
+                <button
+                    className={`vct-preview-nav-btn ${secActiva < secciones.length - 1 ? "vct-preview-nav-btn--next" : ""}`}
+                    disabled={secActiva === secciones.length - 1}
+                    onClick={handleNext}
+                >
+                    Siguiente <IoChevronForwardOutline size={14} />
+                </button>
+            </div>
         </div>
     );
 };
@@ -141,8 +225,8 @@ const SeccionVisor = ({ sec, index }) => {
 /* ── Tab: Estudiantes ────────────────────────────────────── */
 const TabEstudiantes = ({ idCurso }) => {
     const [estudiantes, setEstudiantes] = useState([]);
-    const [cargando, setCargando]       = useState(true);
-    const [error, setError]             = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         (async () => {
@@ -158,7 +242,7 @@ const TabEstudiantes = ({ idCurso }) => {
     }, [idCurso]);
 
     if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando estudiantes…</p></div>;
-    if (error)    return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
+    if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
     if (estudiantes.length === 0) return (
         <div className="vct-empty">
             <IoSchoolOutline size={32} />
@@ -167,47 +251,55 @@ const TabEstudiantes = ({ idCurso }) => {
     );
 
     return (
-        <div className="vct-table-wrap">
-            <table className="vct-table">
-                <thead>
-                    <tr>
-                        <th>Estudiante</th>
-                        <th>Correo</th>
-                        <th>Perfil VARK</th>
-                        <th>Fecha de inscripción</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    {estudiantes.map((e) => (
-                        <tr key={e.id_usuario}>
-                            <td>
-                                <div className="vct-student-cell">
-                                    <div className="vct-avatar">
-                                        {e.foto_perfil
-                                            ? <img src={e.foto_perfil} alt={e.nombre} />
-                                            : <IoPersonOutline size={16} />}
-                                    </div>
-                                    <span>{e.nombre} {e.apellido}</span>
-                                </div>
-                            </td>
-                            <td className="vct-td-muted">{e.correo_electronico}</td>
-                            <td>
-                                {e.perfil_vark
-                                    ? <span className="vct-vark-pill"
-                                        style={{ background: VARK_COLORS[e.perfil_vark]?.bg || "#F1F5F9", color: VARK_COLORS[e.perfil_vark]?.text || "#64748B" }}>
-                                        {e.perfil_vark}
-                                    </span>
-                                    : <span className="vct-td-muted">—</span>}
-                            </td>
-                            <td className="vct-td-muted">
-                                {e.fecha_inscripcion
-                                    ? new Date(e.fecha_inscripcion).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
-                                    : "—"}
-                            </td>
+        <div className="vct-estudiantes-wrap">
+
+            <div className="vct-estudiantes-badge">
+                <IoPeopleOutline size={15} />
+                <span>{estudiantes.length} estudiante{estudiantes.length !== 1 ? "s" : ""} inscritos</span>
+            </div>
+
+            <div className="vct-table-wrap">
+                <table className="vct-table">
+                    <thead>
+                        <tr>
+                            <th>Estudiante</th>
+                            <th>Correo</th>
+                            <th>Teléfono</th>
+                            <th>Fecha de inscripción</th>
                         </tr>
-                    ))}
-                </tbody>
-            </table>
+                    </thead>
+                    <tbody>
+                        {estudiantes.map((e) => (
+                            <tr key={e.id_usuario}>
+                                <td>
+                                    <div className="vct-student-cell">
+                                        <div className="vct-avatar">
+                                            {e.foto_perfil
+                                                ? <img src={e.foto_perfil} alt={e.nombre} />
+                                                : <IoPersonOutline size={16} />}
+                                        </div>
+                                        <span>{e.nombre} {e.apellido}</span>
+                                    </div>
+                                </td>
+                                <td className="vct-td-muted">{e.correo_electronico}</td>
+                                <td className="vct-td-muted">{e.telefono || "—"}</td>
+                                <td className="vct-td-muted">
+                                    {e.fecha_inscripcion
+                                        ? new Date(e.fecha_inscripcion).toLocaleString("es-MX", {
+                                            day: "2-digit",
+                                            month: "short",
+                                            year: "numeric",
+                                            hour: "2-digit",
+                                            minute: "2-digit",
+                                            hour12: true
+                                        })
+                                        : "—"}
+                                </td>
+                            </tr>
+                        ))}
+                    </tbody>
+                </table>
+            </div>
         </div>
     );
 };
@@ -215,8 +307,8 @@ const TabEstudiantes = ({ idCurso }) => {
 /* ── Tab: Resultados ─────────────────────────────────────── */
 const TabResultados = ({ idCurso }) => {
     const [resultados, setResultados] = useState([]);
-    const [cargando, setCargando]     = useState(true);
-    const [error, setError]           = useState(null);
+    const [cargando, setCargando] = useState(true);
+    const [error, setError] = useState(null);
 
     useEffect(() => {
         (async () => {
@@ -232,7 +324,7 @@ const TabResultados = ({ idCurso }) => {
     }, [idCurso]);
 
     if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando resultados…</p></div>;
-    if (error)    return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
+    if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
     if (resultados.length === 0) return (
         <div className="vct-empty">
             <IoTrophyOutline size={32} />
@@ -322,12 +414,12 @@ const TabResultados = ({ idCurso }) => {
 export function CursoVisorTutor() {
     const navigate = useNavigate();
     const [searchParams, setSearchParams] = useSearchParams();
-    const id  = searchParams.get("id");
+    const id = searchParams.get("id");
     const tabParam = searchParams.get("tab");
 
-    const [curso, setCurso]       = useState(null);
+    const [curso, setCurso] = useState(null);
     const [cargando, setCargando] = useState(true);
-    const [error, setError]       = useState(null);
+    const [error, setError] = useState(null);
     const [tabActiva, setTabActiva] = useState(
         TABS.find(t => t.key === tabParam)?.key || "contenido"
     );
@@ -414,7 +506,7 @@ export function CursoVisorTutor() {
                         {curso.descripcion && <p className="vct-hero__desc">{curso.descripcion}</p>}
                         <div className="vct-hero__stats">
                             <span><IoLayersOutline size={14} /> {curso.secciones?.length || 0} secciones</span>
-                            <span><IoBookOutline size={14} /> {totalBloques} bloques de contenido</span>
+                            {/*<span><IoBookOutline size={14} /> {totalBloques} bloques de contenido</span>*/}
                             {curso.nombre_dimension && <span><IoSparkles size={14} /> {curso.nombre_dimension}</span>}
                         </div>
                     </div>
@@ -437,15 +529,7 @@ export function CursoVisorTutor() {
                 <div className="vct-tab-panel">
 
                     {tabActiva === "contenido" && (
-                        <div className="vct-secciones">
-                            <h2 className="vct-secciones__heading">Contenido del curso</h2>
-                            {curso.secciones?.length > 0
-                                ? curso.secciones.map((sec, si) => (
-                                    <SeccionVisor key={sec._id || sec.id_seccion} sec={sec} index={si} />
-                                ))
-                                : <p className="vct-empty">Este curso no tiene secciones aún.</p>
-                            }
-                        </div>
+                        <TabContenido secciones={curso.secciones || []} />
                     )}
 
                     {tabActiva === "estudiantes" && <TabEstudiantes idCurso={id} />}

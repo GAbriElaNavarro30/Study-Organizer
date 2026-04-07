@@ -28,6 +28,19 @@ const subirImagenCloudinary = (buffer, carpeta = "cursos") =>
         stream.end(buffer);
     });
 
+const cursoTieneInscritos = async (id_seccion) => {
+    const [[seccion]] = await db.query(
+        "SELECT id_curso FROM Seccion_Curso WHERE id_seccion = ?",
+        [id_seccion]
+    );
+    if (!seccion) return false;
+    const [[{ total }]] = await db.query(
+        "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
+        [seccion.id_curso]
+    );
+    return total > 0;
+};
+
 // ─────────────────────────────────────────────────────────────
 // CURSOS
 // ─────────────────────────────────────────────────────────────
@@ -87,6 +100,13 @@ export const obtenerCurso = async (req, res) => {
             seccion.preguntas = todasPreguntas.filter(p => p.id_seccion === seccion.id_seccion);
         }
 
+        // ── Incluir total de estudiantes inscritos ──
+        const [[{ total_estudiantes }]] = await db.query(
+            "SELECT COUNT(*) AS total_estudiantes FROM Inscripcion WHERE id_curso = ?",
+            [id]
+        );
+        curso.total_estudiantes = total_estudiantes;
+
         curso.secciones = secciones;
         res.json({ ok: true, curso });
     } catch (error) {
@@ -98,9 +118,8 @@ export const obtenerCurso = async (req, res) => {
 export const crearCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
+        const { titulo, descripcion, perfil_vark, id_dimension, eliminar_foto } = req.body;
 
-        // ── Validaciones (espejo del paso 1 del frontend) ──
         if (!titulo?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título es obligatorio." });
         if (titulo.trim().length > 200)
@@ -143,13 +162,12 @@ export const actualizarCurso = async (req, res) => {
     try {
         const { id } = req.params;
         const id_usuario = req.usuario.id;
-        const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
+        const { titulo, descripcion, perfil_vark, id_dimension, eliminar_foto } = req.body;
 
         const curso = await Curso.getById(id);
         if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
 
-        // ── Validaciones (espejo del paso 1 del frontend) ──
         if (titulo !== undefined && !titulo.trim())
             return res.status(400).json({ ok: false, mensaje: "El título no puede estar vacío." });
         if (titulo !== undefined && titulo.trim().length > 200)
@@ -175,7 +193,14 @@ export const actualizarCurso = async (req, res) => {
         if (descripcion !== undefined) campos.descripcion = descripcion?.trim() || null;
         if (perfil_vark !== undefined) campos.perfil_vark = perfil_vark || null;
         if (id_dimension !== undefined) campos.id_dimension = id_dimension || null;
-        if (req.file) campos.foto = await subirImagenCloudinary(req.file.buffer);
+
+        if (req.file) {
+            // Subir nueva imagen
+            campos.foto = await subirImagenCloudinary(req.file.buffer);
+        } else if (eliminar_foto === "true" || eliminar_foto === true) {
+            // ── NUEVO: eliminar imagen existente
+            campos.foto = null;
+        }
 
         if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
@@ -233,7 +258,6 @@ export const crearSeccion = async (req, res) => {
         const id_usuario = req.usuario.id;
         const { titulo_seccion, descripcion_seccion, orden } = req.body;
 
-        // ── Validación (espejo del frontend: titulo_seccion requerido) ──
         if (!titulo_seccion?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título de la sección es obligatorio." });
 
@@ -268,7 +292,6 @@ export const actualizarSeccion = async (req, res) => {
         const { id } = req.params;
         const { titulo_seccion, descripcion_seccion, orden } = req.body;
 
-        // ── Validación: título obligatorio (espejo del frontend) ──
         if (titulo_seccion !== undefined && !titulo_seccion.trim())
             return res.status(400).json({ ok: false, mensaje: "El título de la sección no puede estar vacío." });
 
@@ -308,9 +331,6 @@ export const crearContenido = async (req, res) => {
         const { id } = req.params;
         const { titulo, contenido, orden } = req.body;
 
-        // ── Validación (espejo del frontend: titulo requerido) ──
-        
-
         let ordenFinal = orden;
         if (!ordenFinal) {
             const contenidos = await Contenido.getBySeccion(id);
@@ -319,7 +339,6 @@ export const crearContenido = async (req, res) => {
                 : 1;
         }
 
-        // Subir imagen si viene adjunta
         let imagen_url = null;
         if (req.file) imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
 
@@ -341,19 +360,20 @@ export const crearContenido = async (req, res) => {
 export const actualizarContenido = async (req, res) => {
     try {
         const { id } = req.params;
-        const { titulo, contenido, orden } = req.body;
-
-        // ── Validación (espejo del frontend: titulo requerido) ──
-        
+        const { titulo, contenido, orden, eliminar_imagen } = req.body;
 
         const campos = {};
         if (titulo !== undefined) campos.titulo = titulo.trim();
         if (contenido !== undefined) campos.contenido = contenido?.trim() || null;
         if (orden !== undefined) campos.orden = orden;
 
-        // Subir imagen si viene adjunta
-        if (req.file)
+        if (req.file) {
+            // Subir nueva imagen
             campos.imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
+        } else if (eliminar_imagen === "true" || eliminar_imagen === true) {
+            // ── NUEVO: eliminar imagen existente
+            campos.imagen_url = null;
+        }
 
         if (Object.keys(campos).length === 0)
             return res.status(400).json({ ok: false, mensaje: "No hay campos para actualizar." });
@@ -383,10 +403,12 @@ export const eliminarContenido = async (req, res) => {
 
 export const crearPregunta = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_seccion
+
+
+
         const { texto_pregunta, opciones = [] } = req.body;
 
-        // ── Validaciones (espejo del frontend) ──
         if (!texto_pregunta?.trim())
             return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta es obligatorio." });
         if (opciones.length < 2)
@@ -418,10 +440,29 @@ export const crearPregunta = async (req, res) => {
 
 export const actualizarPregunta = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_test
+
+        const [[fila]] = await db.query(
+            `SELECT sc.id_curso
+             FROM Pregunta_Test pt
+             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+             WHERE pt.id_test = ?`,
+            [id]
+        );
+        if (fila) {
+            const [[{ total }]] = await db.query(
+                "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
+                [fila.id_curso]
+            );
+            if (total > 0)
+                return res.status(403).json({
+                    ok: false,
+                    mensaje: "No puedes modificar el cuestionario de un curso con estudiantes inscritos.",
+                });
+        }
+
         const { texto_pregunta, opciones = [] } = req.body;
 
-        // ── Validaciones (espejo del frontend) ──
         if (texto_pregunta !== undefined && !texto_pregunta.trim())
             return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta no puede estar vacío." });
         if (opciones.length > 0) {
@@ -457,7 +498,27 @@ export const actualizarPregunta = async (req, res) => {
 
 export const eliminarPregunta = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_test
+
+        const [[fila]] = await db.query(
+            `SELECT sc.id_curso
+             FROM Pregunta_Test pt
+             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+             WHERE pt.id_test = ?`,
+            [id]
+        );
+        if (fila) {
+            const [[{ total }]] = await db.query(
+                "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
+                [fila.id_curso]
+            );
+            if (total > 0)
+                return res.status(403).json({
+                    ok: false,
+                    mensaje: "No puedes modificar el cuestionario de un curso con estudiantes inscritos.",
+                });
+        }
+
         await PreguntaTest.delete(id);
         res.json({ ok: true, mensaje: "Pregunta eliminada." });
     } catch (error) {
@@ -493,7 +554,7 @@ export const archivarCurso = async (req, res) => {
 
         const nuevo_estado = !curso.archivado;
         const campos = { archivado: nuevo_estado };
-        if (nuevo_estado) campos.es_publicado = false; // archivar despublica automáticamente
+        if (nuevo_estado) campos.es_publicado = false;
 
         await Curso.update(id, campos);
         res.json({ ok: true, archivado: nuevo_estado });
@@ -503,7 +564,6 @@ export const archivarCurso = async (req, res) => {
     }
 };
 
-
 export const listarCursosRecomendados = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -512,15 +572,11 @@ export const listarCursosRecomendados = async (req, res) => {
         if (!perfil)
             return res.status(400).json({ ok: false, mensaje: "El perfil VARK es requerido." });
 
-        // Obtener el perfil guardado del estudiante si no se pasa por query
-        // Generar todas las combinaciones que contienen las letras del perfil
         const letras = perfil.toUpperCase().split("").filter(l => ["V", "A", "R", "K"].includes(l));
 
         if (letras.length === 0)
             return res.status(400).json({ ok: false, mensaje: "Perfil VARK inválido." });
 
-        // Buscar cursos cuyo perfil_vark tenga al menos una letra en común con el perfil del estudiante
-        // Ordenados por coincidencia exacta primero, luego parcial
         const placeholders = letras.map(() => "perfil_vark LIKE ?").join(" OR ");
         const likeParams = letras.map(l => `%${l}%`);
 
@@ -551,9 +607,6 @@ export const listarCursosRecomendados = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al obtener cursos recomendados." });
     }
 };
-
-
-// cursosController.js — agregar al final
 
 export const listarCursosPorDimension = async (req, res) => {
     try {
@@ -592,7 +645,7 @@ export const listarCursosPorDimension = async (req, res) => {
                ${dimFilter}
              ORDER BY c.fecha_creacion DESC
              LIMIT 12`,
-            [perfil.toUpperCase(), ...dimParams]  // coincidencia exacta
+            [perfil.toUpperCase(), ...dimParams]
         );
 
         res.json({ ok: true, cursos: rows });
@@ -613,7 +666,6 @@ export const misCursos = async (req, res) => {
     }
 };
 
-// cursosController.js
 export const obtenerCursoEstudiante = async (req, res) => {
     try {
         const { id } = req.query;
@@ -655,11 +707,9 @@ export const obtenerCursoEstudiante = async (req, res) => {
         };
         curso.secciones = secciones;
 
-        // ── Inscripción ──
         const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id);
         const inscrito = !!inscripcion;
 
-        // ── Progreso real desde Intento_Curso ──
         let progreso = null;
         if (inscrito) {
             const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
@@ -689,8 +739,6 @@ export const obtenerCursoEstudiante = async (req, res) => {
     }
 };
 
-
-
 export const inscribirseACurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -699,12 +747,10 @@ export const inscribirseACurso = async (req, res) => {
         if (!id_curso)
             return res.status(400).json({ ok: false, mensaje: "El id_curso es requerido." });
 
-        // Verificar que el curso exista y esté publicado
         const curso = await Curso.getById(id_curso);
         if (!curso || !curso.es_publicado || curso.archivado)
             return res.status(404).json({ ok: false, mensaje: "Curso no disponible." });
 
-        // Verificar que no esté ya inscrito
         const yaInscrito = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
         if (yaInscrito)
             return res.status(400).json({ ok: false, mensaje: "Ya estás inscrito en este curso." });
@@ -764,7 +810,6 @@ export const iniciarIntento = async (req, res) => {
     }
 };
 
-// POST /progreso/:id_contenido — marcar contenido como visto
 export const marcarContenidoVisto = async (req, res) => {
     console.log(">>> marcarContenidoVisto llamado", req.params, req.body);
     try {
@@ -793,17 +838,15 @@ export const marcarContenidoVisto = async (req, res) => {
 
         res.json({ ok: true, porcentaje: pct, completado: pct === 100 });
     } catch (error) {
-        console.error("marcarContenidoVisto ERROR:", error); // ← ver el error real
+        console.error("marcarContenidoVisto ERROR:", error);
         res.status(500).json({ ok: false, mensaje: "Error al marcar contenido." });
     }
 };
 
-// POST /test/respuestas — guardar respuestas del cuestionario
 export const guardarRespuestasTest = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
         const { id_curso, respuestas } = req.body;
-        // respuestas: [{ id_test, id_opcion }]
 
         if (!id_curso || !respuestas?.length)
             return res.status(400).json({ ok: false, mensaje: "Datos incompletos." });
@@ -816,7 +859,6 @@ export const guardarRespuestasTest = async (req, res) => {
         if (!intento)
             return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
 
-        // Evaluar correctas
         await db.query("DELETE FROM Respuesta_Test_Curso WHERE id_intento = ?", [intento.id_intento]);
 
         let correctas = 0;
@@ -833,7 +875,6 @@ export const guardarRespuestasTest = async (req, res) => {
 
         await RespuestaTestCurso.saveMany(intento.id_intento, filas);
 
-        // Guardar resultado
         const total = respuestas.length;
         const porcentaje = total > 0 ? parseFloat(((correctas / total) * 100).toFixed(2)) : 0;
 
@@ -849,6 +890,21 @@ export const guardarRespuestasTest = async (req, res) => {
     } catch (error) {
         console.error("guardarRespuestasTest:", error);
         res.status(500).json({ ok: false, mensaje: "Error al guardar respuestas." });
+    }
+};
+
+// Agregar al final del bloque TEST:
+export const eliminarCuestionarioSeccion = async (req, res) => {
+    try {
+        const { id } = req.params; // id_seccion
+        await db.query(
+            "DELETE FROM Pregunta_Test WHERE id_seccion = ?",
+            [id]
+        );
+        res.json({ ok: true, mensaje: "Cuestionario eliminado." });
+    } catch (error) {
+        console.error("eliminarCuestionarioSeccion:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al eliminar el cuestionario." });
     }
 };
 
@@ -871,5 +927,75 @@ export const obtenerResultadoCurso = async (req, res) => {
     } catch (error) {
         console.error("obtenerResultadoCurso:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener el resultado." });
+    }
+};
+
+export const listarEstudiantesCurso = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.usuario.id;
+
+        const curso = await Curso.getById(id);
+        if (!curso || curso.id_usuario !== id_usuario)
+            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
+
+        const [rows] = await db.query(
+            `SELECT
+                u.id_usuario,
+                u.nombre,
+                u.apellido,
+                u.correo_electronico,
+                u.telefono,
+                u.foto_perfil,
+                i.fecha_inscripcion
+             FROM Inscripcion i
+             INNER JOIN Usuario u ON i.id_usuario = u.id_usuario
+             WHERE i.id_curso = ?
+             ORDER BY i.fecha_inscripcion DESC`,
+            [id]
+        );
+
+        res.json({ ok: true, estudiantes: rows });
+    } catch (error) {
+        console.error("listarEstudiantesCurso ERROR:", error);
+        res.status(500).json({ ok: false, mensaje: error.message });
+    }
+};
+
+export const listarResultadosCurso = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.usuario.id;
+
+        const curso = await Curso.getById(id);
+        if (!curso || curso.id_usuario !== id_usuario)
+            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
+
+        const [rows] = await db.query(
+            `SELECT
+                u.nombre, u.apellido, u.foto_perfil,
+                rc.total_preguntas, rc.respuestas_correctas,
+                rc.porcentaje AS puntaje,
+                CASE
+                    WHEN rc.porcentaje >= 90 THEN 'excelente'
+                    WHEN rc.porcentaje >= 80 THEN 'muy-bueno'
+                    WHEN rc.porcentaje >= 70 THEN 'bueno'
+                    WHEN rc.porcentaje >= 50 THEN 'regular'
+                    ELSE 'deficiente'
+                END AS nivel,
+                it.fecha_inicio AS fecha
+             FROM Resultado_Curso rc
+             JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+             JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
+             JOIN Usuario u ON i.id_usuario = u.id_usuario
+             WHERE i.id_curso = ?
+             ORDER BY rc.porcentaje DESC`,
+            [id]
+        );
+
+        res.json({ ok: true, resultados: rows });
+    } catch (error) {
+        console.error("listarResultadosCurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener los resultados." });
     }
 };

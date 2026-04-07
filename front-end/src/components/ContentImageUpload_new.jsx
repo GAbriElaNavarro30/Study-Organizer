@@ -1,4 +1,5 @@
 import { useState, useRef, useEffect, useCallback } from "react";
+import { createPortal } from "react-dom";
 import {
     IoImageOutline, IoCloudUploadOutline, IoTrashOutline,
     IoCheckmarkOutline, IoRefresh, IoCloseOutline,
@@ -54,13 +55,12 @@ const applyFreeCrop = (src, state, asFile = false) =>
     });
 
 /* ════════════════════════════════════════════════════════
-   CROP MODAL
+   CROP MODAL — sin cambios
 ════════════════════════════════════════════════════════ */
 const INITIAL_CROP = { cropX: 5, cropY: 5, cropW: 90, cropH: 90, rotation: 0 };
 
 function CropModal({ src, initialState, onApply, onCancel }) {
     const [cs, setCs] = useState({ ...INITIAL_CROP, ...initialState });
-
     const canvasRef = useRef(null);
     const containerRef = useRef(null);
     const imgRef = useRef(null);
@@ -68,7 +68,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
     const [containerSize, setContainerSize] = useState({ w: 0, h: 0 });
     const drag = useRef(null);
 
-    /* ── Cargar imagen ── */
     useEffect(() => {
         const i = new Image();
         i.crossOrigin = "anonymous";
@@ -77,7 +76,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         i.src = src;
     }, [src]);
 
-    /* ── Medir contenedor ── */
     useEffect(() => {
         const el = containerRef.current;
         if (!el) return;
@@ -85,10 +83,7 @@ function CropModal({ src, initialState, onApply, onCancel }) {
             const w = el.offsetWidth || el.getBoundingClientRect().width;
             const h = el.offsetHeight || el.getBoundingClientRect().height;
             if (w > 0 && h > 0) {
-                if (canvasRef.current) {
-                    canvasRef.current.width = w;
-                    canvasRef.current.height = h;
-                }
+                if (canvasRef.current) { canvasRef.current.width = w; canvasRef.current.height = h; }
                 setContainerSize({ w, h });
             }
         };
@@ -99,7 +94,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         return () => { cancelAnimationFrame(raf); ro.disconnect(); };
     }, []);
 
-    /* ── Calcular dimensiones de imagen en canvas (sin zoom) ── */
     const getImgDims = useCallback((c, cw, ch) => {
         if (!imgRef.current) return { imgLeft: 0, imgTop: 0, imgDispW: cw, imgDispH: ch };
         const img = imgRef.current;
@@ -116,7 +110,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         return { imgLeft, imgTop, imgDispW, imgDispH };
     }, []);
 
-    /* ── Render del canvas ── */
     useEffect(() => {
         if (!imgLoaded || !canvasRef.current) return;
         const canvas = canvasRef.current;
@@ -129,22 +122,12 @@ function CropModal({ src, initialState, onApply, onCancel }) {
 
         const rad = (cs.rotation * Math.PI) / 180;
         const { imgLeft, imgTop, imgDispW, imgDispH } = getImgDims(cs, W, H);
-
-        /* Imagen completa oscurecida (fondo) */
-        ctx.save();
-        ctx.translate(W / 2, H / 2);
-        ctx.rotate(rad);
-        ctx.scale(imgDispW / (img.naturalWidth * Math.abs(Math.cos(rad)) + img.naturalHeight * Math.abs(Math.sin(rad)) || 1) * (img.naturalWidth * Math.abs(Math.cos(rad)) + img.naturalHeight * Math.abs(Math.sin(rad))) / img.naturalWidth, imgDispH / (img.naturalWidth * Math.abs(Math.sin(rad)) + img.naturalHeight * Math.abs(Math.cos(rad)) || 1) * (img.naturalWidth * Math.abs(Math.sin(rad)) + img.naturalHeight * Math.abs(Math.cos(rad))) / img.naturalHeight);
-        ctx.restore();
-
-        /* Recalcular scale de forma limpia */
         const cosA = Math.abs(Math.cos(rad));
         const sinA = Math.abs(Math.sin(rad));
         const rotW = img.naturalWidth * cosA + img.naturalHeight * sinA;
         const rotH = img.naturalWidth * sinA + img.naturalHeight * cosA;
         const scale = Math.min(W / rotW, H / rotH);
 
-        /* Fondo oscuro */
         ctx.save();
         ctx.translate(W / 2, H / 2);
         ctx.rotate(rad);
@@ -153,13 +136,11 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
         ctx.restore();
 
-        /* Zona de recorte en px */
         const rx = imgLeft + (cs.cropX / 100) * imgDispW;
         const ry = imgTop + (cs.cropY / 100) * imgDispH;
         const rw = (cs.cropW / 100) * imgDispW;
         const rh = (cs.cropH / 100) * imgDispH;
 
-        /* Imagen brillante dentro del recorte */
         ctx.save();
         ctx.beginPath();
         ctx.rect(rx, ry, rw, rh);
@@ -171,7 +152,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         ctx.drawImage(img, -img.naturalWidth / 2, -img.naturalHeight / 2);
         ctx.restore();
 
-        /* Overlay oscuro fuera del recorte */
         ctx.save();
         ctx.fillStyle = "rgba(0,0,0,0.52)";
         ctx.beginPath();
@@ -180,14 +160,12 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         ctx.fill("evenodd");
         ctx.restore();
 
-        /* Borde del recorte */
         ctx.save();
         ctx.strokeStyle = "rgba(255,255,255,0.9)";
         ctx.lineWidth = 1.5;
         ctx.strokeRect(rx + 0.75, ry + 0.75, rw - 1.5, rh - 1.5);
         ctx.restore();
 
-        /* Regla de tercios */
         ctx.save();
         ctx.strokeStyle = "rgba(255,255,255,0.22)";
         ctx.lineWidth = 1;
@@ -197,7 +175,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         }
         ctx.restore();
 
-        /* Handles */
         const handles = getHandlePositions(rx, ry, rw, rh);
         Object.values(handles).forEach(([hx, hy]) => {
             ctx.save();
@@ -215,14 +192,9 @@ function CropModal({ src, initialState, onApply, onCancel }) {
     }, [imgLoaded, cs, containerSize, getImgDims]);
 
     const getHandlePositions = (rx, ry, rw, rh) => ({
-        tl: [rx, ry],
-        tc: [rx + rw / 2, ry],
-        tr: [rx + rw, ry],
-        ml: [rx, ry + rh / 2],
-        mr: [rx + rw, ry + rh / 2],
-        bl: [rx, ry + rh],
-        bc: [rx + rw / 2, ry + rh],
-        br: [rx + rw, ry + rh],
+        tl: [rx, ry], tc: [rx + rw / 2, ry], tr: [rx + rw, ry],
+        ml: [rx, ry + rh / 2], mr: [rx + rw, ry + rh / 2],
+        bl: [rx, ry + rh], bc: [rx + rw / 2, ry + rh], br: [rx + rw, ry + rh],
     });
 
     const hitHandle = useCallback((px, py, c) => {
@@ -235,23 +207,19 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         const rh = (c.cropH / 100) * imgDispH;
         const handles = getHandlePositions(rx, ry, rw, rh);
         const R = 14;
-        for (const [key, [hx, hy]] of Object.entries(handles)) {
+        for (const [key, [hx, hy]] of Object.entries(handles))
             if (Math.hypot(px - hx, py - hy) < R) return key;
-        }
         if (px >= rx && px <= rx + rw && py >= ry && py <= ry + rh) return "move";
         return null;
     }, [getImgDims]);
 
-    const getCursor = useCallback((handle) => {
-        const map = {
-            tl: "nwse-resize", br: "nwse-resize",
-            tr: "nesw-resize", bl: "nesw-resize",
-            tc: "ns-resize", bc: "ns-resize",
-            ml: "ew-resize", mr: "ew-resize",
-            move: "grab",
-        };
-        return map[handle] ?? "crosshair";
-    }, []);
+    const getCursor = useCallback((handle) => ({
+        tl: "nwse-resize", br: "nwse-resize",
+        tr: "nesw-resize", bl: "nesw-resize",
+        tc: "ns-resize", bc: "ns-resize",
+        ml: "ew-resize", mr: "ew-resize",
+        move: "grab",
+    }[handle] ?? "crosshair"), []);
 
     const onPointerDown = useCallback((e) => {
         const rect = canvasRef.current.getBoundingClientRect();
@@ -271,10 +239,8 @@ function CropModal({ src, initialState, onApply, onCancel }) {
             const hit = hitHandle(px, py, cs);
             canvasRef.current.style.cursor = hit ? getCursor(hit) : "crosshair";
         }
-
         if (!drag.current) return;
         e.preventDefault();
-
         const rect = canvasRef.current.getBoundingClientRect();
         const px = (e.clientX ?? e.touches[0].clientX) - rect.left;
         const py = (e.clientY ?? e.touches[0].clientY) - rect.top;
@@ -284,11 +250,9 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         const H = canvasRef.current?.height || 0;
         const { imgDispW, imgDispH } = getImgDims(drag.current.snap, W, H);
         const snap = drag.current.snap;
-
         const dxPct = (dx / imgDispW) * 100;
         const dyPct = (dy / imgDispH) * 100;
         const MIN_SZ = 5;
-
         const next = { ...snap };
 
         switch (drag.current.type) {
@@ -330,56 +294,27 @@ function CropModal({ src, initialState, onApply, onCancel }) {
                 next.cropY = ny;
                 break;
             }
-            case "bc": {
-                next.cropH = clamp(snap.cropH + dyPct, MIN_SZ, 100 - snap.cropY);
-                break;
-            }
+            case "bc": next.cropH = clamp(snap.cropH + dyPct, MIN_SZ, 100 - snap.cropY); break;
             case "ml": {
                 const nx = clamp(snap.cropX + dxPct, 0, snap.cropX + snap.cropW - MIN_SZ);
                 next.cropW = snap.cropW + (snap.cropX - nx);
                 next.cropX = nx;
                 break;
             }
-            case "mr": {
-                next.cropW = clamp(snap.cropW + dxPct, MIN_SZ, 100 - snap.cropX);
-                break;
-            }
+            case "mr": next.cropW = clamp(snap.cropW + dxPct, MIN_SZ, 100 - snap.cropX); break;
             default: break;
         }
-
         setCs(next);
     }, [cs, drag, getImgDims, hitHandle, getCursor]);
 
     const onPointerUp = useCallback(() => { drag.current = null; }, []);
+    const onTouchStart = useCallback((e) => { if (e.touches.length >= 2) return; onPointerDown(e); }, [onPointerDown]);
+    const onTouchMove = useCallback((e) => { if (e.touches.length >= 2) return; onPointerMove(e); }, [onPointerMove]);
+    const onTouchEnd = useCallback(() => { onPointerUp(); }, [onPointerUp]);
 
-    /* ── Touch (sin pinch-zoom) ── */
-    const onTouchStart = useCallback((e) => {
-        if (e.touches.length >= 2) return;
-        onPointerDown(e);
-    }, [onPointerDown]);
-
-    const onTouchMove = useCallback((e) => {
-        if (e.touches.length >= 2) return;
-        onPointerMove(e);
-    }, [onPointerMove]);
-
-    const onTouchEnd = useCallback(() => {
-        onPointerUp();
-    }, [onPointerUp]);
-
-    /* ── Rotar ── */
-    const rotate = () => {
-        setCs((c) => ({
-            ...c,
-            rotation: (c.rotation + 90) % 360,
-            cropX: 5, cropY: 5, cropW: 90, cropH: 90,
-        }));
-    };
-
-    /* ── Restablecer ── */
+    const rotate = () => setCs((c) => ({ ...c, rotation: (c.rotation + 90) % 360, cropX: 5, cropY: 5, cropW: 90, cropH: 90 }));
     const reset = () => setCs({ ...INITIAL_CROP });
 
-    /* ── Aplicar ── */
     const [applying, setApplying] = useState(false);
     const handleApply = async () => {
         setApplying(true);
@@ -396,7 +331,7 @@ function CropModal({ src, initialState, onApply, onCancel }) {
         }
     };
 
-    return (
+    return createPortal(
         <div className="ciu-overlay">
             <div className="ciu-modal">
                 <div className="ciu-modal-header">
@@ -406,8 +341,7 @@ function CropModal({ src, initialState, onApply, onCancel }) {
                     </div>
                     <div className="ciu-modal-header-actions">
                         <button className="ciu-rotate-btn" onClick={rotate} title="Rotar 90°">
-                            <IoRefresh size={15} />
-                            <span>Rotar</span>
+                            <IoRefresh size={15} /><span>Rotar</span>
                         </button>
                         <button className="ciu-reset-btn" onClick={reset} title="Restablecer">
                             Restablecer
@@ -417,7 +351,6 @@ function CropModal({ src, initialState, onApply, onCancel }) {
                         </button>
                     </div>
                 </div>
-
                 <div ref={containerRef} className="ciu-canvas-wrap">
                     {!imgLoaded && (
                         <div className="ciu-loading-overlay">
@@ -436,22 +369,16 @@ function CropModal({ src, initialState, onApply, onCancel }) {
                         onTouchEnd={onTouchEnd}
                     />
                 </div>
-
                 <div className="ciu-hints">
                     <span className="ciu-hint-pill">✦ Arrastra dentro del recorte para moverlo</span>
                     <span className="ciu-hint-pill">✦ Arrastra los puntos blancos para ajustar el tamaño</span>
                 </div>
-
                 <div className="ciu-modal-footer">
                     <div className="ciu-footer-actions" style={{ marginLeft: "auto" }}>
                         <button className="ciu-cancel-btn" onClick={onCancel} disabled={applying}>
                             Cancelar
                         </button>
-                        <button
-                            className="ciu-apply-btn"
-                            onClick={handleApply}
-                            disabled={applying}
-                        >
+                        <button className="ciu-apply-btn" onClick={handleApply} disabled={applying}>
                             {applying
                                 ? <><span className="ciu-inline-spinner" />Procesando…</>
                                 : <><IoCheckmarkOutline size={15} />Aplicar recorte</>
@@ -460,35 +387,23 @@ function CropModal({ src, initialState, onApply, onCancel }) {
                     </div>
                 </div>
             </div>
-        </div>
+        </div>,
+        document.body
     );
 }
 
 /* ════════════════════════════════════════════════════════
-   CONTENT IMAGE UPLOAD — componente público
+   CONTENT IMAGE UPLOAD
+   — recibe onRequestDeleteImagen del padre (SeccionEditorPanel)
+   — ya NO maneja su propio modal ni su propio ModalConfirmarEliminar
 ════════════════════════════════════════════════════════ */
-export function ContentImageUpload({ con, onUpdate }) {
+export function ContentImageUpload({ con, onUpdate, onRequestDeleteImagen }) {
     const inputRef = useRef();
     const [drag, setDrag] = useState(false);
     const [showCrop, setShowCrop] = useState(false);
 
-    /* ─────────────────────────────────────────────────────
-       LÓGICA DE VISIBILIDAD — tres escenarios posibles:
-
-       1. imagen_preview + imagen_url  → imagen recién subida (File en memoria)
-       2. imagen_cropped_preview (base64/url) → restaurada del borrador O ya recortada
-       3. imagen_url sola               → imagen del servidor (modo edición)
-
-       hasSrc = true cuando hay CUALQUIER fuente de imagen válida.
-       hasCropped = true cuando hay resultado de recorte guardado.
-       cropSrc = fuente para el modal de recorte (siempre la original si existe,
-                 si no la cropped sirve como fallback para re-recortar).
-    ───────────────────────────────────────────────────── */
     const hasSrc = !!(con.imagen_preview || con.imagen_url || con.imagen_cropped_preview);
     const hasCropped = !!(con.imagen_cropped_preview);
-
-    // Para el modal de recorte usamos la imagen original si existe,
-    // si solo hay cropped (restaurada del borrador) usamos esa como fuente.
     const cropSrc = con.imagen_preview || con.imagen_url || con.imagen_cropped_preview || null;
 
     const processFile = (file) => {
@@ -513,23 +428,10 @@ export function ContentImageUpload({ con, onUpdate }) {
         setShowCrop(false);
     };
 
-    const handleDelete = () => {
-        onUpdate({
-            imagen_file: null,
-            imagen_preview: null,
-            imagen_url: "",
-            imagen_crop: null,
-            imagen_cropped_preview: null,
-            imagen_cropped_file: null,
-        });
-        setShowCrop(false);
-    };
-
     return (
         <>
             <div className="ciu-root">
                 {!hasSrc ? (
-                    /* ── Zona de drop (sin imagen) ── */
                     <div
                         className={`ciu-drop-zone${drag ? " dragging" : ""}`}
                         onClick={() => inputRef.current.click()}
@@ -542,10 +444,8 @@ export function ContentImageUpload({ con, onUpdate }) {
                         <small>Arrastra o haz clic · Recorta libremente</small>
                     </div>
                 ) : (
-                    /* ── Tarjeta de preview (con imagen) ── */
                     <div className="ciu-preview-card">
                         {hasCropped ? (
-                            /* Imagen recortada o restaurada del borrador */
                             <div className="ciu-preview-img-wrap">
                                 <img
                                     src={con.imagen_cropped_preview}
@@ -557,7 +457,6 @@ export function ContentImageUpload({ con, onUpdate }) {
                                 </div>
                             </div>
                         ) : (
-                            /* Imagen subida pero sin recortar aún */
                             <div className="ciu-pending-notice">
                                 <IoCropOutline size={14} />
                                 <span>Imagen cargada — abre el editor para recortarla</span>
@@ -572,7 +471,15 @@ export function ContentImageUpload({ con, onUpdate }) {
                             <button className="ciu-action-btn" onClick={() => inputRef.current.click()}>
                                 <IoCloudUploadOutline size={13} /> Cambiar
                             </button>
-                            <button className="ciu-action-btn danger" onClick={handleDelete}>
+                            {/*
+                              ── Delega al padre: SeccionEditorPanel abre su propio
+                                 ModalConfirmarEliminar y al confirmar limpia el estado
+                                 del contenido + envía eliminar_imagen:true al backend ──
+                            */}
+                            <button
+                                className="ciu-action-btn danger"
+                                onClick={onRequestDeleteImagen}
+                            >
                                 <IoTrashOutline size={13} /> Eliminar
                             </button>
                         </div>
@@ -586,7 +493,6 @@ export function ContentImageUpload({ con, onUpdate }) {
                 />
             </div>
 
-            {/* Modal de recorte — solo si hay fuente válida */}
             {showCrop && cropSrc && (
                 <CropModal
                     src={cropSrc}
@@ -595,6 +501,7 @@ export function ContentImageUpload({ con, onUpdate }) {
                     onCancel={() => setShowCrop(false)}
                 />
             )}
+            {/* ── Sin ModalConfirmarEliminar aquí — vive en SeccionEditorPanel ── */}
         </>
     );
 }
