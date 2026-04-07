@@ -10,85 +10,134 @@ export function useCursosE() {
 
     const [cursos, setCursos] = useState([]);
     const [misCursos, setMisCursos] = useState([]);
+    const [cursosArchivados, setCursosArchivados] = useState([]);
+    const [todasDimensiones, setTodasDimensiones] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [animado, setAnimado] = useState(false);
-    const [tab, setTab] = useState("recomendados"); // "recomendados" | "mis-cursos"
+    const [tab, setTab] = useState("recomendados");
     const [busqueda, setBusqueda] = useState("");
     const [filtroVark, setFiltroVark] = useState("todos");
     const [perfilVark, setPerfilVark] = useState("");
+    const [filtroDim, setFiltroDim] = useState("");
+    const [filtroEstadoArch, setFiltroEstadoArch] = useState("todos");
+    const [ordenArch, setOrdenArch] = useState("reciente");
 
     useEffect(() => {
         cargarDatos();
     }, []);
 
-    {/*const cargarDatos = async () => {
-        setCargando(true);
-        try {
-            // Obtener perfil VARK del usuario
-            const { data: perfilData } = await api.get("/estilosaprendizaje/resultado-guardado");
-            const perfil = perfilData?.perfil_dominante || "VARK";
-            setPerfilVark(perfil);
-
-            // Cargar cursos recomendados
-            const { data: recData } = await api.get(`/cursos/recomendados/por-dimension?perfil=${perfil}`);
-            setCursos(recData.cursos || []);
-
-            // Cargar mis cursos inscritos
-            const { data: misData } = await api.get("/cursos/inscripciones/mis-cursos");
-            setMisCursos(misData.cursos || []);
-        } catch {
-            setCursos([]);
-            setMisCursos([]);
-        } finally {
-            setCargando(false);
-            setTimeout(() => setAnimado(true), 80);
-        }
-    */};
-
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            // resultado-guardado ya trae perfil + cursos recomendados por el SE
-            const { data: perfilData } = await api.get("/estilosaprendizaje/resultado-guardado");
+            // ── 1. Perfil VARK + todas las dimensiones de BD ────────
+            const [
+                { data: perfilData },
+                { data: misData },
+                { data: dimsData },
+            ] = await Promise.all([
+                api.get("/estilosaprendizaje/resultado-guardado"),
+                api.get("/cursos/inscripciones/mis-cursos"),
+                api.get("/cursos/dimensiones"),
+            ]);
+
             const perfil = perfilData?.perfil_dominante || "VARK";
             setPerfilVark(perfil);
 
-            // ← usar los cursos que el SE ya recomendó, no llamar a otro endpoint
-            setCursos(perfilData.cursos_recomendados || []);
+            // Guardar TODAS las dimensiones de la BD
+            setTodasDimensiones(dimsData.dimensiones || []);
 
-            // Cargar mis cursos inscritos
-            const { data: misData } = await api.get("/cursos/inscripciones/mis-cursos");
+            // Cursos VARK recomendados
+            const cursosVark = (perfilData.cursos_recomendados || []).map(c => ({
+                ...c,
+                prioridad: c.perfil_vark === perfil ? 0 : 1,
+            }));
+
+            // ── 2. Cursos por dimensión (desde último resultado ME) ──
+            let cursosDimension = [];
+            try {
+                const { data: historialData } = await api.get("/metodosestudio/historial");
+                const historial = historialData.historial || [];
+
+                if (historial.length > 0) {
+                    const { data: resultadoME } = await api.get(
+                        `/metodosestudio/resultado/${historial[0].id_intento}`
+                    );
+                    const idsVark = new Set(cursosVark.map(c => c.id_curso));
+                    cursosDimension = (resultadoME.cursos_recomendados || [])
+                        .filter(c => !idsVark.has(c.id_curso))
+                        .map(c => ({ ...c, prioridad: c.prioridad ?? 1 }));
+                }
+            } catch (e) {
+                console.info("Sin historial de métodos de estudio:", e?.response?.status);
+            }
+
+            // ── 3. Combinar sin duplicados ───────────────────────────
+            setCursos([...cursosVark, ...cursosDimension]);
             setMisCursos(misData.cursos || []);
-        } catch {
+            setCursosArchivados(misData.archivados || []);
+
+        } catch (e) {
+            console.error("Error al cargar datos:", e);
             setCursos([]);
             setMisCursos([]);
+            setCursosArchivados([]);
+            setTodasDimensiones([]);
         } finally {
             setCargando(false);
             setTimeout(() => setAnimado(true), 80);
         }
     };
 
-    // IDs de cursos ya inscritos
+    const desarchivar = async (id_curso) => {
+        try {
+            await api.post(`/cursos/inscripciones/${id_curso}/desarchivar`);
+            await cargarDatos();
+        } catch (e) {
+            console.error("Error al desarchivar", e);
+        }
+    };
+
     const inscritosIds = useMemo(
         () => new Set(misCursos.map(c => c.id_curso)),
         [misCursos]
     );
 
-    // Cursos filtrados
     const cursosFiltrados = useMemo(() => {
-        const lista = tab === "recomendados" ? cursos : misCursos;
+        let lista;
+
+        if (tab === "recomendados") {
+            lista = cursos;
+        } else if (tab === "mis-cursos") {
+            lista = misCursos;
+        } else {
+            lista = [...cursosArchivados];
+            if (filtroDim) lista = lista.filter(c => c.nombre_dimension === filtroDim);
+            if (filtroEstadoArch === "progreso") lista = lista.filter(c => (c.contenidos_vistos || 0) > 0 && !c.completado);
+            if (filtroEstadoArch === "sin") lista = lista.filter(c => (c.contenidos_vistos || 0) === 0);
+            if (filtroEstadoArch === "completado") lista = lista.filter(c => !!c.completado);
+            if (ordenArch === "mayor") lista.sort((a, b) => {
+                const pctA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
+                const pctB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
+                return pctB - pctA;
+            });
+            if (ordenArch === "menor") lista.sort((a, b) => {
+                const pctA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
+                const pctB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
+                return pctA - pctB;
+            });
+        }
+
         return lista.filter(c => {
             const matchBusqueda = busqueda === "" ||
                 c.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
                 c.nombre_tutor?.toLowerCase().includes(busqueda.toLowerCase()) ||
                 c.nombre_dimension?.toLowerCase().includes(busqueda.toLowerCase());
-            const matchVark = filtroVark === "todos" ||
-                c.perfil_vark?.includes(filtroVark);
-            return matchBusqueda && matchVark;
+            const matchVark = filtroVark === "todos" || c.perfil_vark?.includes(filtroVark);
+            const matchDim = !filtroDim || c.nombre_dimension === filtroDim;
+            return matchBusqueda && matchVark && (tab !== "recomendados" && tab !== "mis-cursos" ? true : matchDim);
         });
-    }, [tab, cursos, misCursos, busqueda, filtroVark]);
+    }, [tab, cursos, misCursos, cursosArchivados, busqueda, filtroVark, filtroDim, filtroEstadoArch, ordenArch]);
 
-    // Letras del perfil para mostrar en header
     const letrasVark = perfilVark
         ? perfilVark.split("").filter(l => ["V", "A", "R", "K"].includes(l))
         : [];
@@ -104,6 +153,8 @@ export function useCursosE() {
     return {
         cursos,
         misCursos,
+        cursosArchivados,
+        todasDimensiones,
         cargando,
         animado,
         tab,
@@ -117,6 +168,13 @@ export function useCursosE() {
         nombrePerfil,
         cursosFiltrados,
         inscritosIds,
+        filtroDim,
+        setFiltroDim,
+        filtroEstadoArch,
+        setFiltroEstadoArch,
+        ordenArch,
+        setOrdenArch,
+        desarchivar,
         irADetalle,
         recargar: cargarDatos,
     };
