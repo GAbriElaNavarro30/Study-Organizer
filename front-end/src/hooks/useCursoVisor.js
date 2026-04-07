@@ -9,14 +9,12 @@ export function useCursoVisor() {
     const navigate = useNavigate();
 
     const [curso, setCurso] = useState(null);
+    const [soloLectura, setSoloLectura] = useState(false); // ← nuevo: true si el curso está archivado
 
     // contenidosVistosIniciales: los que ya venían vistos del servidor al cargar.
-    // Solo se usan para saber si mostrar el badge "Ya viste este contenido".
-    // NO se usan para el cálculo del progreso de la sesión actual.
     const [contenidosVistosIniciales, setContenidosVistosIniciales] = useState(new Set());
 
     // contenidosVistos: los marcados como vistos EN ESTA SESIÓN.
-    // Se agregan al avanzar y se quitan al retroceder con "Anterior".
     const [contenidosVistos, setContenidosVistos] = useState(new Set());
 
     const [cargando, setCargando] = useState(true);
@@ -55,12 +53,13 @@ export function useCursoVisor() {
 
             setCurso(data.curso);
 
+            // ── Modo solo lectura si el curso está archivado ──────
+            if (data.curso?.archivado) {
+                setSoloLectura(true);
+            }
+
             const vistosDelServidor = new Set(data.progreso?.contenidos_vistos || []);
-
-            // Guardamos los vistos del servidor solo para el badge informativo
             setContenidosVistosIniciales(vistosDelServidor);
-
-            // La sesión actual arranca vacía — el progreso se construye conforme avanza
             setContenidosVistos(new Set());
 
             // Ir al primer contenido no visto
@@ -87,9 +86,8 @@ export function useCursoVisor() {
         }
     };
 
-    // ── Progreso calculado 100% en el frontend ──
-    // Cuenta solo los contenidos vistos en esta sesión.
-    // Al retroceder con "Anterior" se quitan del Set y el % baja al instante.
+    // ── Progreso calculado en frontend ──
+    // En modo soloLectura no se acumula progreso real.
     const progreso = useMemo(() => {
         if (!curso?.secciones) {
             return { vistos: 0, total: 0, porcentaje: 0, completado: false };
@@ -114,23 +112,27 @@ export function useCursoVisor() {
     const preguntasActuales = seccionActual?.preguntas || [];
 
     // ── Marcar visto ──
-    // Agrega al Set de sesión y persiste en back-end en segundo plano.
+    // En modo soloLectura solo actualiza el estado local; NO persiste en backend.
     const marcarVisto = useCallback((id_contenido) => {
         if (!id_contenido || contenidosVistos.has(id_contenido)) return;
 
         setContenidosVistos(prev => new Set([...prev, id_contenido]));
 
-        api.post(`/cursos/progreso/${id_contenido}`, { id_curso: id })
-            .catch(() => { /* silencioso */ });
-
-    }, [contenidosVistos, id]);
+        // Solo persistir si el curso NO está archivado
+        if (!soloLectura) {
+            api.post(`/cursos/progreso/${id_contenido}`, { id_curso: id })
+                .catch(() => { /* silencioso */ });
+        }
+    }, [contenidosVistos, id, soloLectura]);
 
     // ── Seleccionar respuesta ──
     const seleccionarRespuesta = (id_test, id_opcion) => {
+        if (soloLectura) return; // ignorar en solo lectura
         setRespuestas(prev => ({ ...prev, [id_test]: id_opcion }));
     };
 
-    // ── Enviar test — calcula resultado local y persiste en BD ──
+    // ── Enviar test ──
+    // En modo soloLectura no se persiste en BD.
     const enviarTest = async () => {
         let correctas = 0;
         for (const pregunta of preguntasActuales) {
@@ -142,13 +144,16 @@ export function useCursoVisor() {
 
         setResultadoTest({ correctas, total: preguntasActuales.length });
 
-        api.post("/cursos/test/respuestas", {
-            id_curso: id,
-            respuestas: Object.entries(respuestas).map(([id_test, id_opcion]) => ({
-                id_test: Number(id_test),
-                id_opcion: Number(id_opcion),
-            })),
-        }).catch(() => { /* silencioso */ });
+        // Solo persistir si el curso NO está archivado
+        if (!soloLectura) {
+            api.post("/cursos/test/respuestas", {
+                id_curso: id,
+                respuestas: Object.entries(respuestas).map(([id_test, id_opcion]) => ({
+                    id_test: Number(id_test),
+                    id_opcion: Number(id_opcion),
+                })),
+            }).catch(() => { /* silencioso */ });
+        }
     };
 
     const reiniciarTest = () => {
@@ -167,10 +172,7 @@ export function useCursoVisor() {
         }
     };
 
-    // ── Ir atrás: quita el contenido actual del Set de vistos ──
-    // Así el porcentaje baja correctamente al retroceder.
     const irAAnterior = () => {
-        // Quitar el contenido actual de vistos antes de moverse
         if (contenidoActual?.id_contenido) {
             setContenidosVistos(prev => {
                 const next = new Set(prev);
@@ -202,8 +204,9 @@ export function useCursoVisor() {
     return {
         curso,
         progreso,
+        soloLectura,               // ← expuesto
         contenidosVistos,
-        contenidosVistosIniciales,  // ← para el badge "Ya viste este contenido"
+        contenidosVistosIniciales,
         cargando,
         animado,
         seccionIdx,

@@ -894,10 +894,32 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                                     )
                                 ))}
                             </div>
-                            <button className="btn-add-secondary"
-                                onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
-                                <IoAddOutline size={13} /> Nueva pregunta
-                            </button>
+
+                            {/* ── Botón Nueva pregunta: bloqueado si el cuestionario ya existe en BD con inscritos ── */}
+                            {(() => {
+                                const tieneEnBD = sec.preguntas.some((p) => p.id_test);
+                                const bloqueado = tieneInscritos && tieneEnBD;
+
+                                if (bloqueado) return (
+                                    <div style={{
+                                        display: "flex", alignItems: "center", gap: 6,
+                                        fontSize: 12, color: "#64748B",
+                                        background: "#F8FAFC", border: "1px solid #E2E8F0",
+                                        borderRadius: 8, padding: "8px 12px",
+                                        alignSelf: "flex-start",
+                                    }}>
+                                        <IoLockClosedOutline size={13} />
+                                        No se pueden agregar preguntas a un cuestionario con estudiantes inscritos
+                                    </div>
+                                );
+
+                                return (
+                                    <button className="btn-add-secondary"
+                                        onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
+                                        <IoAddOutline size={13} /> Nueva pregunta
+                                    </button>
+                                );
+                            })()}
                         </div>
                     )}
                 </div>

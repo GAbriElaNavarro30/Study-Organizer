@@ -10,6 +10,7 @@ export class Curso {
         perfil_vark = null,
         es_publicado = false,
         archivado = false,
+        era_publicado = false,
         id_usuario,
         id_dimension = null,
     }) {
@@ -19,13 +20,14 @@ export class Curso {
         this.perfil_vark = perfil_vark;
         this.es_publicado = es_publicado;
         this.archivado = archivado;
+        this.era_publicado = era_publicado,
         this.id_usuario = id_usuario;
         this.id_dimension = id_dimension;
     }
 
     async save() {
         return await db.query(
-            `INSERT INTO Curso (titulo, descripcion, foto, perfil_vark, es_publicado, archivado, id_usuario, id_dimension)
+            `INSERT INTO Curso (titulo, descripcion, foto, perfil_vark, es_publicado, archivado, era_publicado, id_usuario, id_dimension)
              VALUES (?, ?, ?, ?, ?, ?, ?, ?)`,
             [
                 this.titulo,
@@ -33,6 +35,7 @@ export class Curso {
                 this.foto,
                 this.perfil_vark,
                 this.es_publicado,
+                this.era_publicado,
                 this.archivado,
                 this.id_usuario,
                 this.id_dimension,
@@ -50,6 +53,7 @@ export class Curso {
                 c.perfil_vark,
                 c.es_publicado,
                 c.archivado,
+                c.era_publicado,
                 c.fecha_creacion,
                 c.fecha_actualizacion,
                 c.id_usuario,

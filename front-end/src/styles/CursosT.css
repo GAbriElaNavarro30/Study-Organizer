@@ -406,9 +406,7 @@
     box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
 }
 
-.curso-card--archivado {
-    opacity: 0.65;
-}
+
 
 /* ── Portada ─────────────────────────────────────────────── */
 .curso-card__cover {
@@ -725,9 +723,7 @@
     background: #F7FAFF;
 }
 
-.table-row--archivado {
-    opacity: 0.65;
-}
+
 
 .td {
     padding: 13px 16px;

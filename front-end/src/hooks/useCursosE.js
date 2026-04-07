@@ -29,7 +29,7 @@ export function useCursosE() {
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            // ── 1. Perfil VARK + todas las dimensiones de BD ────────
+            // ── 1. Perfil VARK + mis cursos + todas las dimensiones de BD ──
             const [
                 { data: perfilData },
                 { data: misData },
@@ -74,7 +74,15 @@ export function useCursosE() {
             // ── 3. Combinar sin duplicados ───────────────────────────
             setCursos([...cursosVark, ...cursosDimension]);
             setMisCursos(misData.cursos || []);
-            setCursosArchivados(misData.archivados || []);
+
+            // ── 4. Archivados: los del tutor (c.archivado=1) vienen en
+            //       misData.archivados. Marcamos archivado_por_tutor=true
+            //       porque el estudiante no puede revertirlos por sí solo.
+            const archivados = (misData.archivados || []).map(c => ({
+                ...c,
+                archivado_por_tutor: Boolean(c.archivado),
+            }));
+            setCursosArchivados(archivados);
 
         } catch (e) {
             console.error("Error al cargar datos:", e);
@@ -88,6 +96,7 @@ export function useCursosE() {
         }
     };
 
+    // Solo se puede desarchivar si el tutor NO lo archivó
     const desarchivar = async (id_curso) => {
         try {
             await api.post(`/cursos/inscripciones/${id_curso}/desarchivar`);
@@ -110,31 +119,37 @@ export function useCursosE() {
         } else if (tab === "mis-cursos") {
             lista = misCursos;
         } else {
+            // tab === "archivados"
             lista = [...cursosArchivados];
             if (filtroDim) lista = lista.filter(c => c.nombre_dimension === filtroDim);
-            if (filtroEstadoArch === "progreso") lista = lista.filter(c => (c.contenidos_vistos || 0) > 0 && !c.completado);
-            if (filtroEstadoArch === "sin") lista = lista.filter(c => (c.contenidos_vistos || 0) === 0);
-            if (filtroEstadoArch === "completado") lista = lista.filter(c => !!c.completado);
+            if (filtroEstadoArch === "progreso")
+                lista = lista.filter(c => (c.contenidos_vistos || 0) > 0 && !c.completado);
+            if (filtroEstadoArch === "sin")
+                lista = lista.filter(c => (c.contenidos_vistos || 0) === 0);
+            if (filtroEstadoArch === "completado")
+                lista = lista.filter(c => !!c.completado);
             if (ordenArch === "mayor") lista.sort((a, b) => {
-                const pctA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
-                const pctB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
-                return pctB - pctA;
+                const pA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
+                const pB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
+                return pB - pA;
             });
             if (ordenArch === "menor") lista.sort((a, b) => {
-                const pctA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
-                const pctB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
-                return pctA - pctB;
+                const pA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
+                const pB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
+                return pA - pB;
             });
         }
 
         return lista.filter(c => {
-            const matchBusqueda = busqueda === "" ||
+            const matchBusqueda =
+                busqueda === "" ||
                 c.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
                 c.nombre_tutor?.toLowerCase().includes(busqueda.toLowerCase()) ||
                 c.nombre_dimension?.toLowerCase().includes(busqueda.toLowerCase());
             const matchVark = filtroVark === "todos" || c.perfil_vark?.includes(filtroVark);
             const matchDim = !filtroDim || c.nombre_dimension === filtroDim;
-            return matchBusqueda && matchVark && (tab !== "recomendados" && tab !== "mis-cursos" ? true : matchDim);
+            // En recomendados y mis-cursos aplicamos matchDim; en archivados ya filtramos arriba
+            return matchBusqueda && matchVark && (tab === "archivados" ? true : matchDim);
         });
     }, [tab, cursos, misCursos, cursosArchivados, busqueda, filtroVark, filtroDim, filtroEstadoArch, ordenArch]);
 

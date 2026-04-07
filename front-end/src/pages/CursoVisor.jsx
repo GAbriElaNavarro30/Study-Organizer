@@ -7,6 +7,7 @@ import {
     IoHomeOutline, IoRefreshOutline,
     IoHelpCircleOutline, IoCheckmarkDoneOutline,
     IoReloadOutline, IoLayersOutline, IoSparkles,
+    IoArchiveOutline,
 } from "react-icons/io5";
 import "../styles/cursoVisor.css";
 import { useCursoVisor } from "../hooks/useCursoVisor.js";
@@ -26,20 +27,90 @@ function LoadingState() {
     );
 }
 
-/* ── Cuestionario — mismo estilo que PreguntaVisor del tutor ── */
-function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnviar, onReiniciar }) {
+/* ── Banner: curso archivado ── */
+function BannerArchivado({ titulo, onVolver }) {
+    return (
+        <div style={{
+            background: "#F5F3FF",
+            border: "1px solid #DDD6FE",
+            borderRadius: 14,
+            padding: "28px 24px",
+            display: "flex",
+            flexDirection: "column",
+            alignItems: "center",
+            gap: 12,
+            textAlign: "center",
+            marginTop: 24,
+        }}>
+            <div style={{
+                width: 52,
+                height: 52,
+                borderRadius: "50%",
+                background: "#EDE9FE",
+                display: "flex",
+                alignItems: "center",
+                justifyContent: "center",
+                color: "#7C3AED",
+            }}>
+                <IoArchiveOutline size={24} />
+            </div>
+            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: "#3730A3" }}>
+                Curso archivado
+            </h2>
+            <p style={{ margin: 0, fontSize: 13.5, color: "#6D28D9", lineHeight: 1.6, maxWidth: 340 }}>
+                <strong>{titulo}</strong> está en modo solo lectura. Puedes navegar el contenido y consultar tus resultados, pero no registrar nuevo progreso ni responder cuestionarios.
+            </p>
+            <button
+                onClick={onVolver}
+                style={{
+                    marginTop: 4,
+                    padding: "8px 18px",
+                    background: "#7C3AED",
+                    color: "#fff",
+                    border: "none",
+                    borderRadius: 9,
+                    fontSize: 13,
+                    fontWeight: 600,
+                    cursor: "pointer",
+                    fontFamily: "inherit",
+                    display: "flex",
+                    alignItems: "center",
+                    gap: 6,
+                }}
+            >
+                <IoArrowBackOutline size={14} /> Volver al catálogo
+            </button>
+        </div>
+    );
+}
+
+/* ── Cuestionario ── */
+function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnviar, onReiniciar, soloLectura }) {
     if (!preguntas || preguntas.length === 0) return null;
     const todasRespondidas = preguntas.every(p => respuestas[p.id_test] !== undefined);
 
     return (
-        <div style={{ background: "#F0F9FF", border: "1px solid #BAE6FD", borderRadius: 12, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
-            {/* Header cuestionario */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: "#0284C7", paddingBottom: 10, borderBottom: "1px solid #BAE6FD" }}>
+        <div style={{ background: soloLectura ? "#F5F3FF" : "#F0F9FF", border: `1px solid ${soloLectura ? "#DDD6FE" : "#BAE6FD"}`, borderRadius: 12, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
+            {/* Header */}
+            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: soloLectura ? "#7C3AED" : "#0284C7", paddingBottom: 10, borderBottom: `1px solid ${soloLectura ? "#DDD6FE" : "#BAE6FD"}` }}>
                 <IoHelpCircleOutline size={13} /> Cuestionario de la sección
-                <span style={{ marginLeft: "auto", fontSize: 11, background: "#E0F2FE", color: "#0284C7", padding: "2px 8px", borderRadius: 20, fontWeight: 600, textTransform: "none", letterSpacing: 0 }}>
+                <span style={{ marginLeft: "auto", fontSize: 11, background: soloLectura ? "#EDE9FE" : "#E0F2FE", color: soloLectura ? "#7C3AED" : "#0284C7", padding: "2px 8px", borderRadius: 20, fontWeight: 600, textTransform: "none", letterSpacing: 0 }}>
                     {preguntas.length} pregunta{preguntas.length !== 1 ? "s" : ""}
                 </span>
+                {soloLectura && (
+                    <span style={{ fontSize: 10, background: "#EDE9FE", color: "#7C3AED", padding: "2px 8px", borderRadius: 20, fontWeight: 600, textTransform: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                        <IoArchiveOutline size={10} /> Solo lectura
+                    </span>
+                )}
             </div>
+
+            {/* Aviso si es solo lectura */}
+            {soloLectura && (
+                <div style={{ background: "#EDE9FE", borderRadius: 8, padding: "10px 14px", fontSize: 12.5, color: "#5B21B6", display: "flex", alignItems: "center", gap: 8 }}>
+                    <IoArchiveOutline size={14} />
+                    Este cuestionario no puede responderse porque el curso está archivado.
+                </div>
+            )}
 
             {/* Resultado */}
             {resultadoTest && (
@@ -51,9 +122,11 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
                             <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>{resultadoTest.correctas === resultadoTest.total ? "¡Perfecto! Respondiste todo correctamente." : "Puedes intentarlo de nuevo."}</p>
                         </div>
                     </div>
-                    <button onClick={onReiniciar} style={{ display: "flex", alignItems: "center", gap: 6, background: "white", border: "1px solid #E2E8F0", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#64748B", fontFamily: "'Inter',sans-serif" }}>
-                        <IoReloadOutline size={13} /> Reintentar
-                    </button>
+                    {!soloLectura && (
+                        <button onClick={onReiniciar} style={{ display: "flex", alignItems: "center", gap: 6, background: "white", border: "1px solid #E2E8F0", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#64748B", fontFamily: "'Inter',sans-serif" }}>
+                            <IoReloadOutline size={13} /> Reintentar
+                        </button>
+                    )}
                 </div>
             )}
 
@@ -65,7 +138,7 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
                     return (
                         <div key={pregunta.id_test}>
                             <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A", marginBottom: 10, lineHeight: 1.5 }}>
-                                <span style={{ color: "#0284C7", marginRight: 6 }}>{pi + 1}.</span>{pregunta.texto_pregunta}
+                                <span style={{ color: soloLectura ? "#7C3AED" : "#0284C7", marginRight: 6 }}>{pi + 1}.</span>{pregunta.texto_pregunta}
                             </p>
                             <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
                                 {pregunta.opciones?.map(opcion => {
@@ -77,8 +150,12 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
                                         bg = "#EEF2FF"; border = "1.5px solid #6366F1"; color = "#3730A3";
                                     }
                                     return (
-                                        <button key={opcion.id_opcion} disabled={respondida} onClick={() => onSeleccionar(pregunta.id_test, opcion.id_opcion)}
-                                            style={{ background: bg, border, color, borderRadius: 8, padding: "10px 14px", textAlign: "left", cursor: respondida ? "default" : "pointer", fontSize: 13, fontWeight: 500, transition: "all .15s", width: "100%", fontFamily: "'Inter',sans-serif" }}>
+                                        <button
+                                            key={opcion.id_opcion}
+                                            disabled={respondida || soloLectura}
+                                            onClick={() => !respondida && !soloLectura && onSeleccionar(pregunta.id_test, opcion.id_opcion)}
+                                            style={{ background: bg, border, color, borderRadius: 8, padding: "10px 14px", textAlign: "left", cursor: (respondida || soloLectura) ? "default" : "pointer", fontSize: 13, fontWeight: 500, transition: "all .15s", width: "100%", fontFamily: "'Inter',sans-serif", opacity: soloLectura ? 0.7 : 1 }}
+                                        >
                                             {opcion.texto_opcion}
                                         </button>
                                     );
@@ -89,9 +166,12 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
                 })}
             </div>
 
-            {!resultadoTest && (
-                <button onClick={onEnviar} disabled={!todasRespondidas}
-                    style={{ alignSelf: "flex-start", padding: "9px 20px", background: todasRespondidas ? "#6366F1" : "#CBD5E1", color: "white", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: todasRespondidas ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Inter',sans-serif" }}>
+            {!resultadoTest && !soloLectura && (
+                <button
+                    onClick={onEnviar}
+                    disabled={!todasRespondidas}
+                    style={{ alignSelf: "flex-start", padding: "9px 20px", background: todasRespondidas ? "#6366F1" : "#CBD5E1", color: "white", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: todasRespondidas ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Inter',sans-serif" }}
+                >
                     <IoCheckmarkDoneOutline size={15} /> Verificar respuestas
                 </button>
             )}
@@ -105,6 +185,7 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
 export function CursoVisor() {
     const {
         curso, progreso,
+        soloLectura,
         contenidosVistos, contenidosVistosIniciales,
         cargando, animado,
         seccionIdx, contenidoIdx,
@@ -118,11 +199,12 @@ export function CursoVisor() {
     } = useCursoVisor();
 
     useEffect(() => {
-        if (contenidoActual?.id_contenido) {
+        // Solo marcar visto si NO es solo lectura
+        if (contenidoActual?.id_contenido && !soloLectura) {
             const timer = setTimeout(() => marcarVisto(contenidoActual.id_contenido), 3000);
             return () => clearTimeout(timer);
         }
-    }, [contenidoActual?.id_contenido]);
+    }, [contenidoActual?.id_contenido, soloLectura]);
 
     if (cargando) return <LoadingState />;
     if (!curso) return null;
@@ -131,7 +213,6 @@ export function CursoVisor() {
     const completado = progreso.completado;
     const secciones = curso.secciones || [];
 
-    // Índice plano para los dots de navegación
     const todosLosContenidos = secciones.flatMap((s, si) =>
         (s.contenidos || []).map((c, ci) => ({ si, ci, id: c.id_contenido }))
     );
@@ -140,30 +221,70 @@ export function CursoVisor() {
     return (
         <div className={`cv-app ${animado ? "cv-animated" : ""}`}>
 
-            {/* ── TOPBAR (= vct-topbar) ── */}
+            {/* ── TOPBAR ── */}
             <header className="cv-topbar">
                 <button className="cv-topbar-back"
                     onClick={() => navigate("/cursos-detalle", { state: { id_curso: curso.id_curso } })}>
                     <IoArrowBackOutline size={16} /> Volver
                 </button>
 
-                {/* Badge progreso — en lugar del badge "Vista previa del tutor" */}
                 <div className="cv-topbar-prog">
-                    <span className="cv-topbar-pct">{pct}% completado</span>
-                    <div className="cv-topbar-track">
-                        <div className="cv-topbar-fill" style={{ width: `${pct}%` }} />
-                    </div>
+                    {soloLectura ? (
+                        /* Badge de archivado en lugar de la barra de progreso */
+                        <span style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 6,
+                            padding: "4px 12px",
+                            background: "rgba(237,233,254,0.9)",
+                            color: "#7C3AED",
+                            borderRadius: 20,
+                            fontSize: 12,
+                            fontWeight: 600,
+                            backdropFilter: "blur(4px)",
+                        }}>
+                            <IoArchiveOutline size={13} /> Archivado — solo lectura
+                        </span>
+                    ) : (
+                        <>
+                            <span className="cv-topbar-pct">{pct}% completado</span>
+                            <div className="cv-topbar-track">
+                                <div className="cv-topbar-fill" style={{ width: `${pct}%` }} />
+                            </div>
+                        </>
+                    )}
                 </div>
             </header>
 
-            {/* ── MAIN (= vct-main) ── */}
+            {/* ── MAIN ── */}
             <main className="cv-main">
 
-                {/* ── GRID SIDEBAR + CONTENIDO (= vct-preview-root > vct-preview-layout) ── */}
+                {/* Banner archivado (visible solo en modo soloLectura, encima del grid) */}
+                {soloLectura && (
+                    <div style={{ padding: "0 0 8px" }}>
+                        <div style={{
+                            display: "inline-flex",
+                            alignItems: "center",
+                            gap: 8,
+                            padding: "8px 16px",
+                            background: "#EDE9FE",
+                            color: "#5B21B6",
+                            borderRadius: 10,
+                            fontSize: 13,
+                            fontWeight: 500,
+                            width: "100%",
+                            boxSizing: "border-box",
+                        }}>
+                            <IoArchiveOutline size={15} />
+                            Este curso está archivado. Puedes ver el contenido, pero no registrar progreso ni responder cuestionarios.
+                        </div>
+                    </div>
+                )}
+
                 <div className="cv-preview-root">
                     <div className="cv-preview-layout">
 
-                        {/* SIDEBAR (= vct-preview-sidebar) */}
+                        {/* SIDEBAR */}
                         <div className="cv-sidebar">
                             <div className="cv-sidebar-header">
                                 <IoLayersOutline size={11} />
@@ -215,42 +336,38 @@ export function CursoVisor() {
                             })}
                         </div>
 
-                        {/* CONTENIDO PRINCIPAL (= vct-preview-content) */}
+                        {/* CONTENIDO PRINCIPAL */}
                         <div className="cv-content-wrapper">
                             <div className="cv-content-area">
                                 {contenidoActual ? (
                                     <>
-                                        {/* Tag sección */}
                                         <div className="cv-content-tag">
                                             <IoDocumentTextOutline size={10} />
                                             {seccionActual?.titulo_seccion}
                                         </div>
 
-                                        {/* Título */}
                                         <div className="cv-content-titulo">
                                             {contenidoActual.titulo || `Contenido ${contenidoIdx + 1}`}
                                         </div>
 
-                                        {/* Badge "ya viste" */}
                                         {contenidosVistosIniciales.has(contenidoActual.id_contenido) &&
-                                            !contenidosVistos.has(contenidoActual.id_contenido) && (
-                                            <div className="cv-visto-badge">
-                                                <IoCheckmarkCircleOutline size={15} />
-                                                Ya viste este contenido anteriormente
-                                            </div>
-                                        )}
+                                            !contenidosVistos.has(contenidoActual.id_contenido) &&
+                                            !soloLectura && (
+                                                <div className="cv-visto-badge">
+                                                    <IoCheckmarkCircleOutline size={15} />
+                                                    Ya viste este contenido anteriormente
+                                                </div>
+                                            )}
 
-                                        {/* Imagen */}
                                         {contenidoActual.imagen_url && (
                                             <img src={contenidoActual.imagen_url} alt={contenidoActual.titulo} className="cv-content-imagen" />
                                         )}
 
-                                        {/* Texto */}
                                         {contenidoActual.contenido && (
                                             <div className="cv-content-texto">{contenidoActual.contenido}</div>
                                         )}
 
-                                        {/* Cuestionario */}
+                                        {/* Cuestionario — siempre visible, pero bloqueado en solo lectura */}
                                         <BloqueTest
                                             preguntas={preguntasActuales}
                                             respuestas={respuestas}
@@ -258,10 +375,11 @@ export function CursoVisor() {
                                             onSeleccionar={seleccionarRespuesta}
                                             onEnviar={enviarTest}
                                             onReiniciar={reiniciarTest}
+                                            soloLectura={soloLectura}
                                         />
 
-                                        {/* Banner completado */}
-                                        {completado && (
+                                        {/* Banner completado (solo si NO es solo lectura) */}
+                                        {completado && !soloLectura && (
                                             <div className="cv-completado-banner">
                                                 <IoTrophyOutline size={44} className="cv-completado-icon" />
                                                 <h2 className="cv-completado-titulo">¡Felicidades!</h2>
@@ -280,6 +398,14 @@ export function CursoVisor() {
                                                 </div>
                                             </div>
                                         )}
+
+                                        {/* Banner archivado al final del contenido */}
+                                        {soloLectura && (
+                                            <BannerArchivado
+                                                titulo={curso.titulo}
+                                                onVolver={() => navigate("/cursos")}
+                                            />
+                                        )}
                                     </>
                                 ) : (
                                     <div className="cv-no-content">
@@ -289,7 +415,7 @@ export function CursoVisor() {
                                 )}
                             </div>
 
-                            {/* ── NAV INFERIOR (= vct-preview-nav) ── */}
+                            {/* ── NAV INFERIOR ── */}
                             <div className="cv-nav-footer">
                                 <button className="cv-nav-btn" onClick={irAAnterior} disabled={!hayAnterior}>
                                     <IoChevronBackOutline size={14} /> Anterior
@@ -307,7 +433,23 @@ export function CursoVisor() {
                                     <span>Contenido {idxPlano + 1} de {todosLosContenidos.length}</span>
                                 </div>
 
-                                {haysSiguiente ? (
+                                {/* Botón derecho: nunca mostrar "Ver resultados" en solo lectura,
+                                    solo navegar o indicar que el curso está archivado */}
+                                {soloLectura ? (
+                                    haysSiguiente ? (
+                                        <button className="cv-nav-btn cv-nav-btn--next" onClick={irASiguiente}>
+                                            Siguiente <IoChevronForwardOutline size={14} />
+                                        </button>
+                                    ) : (
+                                        <button
+                                            className="cv-nav-btn"
+                                            style={{ background: "#EDE9FE", borderColor: "#C4B5FD", color: "#7C3AED" }}
+                                            onClick={() => navigate("/cursos")}
+                                        >
+                                            <IoArchiveOutline size={14} /> Ver catálogo
+                                        </button>
+                                    )
+                                ) : haysSiguiente ? (
                                     <button className="cv-nav-btn cv-nav-btn--next" onClick={irASiguiente}>
                                         Siguiente <IoChevronForwardOutline size={14} />
                                     </button>

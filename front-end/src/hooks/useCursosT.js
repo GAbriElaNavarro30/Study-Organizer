@@ -147,8 +147,16 @@ export function useCursosT() {
 
     const handleConfirmArchivar = async () => {
         try {
-            await api.patch(`/cursos/cursos/${modalArchivar.id_curso}/archivar`);
+            const { data } = await api.patch(`/cursos/cursos/${modalArchivar.id_curso}/archivar`);
             await fetchCursos();
+
+            // Opcional: avisar si se republicó automáticamente
+            if (!data.archivado && data.es_publicado) {
+                setAlert({
+                    title: "Curso desarchivado",
+                    message: `"${modalArchivar.titulo}" fue desarchivado y volvió a estar publicado.`,
+                });
+            }
         } catch (err) {
             console.error("Error al archivar:", err.response?.data);
         }

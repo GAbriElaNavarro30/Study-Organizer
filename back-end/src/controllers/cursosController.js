@@ -13,7 +13,7 @@ import { db } from "../config/db.js";
 import cloudinary from "../config/cloudinary.js";
 
 // ─────────────────────────────────────────────────────────────
-// Helper
+// Helpers
 // ─────────────────────────────────────────────────────────────
 
 const subirImagenCloudinary = (buffer, carpeta = "cursos") =>
@@ -28,17 +28,55 @@ const subirImagenCloudinary = (buffer, carpeta = "cursos") =>
         stream.end(buffer);
     });
 
-const cursoTieneInscritos = async (id_seccion) => {
-    const [[seccion]] = await db.query(
+/**
+ * Devuelve true si el curso con ese id está archivado.
+ * Se usa como guard en todas las operaciones de escritura.
+ */
+const cursoEstaArchivado = async (id_curso) => {
+    const [[row]] = await db.query(
+        "SELECT archivado FROM Curso WHERE id_curso = ?",
+        [id_curso]
+    );
+    return Boolean(row?.archivado);
+};
+
+/**
+ * Resuelve el id_curso a partir de una sección.
+ */
+const idCursoDesdeSEccion = async (id_seccion) => {
+    const [[row]] = await db.query(
         "SELECT id_curso FROM Seccion_Curso WHERE id_seccion = ?",
         [id_seccion]
     );
-    if (!seccion) return false;
-    const [[{ total }]] = await db.query(
-        "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
-        [seccion.id_curso]
+    return row?.id_curso ?? null;
+};
+
+/**
+ * Resuelve el id_curso a partir de un contenido.
+ */
+const idCursoDesdeContenido = async (id_contenido) => {
+    const [[row]] = await db.query(
+        `SELECT sc.id_curso
+         FROM Contenido c
+         JOIN Seccion_Curso sc ON c.id_seccion = sc.id_seccion
+         WHERE c.id_contenido = ?`,
+        [id_contenido]
     );
-    return total > 0;
+    return row?.id_curso ?? null;
+};
+
+/**
+ * Resuelve el id_curso a partir de una pregunta de test.
+ */
+const idCursoDesdePregunta = async (id_test) => {
+    const [[row]] = await db.query(
+        `SELECT sc.id_curso
+         FROM Pregunta_Test pt
+         JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+         WHERE pt.id_test = ?`,
+        [id_test]
+    );
+    return row?.id_curso ?? null;
 };
 
 // ─────────────────────────────────────────────────────────────
@@ -54,19 +92,8 @@ export const listarCursos = async (req, res) => {
                 c.perfil_vark, c.es_publicado, c.archivado,
                 c.fecha_creacion, c.fecha_actualizacion,
                 d.nombre_dimension,
-
-                (
-                    SELECT COUNT(*)
-                    FROM Seccion_Curso sc
-                    WHERE sc.id_curso = c.id_curso
-                ) AS total_secciones,
-
-                (
-                    SELECT COUNT(*)
-                    FROM Inscripcion i
-                    WHERE i.id_curso = c.id_curso
-                ) AS total_estudiantes
-
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+                (SELECT COUNT(*) FROM Inscripcion i WHERE i.id_curso = c.id_curso) AS total_estudiantes
              FROM Curso c
              LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
              WHERE c.id_usuario = ?
@@ -100,14 +127,13 @@ export const obtenerCurso = async (req, res) => {
             seccion.preguntas = todasPreguntas.filter(p => p.id_seccion === seccion.id_seccion);
         }
 
-        // ── Incluir total de estudiantes inscritos ──
         const [[{ total_estudiantes }]] = await db.query(
             "SELECT COUNT(*) AS total_estudiantes FROM Inscripcion WHERE id_curso = ?",
             [id]
         );
         curso.total_estudiantes = total_estudiantes;
-
         curso.secciones = secciones;
+
         res.json({ ok: true, curso });
     } catch (error) {
         console.error("obtenerCurso:", error);
@@ -118,7 +144,7 @@ export const obtenerCurso = async (req, res) => {
 export const crearCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const { titulo, descripcion, perfil_vark, id_dimension, eliminar_foto } = req.body;
+        const { titulo, descripcion, perfil_vark, id_dimension } = req.body;
 
         if (!titulo?.trim())
             return res.status(400).json({ ok: false, mensaje: "El título es obligatorio." });
@@ -168,6 +194,7 @@ export const actualizarCurso = async (req, res) => {
         if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
 
+
         if (titulo !== undefined && !titulo.trim())
             return res.status(400).json({ ok: false, mensaje: "El título no puede estar vacío." });
         if (titulo !== undefined && titulo.trim().length > 200)
@@ -195,10 +222,8 @@ export const actualizarCurso = async (req, res) => {
         if (id_dimension !== undefined) campos.id_dimension = id_dimension || null;
 
         if (req.file) {
-            // Subir nueva imagen
             campos.foto = await subirImagenCloudinary(req.file.buffer);
         } else if (eliminar_foto === "true" || eliminar_foto === true) {
-            // ── NUEVO: eliminar imagen existente
             campos.foto = null;
         }
 
@@ -222,6 +247,10 @@ export const togglePublicarCurso = async (req, res) => {
         if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
 
+        // ── BLOQUEO: no se puede publicar un curso archivado ──
+        if (curso.archivado)
+            return res.status(403).json({ ok: false, mensaje: "No puedes publicar un curso archivado. Desarchívalo primero." });
+
         const nuevo_estado = !curso.es_publicado;
         await Curso.update(id, { es_publicado: nuevo_estado });
         res.json({ ok: true, es_publicado: nuevo_estado });
@@ -240,11 +269,44 @@ export const eliminarCurso = async (req, res) => {
         if (!curso || curso.id_usuario !== id_usuario)
             return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
 
+        // Permitir eliminar aunque esté archivado (acción permitida para el tutor)
         await Curso.delete(id);
         res.json({ ok: true, mensaje: "Curso eliminado." });
     } catch (error) {
         console.error("eliminarCurso:", error);
         res.status(500).json({ ok: false, mensaje: "Error al eliminar el curso." });
+    }
+};
+
+export const archivarCurso = async (req, res) => {
+    try {
+        const { id } = req.params;
+        const id_usuario = req.usuario.id;
+
+        const curso = await Curso.getById(id);
+        if (!curso || curso.id_usuario !== id_usuario)
+            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
+
+        const nuevo_estado = !curso.archivado;
+        const campos = { archivado: nuevo_estado };
+
+        if (nuevo_estado) {
+            // Archivando: guardar si estaba publicado y despublicar
+            campos.era_publicado = curso.es_publicado ? 1 : 0;
+            campos.es_publicado = false;
+        } else {
+            // Desarchivando: restaurar publicación si era_publicado=1
+            if (curso.era_publicado) {
+                campos.es_publicado = true;
+            }
+            campos.era_publicado = 0; // limpiar el flag
+        }
+
+        await Curso.update(id, campos);
+        res.json({ ok: true, archivado: nuevo_estado, es_publicado: campos.es_publicado ?? curso.es_publicado });
+    } catch (error) {
+        console.error("archivarCurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al archivar el curso." });
     }
 };
 
@@ -254,7 +316,7 @@ export const eliminarCurso = async (req, res) => {
 
 export const crearSeccion = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_curso
         const id_usuario = req.usuario.id;
         const { titulo_seccion, descripcion_seccion, orden } = req.body;
 
@@ -289,8 +351,11 @@ export const crearSeccion = async (req, res) => {
 
 export const actualizarSeccion = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_seccion
         const { titulo_seccion, descripcion_seccion, orden } = req.body;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeSEccion(id);
 
         if (titulo_seccion !== undefined && !titulo_seccion.trim())
             return res.status(400).json({ ok: false, mensaje: "El título de la sección no puede estar vacío." });
@@ -314,6 +379,10 @@ export const actualizarSeccion = async (req, res) => {
 export const eliminarSeccion = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeSEccion(id);
+
         await SeccionCurso.delete(id);
         res.json({ ok: true, mensaje: "Sección eliminada." });
     } catch (error) {
@@ -328,8 +397,11 @@ export const eliminarSeccion = async (req, res) => {
 
 export const crearContenido = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_seccion
         const { titulo, contenido, orden } = req.body;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeSEccion(id);
 
         let ordenFinal = orden;
         if (!ordenFinal) {
@@ -359,8 +431,11 @@ export const crearContenido = async (req, res) => {
 
 export const actualizarContenido = async (req, res) => {
     try {
-        const { id } = req.params;
+        const { id } = req.params; // id_contenido
         const { titulo, contenido, orden, eliminar_imagen } = req.body;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeContenido(id);
 
         const campos = {};
         if (titulo !== undefined) campos.titulo = titulo.trim();
@@ -368,10 +443,8 @@ export const actualizarContenido = async (req, res) => {
         if (orden !== undefined) campos.orden = orden;
 
         if (req.file) {
-            // Subir nueva imagen
             campos.imagen_url = await subirImagenCloudinary(req.file.buffer, "cursos/contenidos");
         } else if (eliminar_imagen === "true" || eliminar_imagen === true) {
-            // ── NUEVO: eliminar imagen existente
             campos.imagen_url = null;
         }
 
@@ -389,6 +462,10 @@ export const actualizarContenido = async (req, res) => {
 export const eliminarContenido = async (req, res) => {
     try {
         const { id } = req.params;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeContenido(id);
+
         await Contenido.delete(id);
         res.json({ ok: true, mensaje: "Contenido eliminado." });
     } catch (error) {
@@ -404,10 +481,31 @@ export const eliminarContenido = async (req, res) => {
 export const crearPregunta = async (req, res) => {
     try {
         const { id } = req.params; // id_seccion
-
-
-
         const { texto_pregunta, opciones = [] } = req.body;
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeSEccion(id);
+
+        // ── NUEVO BLOQUEO ─────────────────────────────────────
+        // Si la sección ya tiene preguntas Y el curso tiene inscritos,
+        // no se permite agregar más preguntas al cuestionario existente.
+        if (id_curso) {
+            const [[{ preguntasExistentes }]] = await db.query(
+                "SELECT COUNT(*) AS preguntasExistentes FROM Pregunta_Test WHERE id_seccion = ?",
+                [id]
+            );
+            if (preguntasExistentes > 0) {
+                const [[{ total }]] = await db.query(
+                    "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
+                    [id_curso]
+                );
+                if (total > 0)
+                    return res.status(403).json({
+                        ok: false,
+                        mensaje: "No puedes agregar preguntas a un cuestionario existente si el curso ya tiene estudiantes inscritos.",
+                    });
+            }
+        }
 
         if (!texto_pregunta?.trim())
             return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta es obligatorio." });
@@ -442,17 +540,13 @@ export const actualizarPregunta = async (req, res) => {
     try {
         const { id } = req.params; // id_test
 
-        const [[fila]] = await db.query(
-            `SELECT sc.id_curso
-             FROM Pregunta_Test pt
-             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
-             WHERE pt.id_test = ?`,
-            [id]
-        );
-        if (fila) {
+        // ── BLOQUEO: archivado o con inscritos ────────────────
+        const id_curso = await idCursoDesdePregunta(id);
+
+        if (id_curso) {
             const [[{ total }]] = await db.query(
                 "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
-                [fila.id_curso]
+                [id_curso]
             );
             if (total > 0)
                 return res.status(403).json({
@@ -500,17 +594,13 @@ export const eliminarPregunta = async (req, res) => {
     try {
         const { id } = req.params; // id_test
 
-        const [[fila]] = await db.query(
-            `SELECT sc.id_curso
-             FROM Pregunta_Test pt
-             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
-             WHERE pt.id_test = ?`,
-            [id]
-        );
-        if (fila) {
+        // ── BLOQUEO: archivado o con inscritos ────────────────
+        const id_curso = await idCursoDesdePregunta(id);
+
+        if (id_curso) {
             const [[{ total }]] = await db.query(
                 "SELECT COUNT(*) AS total FROM Inscripcion WHERE id_curso = ?",
-                [fila.id_curso]
+                [id_curso]
             );
             if (total > 0)
                 return res.status(403).json({
@@ -524,6 +614,21 @@ export const eliminarPregunta = async (req, res) => {
     } catch (error) {
         console.error("eliminarPregunta:", error);
         res.status(500).json({ ok: false, mensaje: "Error al eliminar la pregunta." });
+    }
+};
+
+export const eliminarCuestionarioSeccion = async (req, res) => {
+    try {
+        const { id } = req.params; // id_seccion
+
+        // ── BLOQUEO ───────────────────────────────────────────
+        const id_curso = await idCursoDesdeSEccion(id);
+
+        await db.query("DELETE FROM Pregunta_Test WHERE id_seccion = ?", [id]);
+        res.json({ ok: true, mensaje: "Cuestionario eliminado." });
+    } catch (error) {
+        console.error("eliminarCuestionarioSeccion:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al eliminar el cuestionario." });
     }
 };
 
@@ -543,26 +648,9 @@ export const listarDimensiones = async (req, res) => {
     }
 };
 
-export const archivarCurso = async (req, res) => {
-    try {
-        const { id } = req.params;
-        const id_usuario = req.usuario.id;
-
-        const curso = await Curso.getById(id);
-        if (!curso || curso.id_usuario !== id_usuario)
-            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
-
-        const nuevo_estado = !curso.archivado;
-        const campos = { archivado: nuevo_estado };
-        if (nuevo_estado) campos.es_publicado = false;
-
-        await Curso.update(id, campos);
-        res.json({ ok: true, archivado: nuevo_estado });
-    } catch (error) {
-        console.error("archivarCurso:", error);
-        res.status(500).json({ ok: false, mensaje: "Error al archivar el curso." });
-    }
-};
+// ─────────────────────────────────────────────────────────────
+// CATÁLOGO ESTUDIANTE
+// ─────────────────────────────────────────────────────────────
 
 export const listarCursosRecomendados = async (req, res) => {
     try {
@@ -573,7 +661,6 @@ export const listarCursosRecomendados = async (req, res) => {
             return res.status(400).json({ ok: false, mensaje: "El perfil VARK es requerido." });
 
         const letras = perfil.toUpperCase().split("").filter(l => ["V", "A", "R", "K"].includes(l));
-
         if (letras.length === 0)
             return res.status(400).json({ ok: false, mensaje: "Perfil VARK inválido." });
 
@@ -655,11 +742,86 @@ export const listarCursosPorDimension = async (req, res) => {
     }
 };
 
+// ─────────────────────────────────────────────────────────────
+// INSCRIPCIONES + PROGRESO
+// ─────────────────────────────────────────────────────────────
+
+// DESPUÉS
 export const misCursos = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const cursos = await Inscripcion.getByUsuario(id_usuario);
-        res.json({ ok: true, cursos });
+
+        const [rows] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.archivado,
+                d.nombre_dimension,
+                CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+                i.fecha_inscripcion,
+                -- progreso del último intento
+                COALESCE(
+                    (SELECT COUNT(*) FROM Progreso p
+                     JOIN Intento_Curso it2 ON p.id_intento = it2.id_intento
+                     WHERE it2.id_inscripcion = i.id_inscripcion
+                       AND p.visto = 1
+                     ORDER BY it2.fecha_inicio DESC LIMIT 1),
+                    0
+                ) AS contenidos_vistos,
+                (SELECT COUNT(*) FROM Contenido co
+                 JOIN Seccion_Curso sc2 ON co.id_seccion = sc2.id_seccion
+                 WHERE sc2.id_curso = c.id_curso) AS total_contenidos,
+                COALESCE(
+                    (SELECT it3.completado FROM Intento_Curso it3
+                     WHERE it3.id_inscripcion = i.id_inscripcion
+                     ORDER BY it3.fecha_inicio DESC LIMIT 1),
+                    0
+                ) AS completado
+             FROM Inscripcion i
+             JOIN Curso c ON i.id_curso = c.id_curso
+             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+             WHERE i.id_usuario = ?
+               AND c.archivado = 0          -- ← activos para el estudiante
+             ORDER BY i.fecha_inscripcion DESC`,
+            [id_usuario]
+        );
+
+        // Cursos que el tutor archivó mientras el estudiante estaba inscrito
+        const [archivados] = await db.query(
+            `SELECT
+                c.id_curso, c.titulo, c.descripcion, c.foto,
+                c.perfil_vark, c.archivado,
+                d.nombre_dimension,
+                CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                i.fecha_inscripcion,
+                COALESCE(
+                    (SELECT COUNT(*) FROM Progreso p
+                     JOIN Intento_Curso it2 ON p.id_intento = it2.id_intento
+                     WHERE it2.id_inscripcion = i.id_inscripcion
+                       AND p.visto = 1),
+                    0
+                ) AS contenidos_vistos,
+                (SELECT COUNT(*) FROM Contenido co
+                 JOIN Seccion_Curso sc2 ON co.id_seccion = sc2.id_seccion
+                 WHERE sc2.id_curso = c.id_curso) AS total_contenidos,
+                COALESCE(
+                    (SELECT it3.completado FROM Intento_Curso it3
+                     WHERE it3.id_inscripcion = i.id_inscripcion
+                     ORDER BY it3.fecha_inicio DESC LIMIT 1),
+                    0
+                ) AS completado
+             FROM Inscripcion i
+             JOIN Curso c ON i.id_curso = c.id_curso
+             LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+             LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+             WHERE i.id_usuario = ?
+               AND c.archivado = 1          -- ← archivados por el tutor
+             ORDER BY i.fecha_inscripcion DESC`,
+            [id_usuario]
+        );
+
+        res.json({ ok: true, cursos: rows, archivados });
     } catch (error) {
         console.error("misCursos:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener tus cursos." });
@@ -791,17 +953,19 @@ export const iniciarIntento = async (req, res) => {
         const { id_curso } = req.body;
 
         const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
-        console.log(">>> inscripcion para intento:", inscripcion);
         if (!inscripcion)
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito en este curso." });
 
+        // ── BLOQUEO: no iniciar intento en curso archivado ────
+        const curso = await Curso.getById(id_curso);
+        if (curso?.archivado)
+            return res.status(403).json({ ok: false, mensaje: "Este curso está archivado y no puede realizarse." });
+
         const intentos = await IntentoCurso.getByInscripcion(inscripcion.id_inscripcion);
         const numero_intento = intentos.length + 1;
-        console.log(">>> numero_intento:", numero_intento);
 
         const intento = new IntentoCurso({ numero_intento, id_inscripcion: inscripcion.id_inscripcion });
         const [result] = await intento.save();
-        console.log(">>> intento creado:", result.insertId);
 
         res.status(201).json({ ok: true, id_intento: result.insertId, numero_intento });
     } catch (error) {
@@ -818,20 +982,21 @@ export const marcarContenidoVisto = async (req, res) => {
         const { id_curso } = req.body;
 
         const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
-        console.log(">>> inscripcion:", inscripcion);
         if (!inscripcion)
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
 
+        // ── BLOQUEO: no registrar progreso en curso archivado ─
+        const curso = await Curso.getById(id_curso);
+        if (curso?.archivado)
+            return res.status(403).json({ ok: false, mensaje: "Este curso está archivado." });
+
         const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
-        console.log(">>> intento:", intento);
         if (!intento)
             return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
 
         await Progreso.marcarVisto(intento.id_intento, id_contenido);
-        console.log(">>> visto marcado");
 
         const pct = await Progreso.getPorcentajeCompletado(intento.id_intento, id_curso);
-        console.log(">>> porcentaje:", pct);
 
         if (pct === 100 && !intento.completado)
             await IntentoCurso.completar(intento.id_intento);
@@ -854,6 +1019,11 @@ export const guardarRespuestasTest = async (req, res) => {
         const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
         if (!inscripcion)
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+
+        // ── BLOQUEO: no guardar respuestas en curso archivado ─
+        const curso = await Curso.getById(id_curso);
+        if (curso?.archivado)
+            return res.status(403).json({ ok: false, mensaje: "Este curso está archivado." });
 
         const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
         if (!intento)
@@ -893,21 +1063,6 @@ export const guardarRespuestasTest = async (req, res) => {
     }
 };
 
-// Agregar al final del bloque TEST:
-export const eliminarCuestionarioSeccion = async (req, res) => {
-    try {
-        const { id } = req.params; // id_seccion
-        await db.query(
-            "DELETE FROM Pregunta_Test WHERE id_seccion = ?",
-            [id]
-        );
-        res.json({ ok: true, mensaje: "Cuestionario eliminado." });
-    } catch (error) {
-        console.error("eliminarCuestionarioSeccion:", error);
-        res.status(500).json({ ok: false, mensaje: "Error al eliminar el cuestionario." });
-    }
-};
-
 export const obtenerResultadoCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -922,7 +1077,6 @@ export const obtenerResultadoCurso = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "No hay intento." });
 
         const resultado = await ResultadoCurso.getByIntento(intento.id_intento);
-
         res.json({ ok: true, resultado: resultado || null });
     } catch (error) {
         console.error("obtenerResultadoCurso:", error);
@@ -941,12 +1095,8 @@ export const listarEstudiantesCurso = async (req, res) => {
 
         const [rows] = await db.query(
             `SELECT
-                u.id_usuario,
-                u.nombre,
-                u.apellido,
-                u.correo_electronico,
-                u.telefono,
-                u.foto_perfil,
+                u.id_usuario, u.nombre, u.apellido,
+                u.correo_electronico, u.telefono, u.foto_perfil,
                 i.fecha_inscripcion
              FROM Inscripcion i
              INNER JOIN Usuario u ON i.id_usuario = u.id_usuario
