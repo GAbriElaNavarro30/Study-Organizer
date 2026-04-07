@@ -8,6 +8,7 @@ import {
     IoAnalyticsOutline, IoRibbonOutline,
     IoTimeOutline, IoMailOutline, IoCallOutline,
     IoSchoolOutline, IoStarOutline,
+    IoArchiveOutline
 } from "react-icons/io5";
 import "../styles/cursoDetalle.css";
 import { useCursoDetalle } from "../hooks/useCursoDetalle.js";
@@ -153,12 +154,47 @@ export function CursoDetalle() {
     const renderCTA = (full = false) => {
         const cls = `cd-btn${full ? " cd-btn--full" : ""}`;
 
-        if (!inscrito) return (
-            <button className={`${cls} cd-btn--primary`} onClick={handleInscribirse} disabled={inscribiendo}>
-                <IoRibbonOutline size={15} />
-                {inscribiendo ? "Inscribiendo…" : "Inscribirse al curso"}
-            </button>
-        );
+        if (!inscrito) {
+            // Si el curso está archivado, no mostrar botón de inscripción
+            if (curso?.archivado) return null;
+            return (
+                <button className={`${cls} cd-btn--primary`} onClick={handleInscribirse} disabled={inscribiendo}>
+                    <IoRibbonOutline size={15} />
+                    {inscribiendo ? "Inscribiendo…" : "Inscribirse al curso"}
+                </button>
+            );
+        }
+
+        // Curso archivado + inscrito: solo ver contenido y resultados
+        if (curso?.archivado) {
+            return (
+                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div style={{
+                        display: "flex", alignItems: "center", gap: 8,
+                        background: "#EDE9FE", borderRadius: 8,
+                        padding: "9px 12px", fontSize: 13, color: "#5B21B6", fontWeight: 500,
+                    }}>
+                        <IoArchiveOutline size={14} /> Este curso está archivado
+                    </div>
+                    <button className={`${cls} cd-btn--secondary`} onClick={handleRetomarCurso}>
+                        <IoBookOutline size={15} /> Ver contenido
+                    </button>
+                    {progreso?.completado && (
+                        <button className={`${cls} cd-btn--primary`} onClick={handleVerResultados}>
+                            <IoAnalyticsOutline size={15} /> Ver resultados
+                        </button>
+                    )}
+                    {/* ── AGREGADO: cancelar inscripción también en cursos archivados ── */}
+                    <button
+                        className={`${cls} cd-btn--danger`}
+                        onClick={handleCancelarInscripcion}
+                        style={{ fontSize: "0.78rem", opacity: 0.75 }}
+                    >
+                        Cancelar inscripción
+                    </button>
+                </div>
+            );
+        }
 
         return (
             <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
@@ -177,8 +213,6 @@ export function CursoDetalle() {
                         {pct > 0 ? "Continuar curso" : "Iniciar curso"}
                     </button>
                 )}
-
-                {/* ── Cancelar inscripción ── */}
                 <button
                     className={`${cls} cd-btn--danger`}
                     onClick={handleCancelarInscripcion}

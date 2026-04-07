@@ -68,12 +68,16 @@ export function useCursoDetalle() {
         }
     };
 
+    // ── CAMBIO AQUÍ: si el curso está archivado, saltamos el POST /intentos ──
     const handleIniciarCurso = async () => {
-        try {
-            await api.post("/cursos/intentos", { id_curso });
-        } catch { /* si ya existe intento activo, continúa igual */ }
+        if (!curso?.archivado) {
+            try {
+                await api.post("/cursos/intentos", { id_curso });
+            } catch { /* si ya existe intento activo, continúa igual */ }
+        }
         navigate("/cursos-visor", { state: { id_curso } });
     };
+    // ─────────────────────────────────────────────────────────────────────────
 
     const handleRetomarCurso = () => {
         navigate("/cursos-visor", { state: { id_curso } });

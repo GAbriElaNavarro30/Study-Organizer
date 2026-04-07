@@ -1149,3 +1149,26 @@ export const listarResultadosCurso = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al obtener los resultados." });
     }
 };
+
+export const eliminarEstudianteCurso = async (req, res) => {
+    try {
+        const { id, id_usuario } = req.params; // id = id_curso
+        const tutor_id = req.usuario.id;
+
+        // Verificar que el curso pertenece al tutor
+        const curso = await Curso.getById(id);
+        if (!curso || curso.id_usuario !== tutor_id)
+            return res.status(404).json({ ok: false, mensaje: "Curso no encontrado." });
+
+        // Verificar que el estudiante está inscrito
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id);
+        if (!inscripcion)
+            return res.status(404).json({ ok: false, mensaje: "El estudiante no está inscrito en este curso." });
+
+        await Inscripcion.delete(inscripcion.id_inscripcion);
+        res.json({ ok: true, mensaje: "Estudiante eliminado del curso." });
+    } catch (error) {
+        console.error("eliminarEstudianteCurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al eliminar al estudiante." });
+    }
+};

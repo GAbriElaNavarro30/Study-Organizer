@@ -31,7 +31,8 @@ import {
     obtenerResultadoCurso,
     listarEstudiantesCurso,
     listarResultadosCurso,
-    eliminarCuestionarioSeccion
+    eliminarCuestionarioSeccion,
+    eliminarEstudianteCurso,
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -58,6 +59,7 @@ router.get("/recomendados/por-dimension", listarCursosPorDimension);
 router.get("/cursos/:id", obtenerCurso);           // ← al final
 router.post("/cursos", upload.single("foto"), crearCurso);
 router.get("/cursos/:id/estudiantes", listarEstudiantesCurso);
+router.delete("/cursos/:id/estudiantes/:id_usuario", eliminarEstudianteCurso);
 router.put("/cursos/:id", upload.single("foto"), actualizarCurso);
 router.patch("/cursos/:id/publicar", togglePublicarCurso);
 router.patch("/cursos/:id/archivar", archivarCurso);

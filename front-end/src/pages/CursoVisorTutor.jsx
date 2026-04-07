@@ -12,6 +12,7 @@ import {
 } from "react-icons/io5";
 import api from "../services/api";
 import "../styles/CursoVisorTutor.css";
+import { ModalEliminar } from "../components/ModalEliminar";
 
 const VARK_COLORS = {
     V: { bg: "#DBEAFE", text: "#1D4ED8", label: "Visual" },
@@ -227,6 +228,8 @@ const TabEstudiantes = ({ idCurso }) => {
     const [estudiantes, setEstudiantes] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
+    const [modalEstudiante, setModalEstudiante] = useState(null); // { id_usuario, nombre }
+    const [eliminando, setEliminando] = useState(false);
 
     useEffect(() => {
         (async () => {
@@ -241,6 +244,20 @@ const TabEstudiantes = ({ idCurso }) => {
         })();
     }, [idCurso]);
 
+    const handleEliminar = async () => {
+        if (!modalEstudiante || eliminando) return;
+        setEliminando(true);
+        try {
+            await api.delete(`/cursos/cursos/${idCurso}/estudiantes/${modalEstudiante.id_usuario}`);
+            setEstudiantes(prev => prev.filter(e => e.id_usuario !== modalEstudiante.id_usuario));
+            setModalEstudiante(null);
+        } catch (err) {
+            alert(err.response?.data?.mensaje || "Error al eliminar al estudiante.");
+        } finally {
+            setEliminando(false);
+        }
+    };
+
     if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando estudiantes…</p></div>;
     if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
     if (estudiantes.length === 0) return (
@@ -251,56 +268,80 @@ const TabEstudiantes = ({ idCurso }) => {
     );
 
     return (
-        <div className="vct-estudiantes-wrap">
+        <>
+            {/* Modal de confirmación */}
+            {modalEstudiante && (
+                <ModalEliminar
+                    isOpen={true}
+                    onClose={() => setModalEstudiante(null)}
+                    onConfirm={handleEliminar}
+                    nombreUsuario={modalEstudiante.nombre}
+                />
+            )}
 
-            <div className="vct-estudiantes-badge">
-                <IoPeopleOutline size={15} />
-                <span>{estudiantes.length} estudiante{estudiantes.length !== 1 ? "s" : ""} inscritos</span>
-            </div>
+            <div className="vct-estudiantes-wrap">
+                <div className="vct-estudiantes-badge">
+                    <IoPeopleOutline size={15} />
+                    <span>{estudiantes.length} estudiante{estudiantes.length !== 1 ? "s" : ""} inscritos</span>
+                </div>
 
-            <div className="vct-table-wrap">
-                <table className="vct-table">
-                    <thead>
-                        <tr>
-                            <th>Estudiante</th>
-                            <th>Correo</th>
-                            <th>Teléfono</th>
-                            <th>Fecha de inscripción</th>
-                        </tr>
-                    </thead>
-                    <tbody>
-                        {estudiantes.map((e) => (
-                            <tr key={e.id_usuario}>
-                                <td>
-                                    <div className="vct-student-cell">
-                                        <div className="vct-avatar">
-                                            {e.foto_perfil
-                                                ? <img src={e.foto_perfil} alt={e.nombre} />
-                                                : <IoPersonOutline size={16} />}
-                                        </div>
-                                        <span>{e.nombre} {e.apellido}</span>
-                                    </div>
-                                </td>
-                                <td className="vct-td-muted">{e.correo_electronico}</td>
-                                <td className="vct-td-muted">{e.telefono || "—"}</td>
-                                <td className="vct-td-muted">
-                                    {e.fecha_inscripcion
-                                        ? new Date(e.fecha_inscripcion).toLocaleString("es-MX", {
-                                            day: "2-digit",
-                                            month: "short",
-                                            year: "numeric",
-                                            hour: "2-digit",
-                                            minute: "2-digit",
-                                            hour12: true
-                                        })
-                                        : "—"}
-                                </td>
+                <div className="vct-table-wrap">
+                    <table className="vct-table">
+                        <thead>
+                            <tr>
+                                <th>Estudiante</th>
+                                <th>Correo</th>
+                                <th>Teléfono</th>
+                                <th>Fecha de inscripción</th>
+                                <th></th>
                             </tr>
-                        ))}
-                    </tbody>
-                </table>
+                        </thead>
+                        <tbody>
+                            {estudiantes.map((e) => (
+                                <tr key={e.id_usuario}>
+                                    <td>
+                                        <div className="vct-student-cell">
+                                            <div className="vct-avatar">
+                                                {e.foto_perfil
+                                                    ? <img src={e.foto_perfil} alt={e.nombre} />
+                                                    : <IoPersonOutline size={16} />}
+                                            </div>
+                                            <span>{e.nombre} {e.apellido}</span>
+                                        </div>
+                                    </td>
+                                    <td className="vct-td-muted">{e.correo_electronico}</td>
+                                    <td className="vct-td-muted">{e.telefono || "—"}</td>
+                                    <td className="vct-td-muted">
+                                        {e.fecha_inscripcion
+                                            ? new Date(e.fecha_inscripcion).toLocaleString("es-MX", {
+                                                day: "2-digit", month: "short", year: "numeric",
+                                                hour: "2-digit", minute: "2-digit", hour12: true
+                                            })
+                                            : "—"}
+                                    </td>
+                                    <td>
+                                        <button
+                                            onClick={() => setModalEstudiante({ id_usuario: e.id_usuario, nombre: `${e.nombre} ${e.apellido}` })}
+                                            style={{
+                                                display: "inline-flex", alignItems: "center", gap: 5,
+                                                padding: "5px 12px", borderRadius: 7, border: "1px solid #FCA5A5",
+                                                background: "#FEF2F2", color: "#DC2626", fontSize: 12,
+                                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
+                                                transition: "all .15s", whiteSpace: "nowrap",
+                                            }}
+                                            onMouseEnter={e => { e.currentTarget.style.background = "#FEE2E2"; }}
+                                            onMouseLeave={e => { e.currentTarget.style.background = "#FEF2F2"; }}
+                                        >
+                                            <IoPersonOutline size={13} /> Eliminar
+                                        </button>
+                                    </td>
+                                </tr>
+                            ))}
+                        </tbody>
+                    </table>
+                </div>
             </div>
-        </div>
+        </>
     );
 };
 
