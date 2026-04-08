@@ -4,9 +4,9 @@ import { db } from "../config/db.js";
 export class RespuestaTestCurso {
     constructor({ es_correcta, id_intento, id_test, id_opcion }) {
         this.es_correcta = es_correcta;
-        this.id_intento  = id_intento;
-        this.id_test     = id_test;
-        this.id_opcion   = id_opcion;
+        this.id_intento = id_intento;
+        this.id_test = id_test;
+        this.id_opcion = id_opcion;
     }
 
     async save() {

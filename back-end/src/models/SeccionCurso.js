@@ -42,4 +42,24 @@ export class SeccionCurso {
     static async delete(id) {
         return await db.query("DELETE FROM Seccion_Curso WHERE id_seccion = ?", [id]);
     }
+
+    static async getIdCursoPorSeccion(id_seccion) {
+        const [[row]] = await db.query(
+            "SELECT id_curso FROM Seccion_Curso WHERE id_seccion = ?",
+            [id_seccion]
+        );
+        return row?.id_curso ?? null;
+    }
+
+    /* ── Recalcula total_contenidos contando desde la tabla Contenido ── */
+    static async recalcularTotalContenidos(id_seccion) {
+        await db.query(
+            `UPDATE Seccion_Curso
+             SET total_contenidos = (
+                 SELECT COUNT(*) FROM Contenido WHERE id_seccion = ?
+             )
+             WHERE id_seccion = ?`,
+            [id_seccion, id_seccion]
+        );
+    }
 }

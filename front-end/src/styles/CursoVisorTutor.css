@@ -132,16 +132,19 @@
     background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, .45));
 }
 
+/* ── Placeholder con color dinámico via CSS custom property ── */
 .vct-hero__cover--placeholder {
     display: flex;
     align-items: center;
     justify-content: center;
+    background: hsl(calc(var(--placeholder-hue, 200) * 1deg), 40%, 88%);
 }
 
 .vct-hero__content {
     padding: 24px 28px 28px;
 }
 
+/* ── Badge VARK con colores dinámicos via CSS custom properties ── */
 .vct-vark-badge {
     display: inline-flex;
     align-items: center;
@@ -151,6 +154,8 @@
     font-size: 11px;
     font-weight: 700;
     margin-bottom: 10px;
+    background: var(--vark-bg);
+    color: var(--vark-text);
 }
 
 .vct-hero__titulo {
@@ -232,118 +237,6 @@
 /* ─── Tab panel ─────────────────────────────────────────── */
 .vct-tab-panel {
     min-height: 200px;
-}
-
-/* ─── Secciones (tab contenido) ─────────────────────────── */
-.vct-secciones__heading {
-    font-size: 16px;
-    font-weight: 700;
-    color: #0F172A;
-    margin: 0 0 14px;
-}
-
-.vct-seccion {
-    background: #fff;
-    border: 1px solid #E2E8F0;
-    border-radius: 12px;
-    margin-bottom: 10px;
-    overflow: hidden;
-    transition: box-shadow .2s;
-}
-
-.vct-seccion--abierta {
-    box-shadow: 0 2px 10px rgba(0, 0, 0, .06);
-}
-
-.vct-seccion__header {
-    width: 100%;
-    display: flex;
-    align-items: center;
-    justify-content: space-between;
-    padding: 16px 20px;
-    background: none;
-    border: none;
-    cursor: pointer;
-    text-align: left;
-    gap: 12px;
-    color: #0F172A;
-    transition: background .15s;
-    box-sizing: border-box;
-}
-
-.vct-seccion__header:hover {
-    background: #F8FAFC;
-}
-
-.vct-seccion__header-left {
-    display: flex;
-    align-items: center;
-    gap: 14px;
-}
-
-.vct-seccion__num {
-    font-size: 13px;
-    font-weight: 800;
-    color: #6366F1;
-    min-width: 26px;
-}
-
-.vct-seccion__titulo {
-    font-size: 14px;
-    font-weight: 600;
-    color: #1E293B;
-    margin: 0 0 2px;
-}
-
-.vct-seccion__meta {
-    font-size: 12px;
-    color: #94A3B8;
-    margin: 0;
-}
-
-.vct-seccion__body {
-    padding: 4px 24px 24px;
-    border-top: 1px solid #F1F5F9;
-}
-
-/* ─── Bloques de contenido ──────────────────────────────── */
-.vct-bloque {
-    padding: 18px 0;
-    border-bottom: 1px dashed #E2E8F0;
-}
-
-.vct-bloque:last-child {
-    border-bottom: none;
-}
-
-.vct-bloque__titulo {
-    font-size: 15px;
-    font-weight: 600;
-    color: #1E293B;
-    margin: 0 0 8px;
-}
-
-.vct-bloque__texto {
-    font-size: 14px;
-    color: #475569;
-    line-height: 1.65;
-    margin: 0 0 12px;
-    white-space: pre-wrap;
-    word-break: break-word;
-}
-
-.vct-bloque__img-wrap {
-    border-radius: 10px;
-    overflow: hidden;
-    margin-top: 10px;
-    max-width: 100%;
-}
-
-.vct-bloque__img {
-    width: 100%;
-    max-height: 340px;
-    object-fit: cover;
-    display: block;
 }
 
 /* ─── Quiz ──────────────────────────────────────────────── */
@@ -457,7 +350,7 @@
     color: #B91C1C;
 }
 
-/* ─── Tabla compartida (estudiantes / resultados) ────────── */
+/* ─── Tabla compartida (resultados) ─────────────────────── */
 .vct-table-wrap {
     border: 1px solid #E2E8F0;
     border-radius: 12px;
@@ -513,6 +406,11 @@
     font-size: 14px;
 }
 
+/* ── Filas de resultados son clickeables ── */
+.vct-table--resultados-row {
+    cursor: pointer;
+}
+
 /* ─── Celda estudiante ──────────────────────────────────── */
 .vct-student-cell {
     display: flex;
@@ -547,16 +445,6 @@
     object-fit: cover;
 }
 
-/* ─── VARK pill en tabla ────────────────────────────────── */
-.vct-vark-pill {
-    display: inline-flex;
-    align-items: center;
-    padding: 3px 10px;
-    border-radius: 20px;
-    font-size: 11.5px;
-    font-weight: 700;
-}
-
 /* ─── Puntaje con barra ─────────────────────────────────── */
 .vct-puntaje-wrap {
     display: flex;
@@ -582,7 +470,9 @@
     min-width: 40px;
 }
 
+/* ── Ancho dinámico via CSS custom property ── */
 .vct-puntaje-fill {
+    width: var(--puntaje-pct, 0%);
     height: 100%;
     background: linear-gradient(90deg, #6366F1, #818CF8);
     border-radius: 999px;
@@ -937,7 +827,7 @@
 .vct-preview-nav-btn:hover:not(:disabled) {
     background: #F1F5F9;
     border-color: #CBD5E1;
-    color: #1E293B;
+    color: #ffffff;
 }
 
 .vct-preview-nav-btn:disabled {
@@ -992,29 +882,361 @@
     background: #16A34A;
 }
 
-/* ─── Tab Estudiantes ───────────────────────────────────── */
-.vct-estudiantes-wrap {
+/* ══════════════════════════════════════════════════════════
+   Tab Estudiantes — Diseño en lista/tabla
+══════════════════════════════════════════════════════════ */
+
+.vct-est-root {
     display: flex;
     flex-direction: column;
-    gap: 16px;
+    gap: 20px;
 }
 
-.vct-estudiantes-badge {
+/* ─── Header: contador + búsqueda + selector de porPagina ── */
+.vct-est-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.vct-est-header-left {
+    flex-shrink: 0;
+}
+
+.vct-est-count-badge {
     display: inline-flex;
     align-items: center;
-    gap: 8px;
-    padding: 7px 14px;
+    gap: 7px;
+    padding: 8px 16px;
     background: #EEF2FF;
     border: 1px solid #C7D2FE;
     border-radius: 10px;
-    align-self: flex-start;
-    color: #6366F1;
+    color: #4338CA;
     font-size: 13px;
     font-weight: 600;
+    white-space: nowrap;
 }
 
-.vct-estudiantes-badge span {
-    color: #4338CA;
+/* ─── Búsqueda ──────────────────────────────────────────── */
+.vct-est-search-wrap {
+    position: relative;
+    flex: 0 0 800px;
+    max-width: 800px;
+}
+
+.vct-est-search-icon {
+    position: absolute;
+    left: 12px;
+    top: 50%;
+    transform: translateY(-50%);
+    color: #94A3B8;
+    pointer-events: none;
+    flex-shrink: 0;
+}
+
+.vct-est-search {
+    width: 100%;
+    box-sizing: border-box;
+    padding: 10px 36px 10px 36px;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 10px;
+    background: #fff;
+    font-family: "Inter", sans-serif;
+    font-size: 13.5px;
+    color: #1E293B;
+    outline: none;
+    transition: border-color .15s, box-shadow .15s;
+}
+
+.vct-est-search::placeholder {
+    color: #CBD5E1;
+}
+
+.vct-est-search:focus {
+    border-color: #818CF8;
+    box-shadow: 0 0 0 3px rgba(99, 102, 241, .12);
+}
+
+.vct-est-search-clear {
+    position: absolute;
+    right: 10px;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 20px;
+    height: 20px;
+    border-radius: 50%;
+    border: none;
+    background: #E2E8F0;
+    color: #64748B;
+    font-size: 14px;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    padding: 0;
+    transition: background .15s;
+}
+
+.vct-est-search-clear:hover {
+    background: #CBD5E1;
+}
+
+/* ─── Selector "Mostrar X por página" en el header ──────── */
+.vct-est-per-page-inline {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-shrink: 0;
+    white-space: nowrap;
+}
+
+.vct-est-per-page-label {
+    font-size: 12.5px;
+    color: #64748B;
+}
+
+.vct-est-per-page-select {
+    padding: 8px 28px 8px 10px;
+    border: 1.5px solid #E2E8F0;
+    border-radius: 8px;
+    background: #fff;
+    font-family: "Inter", sans-serif;
+    font-size: 13px;
+    color: #1E293B;
+    cursor: pointer;
+    outline: none;
+    transition: border-color .15s;
+    -webkit-appearance: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' viewBox='0 0 10 6'%3E%3Cpath d='M1 1l4 4 4-4' stroke='%2394A3B8' stroke-width='1.5' fill='none' stroke-linecap='round' stroke-linejoin='round'/%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+}
+
+.vct-est-per-page-select:focus {
+    border-color: #818CF8;
+}
+
+/* ─── Tabla de estudiantes ──────────────────────────────── */
+.vct-est-table-wrap {
+    border: 1px solid #E2E8F0;
+    border-radius: 12px;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
+    width: 100%;
+    background: #fff;
+}
+
+.vct-est-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13.5px;
+    min-width: 540px;
+}
+
+.vct-est-table thead tr {
+    background: #F8FAFC;
+    border-bottom: 1.5px solid #E2E8F0;
+}
+
+.vct-est-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11.5px;
+    font-weight: 700;
+    color: #64748B;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    white-space: nowrap;
+}
+
+.vct-est-table tbody tr {
+    border-bottom: 1px solid #F1F5F9;
+    transition: background .12s;
+}
+
+.vct-est-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.vct-est-table tbody tr:hover {
+    background: #F8FAFC;
+}
+
+.vct-est-table tbody td {
+    padding: 13px 16px;
+    color: #1E293B;
+    vertical-align: middle;
+}
+
+/* ── Celda de acciones centrada ── */
+.vct-est-td-acciones {
+    text-align: center;
+}
+
+/* ─── Celda de nombre con avatar ────────────────────────── */
+.vct-est-name-cell {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+    min-width: 0;
+}
+
+.vct-est-avatar-sm {
+    width: 36px;
+    height: 36px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #6366F1 0%, #818CF8 100%);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+    border: 1.5px solid #E0E7FF;
+}
+
+.vct-est-avatar-sm img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.vct-est-initials-sm {
+    color: #fff;
+    font-size: 12px;
+    font-weight: 700;
+    letter-spacing: 0.03em;
+    line-height: 1;
+}
+
+.vct-est-name-text {
+    font-size: 13.5px;
+    font-weight: 600;
+    color: #1E293B;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Celdas de datos de contacto ───────────────────────── */
+.vct-est-td-contact {
+    font-size: 13px;
+    color: #475569;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    max-width: 220px;
+}
+
+.vct-est-td-fecha {
+    font-size: 12.5px;
+    color: #94A3B8;
+    white-space: nowrap;
+}
+
+.vct-est-td-empty {
+    color: #CBD5E1;
+    font-size: 13px;
+}
+
+/* ─── Botón eliminar en tabla ───────────────────────────── */
+.vct-est-btn-delete {
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: 1px solid #FECACA;
+    background: #FEF2F2;
+    color: #EF4444;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    flex-shrink: 0;
+    transition: background .15s, border-color .15s, color .15s, transform .12s;
+    padding: 0;
+}
+
+.vct-est-btn-delete:hover {
+    background: #FEE2E2;
+    border-color: #FCA5A5;
+    color: #DC2626;
+    transform: scale(1.08);
+}
+
+.vct-est-btn-delete:active {
+    transform: scale(0.96);
+}
+
+/* ─── Paginación centrada ───────────────────────────────── */
+.vct-est-pagination {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    padding: 16px 20px;
+}
+
+.vct-est-pag-info {
+    font-size: 12.5px;
+    color: #94A3B8;
+    margin: 0;
+    white-space: nowrap;
+}
+
+.vct-est-pag-btns {
+    display: flex;
+    align-items: center;
+    gap: 4px;
+    flex-wrap: wrap;
+    justify-content: center;
+}
+
+.vct-est-pag-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    min-width: 32px;
+    height: 32px;
+    padding: 0 8px;
+    border-radius: 8px;
+    border: 1.5px solid #E2E8F0;
+    background: #fff;
+    color: #475569;
+    font-family: "Inter", sans-serif;
+    font-size: 12.5px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all .15s;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.vct-est-pag-btn:hover:not(:disabled) {
+    background: #F1F5F9;
+    border-color: #CBD5E1;
+    color: #1E293B;
+}
+
+.vct-est-pag-btn:disabled {
+    opacity: 0.3;
+    cursor: not-allowed;
+}
+
+.vct-est-pag-btn--num.active {
+    background: #4f80ec;
+    border-color: #6366F1;
+    color: #fff;
+    font-weight: 700;
+}
+
+.vct-est-pag-ellipsis {
+    font-size: 13px;
+    color: #CBD5E1;
+    padding: 0 4px;
+    line-height: 32px;
 }
 
 /* ══════════════════════════════════════════════════════════
@@ -1085,8 +1307,6 @@
         max-height: none;
         overflow-x: auto;
         overflow-y: hidden;
-
-        /* Scroll horizontal en lugar de lista vertical */
         flex-direction: row;
         flex-wrap: nowrap;
         gap: 6px;
@@ -1180,15 +1400,26 @@
         text-align: left;
     }
 
-    /* Badge estudiantes */
-    .vct-estudiantes-badge {
-        font-size: 12px;
-        padding: 6px 12px;
-    }
-
-    /* Tabla */
+    /* Tabla resultados */
     .vct-table {
         min-width: 480px;
+    }
+
+    /* Estudiantes header en columna */
+    .vct-est-header {
+        flex-wrap: wrap;
+    }
+
+    .vct-est-per-page-inline {
+        order: 3;
+        width: 100%;
+        justify-content: flex-start;
+    }
+
+    /* Tabla estudiantes: ocultar teléfono */
+    .vct-est-table thead th:nth-child(3),
+    .vct-est-table tbody td:nth-child(3) {
+        display: none;
     }
 }
 
@@ -1253,7 +1484,7 @@
         flex: 1 1 100%;
     }
 
-    /* Tabla más compacta */
+    /* Tabla resultados más compacta */
     .vct-table {
         min-width: 520px;
         font-size: 12.5px;
@@ -1268,7 +1499,7 @@
         padding: 10px 12px;
     }
 
-    /* Resultados: ocultar Nivel (col 3) y Fecha (col 4) */
+    /* Resultados: ocultar Nivel y Fecha */
     .vct-table--resultados thead th:nth-child(3),
     .vct-table--resultados tbody td:nth-child(3),
     .vct-table--resultados thead th:nth-child(4),
@@ -1282,6 +1513,24 @@
 
     .vct-puntaje-bar {
         min-width: 30px;
+    }
+
+    /* Estudiantes tabla: ocultar correo también en muy pequeño */
+    .vct-est-table thead th:nth-child(3),
+    .vct-est-table tbody td:nth-child(3),
+    .vct-est-table thead th:nth-child(4),
+    .vct-est-table tbody td:nth-child(4) {
+        display: none;
+    }
+
+    .vct-est-table {
+        min-width: 320px;
+        font-size: 13px;
+    }
+
+    .vct-est-search {
+        font-size: 13px;
+        padding: 9px 34px;
     }
 }
 

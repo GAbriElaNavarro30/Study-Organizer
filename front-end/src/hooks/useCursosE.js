@@ -26,10 +26,21 @@ export function useCursosE() {
         cargarDatos();
     }, []);
 
+    /* ── Helper: calcula porcentaje y normaliza un curso inscrito ── */
+    const normalizarCurso = (c) => {
+        const vistos = c.contenidos_vistos ?? 0;
+        const total = c.total_contenidos ?? 0;
+        const porcentaje = total > 0 ? Math.round((vistos / total) * 100) : 0;
+        return {
+            ...c,
+            porcentaje,
+            completado: Boolean(c.completado),
+        };
+    };
+
     const cargarDatos = async () => {
         setCargando(true);
         try {
-            // ── 1. Perfil VARK + mis cursos + todas las dimensiones de BD ──
             const [
                 { data: perfilData },
                 { data: misData },
@@ -42,22 +53,17 @@ export function useCursosE() {
 
             const perfil = perfilData?.perfil_dominante || "VARK";
             setPerfilVark(perfil);
-
-            // Guardar TODAS las dimensiones de la BD
             setTodasDimensiones(dimsData.dimensiones || []);
 
-            // Cursos VARK recomendados
             const cursosVark = (perfilData.cursos_recomendados || []).map(c => ({
                 ...c,
                 prioridad: c.perfil_vark === perfil ? 0 : 1,
             }));
 
-            // ── 2. Cursos por dimensión (desde último resultado ME) ──
             let cursosDimension = [];
             try {
                 const { data: historialData } = await api.get("/metodosestudio/historial");
                 const historial = historialData.historial || [];
-
                 if (historial.length > 0) {
                     const { data: resultadoME } = await api.get(
                         `/metodosestudio/resultado/${historial[0].id_intento}`
@@ -71,15 +77,13 @@ export function useCursosE() {
                 console.info("Sin historial de métodos de estudio:", e?.response?.status);
             }
 
-            // ── 3. Combinar sin duplicados ───────────────────────────
             setCursos([...cursosVark, ...cursosDimension]);
-            setMisCursos(misData.cursos || []);
 
-            // ── 4. Archivados: los del tutor (c.archivado=1) vienen en
-            //       misData.archivados. Marcamos archivado_por_tutor=true
-            //       porque el estudiante no puede revertirlos por sí solo.
+            // ── NORMALIZAR: agregar porcentaje calculado a cada curso inscrito ──
+            setMisCursos((misData.cursos || []).map(normalizarCurso));
+
             const archivados = (misData.archivados || []).map(c => ({
-                ...c,
+                ...normalizarCurso(c),
                 archivado_por_tutor: Boolean(c.archivado),
             }));
             setCursosArchivados(archivados);
@@ -96,13 +100,30 @@ export function useCursosE() {
         }
     };
 
-    // Solo se puede desarchivar si el tutor NO lo archivó
     const desarchivar = async (id_curso) => {
         try {
             await api.post(`/cursos/inscripciones/${id_curso}/desarchivar`);
             await cargarDatos();
         } catch (e) {
             console.error("Error al desarchivar", e);
+        }
+    };
+
+    const inscribirse = async (id_curso) => {
+        try {
+            await api.post("/cursos/inscripciones", { id_curso });
+            await cargarDatos();
+        } catch (e) {
+            console.error("Error al inscribirse", e);
+        }
+    };
+
+    const cancelarInscripcion = async (id_curso) => {
+        try {
+            await api.delete("/cursos/inscripciones", { data: { id_curso } });
+            await cargarDatos();
+        } catch (e) {
+            console.error("Error al cancelar inscripción", e);
         }
     };
 
@@ -119,25 +140,18 @@ export function useCursosE() {
         } else if (tab === "mis-cursos") {
             lista = misCursos;
         } else {
-            // tab === "archivados"
             lista = [...cursosArchivados];
             if (filtroDim) lista = lista.filter(c => c.nombre_dimension === filtroDim);
             if (filtroEstadoArch === "progreso")
-                lista = lista.filter(c => (c.contenidos_vistos || 0) > 0 && !c.completado);
+                lista = lista.filter(c => c.porcentaje > 0 && !c.completado);
             if (filtroEstadoArch === "sin")
-                lista = lista.filter(c => (c.contenidos_vistos || 0) === 0);
+                lista = lista.filter(c => c.porcentaje === 0);
             if (filtroEstadoArch === "completado")
-                lista = lista.filter(c => !!c.completado);
-            if (ordenArch === "mayor") lista.sort((a, b) => {
-                const pA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
-                const pB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
-                return pB - pA;
-            });
-            if (ordenArch === "menor") lista.sort((a, b) => {
-                const pA = Math.round(((a.contenidos_vistos || 0) / Math.max(a.total_contenidos || 1, 1)) * 100);
-                const pB = Math.round(((b.contenidos_vistos || 0) / Math.max(b.total_contenidos || 1, 1)) * 100);
-                return pA - pB;
-            });
+                lista = lista.filter(c => c.completado);
+            if (ordenArch === "mayor")
+                lista.sort((a, b) => b.porcentaje - a.porcentaje);
+            if (ordenArch === "menor")
+                lista.sort((a, b) => a.porcentaje - b.porcentaje);
         }
 
         return lista.filter(c => {
@@ -148,7 +162,6 @@ export function useCursosE() {
                 c.nombre_dimension?.toLowerCase().includes(busqueda.toLowerCase());
             const matchVark = filtroVark === "todos" || c.perfil_vark?.includes(filtroVark);
             const matchDim = !filtroDim || c.nombre_dimension === filtroDim;
-            // En recomendados y mis-cursos aplicamos matchDim; en archivados ya filtramos arriba
             return matchBusqueda && matchVark && (tab === "archivados" ? true : matchDim);
         });
     }, [tab, cursos, misCursos, cursosArchivados, busqueda, filtroVark, filtroDim, filtroEstadoArch, ordenArch]);
@@ -190,6 +203,8 @@ export function useCursosE() {
         ordenArch,
         setOrdenArch,
         desarchivar,
+        inscribirse,
+        cancelarInscripcion,
         irADetalle,
         recargar: cargarDatos,
     };

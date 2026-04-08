@@ -1,6 +1,5 @@
 // src/pages/CursoVisorTutor.jsx
-import { useState, useEffect } from "react";
-import { useNavigate, useSearchParams } from "react-router-dom";
+import { useState } from "react";
 import {
     IoArrowBackOutline, IoBookOutline, IoChevronDownOutline,
     IoChevronUpOutline, IoCheckmarkCircle, IoEllipseOutline,
@@ -9,10 +8,19 @@ import {
     IoPeopleOutline, IoBarChartOutline, IoPersonOutline,
     IoTrophyOutline, IoTimeOutline, IoSchoolOutline,
     IoChevronBackOutline, IoChevronForwardOutline,
+    IoSearchOutline, IoTrashOutline, IoMailOutline,
+    IoCallOutline, IoCalendarOutline,
 } from "react-icons/io5";
-import api from "../services/api";
 import "../styles/CursoVisorTutor.css";
 import { ModalEliminar } from "../components/ModalEliminar";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
+import {
+    useCursoVisorTutor,
+    useTabEstudiantes,
+    useTabResultados,
+    PAGE_SIZE_OPTIONS,
+} from "../hooks/useCursoVisorTutor";
 
 const VARK_COLORS = {
     V: { bg: "#DBEAFE", text: "#1D4ED8", label: "Visual" },
@@ -86,7 +94,6 @@ const PreguntaVisor = ({ preg, index }) => {
     );
 };
 
-/* ── Sección expandible ──────────────────────────────────── */
 /* ── Tab: Contenido (estilo preview del editor) ─────────── */
 const TabContenido = ({ secciones }) => {
     const [secActiva, setSecActiva] = useState(0);
@@ -107,7 +114,6 @@ const TabContenido = ({ secciones }) => {
 
     return (
         <div className="vct-preview-root">
-            {/* Layout sidebar + contenido */}
             <div className="vct-preview-layout">
                 {/* Sidebar */}
                 <div className="vct-preview-sidebar">
@@ -127,7 +133,6 @@ const TabContenido = ({ secciones }) => {
                                     {s.titulo_seccion || <em>Sin título</em>}
                                 </span>
                                 <span className="vct-preview-sec-meta">
-                                    {/*s.contenidos?.length || 0} bloque{s.contenidos?.length !== 1 ? "s" : ""*/}
                                     {s.preguntas?.length > 0 && ` ${s.preguntas.length} preg.`}
                                 </span>
                             </div>
@@ -205,7 +210,6 @@ const TabContenido = ({ secciones }) => {
                                 key={i}
                                 className={`vct-preview-nav-dot ${i === secActiva ? "active" : i < secActiva ? "done" : ""}`}
                                 onClick={() => setSecActiva(i)}
-                                style={{ cursor: "pointer" }}
                             />
                         ))}
                     </div>
@@ -223,53 +227,49 @@ const TabContenido = ({ secciones }) => {
     );
 };
 
-/* ── Tab: Estudiantes ────────────────────────────────────── */
+/* ── Tab: Estudiantes — tabla en fila ────────────────────── */
 const TabEstudiantes = ({ idCurso }) => {
-    const [estudiantes, setEstudiantes] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
-    const [modalEstudiante, setModalEstudiante] = useState(null); // { id_usuario, nombre }
-    const [eliminando, setEliminando] = useState(false);
+    const {
+        estudiantes,
+        cargando,
+        error,
+        modalEstudiante,
+        setModalEstudiante,
+        eliminando,
+        alert,
+        setAlert,
+        busqueda,
+        setBusqueda,
+        paginaActual,
+        setPaginaActual,
+        porPagina,
+        setPorPagina,
+        estudiantesFiltrados,
+        totalPaginas,
+        paginaSegura,
+        inicio,
+        estudiantesPagina,
+        handleEliminar,
+        formatFecha,
+        getInitials,
+    } = useTabEstudiantes(idCurso);
 
-    useEffect(() => {
-        (async () => {
-            try {
-                const { data } = await api.get(`/cursos/cursos/${idCurso}/estudiantes`);
-                setEstudiantes(data.estudiantes || []);
-            } catch (err) {
-                setError(err.response?.data?.mensaje || "No se pudieron cargar los estudiantes.");
-            } finally {
-                setCargando(false);
-            }
-        })();
-    }, [idCurso]);
-
-    const handleEliminar = async () => {
-        if (!modalEstudiante || eliminando) return;
-        setEliminando(true);
-        try {
-            await api.delete(`/cursos/cursos/${idCurso}/estudiantes/${modalEstudiante.id_usuario}`);
-            setEstudiantes(prev => prev.filter(e => e.id_usuario !== modalEstudiante.id_usuario));
-            setModalEstudiante(null);
-        } catch (err) {
-            alert(err.response?.data?.mensaje || "Error al eliminar al estudiante.");
-        } finally {
-            setEliminando(false);
-        }
-    };
-
-    if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando estudiantes…</p></div>;
-    if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
-    if (estudiantes.length === 0) return (
-        <div className="vct-empty">
-            <IoSchoolOutline size={32} />
-            <p>Ningún estudiante inscrito aún.</p>
+    if (cargando) return (
+        <div className="vct-tab-loading">
+            <div className="vct-spinner" />
+            <p>Cargando estudiantes…</p>
+        </div>
+    );
+    if (error) return (
+        <div className="vct-tab-error">
+            <IoAlertCircleOutline size={22} />
+            <p>{error}</p>
         </div>
     );
 
     return (
         <>
-            {/* Modal de confirmación */}
+            {/* Modal de confirmación para eliminar */}
             {modalEstudiante && (
                 <ModalEliminar
                     isOpen={true}
@@ -279,90 +279,227 @@ const TabEstudiantes = ({ idCurso }) => {
                 />
             )}
 
-            <div className="vct-estudiantes-wrap">
-                <div className="vct-estudiantes-badge">
-                    <IoPeopleOutline size={15} />
-                    <span>{estudiantes.length} estudiante{estudiantes.length !== 1 ? "s" : ""} inscritos</span>
+            {/* Custom Alert de éxito/error */}
+            {alert && (
+                <CustomAlert
+                    type={alert.type}
+                    title={alert.title}
+                    message={alert.message}
+                    onClose={() => setAlert(null)}
+                    logo={logo}
+                />
+            )}
+
+            <div className="vct-est-root">
+
+                {/* ── Encabezado: contador + búsqueda + selector porPagina ── */}
+                <div className="vct-est-header">
+                    {/* Badge contador */}
+                    <div className="vct-est-header-left">
+                        <div className="vct-est-count-badge">
+                            <IoPeopleOutline size={15} />
+                            <span>
+                                {estudiantesFiltrados.length !== estudiantes.length
+                                    ? `${estudiantesFiltrados.length} de ${estudiantes.length}`
+                                    : estudiantes.length}{" "}
+                                estudiante{estudiantes.length !== 1 ? "s" : ""}
+                            </span>
+                        </div>
+                    </div>
+
+                    {/* Barra de búsqueda */}
+                    <div className="vct-est-search-wrap">
+                        <IoSearchOutline size={15} className="vct-est-search-icon" />
+                        <input
+                            type="text"
+                            className="vct-est-search"
+                            placeholder="Buscar por nombre, correo, teléfono o fecha…"
+                            value={busqueda}
+                            onChange={(e) => setBusqueda(e.target.value)}
+                        />
+                        {busqueda && (
+                            <button
+                                className="vct-est-search-clear"
+                                onClick={() => setBusqueda("")}
+                                title="Limpiar búsqueda"
+                            >
+                                ×
+                            </button>
+                        )}
+                    </div>
+
+                    {/* Selector "Mostrar X por página" — junto a la búsqueda */}
+                    <div className="vct-est-per-page-inline">
+                        <span className="vct-est-per-page-label">Mostrar</span>
+                        <select
+                            className="vct-est-per-page-select"
+                            value={porPagina}
+                            onChange={(ev) => setPorPagina(Number(ev.target.value))}
+                        >
+                            {PAGE_SIZE_OPTIONS.map((n) => (
+                                <option key={n} value={n}>{n}</option>
+                            ))}
+                        </select>
+                    </div>
                 </div>
 
-                <div className="vct-table-wrap">
-                    <table className="vct-table">
-                        <thead>
-                            <tr>
-                                <th>Estudiante</th>
-                                <th>Correo</th>
-                                <th>Teléfono</th>
-                                <th>Fecha de inscripción</th>
-                                <th></th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {estudiantes.map((e) => (
-                                <tr key={e.id_usuario}>
-                                    <td>
-                                        <div className="vct-student-cell">
-                                            <div className="vct-avatar">
-                                                {e.foto_perfil
-                                                    ? <img src={e.foto_perfil} alt={e.nombre} />
-                                                    : <IoPersonOutline size={16} />}
-                                            </div>
-                                            <span>{e.nombre} {e.apellido}</span>
-                                        </div>
-                                    </td>
-                                    <td className="vct-td-muted">{e.correo_electronico}</td>
-                                    <td className="vct-td-muted">{e.telefono || "—"}</td>
-                                    <td className="vct-td-muted">
-                                        {e.fecha_inscripcion
-                                            ? new Date(e.fecha_inscripcion).toLocaleString("es-MX", {
-                                                day: "2-digit", month: "short", year: "numeric",
-                                                hour: "2-digit", minute: "2-digit", hour12: true
-                                            })
-                                            : "—"}
-                                    </td>
-                                    <td>
-                                        <button
-                                            onClick={() => setModalEstudiante({ id_usuario: e.id_usuario, nombre: `${e.nombre} ${e.apellido}` })}
-                                            style={{
-                                                display: "inline-flex", alignItems: "center", gap: 5,
-                                                padding: "5px 12px", borderRadius: 7, border: "1px solid #FCA5A5",
-                                                background: "#FEF2F2", color: "#DC2626", fontSize: 12,
-                                                fontWeight: 600, cursor: "pointer", fontFamily: "inherit",
-                                                transition: "all .15s", whiteSpace: "nowrap",
-                                            }}
-                                            onMouseEnter={e => { e.currentTarget.style.background = "#FEE2E2"; }}
-                                            onMouseLeave={e => { e.currentTarget.style.background = "#FEF2F2"; }}
-                                        >
-                                            <IoPersonOutline size={13} /> Eliminar
-                                        </button>
-                                    </td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                </div>
+                {/* ── Sin resultados ── */}
+                {estudiantesFiltrados.length === 0 && (
+                    <div className="vct-empty">
+                        <IoSchoolOutline size={32} />
+                        <p>
+                            {busqueda
+                                ? `Sin resultados para "${busqueda}".`
+                                : "Ningún estudiante inscrito aún."}
+                        </p>
+                    </div>
+                )}
+
+                {/* ── Tabla de estudiantes en fila ── */}
+                {estudiantesFiltrados.length > 0 && (
+                    <>
+                        <div className="vct-est-table-wrap">
+                            <table className="vct-est-table">
+                                <thead>
+                                    <tr>
+                                        <th>Estudiante</th>
+                                        <th>Correo</th>
+                                        <th>Teléfono</th>
+                                        <th>Inscripción</th>
+                                        <th></th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {estudiantesPagina.map((e) => (
+                                        <tr key={e.id_usuario}>
+                                            {/* Nombre con avatar */}
+                                            <td>
+                                                <div className="vct-est-name-cell">
+                                                    <div className="vct-est-avatar-sm">
+                                                        {e.foto_perfil
+                                                            ? <img src={e.foto_perfil} alt={e.nombre} />
+                                                            : <span className="vct-est-initials-sm">{getInitials(e.nombre, e.apellido)}</span>
+                                                        }
+                                                    </div>
+                                                    <span className="vct-est-name-text">{e.nombre} {e.apellido}</span>
+                                                </div>
+                                            </td>
+                                            {/* Correo */}
+                                            <td>
+                                                {e.correo_electronico
+                                                    ? <span className="vct-est-td-contact">{e.correo_electronico}</span>
+                                                    : <span className="vct-est-td-empty">—</span>
+                                                }
+                                            </td>
+                                            {/* Teléfono */}
+                                            <td>
+                                                {e.telefono
+                                                    ? <span className="vct-est-td-contact">{e.telefono}</span>
+                                                    : <span className="vct-est-td-empty">—</span>
+                                                }
+                                            </td>
+                                            {/* Fecha inscripción */}
+                                            <td>
+                                                <span className="vct-est-td-fecha">{formatFecha(e.fecha_inscripcion)}</span>
+                                            </td>
+                                            {/* Acciones */}
+                                            <td className="vct-est-td-acciones">
+                                                <button
+                                                    className="vct-est-btn-delete"
+                                                    onClick={() => setModalEstudiante({ id_usuario: e.id_usuario, nombre: `${e.nombre} ${e.apellido}` })}
+                                                    title="Eliminar estudiante"
+                                                >
+                                                    <IoTrashOutline size={14} />
+                                                </button>
+                                            </td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                        </div>
+
+                        {/* ── Paginación centrada ── */}
+                        <div className="vct-est-pagination">
+                            <p className="vct-est-pag-info">
+                                {estudiantesFiltrados.length === 0
+                                    ? "0 resultados"
+                                    : `${inicio + 1}–${Math.min(inicio + porPagina, estudiantesFiltrados.length)} de ${estudiantesFiltrados.length} estudiantes`}
+                            </p>
+
+                            <div className="vct-est-pag-btns">
+                                <button
+                                    className="vct-est-pag-btn"
+                                    disabled={paginaSegura === 1}
+                                    onClick={() => setPaginaActual(1)}
+                                    title="Primera página"
+                                >
+                                    «
+                                </button>
+                                <button
+                                    className="vct-est-pag-btn"
+                                    disabled={paginaSegura === 1}
+                                    onClick={() => setPaginaActual((p) => Math.max(1, p - 1))}
+                                    title="Página anterior"
+                                >
+                                    <IoChevronBackOutline size={14} />
+                                </button>
+
+                                {Array.from({ length: totalPaginas }, (_, i) => i + 1)
+                                    .filter((p) => Math.abs(p - paginaSegura) <= 2 || p === 1 || p === totalPaginas)
+                                    .reduce((acc, p, idx, arr) => {
+                                        if (idx > 0 && p - arr[idx - 1] > 1) acc.push("...");
+                                        acc.push(p);
+                                        return acc;
+                                    }, [])
+                                    .map((item, i) =>
+                                        item === "..." ? (
+                                            <span key={`ellipsis-${i}`} className="vct-est-pag-ellipsis">…</span>
+                                        ) : (
+                                            <button
+                                                key={item}
+                                                className={`vct-est-pag-btn vct-est-pag-btn--num ${item === paginaSegura ? "active" : ""}`}
+                                                onClick={() => setPaginaActual(item)}
+                                            >
+                                                {item}
+                                            </button>
+                                        )
+                                    )}
+
+                                <button
+                                    className="vct-est-pag-btn"
+                                    disabled={paginaSegura === totalPaginas}
+                                    onClick={() => setPaginaActual((p) => Math.min(totalPaginas, p + 1))}
+                                    title="Página siguiente"
+                                >
+                                    <IoChevronForwardOutline size={14} />
+                                </button>
+                                <button
+                                    className="vct-est-pag-btn"
+                                    disabled={paginaSegura === totalPaginas}
+                                    onClick={() => setPaginaActual(totalPaginas)}
+                                    title="Última página"
+                                >
+                                    »
+                                </button>
+                            </div>
+                        </div>
+                    </>
+                )}
             </div>
         </>
     );
 };
 
 /* ── Tab: Resultados ─────────────────────────────────────── */
-const TabResultados = ({ idCurso }) => {
-    const [resultados, setResultados] = useState([]);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
-
-    useEffect(() => {
-        (async () => {
-            try {
-                const { data } = await api.get(`/cursos/cursos/${idCurso}/resultados`);
-                setResultados(data.resultados || []);
-            } catch (err) {
-                setError(err.response?.data?.mensaje || "No se pudieron cargar los resultados.");
-            } finally {
-                setCargando(false);
-            }
-        })();
-    }, [idCurso]);
+const TabResultados = ({ idCurso, curso }) => {
+    const {
+        resultados,
+        cargando,
+        error,
+        promedio,
+        puntajeMaximo,
+        navegarAHistorial,
+    } = useTabResultados(idCurso);
 
     if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando resultados…</p></div>;
     if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
@@ -372,8 +509,6 @@ const TabResultados = ({ idCurso }) => {
             <p>Aún no hay resultados registrados.</p>
         </div>
     );
-
-    const promedio = resultados.reduce((s, r) => s + Number(r.puntaje || 0), 0) / resultados.length;
 
     return (
         <div>
@@ -391,16 +526,14 @@ const TabResultados = ({ idCurso }) => {
                 </div>
                 <div className="vct-stat-card">
                     <IoBarChartOutline size={18} />
-                    <p className="vct-stat-card__val">
-                        {Math.max(...resultados.map(r => Number(r.puntaje || 0))).toFixed(1)}
-                    </p>
+                    <p className="vct-stat-card__val">{puntajeMaximo.toFixed(1)}</p>
                     <p className="vct-stat-card__lbl">Puntaje más alto</p>
                 </div>
             </div>
 
             {/* Tabla */}
             <div className="vct-table-wrap">
-                <table className="vct-table">
+                <table className="vct-table vct-table--resultados">
                     <thead>
                         <tr>
                             <th>Estudiante</th>
@@ -411,7 +544,11 @@ const TabResultados = ({ idCurso }) => {
                     </thead>
                     <tbody>
                         {resultados.map((r, i) => (
-                            <tr key={i}>
+                            <tr
+                                key={i}
+                                className="vct-table--resultados-row"
+                                onDoubleClick={() => navegarAHistorial(r, curso)}
+                            >
                                 <td>
                                     <div className="vct-student-cell">
                                         <div className="vct-avatar">
@@ -426,7 +563,10 @@ const TabResultados = ({ idCurso }) => {
                                     <div className="vct-puntaje-wrap">
                                         <span className="vct-puntaje-val">{Number(r.puntaje || 0).toFixed(1)}</span>
                                         <div className="vct-puntaje-bar">
-                                            <div className="vct-puntaje-fill" style={{ width: `${Math.min(r.puntaje, 100)}%` }} />
+                                            <div
+                                                className="vct-puntaje-fill"
+                                                style={{ "--puntaje-pct": `${Math.min(r.puntaje, 100)}%` }}
+                                            />
                                         </div>
                                     </div>
                                 </td>
@@ -437,7 +577,10 @@ const TabResultados = ({ idCurso }) => {
                                 </td>
                                 <td className="vct-td-muted">
                                     {r.fecha
-                                        ? new Date(r.fecha).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })
+                                        ? new Date(r.fecha).toLocaleString("es-MX", {
+                                            day: "2-digit", month: "short", year: "numeric",
+                                            hour: "2-digit", minute: "2-digit", hour12: true
+                                        })
                                         : "—"}
                                 </td>
                             </tr>
@@ -453,38 +596,15 @@ const TabResultados = ({ idCurso }) => {
    COMPONENTE PRINCIPAL
 ═══════════════════════════════════════════════════════════ */
 export function CursoVisorTutor() {
-    const navigate = useNavigate();
-    const [searchParams, setSearchParams] = useSearchParams();
-    const id = searchParams.get("id");
-    const tabParam = searchParams.get("tab");
-
-    const [curso, setCurso] = useState(null);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
-    const [tabActiva, setTabActiva] = useState(
-        TABS.find(t => t.key === tabParam)?.key || "contenido"
-    );
-
-    const cambiarTab = (key) => {
-        setTabActiva(key);
-        setSearchParams({ id, tab: key });
-    };
-
-    useEffect(() => {
-        if (!id) { setError("No se especificó un curso."); setCargando(false); return; }
-        (async () => {
-            try {
-                setCargando(true);
-                const { data } = await api.get(`/cursos/cursos/${id}`);
-                if (!data.ok) throw new Error(data.mensaje);
-                setCurso(data.curso);
-            } catch (err) {
-                setError(err.response?.data?.mensaje || err.message);
-            } finally {
-                setCargando(false);
-            }
-        })();
-    }, [id]);
+    const {
+        id,
+        curso,
+        cargando,
+        error,
+        tabActiva,
+        cambiarTab,
+        navigate,
+    } = useCursoVisorTutor();
 
     if (cargando) return (
         <div className="vct-root">
@@ -508,7 +628,6 @@ export function CursoVisorTutor() {
     );
 
     const vark = VARK_COLORS[curso.perfil_vark];
-    const totalBloques = curso.secciones?.reduce((a, s) => a + (s.contenidos?.length || 0), 0) || 0;
 
     return (
         <div className="vct-root">
@@ -533,13 +652,17 @@ export function CursoVisorTutor() {
                             <div className="vct-hero__cover-overlay" />
                         </div>
                     ) : (
-                        <div className="vct-hero__cover vct-hero__cover--placeholder"
-                            style={{ background: `hsl(${(curso.titulo?.charCodeAt(0) || 65) * 7 % 360},40%,88%)` }}
+                        <div
+                            className="vct-hero__cover vct-hero__cover--placeholder"
+                            style={{ "--placeholder-hue": `${(curso.titulo?.charCodeAt(0) || 65) * 7 % 360}` }}
                         />
                     )}
                     <div className="vct-hero__content">
                         {vark && (
-                            <span className="vct-vark-badge" style={{ background: vark.bg, color: vark.text }}>
+                            <span
+                                className="vct-vark-badge"
+                                style={{ "--vark-bg": vark.bg, "--vark-text": vark.text }}
+                            >
                                 <IoSparkles size={11} /> {curso.perfil_vark} — {vark.label}
                             </span>
                         )}
@@ -547,7 +670,6 @@ export function CursoVisorTutor() {
                         {curso.descripcion && <p className="vct-hero__desc">{curso.descripcion}</p>}
                         <div className="vct-hero__stats">
                             <span><IoLayersOutline size={14} /> {curso.secciones?.length || 0} secciones</span>
-                            {/*<span><IoBookOutline size={14} /> {totalBloques} bloques de contenido</span>*/}
                             {curso.nombre_dimension && <span><IoSparkles size={14} /> {curso.nombre_dimension}</span>}
                         </div>
                     </div>
@@ -575,7 +697,7 @@ export function CursoVisorTutor() {
 
                     {tabActiva === "estudiantes" && <TabEstudiantes idCurso={id} />}
 
-                    {tabActiva === "resultados" && <TabResultados idCurso={id} />}
+                    {tabActiva === "resultados" && <TabResultados idCurso={id} curso={curso} />}
 
                 </div>
 

@@ -157,6 +157,49 @@
     background: var(--cd-blue-pale);
 }
 
+.cd-btn--danger {
+    background: #FEE2E2;
+    color: #991B1B;
+    border: 1.5px solid #FECACA;
+}
+
+.cd-btn--danger:hover {
+    background: #FECACA;
+    border-color: #FCA5A5;
+}
+
+/* Modificador para el botón de cancelar inscripción */
+.cd-btn--cancel {
+    font-size: 0.78rem;
+    opacity: 0.75;
+}
+
+.cd-btn--cancel:hover {
+    opacity: 1;
+}
+
+/* ══════════════════════════════════════════════
+   CTA GROUP
+══════════════════════════════════════════════ */
+.cd-cta-group {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+/* Aviso de curso archivado */
+.cd-archived-notice {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    background: #EDE9FE;
+    border-radius: var(--cd-radius-sm);
+    padding: 9px 12px;
+    font-size: 13px;
+    color: #5B21B6;
+    font-weight: 500;
+}
+
 /* ══════════════════════════════════════════════
    HERO
 ══════════════════════════════════════════════ */
@@ -342,7 +385,7 @@
     font-family: 'Plus Jakarta Sans', sans-serif;
     font-size: 38px;
     font-weight: 800;
-    color: var(--cd-blue);
+    /* color y background se aplican inline porque son dinámicos (hsl calculado desde el título) */
     opacity: .3;
     letter-spacing: -2px;
 }
@@ -381,6 +424,7 @@
     background: var(--cd-green);
     border-radius: 999px;
     transition: width .8s ease;
+    /* width se aplica inline porque es un valor dinámico (porcentaje de progreso) */
 }
 
 .cd-progress-sub {
@@ -466,6 +510,7 @@
     background: var(--cd-green);
     border-radius: 999px;
     transition: width .8s ease;
+    /* width se aplica inline porque es un valor dinámico (porcentaje de progreso) */
 }
 
 /* ══════════════════════════════════════════════
@@ -865,6 +910,7 @@
     font-size: 12.5px;
     font-weight: 500;
     border: 1px solid transparent;
+    /* background, color y border-color se aplican inline porque son dinámicos (por letra VARK) */
 }
 
 .cd-vark-letter {

@@ -56,13 +56,12 @@ export class PreguntaTest {
         return await db.query("DELETE FROM Pregunta_Test WHERE id_test = ?", [id]);
     }
 
-
     static async getByCursoConOpciones(id_curso) {
         const [preguntas] = await db.query(
             `SELECT pt.*, sc.id_seccion
-         FROM Pregunta_Test pt
-         JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
-         WHERE sc.id_curso = ?`,
+             FROM Pregunta_Test pt
+             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+             WHERE sc.id_curso = ?`,
             [id_curso]
         );
 
@@ -80,5 +79,23 @@ export class PreguntaTest {
 
         return preguntas;
     }
-}
 
+    static async seccionTienePreguntas(id_seccion) {
+        const [[{ count }]] = await db.query(
+            "SELECT COUNT(*) AS count FROM Pregunta_Test WHERE id_seccion = ?",
+            [id_seccion]
+        );
+        return count > 0;
+    }
+
+    static async getIdCursoPorPregunta(id_test) {
+        const [[row]] = await db.query(
+            `SELECT sc.id_curso
+             FROM Pregunta_Test pt
+             JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+             WHERE pt.id_test = ?`,
+            [id_test]
+        );
+        return row?.id_curso ?? null;
+    }
+}

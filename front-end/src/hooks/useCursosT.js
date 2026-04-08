@@ -3,9 +3,66 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 
-// Todos los perfiles VARK posibles del sistema (fuente de verdad estática)
-const TODOS_PERFILES_VARK = ["V", "A", "R", "K", "VA", "VR", "VK", "AR", "AK", "RK", "VAR", "VAK", "VRK", "ARK", "VARK"];
+/* ─────────────────────────────────────────────────────────
+   CONSTANTES
+───────────────────────────────────────────────────────── */
+export const VARK_COLORS = {
+    V: { bg: "#DBEAFE", text: "#1E40AF", label: "Visual" },
+    A: { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
+    R: { bg: "#DCFCE7", text: "#065F46", label: "Lectura/Escritura" },
+    K: { bg: "#FCE7F3", text: "#9D174D", label: "Kinestésico" },
+    VA: { bg: "#EEF2FF", text: "#3730A3", label: "Visual-Auditivo" },
+    VR: { bg: "#ECFDF5", text: "#065F46", label: "Visual-Lectura" },
+    VK: { bg: "#F3E8FF", text: "#6B21A8", label: "Visual-Kinestésico" },
+    AR: { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
+    AK: { bg: "#FFF1F2", text: "#BE123C", label: "Auditivo-Kinestésico" },
+    RK: { bg: "#F0FDF4", text: "#166534", label: "Lectura-Kinestésico" },
+    VAR: { bg: "#EFF6FF", text: "#1E40AF", label: "Visual-Auditivo-Lectura" },
+    VAK: { bg: "#F5F3FF", text: "#5B21B6", label: "Visual-Auditivo-Kinestésico" },
+    VRK: { bg: "#ECFEFF", text: "#155E75", label: "Visual-Lectura-Kinestésico" },
+    ARK: { bg: "#FFF7ED", text: "#9A3412", label: "Auditivo-Lectura-Kinestésico" },
+    VARK: { bg: "#F0F9FF", text: "#0369A1", label: "Multimodal" },
+};
 
+export const FILTROS = [
+    { key: "todos", label: "Todos", dot: "#94A3B8" },
+    { key: "publicado", label: "Publicados", dot: "#059669" },
+    { key: "borrador", label: "Borradores", dot: "#94A3B8" },
+    { key: "archivado", label: "Archivados", dot: "#7C3AED" },
+];
+
+export const PLACEHOLDER_PALETTES = [
+    { bg: "#DBEAFE", text: "#1E40AF" },
+    { bg: "#D1FAE5", text: "#065F46" },
+    { bg: "#FCE7F3", text: "#9D174D" },
+    { bg: "#EDE9FE", text: "#5B21B6" },
+    { bg: "#FEF3C7", text: "#92400E" },
+    { bg: "#CFFAFE", text: "#155E75" },
+    { bg: "#FFE4E6", text: "#9F1239" },
+    { bg: "#DCFCE7", text: "#14532D" },
+];
+
+// Fuente de verdad única para todos los perfiles VARK
+const TODOS_PERFILES_VARK = Object.keys(VARK_COLORS);
+
+/* ─────────────────────────────────────────────────────────
+   HELPERS
+───────────────────────────────────────────────────────── */
+export const fmtDate = (iso) => {
+    if (!iso) return "—";
+    return new Date(iso).toLocaleDateString("es-MX", {
+        day: "2-digit", month: "short", year: "numeric",
+    });
+};
+
+export const getPlaceholderPalette = (titulo = "") => {
+    const idx = (titulo.charCodeAt(0) || 65) % PLACEHOLDER_PALETTES.length;
+    return PLACEHOLDER_PALETTES[idx];
+};
+
+/* ─────────────────────────────────────────────────────────
+   HOOK
+───────────────────────────────────────────────────────── */
 export function useCursosT() {
     const navigate = useNavigate();
 
@@ -23,12 +80,11 @@ export function useCursosT() {
     const [modalPublicar, setModalPublicar] = useState(null);
     const [modalArchivar, setModalArchivar] = useState(null);
     const [modalEliminar, setModalEliminar] = useState(null);
+    const [alert, setAlert] = useState(null);
 
-    // ── Alert de éxito ──────────────────────────────────────
-    const [alert, setAlert] = useState(null); // { title, message } | null
     const cerrarAlert = () => setAlert(null);
-    // ───────────────────────────────────────────────────────
 
+    /* ── Fetch ──────────────────────────────────────────── */
     const fetchCursos = async () => {
         try {
             setCargando(true);
@@ -47,7 +103,6 @@ export function useCursosT() {
         }
     };
 
-    // Carga todas las dimensiones del sistema (endpoint ya existente)
     const fetchDimensiones = async () => {
         try {
             const { data } = await api.get("/cursos/dimensiones");
@@ -61,23 +116,19 @@ export function useCursosT() {
         fetchCursos();
         fetchDimensiones();
 
-        // Mostrar alert si venimos de editar un curso
         const params = new URLSearchParams(window.location.search);
         if (params.get("actualizado") === "1") {
             setAlert({
                 title: "Curso actualizado",
                 message: "Los cambios se guardaron correctamente.",
             });
-            // Limpiar el query param sin recargar
             window.history.replaceState({}, "", window.location.pathname);
         }
     }, []);
 
-    // varkDisponibles → los 15 perfiles siempre disponibles
+    /* ── Datos derivados ────────────────────────────────── */
     const varkDisponibles = TODOS_PERFILES_VARK;
 
-    // dimensionesDisponibles → todas las del sistema;
-    // si el fetch falló, se degrada a las que tienen los cursos del tutor
     const dimensionesDisponibles = useMemo(() => {
         if (todasLasDimensiones.length > 0) {
             return todasLasDimensiones.map((d) => d.nombre_dimension).sort();
@@ -86,14 +137,14 @@ export function useCursosT() {
         return Array.from(set).sort();
     }, [todasLasDimensiones, cursos]);
 
-    // ── Filtrado principal ───────────────────────────────────
     const filtrados = useMemo(() => {
         const q = busqueda.toLowerCase();
         return cursos.filter((c) => {
             const okBusqueda =
-                c.titulo.toLowerCase().includes(q) ||
-                c.descripcion?.toLowerCase().includes(q) ||
-                c.perfil_vark?.toLowerCase().includes(q);
+                c.titulo.toLowerCase().includes(q)
+                //|| c.descripcion?.toLowerCase().includes(q)
+                //|| c.perfil_vark?.toLowerCase().includes(q)
+                ;
 
             const okEstado =
                 filtroEstado === "todos" ? !c.archivado :
@@ -117,7 +168,7 @@ export function useCursosT() {
     const totalBorradores = cursos.filter((c) => !c.es_publicado && !c.archivado).length;
     const totalArchivados = cursos.filter((c) => c.archivado).length;
 
-    // ── Handlers filtros y paginación ───────────────────────
+    /* ── Handlers filtros y paginación ─────────────────── */
     const handleBusqueda = (v) => { setBusqueda(v); setPagina(1); };
     const handlePorPagina = (n) => { setPorPagina(n); setPagina(1); };
     const handleFiltro = (k) => { setFiltroEstado(k); setPagina(1); };
@@ -130,48 +181,50 @@ export function useCursosT() {
         setPagina(1);
     };
 
-    // ── Handlers modales ────────────────────────────────────
+    /* ── Handlers modales ───────────────────────────────── */
     const handleTogglePublish = (curso) => setModalPublicar(curso);
     const handleArchivar = (curso) => setModalArchivar(curso);
     const handleEliminar = (curso) => setModalEliminar(curso);
 
     const handleConfirmPublicar = async () => {
+        const { id_curso, titulo, es_publicado } = modalPublicar;
+        setModalPublicar(null);
         try {
-            await api.patch(`/cursos/cursos/${modalPublicar.id_curso}/publicar`);
+            await api.patch(`/cursos/cursos/${id_curso}/publicar`);
             await fetchCursos();
+            setAlert({
+                title: es_publicado ? "Curso despublicado" : "Curso publicado",
+                message: es_publicado
+                    ? `"${titulo}" volvió a estado borrador.`
+                    : `"${titulo}" ahora está visible para los estudiantes.`,
+            });
         } catch (err) {
             console.error("Error al cambiar publicación:", err.response?.data);
         }
-        setModalPublicar(null);
     };
 
     const handleConfirmArchivar = async () => {
+        const { id_curso, titulo, archivado } = modalArchivar;
+        setModalArchivar(null);
         try {
-            const { data } = await api.patch(`/cursos/cursos/${modalArchivar.id_curso}/archivar`);
+            const { data } = await api.patch(`/cursos/cursos/${id_curso}/archivar`);
             await fetchCursos();
-
-            // Opcional: avisar si se republicó automáticamente
-            if (!data.archivado && data.es_publicado) {
-                setAlert({
-                    title: "Curso desarchivado",
-                    message: `"${modalArchivar.titulo}" fue desarchivado y volvió a estar publicado.`,
-                });
-            }
+            setAlert(
+                !archivado
+                    ? { title: "Curso archivado", message: `"${titulo}" fue archivado correctamente.` }
+                    : { title: "Curso desarchivado", message: `"${titulo}" fue desarchivado${data.es_publicado ? " y volvió a estar publicado" : ""}.` }
+            );
         } catch (err) {
             console.error("Error al archivar:", err.response?.data);
         }
-        setModalArchivar(null);
     };
-
+    
     const handleConfirmarEliminar = async () => {
-        // Capturamos los datos ANTES de limpiar el modal para no perderlos
         const { id_curso, titulo } = modalEliminar;
         setModalEliminar(null);
-
         try {
             await api.delete(`/cursos/cursos/${id_curso}`);
             await fetchCursos();
-            // ── Disparar alert de éxito ─────────────────────
             setAlert({
                 title: "Curso eliminado",
                 message: `"${titulo}" se eliminó correctamente.`,
@@ -181,7 +234,7 @@ export function useCursosT() {
         }
     };
 
-    // ── Navegación ──────────────────────────────────────────
+    /* ── Navegación ─────────────────────────────────────── */
     const irACrear = () => navigate("/editor-curso");
     const irAEditar = (c) => navigate(`/editor-curso?id=${c.id_curso}`);
     const irAVistaPrevia = (c) => navigate(`/cursos-visor-tutor?id=${c.id_curso}`);
@@ -191,7 +244,7 @@ export function useCursosT() {
         cursos, cargando, error, busqueda, vista, porPagina, pagina,
         filtroEstado, filtroVark, filtroDimension,
         modalPublicar, modalArchivar, modalEliminar,
-        alert, cerrarAlert,                          // ← alert expuesto
+        alert, cerrarAlert,
 
         // Datos derivados
         filtrados, paginados, totalPaginas, desde, hasta,

@@ -3,9 +3,9 @@ import { db } from "../config/db.js";
 
 export class Progreso {
     constructor({ id_intento, id_contenido, visto = false }) {
-        this.id_intento   = id_intento;
+        this.id_intento = id_intento;
         this.id_contenido = id_contenido;
-        this.visto        = visto;
+        this.visto = visto;
     }
 
     async save() {

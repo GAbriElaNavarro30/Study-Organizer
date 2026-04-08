@@ -12,11 +12,11 @@ export class ResultadoCurso {
     async save() {
         return await db.query(
             `INSERT INTO Resultado_Curso (total_preguntas, respuestas_correctas, porcentaje, id_intento)
-         VALUES (?, ?, ?, ?)
-         ON DUPLICATE KEY UPDATE
-           total_preguntas      = VALUES(total_preguntas),
-           respuestas_correctas = VALUES(respuestas_correctas),
-           porcentaje           = VALUES(porcentaje)`,
+             VALUES (?, ?, ?, ?)
+             ON DUPLICATE KEY UPDATE
+               total_preguntas      = VALUES(total_preguntas),
+               respuestas_correctas = VALUES(respuestas_correctas),
+               porcentaje           = VALUES(porcentaje)`,
             [
                 this.total_preguntas,
                 this.respuestas_correctas,
@@ -67,6 +67,69 @@ export class ResultadoCurso {
              ORDER BY rc.fecha_resultado DESC`,
             [id_curso]
         );
+        return rows;
+    }
+
+    // ========== MÉTODOS NUEVOS ==========
+
+    static async getResultadosPorCurso(id_curso) {
+        const [rows] = await db.query(
+            `SELECT
+                u.id_usuario,
+                u.nombre, u.apellido, u.foto_perfil,
+                rc.total_preguntas, rc.respuestas_correctas,
+                rc.porcentaje AS puntaje,
+                CASE
+                    WHEN rc.porcentaje >= 90 THEN 'excelente'
+                    WHEN rc.porcentaje >= 80 THEN 'muy-bueno'
+                    WHEN rc.porcentaje >= 70 THEN 'bueno'
+                    WHEN rc.porcentaje >= 50 THEN 'regular'
+                    ELSE 'deficiente'
+                END AS nivel,
+                it.fecha_inicio AS fecha
+             FROM Resultado_Curso rc
+             JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+             JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
+             JOIN Usuario u ON i.id_usuario = u.id_usuario
+             WHERE i.id_curso = ?
+               AND rc.id_resultado = (
+                   SELECT rc2.id_resultado
+                   FROM Resultado_Curso rc2
+                   JOIN Intento_Curso it2 ON rc2.id_intento = it2.id_intento
+                   JOIN Inscripcion i2 ON it2.id_inscripcion = i2.id_inscripcion
+                   WHERE i2.id_curso = ?
+                     AND i2.id_usuario = u.id_usuario
+                   ORDER BY rc2.id_resultado DESC
+                   LIMIT 1
+               )
+             ORDER BY rc.porcentaje DESC`,
+            [id_curso, id_curso]
+        );
+        
+        return rows;
+    }
+
+    static async getHistorialEstudiante(id_curso, id_usuario) {
+        const [rows] = await db.query(
+            `SELECT
+                rc.porcentaje AS puntaje,
+                CASE
+                    WHEN rc.porcentaje >= 90 THEN 'excelente'
+                    WHEN rc.porcentaje >= 80 THEN 'muy-bueno'
+                    WHEN rc.porcentaje >= 70 THEN 'bueno'
+                    WHEN rc.porcentaje >= 50 THEN 'regular'
+                    ELSE 'deficiente'
+                END AS nivel,
+                it.fecha_inicio AS fecha,
+                TIMESTAMPDIFF(MINUTE, it.fecha_inicio, it.fecha_fin) AS duracion_minutos
+             FROM Resultado_Curso rc
+             JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+             JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
+             WHERE i.id_curso = ? AND i.id_usuario = ?
+             ORDER BY it.fecha_inicio ASC`,
+            [id_curso, id_usuario]
+        );
+        
         return rows;
     }
 }

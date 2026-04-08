@@ -1,12 +1,11 @@
 // src/hooks/useCursoDetalle.js
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
+import { useState, useEffect, useCallback } from "react";
+import { useLocation } from "react-router-dom";
 import api from "../services/api.js";
 
 export function useCursoDetalle() {
     const { state } = useLocation();
     const id_curso = state?.id_curso;
-    const navigate = useNavigate();
 
     const [curso, setCurso] = useState(null);
     const [inscrito, setInscrito] = useState(false);
@@ -15,6 +14,25 @@ export function useCursoDetalle() {
     const [inscribiendo, setInscribiendo] = useState(false);
     const [animado, setAnimado] = useState(false);
     const [error, setError] = useState(null);
+    const [ultimoResultado, setUltimoResultado] = useState(null);
+
+    /* ── Carga inicial ── */
+    const cargar = useCallback(async () => {
+        setCargando(true);
+        setError(null);
+        try {
+            const { data } = await api.get(`/cursos/detalle?id=${id_curso}`);
+            setCurso(data.curso);
+            setInscrito(data.inscrito);
+            setProgreso(data.progreso);
+            setUltimoResultado(data.ultimoResultado ?? null);
+        } catch {
+            setError("No se pudo cargar el curso.");
+        } finally {
+            setCargando(false);
+            setTimeout(() => setAnimado(true), 80);
+        }
+    }, [id_curso]);
 
     useEffect(() => {
         if (!id_curso) {
@@ -23,79 +41,45 @@ export function useCursoDetalle() {
             return;
         }
         cargar();
-        window.scrollTo(0, 0);
-    }, [id_curso]);
+    }, [cargar, id_curso]);
 
-    const cargar = async () => {
-        setCargando(true);
-        setError(null);
-        try {
-            const { data } = await api.get(`/cursos/detalle?id=${id_curso}`);
-            setCurso(data.curso);
-            setInscrito(data.inscrito);
-            setProgreso(data.progreso);
-        } catch {
-            setError("No se pudo cargar el curso.");
-        } finally {
-            setCargando(false);
-            setTimeout(() => setAnimado(true), 80);
-        }
-    };
+    /* ── Acciones ──
+       Devuelven Promises resueltas/rechazadas para que el componente
+       pueda decidir qué hacer (navegar, mostrar alertas, etc.)        */
 
-    const handleInscribirse = async () => {
-        if (inscribiendo) return;
+    const inscribirse = useCallback(async () => {
         setInscribiendo(true);
         try {
             await api.post(`/cursos/inscripciones`, { id_curso });
             setInscrito(true);
             setProgreso({ total: 0, vistos: 0, porcentaje: 0, completado: false, contenidos_vistos: [] });
-        } catch (err) {
-            alert(err?.response?.data?.mensaje || "Error al inscribirse.");
         } finally {
             setInscribiendo(false);
         }
-    };
+    }, [id_curso]);
 
-    const handleCancelarInscripcion = async () => {
-        const confirmar = window.confirm("¿Seguro que quieres cancelar tu inscripción?");
-        if (!confirmar) return;
-        try {
-            await api.delete(`/cursos/inscripciones`, { data: { id_curso } });
-            setInscrito(false);
-            setProgreso(null);
-        } catch (err) {
-            alert(err?.response?.data?.mensaje || "Error al cancelar la inscripción.");
-        }
-    };
+    const cancelarInscripcion = useCallback(async () => {
+        await api.delete(`/cursos/inscripciones`, { data: { id_curso } });
+        setInscrito(false);
+        setProgreso(null);
+    }, [id_curso]);
 
-    // ── CAMBIO AQUÍ: si el curso está archivado, saltamos el POST /intentos ──
-    const handleIniciarCurso = async () => {
+    /**
+     * Crea un intento si el curso NO está archivado.
+     * Resuelve sin valor; el componente navega tras llamarla.
+     */
+    const iniciarIntento = useCallback(async () => {
         if (!curso?.archivado) {
             try {
                 await api.post("/cursos/intentos", { id_curso });
-            } catch { /* si ya existe intento activo, continúa igual */ }
+            } catch {
+                /* si ya existe un intento activo, continuamos igual */
+            }
         }
-        navigate("/cursos-visor", { state: { id_curso } });
-    };
-    // ─────────────────────────────────────────────────────────────────────────
-
-    const handleRetomarCurso = () => {
-        navigate("/cursos-visor", { state: { id_curso } });
-    };
-
-    const handleVerResultados = () => {
-        navigate("/cursos/resultado", { state: { id_curso } });
-    };
-
-    const totalContenidos = curso?.secciones?.reduce(
-        (acc, s) => acc + (s.contenidos?.length || 0), 0
-    ) ?? 0;
-
-    const totalPreguntas = curso?.secciones?.reduce(
-        (acc, s) => acc + (s.preguntas?.length || 0), 0
-    ) ?? 0;
+    }, [curso?.archivado, id_curso]);
 
     return {
+        /* estado */
         curso,
         inscrito,
         progreso,
@@ -103,13 +87,12 @@ export function useCursoDetalle() {
         inscribiendo,
         animado,
         error,
-        totalContenidos,
-        totalPreguntas,
-        handleInscribirse,
-        handleCancelarInscripcion,
-        handleIniciarCurso,
-        handleRetomarCurso,
-        handleVerResultados,
-        navigate,
+        ultimoResultado,
+        id_curso,
+
+        /* acciones puras (sin navegación) */
+        inscribirse,
+        cancelarInscripcion,
+        iniciarIntento,
     };
 }

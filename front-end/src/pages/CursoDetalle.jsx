@@ -1,4 +1,5 @@
 // src/pages/Cursos/CursoDetalle.jsx
+import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
     IoArrowBackOutline, IoBookOutline, IoLayersOutline,
@@ -13,11 +14,16 @@ import {
 import "../styles/cursoDetalle.css";
 import { useCursoDetalle } from "../hooks/useCursoDetalle.js";
 
+/* ─────────────────────────────────────────────
+   Constantes VARK
+───────────────────────────────────────────── */
 const VARK_LABELS = { V: "Visual", A: "Auditivo", R: "Lector / Escritor", K: "Kinestésico" };
 const VARK_COLORS = { V: "#1A5FD4", A: "#0F7B4A", R: "#8B4500", K: "#5B3FA8" };
 const VARK_BG = { V: "#E8F0FD", A: "#E6F7EF", R: "#FFF4E5", K: "#F0EDF9" };
 
-/* ── Loading ── */
+/* ─────────────────────────────────────────────
+   Sub-componentes
+───────────────────────────────────────────── */
 function LoadingState() {
     return (
         <div className="cd-loading">
@@ -27,7 +33,6 @@ function LoadingState() {
     );
 }
 
-/* ── Sección accordion ── */
 function SeccionItem({ seccion, numero }) {
     const [open, setOpen] = useState(true);
     const total = seccion.contenidos?.length || 0;
@@ -63,7 +68,6 @@ function SeccionItem({ seccion, numero }) {
     );
 }
 
-/* ── Instructor ── única instancia ── */
 function InstructorCard({ tutor }) {
     if (!tutor?.nombre) return null;
     const initials = tutor.nombre.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase();
@@ -110,19 +114,61 @@ function InstructorCard({ tutor }) {
     );
 }
 
-/* ══════════════════════════════════════════════
+/* ═══════════════════════════════════════════════════════
    COMPONENTE PRINCIPAL
-══════════════════════════════════════════════ */
+═══════════════════════════════════════════════════════ */
 export function CursoDetalle() {
+    const navigate = useNavigate();
+
     const {
         curso, inscrito, progreso,
         cargando, inscribiendo, animado, error,
-        totalContenidos, totalPreguntas,
-        handleInscribirse, handleIniciarCurso, handleRetomarCurso, handleVerResultados,
-        navigate,
-        handleCancelarInscripcion,
+        ultimoResultado, id_curso,
+        inscribirse, cancelarInscripcion, iniciarIntento,
     } = useCursoDetalle();
 
+    /* ── Valores derivados (no pertenecen al hook: dependen solo de `curso`) ── */
+    const totalContenidos = curso?.secciones?.reduce(
+        (acc, s) => acc + (s.contenidos?.length || 0), 0
+    ) ?? 0;
+
+    const totalPreguntas = curso?.secciones?.reduce(
+        (acc, s) => acc + (s.preguntas?.length || 0), 0
+    ) ?? 0;
+
+    /* ── Handlers con navegación / UI (propios del componente) ── */
+    const handleInscribirse = async () => {
+        try {
+            await inscribirse();
+        } catch (err) {
+            alert(err?.response?.data?.mensaje || "Error al inscribirse.");
+        }
+    };
+
+    const handleCancelarInscripcion = async () => {
+        const confirmar = window.confirm("¿Seguro que quieres cancelar tu inscripción?");
+        if (!confirmar) return;
+        try {
+            await cancelarInscripcion();
+        } catch (err) {
+            alert(err?.response?.data?.mensaje || "Error al cancelar la inscripción.");
+        }
+    };
+
+    const handleIniciarCurso = async () => {
+        await iniciarIntento();
+        navigate("/cursos-visor", { state: { id_curso } });
+    };
+
+    const handleRetomarCurso = () => {
+        navigate("/cursos-visor", { state: { id_curso } });
+    };
+
+    const handleVerResultados = () => {
+        navigate("/cursos/resultado", { state: { id_curso } });
+    };
+
+    /* ── Estados de carga / error ── */
     if (cargando) return <LoadingState />;
 
     if (error || !curso) {
@@ -137,6 +183,7 @@ export function CursoDetalle() {
         );
     }
 
+    /* ── Datos auxiliares ── */
     const pct = progreso?.porcentaje ?? 0;
     const completado = progreso?.completado ?? false;
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
@@ -150,30 +197,28 @@ export function CursoDetalle() {
         telefono: curso.telefono_tutor ?? null,
     };
 
-    /* CTA — definido una sola vez */
+    /* ── CTA reutilizable ── */
     const renderCTA = (full = false) => {
         const cls = `cd-btn${full ? " cd-btn--full" : ""}`;
 
         if (!inscrito) {
-            // Si el curso está archivado, no mostrar botón de inscripción
             if (curso?.archivado) return null;
             return (
-                <button className={`${cls} cd-btn--primary`} onClick={handleInscribirse} disabled={inscribiendo}>
+                <button
+                    className={`${cls} cd-btn--primary`}
+                    onClick={handleInscribirse}
+                    disabled={inscribiendo}
+                >
                     <IoRibbonOutline size={15} />
                     {inscribiendo ? "Inscribiendo…" : "Inscribirse al curso"}
                 </button>
             );
         }
 
-        // Curso archivado + inscrito: solo ver contenido y resultados
         if (curso?.archivado) {
             return (
-                <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
-                    <div style={{
-                        display: "flex", alignItems: "center", gap: 8,
-                        background: "#EDE9FE", borderRadius: 8,
-                        padding: "9px 12px", fontSize: 13, color: "#5B21B6", fontWeight: 500,
-                    }}>
+                <div className="cd-cta-group">
+                    <div className="cd-archived-notice">
                         <IoArchiveOutline size={14} /> Este curso está archivado
                     </div>
                     <button className={`${cls} cd-btn--secondary`} onClick={handleRetomarCurso}>
@@ -184,12 +229,7 @@ export function CursoDetalle() {
                             <IoAnalyticsOutline size={15} /> Ver resultados
                         </button>
                     )}
-                    {/* ── AGREGADO: cancelar inscripción también en cursos archivados ── */}
-                    <button
-                        className={`${cls} cd-btn--danger`}
-                        onClick={handleCancelarInscripcion}
-                        style={{ fontSize: "0.78rem", opacity: 0.75 }}
-                    >
+                    <button className={`${cls} cd-btn--danger cd-btn--cancel`} onClick={handleCancelarInscripcion}>
                         Cancelar inscripción
                     </button>
                 </div>
@@ -197,9 +237,9 @@ export function CursoDetalle() {
         }
 
         return (
-            <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+            <div className="cd-cta-group">
                 {completado ? (
-                    <div style={{ display: "flex", flexDirection: "column", gap: "8px" }}>
+                    <div className="cd-cta-group">
                         <button className={`${cls} cd-btn--primary`} onClick={handleVerResultados}>
                             <IoAnalyticsOutline size={15} /> Ver resultados
                         </button>
@@ -208,22 +248,22 @@ export function CursoDetalle() {
                         </button>
                     </div>
                 ) : (
-                    <button className={`${cls} cd-btn--success`} onClick={pct > 0 ? handleRetomarCurso : handleIniciarCurso}>
+                    <button
+                        className={`${cls} cd-btn--success`}
+                        onClick={pct > 0 ? handleRetomarCurso : handleIniciarCurso}
+                    >
                         <IoPlayCircleOutline size={15} />
                         {pct > 0 ? "Continuar curso" : "Iniciar curso"}
                     </button>
                 )}
-                <button
-                    className={`${cls} cd-btn--danger`}
-                    onClick={handleCancelarInscripcion}
-                    style={{ fontSize: "0.78rem", opacity: 0.75 }}
-                >
+                <button className={`${cls} cd-btn--danger cd-btn--cancel`} onClick={handleCancelarInscripcion}>
                     Cancelar inscripción
                 </button>
             </div>
         );
     };
 
+    /* ── Render ── */
     return (
         <div className={`cd-app ${animado ? "cd-animated" : ""}`}>
 
@@ -289,8 +329,13 @@ export function CursoDetalle() {
                                     {curso.foto
                                         ? <img src={curso.foto} alt={curso.titulo} />
                                         : (
-                                            <div className="cd-enroll-cover-placeholder"
-                                                style={{ color: `hsl(${hue},55%,42%)`, background: `hsl(${hue},40%,93%)` }}>
+                                            <div
+                                                className="cd-enroll-cover-placeholder"
+                                                style={{
+                                                    color: `hsl(${hue},55%,42%)`,
+                                                    background: `hsl(${hue},40%,93%)`,
+                                                }}
+                                            >
                                                 {curso.titulo?.split(" ").slice(0, 2).map(w => w[0]).join("").toUpperCase()}
                                             </div>
                                         )
@@ -319,6 +364,15 @@ export function CursoDetalle() {
                                                 </>
                                             )}
                                         </div>
+                                    )}
+
+                                    {inscrito && ultimoResultado && (
+                                        <button
+                                            className="cd-btn cd-btn--primary cd-btn--full"
+                                            onClick={handleVerResultados}
+                                        >
+                                            <IoAnalyticsOutline size={15} /> Ver último resultado
+                                        </button>
                                     )}
 
                                     {renderCTA(true)}
@@ -363,7 +417,6 @@ export function CursoDetalle() {
                 {/* Columna principal */}
                 <div className="cd-main">
 
-                    {/* Contenido del curso */}
                     <div className="cd-block">
                         <div className="cd-block-head">
                             <IoLayersOutline size={16} className="cd-block-head-icon" />
@@ -384,14 +437,12 @@ export function CursoDetalle() {
                         )}
                     </div>
 
-                    {/* Instructor — única instancia */}
                     <InstructorCard tutor={tutor} />
                 </div>
 
-                {/* Sidebar — info contextual */}
+                {/* Sidebar */}
                 <aside className="cd-sidebar">
 
-                    {/* Detalles del curso */}
                     <div className="cd-sidebar-block">
                         <div className="cd-sidebar-head">
                             <p className="cd-sidebar-head-title">
@@ -434,7 +485,6 @@ export function CursoDetalle() {
                         </div>
                     </div>
 
-                    {/* Perfil VARK */}
                     {letrasVark.length > 0 && (
                         <div className="cd-sidebar-block">
                             <div className="cd-sidebar-head">
@@ -445,8 +495,15 @@ export function CursoDetalle() {
                             <div className="cd-sidebar-body">
                                 <div className="cd-vark-list">
                                     {letrasVark.map(l => (
-                                        <div key={l} className="cd-vark-row"
-                                            style={{ background: VARK_BG[l], color: VARK_COLORS[l], borderColor: VARK_COLORS[l] + "33" }}>
+                                        <div
+                                            key={l}
+                                            className="cd-vark-row"
+                                            style={{
+                                                background: VARK_BG[l],
+                                                color: VARK_COLORS[l],
+                                                borderColor: VARK_COLORS[l] + "33",
+                                            }}
+                                        >
                                             <span className="cd-vark-letter">{l}</span>
                                             <span>{VARK_LABELS[l]}</span>
                                         </div>
@@ -456,7 +513,6 @@ export function CursoDetalle() {
                         </div>
                     )}
 
-                    {/* Dimensión */}
                     {curso.nombre_dimension && (
                         <div className="cd-sidebar-block">
                             <div className="cd-sidebar-head">

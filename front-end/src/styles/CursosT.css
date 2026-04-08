@@ -52,7 +52,6 @@
     margin-top: 3px;
 }
 
-/* ── Botón crear ─────────────────────────────────────────── */
 .btn-primary-curso {
     display: inline-flex;
     align-items: center;
@@ -84,7 +83,6 @@
     box-shadow: none;
 }
 
-/* ── Stats inline ────────────────────────────────────────── */
 .header-stats {
     display: flex;
     align-items: center;
@@ -230,7 +228,66 @@
     font-weight: 500;
 }
 
-/* ══ MAIN ══════════════════════════════════════════════════ */
+.panel-filtros__sep {
+    height: 1px;
+    background: #E8EDF4;
+    margin: 14px 0 10px;
+}
+
+.panel-filtros__select-wrap {
+    padding: 0 4px;
+    margin-bottom: 2px;
+}
+
+.panel-filtros__select {
+    width: 100%;
+    height: 34px;
+    padding: 0 10px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    font-size: 12.5px;
+    font-family: inherit;
+    color: #334155;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 10px center;
+    padding-right: 28px;
+    transition: border-color 0.15s, box-shadow 0.15s;
+}
+
+.panel-filtros__select:focus {
+    border-color: #93C5FD;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
+}
+
+.filtros-limpiar-btn {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    margin-top: 14px;
+    padding: 7px 10px;
+    width: 100%;
+    border: 1px dashed #BFDBFE;
+    border-radius: 8px;
+    background: transparent;
+    color: #3B82F6;
+    font-size: 12px;
+    font-weight: 500;
+    font-family: inherit;
+    cursor: pointer;
+    transition: background 0.12s, border-color 0.12s;
+}
+
+.filtros-limpiar-btn:hover {
+    background: #EFF6FF;
+    border-color: #93C5FD;
+}
+
+/* ══ MAIN PANEL ════════════════════════════════════════════ */
 .panel-curso {
     flex: 1;
     min-width: 0;
@@ -257,7 +314,6 @@
     flex-wrap: wrap;
 }
 
-/* ── Search ─────────────────────────────────────────────── */
 .search-wrap {
     flex: 1 1 180px;
     min-width: 0;
@@ -314,7 +370,6 @@
     color: #475569;
 }
 
-/* ── Per page ───────────────────────────────────────────── */
 .per-page-wrap {
     display: flex;
     align-items: center;
@@ -347,7 +402,6 @@
     border-color: #93C5FD;
 }
 
-/* ── View toggle ────────────────────────────────────────── */
 .view-toggle {
     display: flex;
     background: #FFFFFF;
@@ -375,6 +429,44 @@
 .view-btn--active {
     background: #EBF3FF;
     color: #2563EB;
+}
+
+/* ══ FILTROS ACTIVOS CHIPS ══════════════════════════════════ */
+.filtros-activos {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 6px;
+    margin-bottom: 14px;
+}
+
+.filtro-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 4px 10px;
+    background: #EFF6FF;
+    border: 1px solid #BFDBFE;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 500;
+    color: #1D4ED8;
+}
+
+.filtro-chip button {
+    background: none;
+    border: none;
+    color: #60A5FA;
+    font-size: 11px;
+    cursor: pointer;
+    padding: 0;
+    line-height: 1;
+    display: flex;
+    align-items: center;
+    transition: color 0.12s;
+}
+
+.filtro-chip button:hover {
+    color: #1D4ED8;
 }
 
 /* ══ MOSAIC GRID ═══════════════════════════════════════════ */
@@ -406,9 +498,6 @@
     box-shadow: 0 4px 16px rgba(37, 99, 235, 0.08);
 }
 
-
-
-/* ── Portada ─────────────────────────────────────────────── */
 .curso-card__cover {
     position: relative;
     width: 100%;
@@ -442,7 +531,6 @@
     font-weight: 700;
     letter-spacing: 2px;
     user-select: none;
-    /* color e opacity se controlan inline con hsl saturado */
 }
 
 .curso-card__cover-overlay {
@@ -456,37 +544,6 @@
     gap: 6px;
 }
 
-/* ── Status badge ────────────────────────────────────────── */
-.status-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 3px 9px;
-    border-radius: 20px;
-    font-size: 11px;
-    font-weight: 600;
-    white-space: nowrap;
-    flex-shrink: 0;
-    backdrop-filter: blur(6px);
-    -webkit-backdrop-filter: blur(6px);
-}
-
-.status-badge--pub {
-    background: rgba(236, 253, 245, 0.95);
-    color: #065F46;
-}
-
-.status-badge--draft {
-    background: rgba(241, 245, 249, 0.95);
-    color: #64748B;
-}
-
-.status-badge--arch {
-    background: rgba(245, 243, 255, 0.95);
-    color: #5B21B6;
-}
-
-/* ── Cuerpo ──────────────────────────────────────────────── */
 .curso-card__body {
     padding: 13px 15px 10px;
     display: flex;
@@ -511,7 +568,6 @@
     margin: 0;
 }
 
-/* ── Footer ──────────────────────────────────────────────── */
 .curso-card__footer {
     padding: 10px 15px 13px;
     border-top: 1px solid #F1F5F9;
@@ -559,7 +615,7 @@
     color: #94A3B8;
 }
 
-/* ── VARK pill ───────────────────────────────────────────── */
+/* ══ VARK & DIM BADGES ═════════════════════════════════════ */
 .vark-pill {
     display: inline-flex;
     align-items: center;
@@ -571,16 +627,52 @@
     letter-spacing: 0.2px;
 }
 
-/* ── Dim chip ────────────────────────────────────────────── */
-.dim-chip {
+.dim-badge {
     display: inline-flex;
     align-items: center;
+    gap: 4px;
     padding: 2px 8px;
-    background: #EBF3FF;
-    color: #1D4ED8;
+    background: #F0F9FF;
+    color: #0369A1;
+    border: 1px solid #BAE6FD;
     border-radius: 5px;
     font-size: 11px;
     font-weight: 500;
+    /* Elimina margin-bottom: 4px; */
+    width: fit-content;
+}
+
+.curso-card__meta .dim-badge {
+    margin-bottom: 4px;
+}
+
+.status-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+    padding: 3px 9px;
+    border-radius: 20px;
+    font-size: 11px;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+    backdrop-filter: blur(6px);
+    -webkit-backdrop-filter: blur(6px);
+}
+
+.status-badge--pub {
+    background: rgba(236, 253, 245, 0.95);
+    color: #065F46;
+}
+
+.status-badge--draft {
+    background: rgba(241, 245, 249, 0.95);
+    color: #64748B;
+}
+
+.status-badge--arch {
+    background: rgba(245, 243, 255, 0.95);
+    color: #5B21B6;
 }
 
 /* ══ MENÚ ⋯ ════════════════════════════════════════════════ */
@@ -723,10 +815,8 @@
     background: #F7FAFF;
 }
 
-
-
 .td {
-    padding: 13px 16px;
+    padding: 16px 16px;  
     vertical-align: middle;
 }
 
@@ -1015,22 +1105,25 @@
         flex-direction: column;
     }
 
+    /* Panel ahora en columna con dos filas internas */
     .panel-filtros {
         width: 100%;
         min-height: unset;
         border-right: none;
         border-bottom: 1px solid #DBEAFE;
-        padding: 10px 16px;
+        padding: 10px 16px 12px;
         position: static;
-        flex-direction: row;
-        align-items: center;
-        gap: 6px;
+        flex-direction: column;
+        /* ← columna, no fila */
+        align-items: stretch;
+        gap: 8px;
     }
 
     .panel-filtros__header {
         display: none;
     }
 
+    /* Fila 1: botones de estado */
     .panel-filtros__nav {
         flex-direction: row;
         flex-wrap: nowrap;
@@ -1052,6 +1145,179 @@
 
     .filtro-btn__dot {
         display: none;
+    }
+
+    .panel-filtros__sep {
+        display: none;
+    }
+
+    /* Fila 2: selects VARK + Dimensión en fila */
+    .panel-filtros__selects-row {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .panel-filtros__select-wrap {
+        display: flex;
+        padding: 0;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .panel-filtros__select {
+        width: 100%;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .filtros-limpiar-btn {
+        display: flex;
+        margin-top: 0;
+        padding: 5px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        width: auto;
+    }
+
+    .panel-curso {
+        padding: 14px;
+    }
+
+    .cursos-grid {
+        grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
+        gap: 10px;
+    }
+
+    .pagination {
+        flex-direction: column;
+        align-items: center;
+        gap: 10px;
+    }
+
+    .pagination__controls {
+        position: static;
+        transform: none;
+    }
+
+    .pagination__info {
+        flex: none;
+        text-align: center;
+    }
+
+    .pagination__spacer {
+        display: none;
+    }
+}
+
+@media (max-width: 768px) {
+    .header-curso {
+        padding: 16px 20px 14px;
+    }
+
+    .header-curso__top {
+        flex-direction: column;
+        gap: 12px;
+        align-items: flex-start;
+    }
+
+    .page-title {
+        font-size: 18px;
+    }
+
+    .header-stats {
+        gap: 0;
+        flex-wrap: wrap;
+    }
+
+    .hstat {
+        padding: 0 14px 0 0;
+        margin: 0 14px 0 0;
+    }
+
+    .cursos-layout {
+        flex-direction: column;
+    }
+
+    /* Panel ahora en columna con dos filas internas */
+    .panel-filtros {
+        width: 100%;
+        min-height: unset;
+        border-right: none;
+        border-bottom: 1px solid #DBEAFE;
+        padding: 10px 16px 12px;
+        position: static;
+        flex-direction: column;
+        /* ← columna, no fila */
+        align-items: stretch;
+        gap: 8px;
+    }
+
+    .panel-filtros__header {
+        display: none;
+    }
+
+    /* Fila 1: botones de estado */
+    .panel-filtros__nav {
+        flex-direction: row;
+        flex-wrap: nowrap;
+        gap: 4px;
+        width: 100%;
+        overflow-x: auto;
+        -webkit-overflow-scrolling: touch;
+        scrollbar-width: none;
+    }
+
+    .panel-filtros__nav::-webkit-scrollbar {
+        display: none;
+    }
+
+    .filtro-btn {
+        flex-shrink: 0;
+        padding: 7px 12px;
+    }
+
+    .filtro-btn__dot {
+        display: none;
+    }
+
+    .panel-filtros__sep {
+        display: none;
+    }
+
+    /* Fila 2: selects VARK + Dimensión en fila */
+    .panel-filtros__selects-row {
+        display: flex;
+        flex-direction: row;
+        gap: 8px;
+        align-items: center;
+        flex-wrap: wrap;
+    }
+
+    .panel-filtros__select-wrap {
+        display: flex;
+        padding: 0;
+        margin-bottom: 0;
+        flex: 1;
+        min-width: 130px;
+    }
+
+    .panel-filtros__select {
+        width: 100%;
+        height: 32px;
+        font-size: 12px;
+    }
+
+    .filtros-limpiar-btn {
+        display: flex;
+        margin-top: 0;
+        padding: 5px 12px;
+        white-space: nowrap;
+        flex-shrink: 0;
+        width: auto;
     }
 
     .panel-curso {
@@ -1127,137 +1393,5 @@
         min-width: 28px;
         height: 28px;
         font-size: 12px;
-    }
-}
-
-/* ══ AÑADIR AL FINAL DE CursosT.css ══════════════════════ */
-
-/* ── Dimensión badge ─────────────────────────────────────── */
-.dim-badge {
-    display: inline-flex;
-    align-items: center;
-    gap: 4px;
-    padding: 2px 8px;
-    background: #F0F9FF;
-    color: #0369A1;
-    border: 1px solid #BAE6FD;
-    border-radius: 5px;
-    font-size: 11px;
-    font-weight: 500;
-    margin-bottom: 4px;
-    width: fit-content;
-}
-
-/* ── Panel filtros: separador y selects ─────────────────── */
-.panel-filtros__sep {
-    height: 1px;
-    background: #E8EDF4;
-    margin: 14px 0 10px;
-}
-
-.panel-filtros__select-wrap {
-    padding: 0 4px;
-    margin-bottom: 2px;
-}
-
-.panel-filtros__select {
-    width: 100%;
-    height: 34px;
-    padding: 0 10px;
-    border: 1px solid #E2E8F0;
-    border-radius: 8px;
-    background: #FFFFFF;
-    font-size: 12.5px;
-    font-family: inherit;
-    color: #334155;
-    cursor: pointer;
-    outline: none;
-    appearance: none;
-    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
-    background-repeat: no-repeat;
-    background-position: right 10px center;
-    padding-right: 28px;
-    transition: border-color 0.15s, box-shadow 0.15s;
-}
-
-.panel-filtros__select:focus {
-    border-color: #93C5FD;
-    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
-}
-
-/* ── Botón limpiar filtros ──────────────────────────────── */
-.filtros-limpiar-btn {
-    display: flex;
-    align-items: center;
-    gap: 6px;
-    margin-top: 14px;
-    padding: 7px 10px;
-    width: 100%;
-    border: 1px dashed #BFDBFE;
-    border-radius: 8px;
-    background: transparent;
-    color: #3B82F6;
-    font-size: 12px;
-    font-weight: 500;
-    font-family: inherit;
-    cursor: pointer;
-    transition: background 0.12s, border-color 0.12s;
-}
-
-.filtros-limpiar-btn:hover {
-    background: #EFF6FF;
-    border-color: #93C5FD;
-}
-
-/* ── Chips de filtros activos (encima del grid) ─────────── */
-.filtros-activos {
-    display: flex;
-    flex-wrap: wrap;
-    gap: 6px;
-    margin-bottom: 14px;
-}
-
-.filtro-chip {
-    display: inline-flex;
-    align-items: center;
-    gap: 6px;
-    padding: 4px 10px;
-    background: #EFF6FF;
-    border: 1px solid #BFDBFE;
-    border-radius: 20px;
-    font-size: 12px;
-    font-weight: 500;
-    color: #1D4ED8;
-}
-
-.filtro-chip button {
-    background: none;
-    border: none;
-    color: #60A5FA;
-    font-size: 11px;
-    cursor: pointer;
-    padding: 0;
-    line-height: 1;
-    display: flex;
-    align-items: center;
-    transition: color 0.12s;
-}
-
-.filtro-chip button:hover {
-    color: #1D4ED8;
-}
-
-/* ── Responsive: selects en móvil ───────────────────────── */
-@media (max-width: 768px) {
-    .panel-filtros__sep {
-        display: none;
-    }
-
-    .panel-filtros__select-wrap {
-        display: none;
-    }
-
-    .filtros-limpiar-btn {
-        display: none;
     }
 }

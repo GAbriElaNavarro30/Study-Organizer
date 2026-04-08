@@ -2,18 +2,19 @@
 import { db } from "../config/db.js";
 
 export class Contenido {
-    constructor({ titulo, contenido = null, orden, id_seccion }) {
+    constructor({ titulo, contenido = null, orden, id_seccion, imagen_url = null }) {
         this.titulo = titulo;
         this.contenido = contenido;
         this.orden = orden;
         this.id_seccion = id_seccion;
+        this.imagen_url = imagen_url;
     }
 
     async save() {
         return await db.query(
-            `INSERT INTO Contenido (titulo, contenido, orden, id_seccion)
-             VALUES (?, ?, ?, ?)`,
-            [this.titulo, this.contenido, this.orden, this.id_seccion]
+            `INSERT INTO Contenido (titulo, contenido, orden, id_seccion, imagen_url)
+             VALUES (?, ?, ?, ?, ?)`,
+            [this.titulo, this.contenido, this.orden, this.id_seccion, this.imagen_url]
         );
     }
 
@@ -46,11 +47,30 @@ export class Contenido {
     static async getByCurso(id_curso) {
         const [rows] = await db.query(
             `SELECT c.* FROM Contenido c
-         JOIN Seccion_Curso sc ON c.id_seccion = sc.id_seccion
-         WHERE sc.id_curso = ?
-         ORDER BY sc.orden ASC, c.orden ASC`,
+             JOIN Seccion_Curso sc ON c.id_seccion = sc.id_seccion
+             WHERE sc.id_curso = ?
+             ORDER BY sc.orden ASC, c.orden ASC`,
             [id_curso]
         );
         return rows;
+    }
+
+    static async getIdCursoPorContenido(id_contenido) {
+        const [[row]] = await db.query(
+            `SELECT sc.id_curso
+             FROM Contenido c
+             JOIN Seccion_Curso sc ON c.id_seccion = sc.id_seccion
+             WHERE c.id_contenido = ?`,
+            [id_contenido]
+        );
+        return row?.id_curso ?? null;
+    }
+
+    static async getById(id) {
+        const [rows] = await db.query(
+            "SELECT * FROM Contenido WHERE id_contenido = ?",
+            [id]
+        );
+        return rows[0];
     }
 }

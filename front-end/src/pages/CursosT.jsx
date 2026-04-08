@@ -12,64 +12,17 @@ import ReactDOM from "react-dom";
 import { ModalEliminarCurso } from "../components/ModalEliminarCurso";
 import { ModalArchivar } from "../components/ModalArchivar";
 import { ModalPublicar } from "../components/ModalPublicar";
-import { CustomAlert } from "../components/CustomAlert";   // ← nuevo
-import logo from "../assets/imagenes/logotipo.png";         // ← nuevo
-import { useCursosT } from "../hooks/useCursosT";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
+import {
+    useCursosT,
+    VARK_COLORS,
+    FILTROS,
+    PLACEHOLDER_PALETTES,
+    fmtDate,
+    getPlaceholderPalette,
+} from "../hooks/useCursosT";
 import "../styles/CursosT.css";
-
-/* ─────────────────────────────────────────────────────────
-   CONSTANTES
-───────────────────────────────────────────────────────── */
-const VARK_COLORS = {
-    V: { bg: "#DBEAFE", text: "#1E40AF", label: "Visual" },
-    A: { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
-    R: { bg: "#DCFCE7", text: "#065F46", label: "Lectura/Escritura" },
-    K: { bg: "#FCE7F3", text: "#9D174D", label: "Kinestésico" },
-    VA: { bg: "#EEF2FF", text: "#3730A3", label: "Visual-Auditivo" },
-    VR: { bg: "#ECFDF5", text: "#065F46", label: "Visual-Lectura" },
-    VK: { bg: "#F3E8FF", text: "#6B21A8", label: "Visual-Kinestésico" },
-    AR: { bg: "#FFFBEB", text: "#B45309", label: "Auditivo-Lectura" },
-    AK: { bg: "#FFF1F2", text: "#BE123C", label: "Auditivo-Kinestésico" },
-    RK: { bg: "#F0FDF4", text: "#166534", label: "Lectura-Kinestésico" },
-    VAR: { bg: "#EFF6FF", text: "#1E40AF", label: "Visual-Auditivo-Lectura" },
-    VAK: { bg: "#F5F3FF", text: "#5B21B6", label: "Visual-Autitivo-Kinestésico" },
-    VRK: { bg: "#ECFEFF", text: "#155E75", label: "Visual-Lectura-Kinestésico" },
-    ARK: { bg: "#FFF7ED", text: "#9A3412", label: "Auditivo-Lectura-Kinestésico" },
-    VARK: { bg: "#F0F9FF", text: "#0369A1", label: "Multimodal" },
-};
-
-const FILTROS = [
-    { key: "todos", label: "Todos", dot: "#94A3B8" },
-    { key: "publicado", label: "Publicados", dot: "#059669" },
-    { key: "borrador", label: "Borradores", dot: "#94A3B8" },
-    { key: "archivado", label: "Archivados", dot: "#7C3AED" },
-];
-
-/* ─────────────────────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────────────────────── */
-const fmtDate = (iso) => {
-    if (!iso) return "—";
-    return new Date(iso).toLocaleDateString("es-MX", {
-        day: "2-digit", month: "short", year: "numeric",
-    });
-};
-
-const PLACEHOLDER_PALETTES = [
-    { bg: "#DBEAFE", text: "#1E40AF" },
-    { bg: "#D1FAE5", text: "#065F46" },
-    { bg: "#FCE7F3", text: "#9D174D" },
-    { bg: "#EDE9FE", text: "#5B21B6" },
-    { bg: "#FEF3C7", text: "#92400E" },
-    { bg: "#CFFAFE", text: "#155E75" },
-    { bg: "#FFE4E6", text: "#9F1239" },
-    { bg: "#DCFCE7", text: "#14532D" },
-];
-
-const getPlaceholderPalette = (titulo = "") => {
-    const idx = (titulo.charCodeAt(0) || 65) % PLACEHOLDER_PALETTES.length;
-    return PLACEHOLDER_PALETTES[idx];
-};
 
 /* ─────────────────────────────────────────────────────────
    COURSE AVATAR
@@ -195,8 +148,10 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
                 {curso.archivado ? "Desarchivar" : "Archivar"}
             </button>
             <div className="menu-opciones__divider" />
-            <button className="menu-opciones__item menu-opciones__item--danger"
-                onClick={() => { setAbierto(false); onEliminar(curso); }}>
+            <button
+                className="menu-opciones__item menu-opciones__item--danger"
+                onClick={() => { setAbierto(false); onEliminar(curso); }}
+            >
                 <IoTrashOutline size={14} /> Eliminar
             </button>
         </div>,
@@ -226,7 +181,6 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
             onDoubleClick={() => onVistaPrevia(curso)}
             style={{ cursor: "pointer" }}
         >
-            {/* Portada */}
             <div className="curso-card__cover">
                 {curso.foto ? (
                     <img src={curso.foto} alt={curso.titulo} className="curso-card__cover-img" />
@@ -248,10 +202,8 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
                 </div>
             </div>
 
-            {/* Cuerpo */}
             <div className="curso-card__body">
                 <p className="curso-card__title">{curso.titulo}</p>
-                {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
                 {curso.descripcion && (
                     <p className="curso-card__desc">
                         {curso.descripcion.length > 80
@@ -261,7 +213,6 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
                 )}
             </div>
 
-            {/* Footer */}
             <div className="curso-card__footer">
                 <div className="curso-card__stats">
                     <div className="curso-card__stat">
@@ -275,8 +226,9 @@ const CursoCard = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onV
                 </div>
                 <div className="curso-card__meta">
                     {curso.perfil_vark ? <VarkBadge perfil={curso.perfil_vark} /> : <span />}
-                    <span className="curso-card__date">{fmtDate(curso.fecha_actualizacion)}</span>
+                    {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
                 </div>
+                <span className="curso-card__date">{fmtDate(curso.fecha_actualizacion)}</span>
             </div>
         </div>
     );
@@ -296,7 +248,7 @@ const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVi
                 <CourseAvatar titulo={curso.titulo} foto={curso.foto} size={40} />
                 <div>
                     <p className="row-title">{curso.titulo}</p>
-                    {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
+
                     {curso.descripcion && (
                         <p className="row-desc">
                             {curso.descripcion.length > 50
@@ -310,10 +262,14 @@ const CursoRow = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar, onVi
         <td className="td">
             <StatusBadge publicado={curso.es_publicado} archivado={curso.archivado} />
         </td>
+
         <td className="td">
             {curso.perfil_vark
                 ? <VarkBadge perfil={curso.perfil_vark} />
                 : <span style={{ color: "#CBD5E1", fontSize: 12 }}>—</span>}
+        </td>
+        <td className="td">
+            {curso.nombre_dimension && <DimBadge nombre={curso.nombre_dimension} />}
         </td>
         <td className="td">
             <div className="row-stat">
@@ -390,7 +346,6 @@ const PanelFiltros = ({
 
     return (
         <aside className="panel-filtros">
-            {/* ── Estado ── */}
             <div className="panel-filtros__header">
                 <IoFunnelOutline size={12} />
                 <span>Estado</span>
@@ -409,56 +364,55 @@ const PanelFiltros = ({
                 ))}
             </nav>
 
-            {/* ── Separador ── */}
             <div className="panel-filtros__sep" />
 
-            {/* ── Perfil VARK ── */}
-            <div className="panel-filtros__header">
-                <span>Perfil VARK</span>
-            </div>
-            <div className="panel-filtros__select-wrap">
-                <select
-                    className="panel-filtros__select"
-                    value={filtroVark || ""}
-                    onChange={(e) => onFiltroVark(e.target.value || null)}
-                >
-                    <option value="">Todos los perfiles</option>
-                    {varkDisponibles.map((v) => {
-                        const info = VARK_COLORS[v] || {};
-                        return <option key={v} value={v}>{info.label || v}</option>;
-                    })}
-                </select>
-            </div>
+            {/* ← nuevo wrapper para fila 2 en mobile */}
+            <div className="panel-filtros__selects-row">
+                <div className="panel-filtros__header">
+                    <span>Perfil VARK</span>
+                </div>
+                <div className="panel-filtros__select-wrap">
+                    <select
+                        className="panel-filtros__select"
+                        value={filtroVark || ""}
+                        onChange={(e) => onFiltroVark(e.target.value || null)}
+                    >
+                        <option value="">Todos los perfiles</option>
+                        {varkDisponibles.map((v) => {
+                            const info = VARK_COLORS[v] || {};
+                            return <option key={v} value={v}>{info.label || v}</option>;
+                        })}
+                    </select>
+                </div>
 
-            {/* ── Dimensión ── */}
-            {dimensionesDisponibles.length > 0 && (
-                <>
-                    <div className="panel-filtros__header" style={{ marginTop: 12 }}>
-                        <IoLayersOutline size={12} />
-                        <span>Dimensión</span>
-                    </div>
-                    <div className="panel-filtros__select-wrap">
-                        <select
-                            className="panel-filtros__select"
-                            value={filtroDimension || ""}
-                            onChange={(e) => onFiltroDim(e.target.value || null)}
-                        >
-                            <option value="">Todas las dimensiones</option>
-                            {dimensionesDisponibles.map((d) => (
-                                <option key={d} value={d}>{d}</option>
-                            ))}
-                        </select>
-                    </div>
-                </>
-            )}
+                {dimensionesDisponibles.length > 0 && (
+                    <>
+                        <div className="panel-filtros__header" style={{ marginTop: 0 }}>
+                            <IoLayersOutline size={12} />
+                            <span>Dimensión</span>
+                        </div>
+                        <div className="panel-filtros__select-wrap">
+                            <select
+                                className="panel-filtros__select"
+                                value={filtroDimension || ""}
+                                onChange={(e) => onFiltroDim(e.target.value || null)}
+                            >
+                                <option value="">Todas las dimensiones</option>
+                                {dimensionesDisponibles.map((d) => (
+                                    <option key={d} value={d}>{d}</option>
+                                ))}
+                            </select>
+                        </div>
+                    </>
+                )}
 
-            {/* ── Limpiar filtros extra ── */}
-            {hayFiltrosExtra && (
-                <button className="filtros-limpiar-btn" onClick={onLimpiar}>
-                    <IoCloseCircle size={13} />
-                    Limpiar filtros
-                </button>
-            )}
+                {hayFiltrosExtra && (
+                    <button className="filtros-limpiar-btn" onClick={onLimpiar}>
+                        <IoCloseCircle size={13} />
+                        Limpiar
+                    </button>
+                )}
+            </div>
         </aside>
     );
 };
@@ -471,7 +425,7 @@ export function CursosT() {
         cursos, cargando, error, busqueda, vista, porPagina, pagina,
         filtroEstado, filtroVark, filtroDimension,
         modalPublicar, modalArchivar, modalEliminar,
-        alert, cerrarAlert,                          // ← desestructurados
+        alert, cerrarAlert,
         paginados, totalPaginas, desde, hasta, filtrados,
         totalPublicados, totalBorradores, totalArchivados,
         varkDisponibles, dimensionesDisponibles,
@@ -486,8 +440,6 @@ export function CursosT() {
 
     return (
         <div className="cursos-root">
-
-            {/* ══ HEADER ══════════════════════════════════════════ */}
             <header className="header-curso">
                 <div className="header-curso__top">
                     <div>
@@ -522,9 +474,7 @@ export function CursosT() {
                 </div>
             </header>
 
-            {/* ══ BODY ════════════════════════════════════════════ */}
             <div className="cursos-layout">
-
                 <PanelFiltros
                     cursos={cursos}
                     filtroEstado={filtroEstado} onFiltro={handleFiltro}
@@ -536,8 +486,6 @@ export function CursosT() {
                 />
 
                 <main className="panel-curso">
-
-                    {/* Toolbar */}
                     <div className="toolbar-opciones">
                         <div className="toolbar-opciones-right">
                             <div className="search-wrap">
@@ -581,7 +529,6 @@ export function CursosT() {
                         </div>
                     </div>
 
-                    {/* Chips de filtros activos */}
                     {(filtroVark || filtroDimension) && (
                         <div className="filtros-activos">
                             {filtroVark && (
@@ -599,7 +546,6 @@ export function CursosT() {
                         </div>
                     )}
 
-                    {/* Contenido principal */}
                     {cargando ? (
                         <div className="cursos-empty">
                             <div className="cursos-empty__icon"><IoBookOutline size={24} /></div>
@@ -653,7 +599,7 @@ export function CursosT() {
                                     <table className="cursos-table">
                                         <thead>
                                             <tr>
-                                                {["Curso", "Estado", "VARK", "Secciones", "Estudiantes", "Última edición", ""].map((h) => (
+                                                {["Curso", "Estado", "Perfil VARK", "Dimensión Correctiva", "Secciones", "Estudiantes", "Última modificación", ""].map((h) => (
                                                     <th key={h} className="th">{h}</th>
                                                 ))}
                                             </tr>
@@ -683,7 +629,6 @@ export function CursosT() {
                 </main>
             </div>
 
-            {/* ══ MODALES ═════════════════════════════════════════ */}
             <ModalPublicar
                 isOpen={!!modalPublicar}
                 curso={modalPublicar}
@@ -698,12 +643,11 @@ export function CursosT() {
             />
             <ModalEliminarCurso
                 isOpen={!!modalEliminar}
-                curso={modalEliminar}   // ← el objeto completo
+                curso={modalEliminar}
                 onConfirm={handleConfirmarEliminar}
                 onClose={cerrarModalEliminar}
             />
 
-            {/* ══ ALERT DE ÉXITO AL ELIMINAR ══════════════════════ */}
             {alert && (
                 <CustomAlert
                     type="success"

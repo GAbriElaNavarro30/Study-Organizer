@@ -1871,7 +1871,7 @@
 .preview-nav-btn:hover:not(:disabled) {
     background: var(--surface-2);
     border-color: var(--border-md);
-    color: var(--ink-dark);
+    color: gray;
 }
 
 .preview-nav-btn:disabled {
