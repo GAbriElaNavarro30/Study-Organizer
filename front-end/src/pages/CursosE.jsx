@@ -257,7 +257,7 @@ function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancel
     const nombreTutor = resolverNombreTutor(curso, progreso);
 
     return (
-        <div className={`ce-card ${esMetodo ? "ce-card--metodo" : ""}`} onClick={onClick}>
+        <div className={`ce-card ${esMetodo ? "ce-card--metodo" : ""}`} onDoubleClick={onClick}>
             <div className="ce-card-cover">
                 {curso.foto ? <img src={curso.foto} alt={curso.titulo} /> : (
                     <div className="ce-card-cover-placeholder" style={{ "--ph-bg": `hsl(${hue},30%,91%)`, "--ph-color": `hsl(${hue},42%,38%)` }}>
@@ -317,7 +317,7 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                         const esMetodo = !!curso.nombre_dimension;
                         const nombreTutor = resolverNombreTutor(curso, progreso);
                         return (
-                            <tr key={curso.id_curso} className={`ce-tr ${esMetodo ? "ce-tr--metodo" : ""}`} onClick={() => irADetalle(curso.id_curso)}>
+                            <tr key={curso.id_curso} className={`ce-tr ${esMetodo ? "ce-tr--metodo" : ""}`} onDoubleClick={() => irADetalle(curso.id_curso)}>
                                 <td className="ce-td ce-td--curso">
                                     <div className="ce-tbl-curso-wrap">
                                         <div className="ce-tbl-thumb" style={{ "--ph-bg": `hsl(${hue},30%,91%)`, "--ph-color": `hsl(${hue},42%,38%)` }}>
@@ -396,7 +396,7 @@ function TablaArchivados({ cursos, desarchivar, irADetalle, misCursos }) {
                         const progreso = misCursos?.find(c => c.id_curso === curso.id_curso);
                         const nombreTutor = resolverNombreTutor(curso, progreso);
                         return (
-                            <tr key={curso.id_curso} className={`ce-tr ce-tr--archivado ${esMetodo ? "ce-tr--metodo" : ""}`} onClick={() => irADetalle(curso.id_curso)}>
+                            <tr key={curso.id_curso} className={`ce-tr ce-tr--archivado ${esMetodo ? "ce-tr--metodo" : ""}`} onDoubleClick={() => irADetalle(curso.id_curso)}>
                                 <td className="ce-td ce-td--curso">
                                     <div className="ce-tbl-curso-wrap">
                                         <div className="ce-tbl-thumb" style={{ "--ph-bg": `hsl(${hue},30%,91%)`, "--ph-color": `hsl(${hue},42%,38%)` }}>
@@ -456,7 +456,7 @@ function CardArchivado({ curso, onDeArchivar, onVer, progreso }) {
     const nombreTutor = resolverNombreTutor(curso, progreso);
     
     return (
-        <div className="ce-card ce-card--archivado" onClick={onVer}>
+        <div className="ce-card ce-card--archivado" onDoubleClick={onVer}>
             <div className="ce-card-cover">
                 {curso.foto ? <img src={curso.foto} alt={curso.titulo} /> : (
                     <div className="ce-card-cover-placeholder" style={{ "--ph-bg": `hsl(${hue},30%,91%)`, "--ph-color": `hsl(${hue},42%,38%)` }}>
@@ -742,12 +742,12 @@ export function CursosE() {
                 </>)}
 
                 {tab === "archivados" && (<>
-                    <div className="ce-arch-banner">
+                    {/*<div className="ce-arch-banner">
                         <IoArchiveOutline size={20} className="ce-arch-banner-icon" />
                         <p className="ce-arch-banner-text">Los archivados <strong>no afectan tu progreso general</strong>.{" "}
                             {archivadosPorTutor > 0 ? <>Algunos fueron archivados por el tutor y no pueden desarchivarse desde aquí.</> : <>Desarchiva cualquiera para retomarlo desde donde lo dejaste.</>}
                         </p>
-                    </div>
+                    </div>*/}
                     <div className="ce-arch-toolbar">
                         {FILTROS_ARCH.map(f => <button key={f.key} className={`ce-arch-filter-btn ${filtroEstadoArch === f.key ? "ce-arch-filter-btn--active" : ""}`} onClick={() => { setFiltroEstadoArch(f.key); setPagina(1); }}>{f.label}</button>)}
                         <select className="ce-arch-sort" value={ordenArch} onChange={e => setOrdenArch(e.target.value)}>

@@ -957,3 +957,21 @@ export const historialResultadosEstudiante = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al obtener el historial." });
     }
 };
+
+// GET /cursos/mi-historial?id=<id_curso>
+export const miHistorialResultados = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id } = req.query;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id);
+        if (!inscripcion) {
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+        }
+
+        const historial = await ResultadoCurso.getHistorialEstudiante(id, id_usuario);
+        res.json({ ok: true, historial });
+    } catch (error) {
+        res.status(500).json({ ok: false, mensaje: "Error al obtener el historial." });
+    }
+};

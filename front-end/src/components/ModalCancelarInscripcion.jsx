@@ -9,6 +9,7 @@ import {
 } from "react-icons/io5";
 import "../styles/ModalCancelarInscripcion.css";
 
+
 /**
  * ModalCancelarInscripcion
  *

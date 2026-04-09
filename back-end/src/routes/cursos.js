@@ -33,7 +33,8 @@ import {
     listarResultadosCurso,
     eliminarCuestionarioSeccion,
     eliminarEstudianteCurso,
-    historialResultadosEstudiante
+    historialResultadosEstudiante,
+    miHistorialResultados
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -88,6 +89,7 @@ router.post("/inscripciones", inscribirseACurso);
 router.delete("/inscripciones", cancelarInscripcion);
 
 router.get("/resultado", obtenerResultadoCurso);
+router.get("/mi-historial", miHistorialResultados);
 
 
 router.get("/cursos/:id/resultados", listarResultadosCurso);
