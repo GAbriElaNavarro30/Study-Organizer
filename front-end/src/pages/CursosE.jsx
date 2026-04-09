@@ -28,10 +28,7 @@ const VARK_COLORS = {
 const VARK_LABELS = { V: "Visual", A: "Auditivo", R: "Lector", K: "Kinestésico" };
 const VARK_DESC = { V: "Aprendes viendo", A: "Aprendes escuchando", R: "Aprendes leyendo", K: "Aprendes haciendo" };
 const TODOS_PERFILES_VARK = ["V", "A", "R", "K", "VA", "VR", "VK", "AR", "AK", "RK", "VAR", "VAK", "VRK", "ARK", "VARK"];
-const FILTROS_ARCH = [
-    { key: "todos", label: "Todos" }, { key: "progreso", label: "Con progreso" },
-    { key: "sin", label: "Sin iniciar" }, { key: "completado", label: "Completados" },
-];
+
 
 /* ─────────────────────────────────────────────────────────
    HELPER: resuelve el nombre del tutor con fallback
@@ -454,7 +451,7 @@ function CardArchivado({ curso, onDeArchivar, onVer, progreso }) {
     const pct = Math.round(((curso.contenidos_vistos || 0) / Math.max(curso.total_contenidos || 1, 1)) * 100);
     const fechaFmt = curso.fecha_inscripcion ? new Date(curso.fecha_inscripcion).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : null;
     const nombreTutor = resolverNombreTutor(curso, progreso);
-    
+
     return (
         <div className="ce-card ce-card--archivado" onDoubleClick={onVer}>
             <div className="ce-card-cover">
@@ -742,34 +739,22 @@ export function CursosE() {
                 </>)}
 
                 {tab === "archivados" && (<>
-                    {/*<div className="ce-arch-banner">
-                        <IoArchiveOutline size={20} className="ce-arch-banner-icon" />
-                        <p className="ce-arch-banner-text">Los archivados <strong>no afectan tu progreso general</strong>.{" "}
-                            {archivadosPorTutor > 0 ? <>Algunos fueron archivados por el tutor y no pueden desarchivarse desde aquí.</> : <>Desarchiva cualquiera para retomarlo desde donde lo dejaste.</>}
-                        </p>
-                    </div>*/}
-                    <div className="ce-arch-toolbar">
-                        {FILTROS_ARCH.map(f => <button key={f.key} className={`ce-arch-filter-btn ${filtroEstadoArch === f.key ? "ce-arch-filter-btn--active" : ""}`} onClick={() => { setFiltroEstadoArch(f.key); setPagina(1); }}>{f.label}</button>)}
-                        <select className="ce-arch-sort" value={ordenArch} onChange={e => setOrdenArch(e.target.value)}>
-                            <option value="reciente">Más reciente</option><option value="mayor">Mayor progreso</option><option value="menor">Menor progreso</option>
-                        </select>
-                    </div>
                     {cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} filtroDim={filtroDim} /> : <>
                         {vista === "mosaic"
                             ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => (
-                                <CardArchivado 
-                                    key={curso.id_curso} 
-                                    curso={curso} 
+                                <CardArchivado
+                                    key={curso.id_curso}
+                                    curso={curso}
                                     progreso={misCursos.find(c => c.id_curso === curso.id_curso)}
-                                    onDeArchivar={() => desarchivar(curso.id_curso)} 
-                                    onVer={() => irADetalle(curso.id_curso)} 
+                                    onDeArchivar={() => desarchivar(curso.id_curso)}
+                                    onVer={() => irADetalle(curso.id_curso)}
                                 />
                             ))}</div>
-                            : <TablaArchivados 
-                                cursos={paginadosFn(cursosFiltrados)} 
+                            : <TablaArchivados
+                                cursos={paginadosFn(cursosFiltrados)}
                                 misCursos={misCursos}
-                                desarchivar={desarchivar} 
-                                irADetalle={irADetalle} 
+                                desarchivar={desarchivar}
+                                irADetalle={irADetalle}
                             />}
                         <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                     </>}

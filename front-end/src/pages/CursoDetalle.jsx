@@ -646,7 +646,7 @@ export function CursoDetalle() {
                     {inscrito && (
                         <ResultadosBlock
                             ultimoResultado={ultimoResultado}
-                            completado={completado}
+                            completado={completado || !!curso?.archivado}
                             onVerResultados={handleVerResultados}
                             onVerHistorial={handleVerHistorial}
                         />
