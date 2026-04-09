@@ -32,13 +32,19 @@ export function useCursosE() {
          2. El backend manda nombre y apellido separados
          3. El apellido ya está incluido dentro de nombre_tutor (evita duplicarlo)
     ── */
+    // useCursosE.js — reemplaza normalizarTutor
     const normalizarTutor = (c) => {
         const nombre = (c.nombre_tutor || "").trim();
         const apellido = (c.apellido_tutor || "").trim();
+
         if (!nombre) return null;
+
+        // Si hay apellido separado y no está ya incluido en nombre, concatenar
         if (apellido && !nombre.includes(apellido)) {
             return `${nombre} ${apellido}`.trim();
         }
+
+        // nombre ya viene completo (ej: "Juan García" de CONCAT_WS)
         return nombre;
     };
 
@@ -77,6 +83,9 @@ export function useCursosE() {
                 prioridad: c.perfil_vark === perfil ? 0 : 1,
             }));
 
+            console.log("RAW cursos_recomendados:", perfilData.cursos_recomendados?.slice(0, 2));
+            console.log("DESPUÉS de normalizarTutor:", cursosVark.slice(0, 2).map(c => c.nombre_tutor));
+
             let cursosDimension = [];
             try {
                 const { data: historialData } = await api.get("/metodosestudio/historial");
@@ -99,6 +108,12 @@ export function useCursosE() {
             }
 
             setCursos([...cursosVark, ...cursosDimension]);
+
+            console.log("perfilData completo:", perfilData);
+            console.log("cursosDimension:", cursosDimension);
+            console.log("cursos final:", [...cursosVark, ...cursosDimension]);
+
+            console.log("curso RAW de dimensión:", cursosDimension[0]);
 
             // ── DEBUG: ver exactamente qué manda el backend para mis-cursos ──
             const rawCursos = misData.cursos || [];
@@ -207,7 +222,7 @@ export function useCursosE() {
         navigate("/cursos-detalle", { state: { id_curso } });
     };
 
-                    
+
 
     return {
         cursos,

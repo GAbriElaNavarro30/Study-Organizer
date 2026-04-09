@@ -135,7 +135,7 @@ export async function responder(req, res) {
             c.id_curso, c.titulo, c.descripcion, c.foto,
             c.perfil_vark, c.fecha_creacion,
             d.nombre_dimension,
-            u.nombre AS nombre_tutor,
+            CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
             (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
             CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
          FROM Curso c
@@ -224,7 +224,7 @@ export async function obtenerResultado(req, res) {
             c.id_curso, c.titulo, c.descripcion, c.foto,
             c.perfil_vark, c.fecha_creacion,
             d.nombre_dimension,
-            u.nombre AS nombre_tutor,
+            CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
             (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
             CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
          FROM Curso c

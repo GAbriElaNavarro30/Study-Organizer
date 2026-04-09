@@ -158,7 +158,7 @@ export class Curso {
             `SELECT c.id_curso, c.titulo, c.descripcion, c.foto,
                     c.perfil_vark, c.fecha_creacion,
                     d.nombre_dimension,
-                    CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                    CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
                     (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
              FROM Curso c
              LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
@@ -185,7 +185,7 @@ export class Curso {
             `SELECT c.id_curso, c.titulo, c.descripcion, c.foto,
                     c.perfil_vark, c.fecha_creacion,
                     d.nombre_dimension, d.id_dimension,
-                    CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                    CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
                     (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones
              FROM Curso c
              LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
@@ -211,7 +211,7 @@ export class Curso {
                 c.id_curso, c.titulo, c.descripcion, c.foto,
                 c.perfil_vark, c.archivado,
                 d.nombre_dimension,
-                CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
                 (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
                 i.fecha_inscripcion,
                 COALESCE(
@@ -260,7 +260,7 @@ export class Curso {
                 c.id_curso, c.titulo, c.descripcion, c.foto,
                 c.perfil_vark, c.archivado,
                 d.nombre_dimension,
-                CONCAT(u.nombre, ' ', u.apellido) AS nombre_tutor,
+                CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
                 i.fecha_inscripcion,
                 COALESCE(
                     (SELECT COUNT(DISTINCT p.id_contenido)

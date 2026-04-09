@@ -419,6 +419,7 @@
     flex: 1;
     padding: 28px 36px 80px;
     overflow-y: auto;
+    overflow-x: hidden;
 }
 
 .ce-header-title {
@@ -586,7 +587,6 @@
     transition: width .6s ease;
 }
 
-/* El menú en la card: z-index alto, sin overflow que lo corte */
 .ce-card-menu-cover {
     position: absolute;
     top: 8px;
@@ -641,7 +641,6 @@
     white-space: normal;
     word-break: break-word;
     max-width: 100%;
-    /* ← evita que se salga del contenedor */
 }
 
 .ce-card-dim {
@@ -738,8 +737,6 @@
 
 /* ═══════════════════════════════════════════════
    MENÚ 3 PUNTITOS
-   El dropdown se renderiza en document.body via Portal,
-   escapando de cualquier overflow:hidden o z-index.
 ═══════════════════════════════════════════════ */
 .ce-menu-wrap {
     position: relative;
@@ -783,7 +780,6 @@
     transform: none;
 }
 
-/* Dropdown base — se usa tanto para el portal como para absolute */
 .ce-menu-dropdown {
     background: var(--ce-white);
     border: 1px solid var(--ce-border);
@@ -794,7 +790,6 @@
     animation: ce-menu-in .12s ease;
 }
 
-/* Portal: position:fixed inyectado vía style inline desde React */
 .ce-menu-dropdown--portal {
     position: fixed;
     z-index: 99999;
@@ -1335,20 +1330,25 @@
 
 /* ═══════════════════════════════════════════════
    TABLA
+   Scroll horizontal — nada se oculta ni encima
 ═══════════════════════════════════════════════ */
 .ce-table-wrap {
     width: 100%;
     background: var(--ce-white);
     border: 1px solid var(--ce-border);
     border-radius: 14px;
-    overflow: hidden;
+    overflow-x: auto;
+    -webkit-overflow-scrolling: touch;
     box-shadow: 0 2px 10px var(--ce-shadow);
 }
 
 .ce-table {
     width: 100%;
     border-collapse: collapse;
-    table-layout: fixed;
+    /* auto para que cada columna respete su contenido mínimo */
+    table-layout: auto;
+    /* ancho mínimo total: suma de todos los min-width de columnas */
+    min-width: 860px;
 }
 
 .ce-table thead tr th:first-child {
@@ -1378,35 +1378,37 @@
     background: var(--ce-surface);
     border-bottom: 1px solid var(--ce-border);
     white-space: nowrap;
-    overflow: hidden;
 }
 
+/* min-width por columna para que nunca se compriman */
 .ce-th--curso {
-    width: 28%
+    min-width: 220px;
 }
 
 .ce-th--instructor {
-    width: 14%
+    min-width: 120px;
 }
 
 .ce-th--perfil {
-    width: 11%
+    min-width: 95px;
 }
 
 .ce-th--dimension {
-    width: 13%
+    min-width: 110px;
 }
 
 .ce-th--progreso {
-    width: 13%
+    min-width: 110px;
 }
 
 .ce-th--estado {
-    width: 11%
+    min-width: 100px;
 }
 
+/* columna de acciones: ancho fijo para botón + menú sin encimarse */
 .ce-th--accion {
-    width: 10%
+    min-width: 140px;
+    width: 140px;
 }
 
 .ce-tr {
@@ -1445,7 +1447,6 @@
     vertical-align: middle;
     font-size: 12.5px;
     color: var(--ce-ink-l);
-    overflow: hidden;
 }
 
 .ce-tbl-curso-wrap {
@@ -1514,6 +1515,7 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 155px;
 }
 
 .ce-tbl-desc {
@@ -1524,10 +1526,10 @@
     white-space: nowrap;
     overflow: hidden;
     text-overflow: ellipsis;
+    max-width: 155px;
 }
 
 .ce-td--instructor {
-    display: table-cell;
     vertical-align: middle;
 }
 
@@ -1537,9 +1539,10 @@
     gap: 4px;
     font-size: 12px;
     color: var(--ce-ink-l);
-    white-space: normal;
+    white-space: nowrap;
     overflow: hidden;
-    max-width: 100%;
+    text-overflow: ellipsis;
+    max-width: 200px; 
 }
 
 .ce-tbl-secciones {
@@ -1561,6 +1564,7 @@
 .ce-td--perfil,
 .ce-td--dimension {
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .ce-tbl-dim-empty {
@@ -1613,6 +1617,7 @@
 
 .ce-td--estado {
     vertical-align: middle;
+    white-space: nowrap;
 }
 
 .ce-tbl-badge {
@@ -1647,10 +1652,12 @@
     color: #92400E;
 }
 
-/* La celda de acción puede tener overflow visible para el portal (aunque el portal va al body) */
 .ce-td--accion {
     overflow: visible;
     vertical-align: middle;
+    /* mismo ancho que th para que no fluctúe */
+    width: 140px;
+    min-width: 140px;
 }
 
 .ce-tbl-accion-wrap {
@@ -1659,6 +1666,11 @@
     gap: 5px;
     justify-content: flex-end;
     flex-wrap: nowrap;
+}
+
+/* todos los hijos de accion nunca se encogen */
+.ce-tbl-accion-wrap>* {
+    flex-shrink: 0;
 }
 
 /* ═══════════════════════════════════════════════
@@ -1729,6 +1741,7 @@
 
     .ce-main {
         padding: 20px 16px 60px;
+        overflow-x: hidden;
     }
 
     .ce-mobile-bar {
@@ -1777,66 +1790,19 @@
         gap: 6px;
     }
 
-    .ce-th--instructor,
-    .ce-td--instructor {
-        display: none;
+    /* La tabla hace scroll horizontal en móvil.
+       Nada se oculta — el usuario desliza para ver todo. */
+    .ce-table-wrap {
+        border-radius: 10px;
     }
 
-    .ce-th--dimension,
-    .ce-td--dimension {
-        display: none;
+    .ce-tbl-accion-wrap {
+        flex-wrap: nowrap;
+        gap: 4px;
     }
 
-    .ce-th--estado,
-    .ce-td--estado {
-        display: none;
-    }
-
-    .ce-th--curso {
-        width: 52%
-    }
-
-    .ce-th--perfil {
-        width: 22%
-    }
-
-    .ce-th--progreso {
-        width: 18%
-    }
-
-    .ce-th--accion {
-        width: 8%
-    }
-
-    /* En móvil solo se muestra el menú de 3 puntos, los botones grandes se ocultan */
-    .ce-tbl-accion-wrap .ce-card-btn--sm,
-    .ce-tbl-accion-wrap .ce-btn-desarc,
-    .ce-tbl-accion-wrap .ce-btn-ver {
-        display: none;
-    }
-}
-
-@media (max-width: 600px) {
-    .ce-tbl-desc {
-        display: none;
-    }
-
-    .ce-th--perfil,
-    .ce-td--perfil {
-        display: none;
-    }
-
-    .ce-th--progreso,
-    .ce-td--progreso {
-        display: none;
-    }
-
-    .ce-th--curso {
-        width: 80%
-    }
-
-    .ce-th--accion {
-        width: 20%
+    .ce-tbl-accion-wrap>* {
+        flex-shrink: 0;
     }
 }
 

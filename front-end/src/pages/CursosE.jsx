@@ -296,15 +296,17 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
     return (
         <div className="ce-table-wrap">
             <table className="ce-table">
-                <thead><tr>
-                    <th className="ce-th ce-th--curso">Curso</th>
-                    <th className="ce-th ce-th--instructor">Instructor</th>
-                    <th className="ce-th ce-th--perfil">Perfil</th>
-                    <th className="ce-th ce-th--dimension">Dimensión</th>
-                    <th className="ce-th ce-th--progreso">Progreso</th>
-                    <th className="ce-th ce-th--estado">Estado</th>
-                    <th className="ce-th ce-th--accion"></th>
-                </tr></thead>
+                <thead>
+                    <tr>
+                        <th className="ce-th ce-th--curso">Curso</th>
+                        <th className="ce-th ce-th--instructor">Instructor</th>
+                        <th className="ce-th ce-th--perfil">Perfil</th>
+                        <th className="ce-th ce-th--dimension">Dimensión</th>
+                        <th className="ce-th ce-th--progreso">Progreso</th>
+                        <th className="ce-th ce-th--estado">Estado</th>
+                        <th className="ce-th ce-th--accion"></th>
+                    </tr>
+                </thead>
                 <tbody>
                     {cursos.map(curso => {
                         const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
@@ -368,27 +370,31 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
 }
 
 /* ─────────────────────────────────────────────────────────
-   TABLA ARCHIVADOS
+   TABLA ARCHIVADOS (CORREGIDA)
 ───────────────────────────────────────────────────────── */
-function TablaArchivados({ cursos, desarchivar, irADetalle }) {
+function TablaArchivados({ cursos, desarchivar, irADetalle, misCursos }) {
     return (
         <div className="ce-table-wrap">
             <table className="ce-table">
-                <thead><tr>
-                    <th className="ce-th ce-th--curso">Curso</th>
-                    <th className="ce-th ce-th--instructor">Instructor</th>
-                    <th className="ce-th ce-th--perfil">Perfil</th>
-                    <th className="ce-th ce-th--dimension">Dimensión</th>
-                    <th className="ce-th ce-th--progreso">Progreso</th>
-                    <th className="ce-th ce-th--estado">Estado</th>
-                    <th className="ce-th ce-th--accion"></th>
-                </tr></thead>
+                <thead>
+                    <tr>
+                        <th className="ce-th ce-th--curso">Curso</th>
+                        <th className="ce-th ce-th--instructor">Instructor</th>
+                        <th className="ce-th ce-th--perfil">Perfil</th>
+                        <th className="ce-th ce-th--dimension">Dimensión</th>
+                        <th className="ce-th ce-th--progreso">Progreso</th>
+                        <th className="ce-th ce-th--estado">Estado</th>
+                        <th className="ce-th ce-th--accion"></th>
+                    </tr>
+                </thead>
                 <tbody>
                     {cursos.map(curso => {
                         const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
                         const varkColor = VARK_COLORS[curso.perfil_vark] || "#1277dd";
                         const esMetodo = !!curso.nombre_dimension;
                         const pct = Math.round(((curso.contenidos_vistos || 0) / Math.max(curso.total_contenidos || 1, 1)) * 100);
+                        const progreso = misCursos?.find(c => c.id_curso === curso.id_curso);
+                        const nombreTutor = resolverNombreTutor(curso, progreso);
                         return (
                             <tr key={curso.id_curso} className={`ce-tr ce-tr--archivado ${esMetodo ? "ce-tr--metodo" : ""}`} onClick={() => irADetalle(curso.id_curso)}>
                                 <td className="ce-td ce-td--curso">
@@ -403,9 +409,15 @@ function TablaArchivados({ cursos, desarchivar, irADetalle }) {
                                         </div>
                                     </div>
                                 </td>
-                                <td className="ce-td ce-td--instructor">{curso.nombre_tutor ? <span className="ce-tbl-instructor"><IoPersonOutline size={11} /> {curso.nombre_tutor}</span> : <span className="ce-tbl-empty">—</span>}</td>
-                                <td className="ce-td ce-td--perfil"><span className="ce-card-vark--inline" style={{ "--vark-color": varkColor }}>{curso.perfil_vark?.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</span></td>
-                                <td className="ce-td ce-td--dimension">{esMetodo ? <span className="ce-card-dim">{curso.nombre_dimension}</span> : <span className="ce-tbl-dim-empty">—</span>}</td>
+                                <td className="ce-td ce-td--instructor">
+                                    {nombreTutor ? <span className="ce-tbl-instructor"><IoPersonOutline size={11} /> {nombreTutor}</span> : <span className="ce-tbl-empty">—</span>}
+                                </td>
+                                <td className="ce-td ce-td--perfil">
+                                    <span className="ce-card-vark--inline" style={{ "--vark-color": varkColor }}>{curso.perfil_vark?.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</span>
+                                </td>
+                                <td className="ce-td ce-td--dimension">
+                                    {esMetodo ? <span className="ce-card-dim">{curso.nombre_dimension}</span> : <span className="ce-tbl-dim-empty">—</span>}
+                                </td>
                                 <td className="ce-td ce-td--progreso">
                                     {curso.completado
                                         ? <span className="ce-tbl-completado"><IoCheckmarkCircleOutline size={12} /> Completado</span>
@@ -433,14 +445,16 @@ function TablaArchivados({ cursos, desarchivar, irADetalle }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   CARD ARCHIVADO — mosaico
+   CARD ARCHIVADO — mosaico (CORREGIDA)
 ───────────────────────────────────────────────────────── */
-function CardArchivado({ curso, onDeArchivar, onVer }) {
+function CardArchivado({ curso, onDeArchivar, onVer, progreso }) {
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
     const varkColor = VARK_COLORS[curso.perfil_vark] || "#1277dd";
     const esMetodo = !!curso.nombre_dimension;
     const pct = Math.round(((curso.contenidos_vistos || 0) / Math.max(curso.total_contenidos || 1, 1)) * 100);
     const fechaFmt = curso.fecha_inscripcion ? new Date(curso.fecha_inscripcion).toLocaleDateString("es-MX", { day: "2-digit", month: "short" }) : null;
+    const nombreTutor = resolverNombreTutor(curso, progreso);
+    
     return (
         <div className="ce-card ce-card--archivado" onClick={onVer}>
             <div className="ce-card-cover">
@@ -458,7 +472,9 @@ function CardArchivado({ curso, onDeArchivar, onVer }) {
             <div className="ce-card-body">
                 <p className="ce-card-titulo">{curso.titulo}</p>
                 {curso.descripcion && <p className="ce-card-desc">{curso.descripcion.slice(0, 72)}{curso.descripcion.length > 72 ? "…" : ""}</p>}
-                <div className="ce-card-meta">{curso.nombre_tutor && <span className="ce-card-meta-item"><IoPersonOutline size={11} /> {curso.nombre_tutor}</span>}</div>
+                <div className="ce-card-meta">
+                    {nombreTutor && <span className="ce-card-meta-item"><IoPersonOutline size={11} /> {nombreTutor}</span>}
+                </div>
                 <div className="ce-card-meta ce-card-meta--tags">
                     <span className="ce-card-vark--inline" style={{ "--vark-color": varkColor }}>{curso.perfil_vark?.split("").map(l => VARK_LABELS[l] || l).join(" · ")}</span>
                     {esMetodo && <span className="ce-card-dim">{curso.nombre_dimension}</span>}
@@ -740,8 +756,21 @@ export function CursosE() {
                     </div>
                     {cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} filtroDim={filtroDim} /> : <>
                         {vista === "mosaic"
-                            ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CardArchivado key={curso.id_curso} curso={curso} onDeArchivar={() => desarchivar(curso.id_curso)} onVer={() => irADetalle(curso.id_curso)} />)}</div>
-                            : <TablaArchivados cursos={paginadosFn(cursosFiltrados)} desarchivar={desarchivar} irADetalle={irADetalle} />}
+                            ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => (
+                                <CardArchivado 
+                                    key={curso.id_curso} 
+                                    curso={curso} 
+                                    progreso={misCursos.find(c => c.id_curso === curso.id_curso)}
+                                    onDeArchivar={() => desarchivar(curso.id_curso)} 
+                                    onVer={() => irADetalle(curso.id_curso)} 
+                                />
+                            ))}</div>
+                            : <TablaArchivados 
+                                cursos={paginadosFn(cursosFiltrados)} 
+                                misCursos={misCursos}
+                                desarchivar={desarchivar} 
+                                irADetalle={irADetalle} 
+                            />}
                         <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                     </>}
                 </>)}
