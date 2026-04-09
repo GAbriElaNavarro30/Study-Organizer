@@ -30,19 +30,31 @@ const FILTROS_ARCH = [
     { key: "sin", label: "Sin iniciar" }, { key: "completado", label: "Completados" },
 ];
 
+/* ─────────────────────────────────────────────────────────
+   HELPER: resuelve el nombre del tutor con fallback
+   Prioriza el objeto con más información (el de misCursos
+   ya tiene CONCAT completo desde el modelo).
+───────────────────────────────────────────────────────── */
+function resolverNombreTutor(curso, progreso) {
+    // progreso viene de misCursos, que tiene el CONCAT completo del modelo
+    const nombreProgreso = progreso?.nombre_tutor;
+    const nombreCurso = curso?.nombre_tutor;
+
+    // Tomar el más largo (el más completo)
+    if (nombreProgreso && nombreCurso) {
+        return nombreProgreso.length >= nombreCurso.length ? nombreProgreso : nombreCurso;
+    }
+    return nombreProgreso || nombreCurso || null;
+}
+
 /* ═══════════════════════════════════════════════════════
    DROPDOWN PORTAL
-   Renderiza el menú directamente en document.body.
-   Usa requestAnimationFrame para recalcular la posición
-   en cada frame, de modo que el menú siempre sigue al
-   botón trigger aunque la página haga scroll.
 ═══════════════════════════════════════════════════════ */
 function DropdownPortal({ triggerRef, onClose, children }) {
     const dropRef = useRef(null);
     const [coords, setCoords] = useState(null);
     const rafRef = useRef(null);
 
-    /* Calcula y actualiza la posición del dropdown */
     const calcCoords = useCallback(() => {
         if (!triggerRef.current) return;
         const r = triggerRef.current.getBoundingClientRect();
@@ -56,31 +68,24 @@ function DropdownPortal({ triggerRef, onClose, children }) {
         if (left + W > vW - 8) left = vW - W - 8;
 
         const top = (r.bottom + H + 8 < vH) ? r.bottom + 6 : r.top - H - 6;
-
         setCoords({ top, left });
     }, [triggerRef]);
 
-    /* Loop de RAF: recalcula posición cada frame mientras el menú esté abierto */
     useEffect(() => {
         const loop = () => {
             calcCoords();
             rafRef.current = requestAnimationFrame(loop);
         };
         rafRef.current = requestAnimationFrame(loop);
-        return () => {
-            if (rafRef.current) cancelAnimationFrame(rafRef.current);
-        };
+        return () => { if (rafRef.current) cancelAnimationFrame(rafRef.current); };
     }, [calcCoords]);
 
-    /* Cierre solo al hacer clic fuera */
     useEffect(() => {
         const close = (e) => {
             if (
                 dropRef.current && !dropRef.current.contains(e.target) &&
                 triggerRef.current && !triggerRef.current.contains(e.target)
-            ) {
-                onClose();
-            }
+            ) onClose();
         };
         document.addEventListener("mousedown", close);
         return () => document.removeEventListener("mousedown", close);
@@ -102,7 +107,7 @@ function DropdownPortal({ triggerRef, onClose, children }) {
 }
 
 /* ═══════════════════════════════════════════════════════
-   MENÚ 3 PUNTITOS — funciona igual en mosaico y tabla
+   MENÚ 3 PUNTITOS
 ═══════════════════════════════════════════════════════ */
 function MenuOpciones({ inscrito, onInscribirse, onCancelar, onVerDetalle, esTabla }) {
     const [open, setOpen] = useState(false);
@@ -245,12 +250,18 @@ function CardFooterAccion({ inscrito, progreso, esMetodo, onVerDetalle }) {
 
 /* ─────────────────────────────────────────────────────────
    CURSO CARD — mosaico
+   FIX: usa resolverNombreTutor() para tomar siempre el nombre
+        más completo entre curso y progreso.
 ───────────────────────────────────────────────────────── */
 function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancelar }) {
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
     const varkColor = VARK_COLORS[curso.perfil_vark] || "#1277dd";
     const pct = progreso?.porcentaje ?? 0;
     const esMetodo = !!curso.nombre_dimension;
+
+    // ← FIX: toma el nombre más completo disponible
+    const nombreTutor = resolverNombreTutor(curso, progreso);
+
     return (
         <div className={`ce-card ${esMetodo ? "ce-card--metodo" : ""}`} onClick={onClick}>
             <div className="ce-card-cover">
@@ -269,7 +280,8 @@ function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancel
                 <p className="ce-card-titulo">{curso.titulo}</p>
                 {curso.descripcion && <p className="ce-card-desc">{curso.descripcion.slice(0, 72)}{curso.descripcion.length > 72 ? "…" : ""}</p>}
                 <div className="ce-card-meta">
-                    {curso.nombre_tutor && <span className="ce-card-meta-item"><IoPersonOutline size={11} /> {curso.nombre_tutor}</span>}
+                    {/* ← FIX: muestra nombreTutor resuelto, no curso.nombre_tutor directo */}
+                    {nombreTutor && <span className="ce-card-meta-item"><IoPersonOutline size={11} /> {nombreTutor}</span>}
                     {curso.total_secciones > 0 && !esMetodo && <span className="ce-card-meta-item"><IoLayersOutline size={11} /> {curso.total_secciones} sección{curso.total_secciones !== 1 ? "es" : ""}</span>}
                 </div>
                 <div className="ce-card-meta ce-card-meta--tags">
@@ -286,6 +298,7 @@ function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancel
 
 /* ─────────────────────────────────────────────────────────
    TABLA CURSOS
+   FIX: también usa resolverNombreTutor en la fila de tabla
 ───────────────────────────────────────────────────────── */
 function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse, cancelarInscripcion }) {
     return (
@@ -308,6 +321,8 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                         const progreso = misCursos.find(c => c.id_curso === curso.id_curso);
                         const pct = progreso?.porcentaje ?? 0;
                         const esMetodo = !!curso.nombre_dimension;
+                        // ← FIX
+                        const nombreTutor = resolverNombreTutor(curso, progreso);
                         return (
                             <tr key={curso.id_curso} className={`ce-tr ${esMetodo ? "ce-tr--metodo" : ""}`} onClick={() => irADetalle(curso.id_curso)}>
                                 <td className="ce-td ce-td--curso">
@@ -323,7 +338,8 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                                     </div>
                                 </td>
                                 <td className="ce-td ce-td--instructor">
-                                    {curso.nombre_tutor ? <span className="ce-tbl-instructor"><IoPersonOutline size={11} /> {curso.nombre_tutor}</span> : <span className="ce-tbl-empty">—</span>}
+                                    {/* ← FIX */}
+                                    {nombreTutor ? <span className="ce-tbl-instructor"><IoPersonOutline size={11} /> {nombreTutor}</span> : <span className="ce-tbl-empty">—</span>}
                                     {curso.total_secciones > 0 && !esMetodo && <span className="ce-tbl-secciones"><IoLayersOutline size={10} /> {curso.total_secciones} secc.</span>}
                                 </td>
                                 <td className="ce-td ce-td--perfil">
@@ -633,13 +649,15 @@ export function CursosE() {
                 </div>
 
                 {tab === "recomendados" && (cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} /> : <>
-                    {vista === "mosaic" ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
+                    {vista === "mosaic"
+                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
                         : <TablaCursos cursos={paginadosFn(cursosFiltrados)} inscritosIds={inscritosIds} misCursos={misCursos} irADetalle={irADetalle} inscribirse={inscribirse} cancelarInscripcion={cancelarInscripcion} />}
                     <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                 </>)}
 
                 {tab === "mis-cursos" && (cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} onVerRecomendados={() => { setTab("recomendados"); setPagina(1); }} /> : <>
-                    {vista === "mosaic" ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
+                    {vista === "mosaic"
+                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
                         : <TablaCursos cursos={paginadosFn(cursosFiltrados)} inscritosIds={inscritosIds} misCursos={misCursos} irADetalle={irADetalle} inscribirse={inscribirse} cancelarInscripcion={cancelarInscripcion} />}
                     <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                 </>)}
@@ -658,7 +676,8 @@ export function CursosE() {
                         </select>
                     </div>
                     {cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} filtroDim={filtroDim} /> : <>
-                        {vista === "mosaic" ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CardArchivado key={curso.id_curso} curso={curso} onDeArchivar={() => desarchivar(curso.id_curso)} onVer={() => irADetalle(curso.id_curso)} />)}</div>
+                        {vista === "mosaic"
+                            ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CardArchivado key={curso.id_curso} curso={curso} onDeArchivar={() => desarchivar(curso.id_curso)} onVer={() => irADetalle(curso.id_curso)} />)}</div>
                             : <TablaArchivados cursos={paginadosFn(cursosFiltrados)} desarchivar={desarchivar} irADetalle={irADetalle} />}
                         <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                     </>}

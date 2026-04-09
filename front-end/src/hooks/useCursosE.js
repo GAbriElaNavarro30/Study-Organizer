@@ -26,6 +26,22 @@ export function useCursosE() {
         cargarDatos();
     }, []);
 
+    /* ── Helper: concatena nombre + apellido sin importar cuántos campos vengan ──
+       Cubre 3 casos:
+         1. El backend ya manda el nombre completo en nombre_tutor (apellido_tutor undefined)
+         2. El backend manda nombre y apellido separados
+         3. El apellido ya está incluido dentro de nombre_tutor (evita duplicarlo)
+    ── */
+    const normalizarTutor = (c) => {
+        const nombre = (c.nombre_tutor || "").trim();
+        const apellido = (c.apellido_tutor || "").trim();
+        if (!nombre) return null;
+        if (apellido && !nombre.includes(apellido)) {
+            return `${nombre} ${apellido}`.trim();
+        }
+        return nombre;
+    };
+
     /* ── Helper: calcula porcentaje y normaliza un curso inscrito ── */
     const normalizarCurso = (c) => {
         const vistos = c.contenidos_vistos ?? 0;
@@ -57,6 +73,7 @@ export function useCursosE() {
 
             const cursosVark = (perfilData.cursos_recomendados || []).map(c => ({
                 ...c,
+                nombre_tutor: normalizarTutor(c),
                 prioridad: c.perfil_vark === perfil ? 0 : 1,
             }));
 
@@ -71,7 +88,11 @@ export function useCursosE() {
                     const idsVark = new Set(cursosVark.map(c => c.id_curso));
                     cursosDimension = (resultadoME.cursos_recomendados || [])
                         .filter(c => !idsVark.has(c.id_curso))
-                        .map(c => ({ ...c, prioridad: c.prioridad ?? 1 }));
+                        .map(c => ({
+                            ...c,
+                            nombre_tutor: normalizarTutor(c),
+                            prioridad: c.prioridad ?? 1,
+                        }));
                 }
             } catch (e) {
                 console.info("Sin historial de métodos de estudio:", e?.response?.status);
@@ -79,11 +100,20 @@ export function useCursosE() {
 
             setCursos([...cursosVark, ...cursosDimension]);
 
-            // ── NORMALIZAR: agregar porcentaje calculado a cada curso inscrito ──
-            setMisCursos((misData.cursos || []).map(normalizarCurso));
+            // ── DEBUG: ver exactamente qué manda el backend para mis-cursos ──
+            const rawCursos = misData.cursos || [];
+            if (rawCursos.length > 0) {
+
+            }
+
+            setMisCursos(rawCursos.map(c => ({
+                ...normalizarCurso(c),
+                nombre_tutor: normalizarTutor(c),
+            })));
 
             const archivados = (misData.archivados || []).map(c => ({
                 ...normalizarCurso(c),
+                nombre_tutor: normalizarTutor(c),
                 archivado_por_tutor: Boolean(c.archivado),
             }));
             setCursosArchivados(archivados);
@@ -158,8 +188,7 @@ export function useCursosE() {
             const matchBusqueda =
                 busqueda === "" ||
                 c.titulo?.toLowerCase().includes(busqueda.toLowerCase()) ||
-                c.nombre_tutor?.toLowerCase().includes(busqueda.toLowerCase()) ||
-                c.nombre_dimension?.toLowerCase().includes(busqueda.toLowerCase());
+                c.nombre_tutor?.toLowerCase().includes(busqueda.toLowerCase());
             const matchVark = filtroVark === "todos" || c.perfil_vark?.includes(filtroVark);
             const matchDim = !filtroDim || c.nombre_dimension === filtroDim;
             return matchBusqueda && matchVark && (tab === "archivados" ? true : matchDim);
@@ -177,6 +206,8 @@ export function useCursosE() {
     const irADetalle = (id_curso) => {
         navigate("/cursos-detalle", { state: { id_curso } });
     };
+
+                    
 
     return {
         cursos,
