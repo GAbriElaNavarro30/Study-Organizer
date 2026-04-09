@@ -12,6 +12,9 @@ import "../styles/cursosE.css";
 import { useCursosE } from "../hooks/useCursosE.js";
 import { useState, useRef, useEffect, useCallback } from "react";
 import { createPortal } from "react-dom";
+import { ModalCancelarInscripcion } from "../components/ModalCancelarInscripcion";
+import { CustomAlert } from "../components/CustomAlert";
+import logo from "../assets/imagenes/logotipo.png";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTES
@@ -32,15 +35,10 @@ const FILTROS_ARCH = [
 
 /* ─────────────────────────────────────────────────────────
    HELPER: resuelve el nombre del tutor con fallback
-   Prioriza el objeto con más información (el de misCursos
-   ya tiene CONCAT completo desde el modelo).
 ───────────────────────────────────────────────────────── */
 function resolverNombreTutor(curso, progreso) {
-    // progreso viene de misCursos, que tiene el CONCAT completo del modelo
     const nombreProgreso = progreso?.nombre_tutor;
     const nombreCurso = curso?.nombre_tutor;
-
-    // Tomar el más largo (el más completo)
     if (nombreProgreso && nombreCurso) {
         return nombreProgreso.length >= nombreCurso.length ? nombreProgreso : nombreCurso;
     }
@@ -250,16 +248,12 @@ function CardFooterAccion({ inscrito, progreso, esMetodo, onVerDetalle }) {
 
 /* ─────────────────────────────────────────────────────────
    CURSO CARD — mosaico
-   FIX: usa resolverNombreTutor() para tomar siempre el nombre
-        más completo entre curso y progreso.
 ───────────────────────────────────────────────────────── */
 function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancelar }) {
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
     const varkColor = VARK_COLORS[curso.perfil_vark] || "#1277dd";
     const pct = progreso?.porcentaje ?? 0;
     const esMetodo = !!curso.nombre_dimension;
-
-    // ← FIX: toma el nombre más completo disponible
     const nombreTutor = resolverNombreTutor(curso, progreso);
 
     return (
@@ -280,7 +274,6 @@ function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancel
                 <p className="ce-card-titulo">{curso.titulo}</p>
                 {curso.descripcion && <p className="ce-card-desc">{curso.descripcion.slice(0, 72)}{curso.descripcion.length > 72 ? "…" : ""}</p>}
                 <div className="ce-card-meta">
-                    {/* ← FIX: muestra nombreTutor resuelto, no curso.nombre_tutor directo */}
                     {nombreTutor && <span className="ce-card-meta-item"><IoPersonOutline size={11} /> {nombreTutor}</span>}
                     {curso.total_secciones > 0 && !esMetodo && <span className="ce-card-meta-item"><IoLayersOutline size={11} /> {curso.total_secciones} sección{curso.total_secciones !== 1 ? "es" : ""}</span>}
                 </div>
@@ -298,9 +291,8 @@ function CursoCard({ curso, inscrito, progreso, onClick, onInscribirse, onCancel
 
 /* ─────────────────────────────────────────────────────────
    TABLA CURSOS
-   FIX: también usa resolverNombreTutor en la fila de tabla
 ───────────────────────────────────────────────────────── */
-function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse, cancelarInscripcion }) {
+function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse, abrirModalCancelar }) {
     return (
         <div className="ce-table-wrap">
             <table className="ce-table">
@@ -321,7 +313,6 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                         const progreso = misCursos.find(c => c.id_curso === curso.id_curso);
                         const pct = progreso?.porcentaje ?? 0;
                         const esMetodo = !!curso.nombre_dimension;
-                        // ← FIX
                         const nombreTutor = resolverNombreTutor(curso, progreso);
                         return (
                             <tr key={curso.id_curso} className={`ce-tr ${esMetodo ? "ce-tr--metodo" : ""}`} onClick={() => irADetalle(curso.id_curso)}>
@@ -338,7 +329,6 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                                     </div>
                                 </td>
                                 <td className="ce-td ce-td--instructor">
-                                    {/* ← FIX */}
                                     {nombreTutor ? <span className="ce-tbl-instructor"><IoPersonOutline size={11} /> {nombreTutor}</span> : <span className="ce-tbl-empty">—</span>}
                                     {curso.total_secciones > 0 && !esMetodo && <span className="ce-tbl-secciones"><IoLayersOutline size={10} /> {curso.total_secciones} secc.</span>}
                                 </td>
@@ -365,7 +355,7 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
                                         {inscrito && progreso?.completado && <button className={`ce-card-btn ce-card-btn--sm ${esMetodo ? "ce-card-btn--metodo" : ""}`} onClick={e => { e.stopPropagation(); irADetalle(curso.id_curso); }}><IoSchoolOutline size={12} /> Retomar</button>}
                                         {inscrito && !progreso?.completado && pct > 0 && <button className={`ce-card-btn ce-card-btn--sm ${esMetodo ? "ce-card-btn--metodo" : ""}`} onClick={e => { e.stopPropagation(); irADetalle(curso.id_curso); }}><IoPlayCircleOutline size={12} /> Continuar</button>}
                                         {inscrito && !progreso?.completado && pct === 0 && <button className={`ce-card-btn ce-card-btn--sm ${esMetodo ? "ce-card-btn--metodo" : ""}`} onClick={e => { e.stopPropagation(); irADetalle(curso.id_curso); }}><IoPlayCircleOutline size={12} /> Iniciar</button>}
-                                        <MenuOpciones inscrito={inscrito} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} onVerDetalle={() => irADetalle(curso.id_curso)} esTabla={true} />
+                                        <MenuOpciones inscrito={inscrito} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => abrirModalCancelar(curso.id_curso)} onVerDetalle={() => irADetalle(curso.id_curso)} esTabla={true} />
                                     </div>
                                 </td>
                             </tr>
@@ -499,6 +489,14 @@ export function CursosE() {
     const [porPagina, setPorPagina] = useState(8);
     const [pagina, setPagina] = useState(1);
 
+    /* ── Modal cancelar inscripción ── */
+    const [modalCancelar, setModalCancelar] = useState({ abierto: false, curso: null });
+    const [cancelando, setCancelando] = useState(false);
+
+    /* ── Alerta de éxito al inscribirse ── */
+    const [alertaInscripcion, setAlertaInscripcion] = useState({ visible: false, titulo: "" });
+    const [alertaCancelacion, setAlertaCancelacion] = useState({ visible: false, titulo: "" });
+
     const {
         cargando, animado, tab, setTab, busqueda, setBusqueda,
         filtroVark, setFiltroVark, cursosFiltrados, inscritosIds,
@@ -522,6 +520,37 @@ export function CursosE() {
     const varkColor = filtroVark !== "todos" ? (VARK_COLORS[filtroVark] || "#1277dd") : null;
     const hayFiltrosActivos = filtroVark !== "todos" || filtroDim !== "";
     const limpiarTodo = () => { setFiltroVark("todos"); setFiltroDim(""); setPagina(1); };
+
+    /* ── Inscripción con alerta de éxito ── */
+    const handleInscribirse = async (id_curso) => {
+        const curso = cursos.find(c => c.id_curso === id_curso);
+        await inscribirse(id_curso);
+        setAlertaInscripcion({
+            visible: true,
+            titulo: curso?.titulo || "el curso",
+        });
+    };
+
+    /* ── Modal cancelar ── */
+    const abrirModalCancelar = (id_curso) => {
+        const curso =
+            cursos.find(c => c.id_curso === id_curso) ||
+            misCursos.find(c => c.id_curso === id_curso);
+        setModalCancelar({ abierto: true, curso: curso || { id_curso } });
+    };
+
+    const confirmarCancelar = async () => {
+        const tituloCurso = modalCancelar.curso?.titulo || "el curso";
+        setCancelando(true);
+        await cancelarInscripcion(modalCancelar.curso.id_curso);
+        setCancelando(false);
+        setModalCancelar({ abierto: false, curso: null });
+        setAlertaCancelacion({ visible: true, titulo: tituloCurso });
+    };
+    const cerrarModalCancelar = () => {
+        if (cancelando) return;
+        setModalCancelar({ abierto: false, curso: null });
+    };
 
     return (
         <div className={`ce-app ${animado ? "ce-animated" : ""}`}>
@@ -650,15 +679,49 @@ export function CursosE() {
 
                 {tab === "recomendados" && (cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} /> : <>
                     {vista === "mosaic"
-                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
-                        : <TablaCursos cursos={paginadosFn(cursosFiltrados)} inscritosIds={inscritosIds} misCursos={misCursos} irADetalle={irADetalle} inscribirse={inscribirse} cancelarInscripcion={cancelarInscripcion} />}
+                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => (
+                            <CursoCard
+                                key={curso.id_curso}
+                                curso={curso}
+                                inscrito={inscritosIds.has(curso.id_curso)}
+                                progreso={misCursos.find(c => c.id_curso === curso.id_curso)}
+                                onClick={() => irADetalle(curso.id_curso)}
+                                onInscribirse={() => handleInscribirse(curso.id_curso)}
+                                onCancelar={() => abrirModalCancelar(curso.id_curso)}
+                            />
+                        ))}</div>
+                        : <TablaCursos
+                            cursos={paginadosFn(cursosFiltrados)}
+                            inscritosIds={inscritosIds}
+                            misCursos={misCursos}
+                            irADetalle={irADetalle}
+                            inscribirse={handleInscribirse}
+                            abrirModalCancelar={abrirModalCancelar}
+                        />}
                     <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                 </>)}
 
                 {tab === "mis-cursos" && (cursosFiltrados.length === 0 ? <EmptyState tab={tab} busqueda={busqueda} onVerRecomendados={() => { setTab("recomendados"); setPagina(1); }} /> : <>
                     {vista === "mosaic"
-                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => <CursoCard key={curso.id_curso} curso={curso} inscrito={inscritosIds.has(curso.id_curso)} progreso={misCursos.find(c => c.id_curso === curso.id_curso)} onClick={() => irADetalle(curso.id_curso)} onInscribirse={() => inscribirse(curso.id_curso)} onCancelar={() => cancelarInscripcion(curso.id_curso)} />)}</div>
-                        : <TablaCursos cursos={paginadosFn(cursosFiltrados)} inscritosIds={inscritosIds} misCursos={misCursos} irADetalle={irADetalle} inscribirse={inscribirse} cancelarInscripcion={cancelarInscripcion} />}
+                        ? <div className="ce-grid">{paginadosFn(cursosFiltrados).map(curso => (
+                            <CursoCard
+                                key={curso.id_curso}
+                                curso={curso}
+                                inscrito={inscritosIds.has(curso.id_curso)}
+                                progreso={misCursos.find(c => c.id_curso === curso.id_curso)}
+                                onClick={() => irADetalle(curso.id_curso)}
+                                onInscribirse={() => handleInscribirse(curso.id_curso)}
+                                onCancelar={() => abrirModalCancelar(curso.id_curso)}
+                            />
+                        ))}</div>
+                        : <TablaCursos
+                            cursos={paginadosFn(cursosFiltrados)}
+                            inscritosIds={inscritosIds}
+                            misCursos={misCursos}
+                            irADetalle={irADetalle}
+                            inscribirse={handleInscribirse}
+                            abrirModalCancelar={abrirModalCancelar}
+                        />}
                     <Paginacion pagina={pagina} totalPaginas={totalPagsFn(cursosFiltrados)} total={cursosFiltrados.length} desde={desdeFn(cursosFiltrados)} hasta={hastaFn(cursosFiltrados)} onCambiar={setPagina} />
                 </>)}
 
@@ -683,6 +746,37 @@ export function CursosE() {
                     </>}
                 </>)}
             </div>
+
+            {/* ── Modal de confirmación cancelar inscripción ── */}
+            <ModalCancelarInscripcion
+                abierto={modalCancelar.abierto}
+                curso={modalCancelar.curso}
+                onConfirmar={confirmarCancelar}
+                onCerrar={cerrarModalCancelar}
+                cargando={cancelando}
+            />
+
+            {/* ── Alerta de éxito al inscribirse ── */}
+            {alertaInscripcion.visible && (
+                <CustomAlert
+                    type="success"
+                    title="¡Inscripción exitosa!"
+                    message={`Te has inscrito correctamente a "${alertaInscripcion.titulo}". ¡Ya puedes comenzar a aprender!`}
+                    onClose={() => setAlertaInscripcion({ visible: false, titulo: "" })}
+                    logo={logo}
+                />
+            )}
+
+            {alertaCancelacion.visible && (
+                <CustomAlert
+                    type="success"
+                    title="Inscripción cancelada"
+                    message={`Tu inscripción a "${alertaCancelacion.titulo}" ha sido cancelada exitosamente.`}
+                    onClose={() => setAlertaCancelacion({ visible: false, titulo: "" })}
+                    logo={logo}
+                />
+            )}
+
         </div>
     );
 }

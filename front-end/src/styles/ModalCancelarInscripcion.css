@@ -1,0 +1,297 @@
+/* src/components/ModalCancelarInscripcion.css */
+
+/* ─── Overlay ─────────────────────────────────────────── */
+.mci-overlay {
+    position: fixed;
+    inset: 0;
+    z-index: 100000;
+    background: rgba(10, 14, 26, 0.55);
+    backdrop-filter: blur(4px);
+    -webkit-backdrop-filter: blur(4px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 1rem;
+    animation: mci-fade-in 0.18s ease;
+}
+
+@keyframes mci-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+/* ─── Dialog ──────────────────────────────────────────── */
+.mci-dialog {
+    position: relative;
+    background: #ffffff;
+    border-radius: 16px;
+    padding: 2rem 1.75rem 1.75rem;
+    width: 100%;
+    max-width: 420px;
+    box-shadow:
+        0 8px 32px rgba(0, 0, 0, 0.14),
+        0 2px 8px rgba(0, 0, 0, 0.08);
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 0;
+    animation: mci-slide-up 0.22s cubic-bezier(0.34, 1.3, 0.64, 1);
+}
+
+@keyframes mci-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(18px) scale(0.97);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0) scale(1);
+    }
+}
+
+/* ─── Botón cerrar ────────────────────────────────────── */
+.mci-close {
+    position: absolute;
+    top: 0.875rem;
+    right: 0.875rem;
+    width: 28px;
+    height: 28px;
+    border-radius: 50%;
+    border: none;
+    background: #f1f3f7;
+    color: #6b7280;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    padding: 0;
+}
+
+.mci-close:hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+/* ─── Icono de advertencia ────────────────────────────── */
+.mci-icon-wrap {
+    margin-bottom: 1rem;
+}
+
+.mci-icon-ring {
+    width: 58px;
+    height: 58px;
+    border-radius: 50%;
+    background: #fff7ed;
+    border: 2px solid #fed7aa;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    animation: mci-pulse 2.4s ease-in-out infinite;
+}
+
+.mci-icon {
+    color: #ea580c;
+}
+
+@keyframes mci-pulse {
+
+    0%,
+    100% {
+        box-shadow: 0 0 0 0 rgba(234, 88, 12, 0.15);
+    }
+
+    50% {
+        box-shadow: 0 0 0 8px rgba(234, 88, 12, 0);
+    }
+}
+
+/* ─── Título ──────────────────────────────────────────── */
+.mci-title {
+    font-size: 1.125rem;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 1rem;
+    text-align: center;
+    letter-spacing: -0.01em;
+}
+
+/* ─── Tarjeta del curso ───────────────────────────────── */
+.mci-curso-card {
+    width: 100%;
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    background: #f8f9fc;
+    border: 1px solid #e5e7eb;
+    border-radius: 10px;
+    padding: 0.625rem 0.875rem;
+    margin-bottom: 1rem;
+}
+
+.mci-curso-thumb {
+    width: 40px;
+    height: 40px;
+    border-radius: 8px;
+    background: var(--ph-bg, #e5e7eb);
+    color: var(--ph-color, #6b7280);
+    font-size: 0.625rem;
+    font-weight: 700;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.mci-curso-thumb img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+.mci-curso-info {
+    min-width: 0;
+    flex: 1;
+}
+
+.mci-curso-titulo {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #111827;
+    margin: 0 0 0.2rem;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+.mci-curso-tutor {
+    font-size: 0.7rem;
+    color: #6b7280;
+    margin: 0;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ─── Cuerpo / descripción ────────────────────────────── */
+.mci-body {
+    font-size: 0.815rem;
+    color: #4b5563;
+    text-align: center;
+    line-height: 1.55;
+    margin: 0 0 1.5rem;
+    padding: 0 0.25rem;
+}
+
+.mci-body strong {
+    color: #b91c1c;
+    font-weight: 600;
+}
+
+/* ─── Acciones ────────────────────────────────────────── */
+.mci-actions {
+    width: 100%;
+    display: flex;
+    gap: 0.625rem;
+}
+
+.mci-btn {
+    flex: 1;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 0.4rem;
+    padding: 0.6rem 1rem;
+    border-radius: 8px;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    border: none;
+    transition: background 0.15s, color 0.15s, box-shadow 0.15s, transform 0.1s;
+    white-space: nowrap;
+}
+
+.mci-btn:disabled {
+    opacity: 0.6;
+    cursor: not-allowed;
+    transform: none !important;
+}
+
+.mci-btn:not(:disabled):active {
+    transform: scale(0.97);
+}
+
+/* Botón secundario — mantener inscripción */
+.mci-btn--cancel {
+    background: #f3f4f6;
+    color: #374151;
+    border: 1px solid #e5e7eb;
+}
+
+.mci-btn--cancel:not(:disabled):hover {
+    background: #e5e7eb;
+    color: #111827;
+}
+
+.mci-btn--cancel:focus-visible {
+    outline: 2px solid #1277dd;
+    outline-offset: 2px;
+}
+
+/* Botón primario — confirmar cancelación */
+.mci-btn--confirm {
+    background: #dc2626;
+    color: #ffffff;
+    box-shadow: 0 1px 4px rgba(220, 38, 38, 0.3);
+}
+
+.mci-btn--confirm:not(:disabled):hover {
+    background: #b91c1c;
+    box-shadow: 0 2px 8px rgba(220, 38, 38, 0.35);
+}
+
+.mci-btn--confirm:focus-visible {
+    outline: 2px solid #dc2626;
+    outline-offset: 2px;
+}
+
+/* ─── Spinner ─────────────────────────────────────────── */
+.mci-spinner {
+    display: inline-block;
+    width: 14px;
+    height: 14px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: mci-spin 0.6s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes mci-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ─── Responsive ──────────────────────────────────────── */
+@media (max-width: 480px) {
+    .mci-dialog {
+        padding: 1.5rem 1.25rem 1.25rem;
+    }
+
+    .mci-actions {
+        flex-direction: column-reverse;
+    }
+
+    .mci-btn {
+        width: 100%;
+        padding: 0.7rem 1rem;
+    }
+}
