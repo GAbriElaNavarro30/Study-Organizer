@@ -1,3 +1,5 @@
+// useCursoResultado.js
+
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
@@ -7,15 +9,15 @@ export function useCursoResultado() {
     const id_curso  = state?.id_curso;
     const navigate  = useNavigate();
 
-    // ← Leer retroalimentación que viene del visor
-    const retroalimentacion = state?.retroalimentacion ?? [];
-
-    const [resultado, setResultado] = useState(null);
-    const [curso, setCurso]         = useState(null);
-    const [progreso, setProgreso]   = useState(null);
-    const [cargando, setCargando]   = useState(true);
-    const [animado, setAnimado]     = useState(false);
-    const [error, setError]         = useState(null);
+    const [resultado, setResultado]           = useState(null);
+    const [curso, setCurso]                   = useState(null);
+    const [progreso, setProgreso]             = useState(null);
+    const [retroalimentacion, setRetro]       = useState(
+        state?.retroalimentacion ?? []        // si viene del visor, úsala de inmediato
+    );
+    const [cargando, setCargando]             = useState(true);
+    const [animado, setAnimado]               = useState(false);
+    const [error, setError]                   = useState(null);
 
     useEffect(() => {
         if (!id_curso) { navigate("/cursos"); return; }
@@ -27,12 +29,18 @@ export function useCursoResultado() {
         setCargando(true);
         setError(null);
         try {
-            const { data } = await api.get(`/cursos/detalle?id=${id_curso}`);
-            setCurso(data.curso);
-            setProgreso(data.progreso);
+            const { data: detalleData } = await api.get(`/cursos/detalle?id=${id_curso}`);
+            setCurso(detalleData.curso);
+            setProgreso(detalleData.progreso);
 
-            const { data: res } = await api.get(`/cursos/resultado?id_curso=${id_curso}`);
-            setResultado(res.resultado);
+            const { data: resData } = await api.get(`/cursos/resultado?id_curso=${id_curso}`);
+            setResultado(resData.resultado);
+
+            // ← Usar la retroalimentación del backend siempre que llegue,
+            //   así funciona tanto desde el visor como desde "Ver resultado"
+            if (resData.retroalimentacion?.length > 0) {
+                setRetro(resData.retroalimentacion);
+            }
         } catch {
             setError("No se pudo cargar el resultado.");
         } finally {
@@ -49,6 +57,6 @@ export function useCursoResultado() {
         animado,
         error,
         navigate,
-        retroalimentacion, // ← nuevo
+        retroalimentacion,
     };
 }

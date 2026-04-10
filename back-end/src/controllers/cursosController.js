@@ -841,7 +841,7 @@ export const guardarRespuestasTest = async (req, res) => {
 
         try {
             const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, { porcentaje });
-            nivel            = pythonRes.data.nombre_nivel;   // se guarda en BD
+            nivel = pythonRes.data.nombre_nivel;   // se guarda en BD
             retroalimentacion = pythonRes.data.retroalimentacion ?? []; // solo para el front
         } catch (errPython) {
             console.error("guardarRespuestasTest — sistema experto no disponible:", errPython.message);
@@ -849,7 +849,7 @@ export const guardarRespuestasTest = async (req, res) => {
 
         // ── Guardar resultado en BD (nivel incluido, retroalimentacion NO) ──
         const resultado = new ResultadoCurso({
-            total_preguntas:      total,
+            total_preguntas: total,
             respuestas_correctas: correctas,
             porcentaje,
             nivel,
@@ -887,7 +887,25 @@ export const obtenerResultadoCurso = async (req, res) => {
         }
 
         const resultado = await ResultadoCurso.getByIntento(intento.id_intento);
-        res.json({ ok: true, resultado: resultado || null });
+
+        // ── Recalcular retroalimentación desde el sistema experto ──
+        let retroalimentacion = [];
+        if (resultado?.porcentaje !== undefined) {
+            try {
+                const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
+                    porcentaje: resultado.porcentaje
+                });
+                retroalimentacion = pythonRes.data.retroalimentacion ?? [];
+            } catch (errPython) {
+                console.error("obtenerResultadoCurso — sistema experto no disponible:", errPython.message);
+            }
+        }
+
+        res.json({
+            ok: true,
+            resultado: resultado || null,
+            retroalimentacion, // ← para cuando viene del botón externo
+        });
     } catch (error) {
         console.error("obtenerResultadoCurso:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener el resultado." });

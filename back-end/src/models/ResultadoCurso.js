@@ -2,25 +2,28 @@
 import { db } from "../config/db.js";
 
 export class ResultadoCurso {
-    constructor({ total_preguntas, respuestas_correctas, porcentaje, id_intento }) {
+    constructor({ total_preguntas, respuestas_correctas, porcentaje, nivel, id_intento }) {
         this.total_preguntas = total_preguntas;
         this.respuestas_correctas = respuestas_correctas;
         this.porcentaje = porcentaje;
+        this.nivel = nivel;                // ← agregado
         this.id_intento = id_intento;
     }
 
     async save() {
         return await db.query(
-            `INSERT INTO Resultado_Curso (total_preguntas, respuestas_correctas, porcentaje, id_intento)
-             VALUES (?, ?, ?, ?)
+            `INSERT INTO Resultado_Curso (total_preguntas, respuestas_correctas, porcentaje, nivel, id_intento)
+             VALUES (?, ?, ?, ?, ?)
              ON DUPLICATE KEY UPDATE
                total_preguntas      = VALUES(total_preguntas),
                respuestas_correctas = VALUES(respuestas_correctas),
-               porcentaje           = VALUES(porcentaje)`,
+               porcentaje           = VALUES(porcentaje),
+               nivel                = VALUES(nivel)`,
             [
                 this.total_preguntas,
                 this.respuestas_correctas,
                 this.porcentaje,
+                this.nivel,                // ← agregado
                 this.id_intento,
             ]
         );
@@ -70,8 +73,6 @@ export class ResultadoCurso {
         return rows;
     }
 
-    // ========== MÉTODOS NUEVOS ==========
-
     static async getResultadosPorCurso(id_curso) {
         const [rows] = await db.query(
             `SELECT
@@ -79,13 +80,7 @@ export class ResultadoCurso {
                 u.nombre, u.apellido, u.foto_perfil,
                 rc.total_preguntas, rc.respuestas_correctas,
                 rc.porcentaje AS puntaje,
-                CASE
-                    WHEN rc.porcentaje >= 90 THEN 'excelente'
-                    WHEN rc.porcentaje >= 80 THEN 'muy-bueno'
-                    WHEN rc.porcentaje >= 70 THEN 'bueno'
-                    WHEN rc.porcentaje >= 50 THEN 'regular'
-                    ELSE 'deficiente'
-                END AS nivel,
+                rc.nivel,
                 it.fecha_inicio AS fecha
              FROM Resultado_Curso rc
              JOIN Intento_Curso it ON rc.id_intento = it.id_intento
@@ -105,7 +100,6 @@ export class ResultadoCurso {
              ORDER BY rc.porcentaje DESC`,
             [id_curso, id_curso]
         );
-        
         return rows;
     }
 
@@ -113,13 +107,7 @@ export class ResultadoCurso {
         const [rows] = await db.query(
             `SELECT
                 rc.porcentaje AS puntaje,
-                CASE
-                    WHEN rc.porcentaje >= 90 THEN 'excelente'
-                    WHEN rc.porcentaje >= 80 THEN 'muy-bueno'
-                    WHEN rc.porcentaje >= 70 THEN 'bueno'
-                    WHEN rc.porcentaje >= 50 THEN 'regular'
-                    ELSE 'deficiente'
-                END AS nivel,
+                rc.nivel,
                 it.fecha_inicio AS fecha,
                 TIMESTAMPDIFF(MINUTE, it.fecha_inicio, it.fecha_fin) AS duracion_minutos
              FROM Resultado_Curso rc
@@ -129,7 +117,6 @@ export class ResultadoCurso {
              ORDER BY it.fecha_inicio ASC`,
             [id_curso, id_usuario]
         );
-        
         return rows;
     }
 }

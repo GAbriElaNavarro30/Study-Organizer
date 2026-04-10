@@ -1,0 +1,140 @@
+.mcc-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(10, 30, 60, 0.45);
+    backdrop-filter: blur(3px);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 1000;
+    animation: mcc-fade-in 0.25s ease;
+}
+
+@keyframes mcc-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.mcc-card {
+    background: #fff;
+    border-radius: 20px;
+    padding: 40px 36px 32px;
+    max-width: 420px;
+    width: 90%;
+    text-align: center;
+    position: relative;
+    box-shadow: 0 20px 60px rgba(10, 30, 60, 0.18);
+    animation: mcc-slide-up 0.3s ease;
+}
+
+@keyframes mcc-slide-up {
+    from {
+        transform: translateY(24px);
+        opacity: 0;
+    }
+
+    to {
+        transform: translateY(0);
+        opacity: 1;
+    }
+}
+
+.mcc-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: #F3F4F6;
+    border: none;
+    border-radius: 50%;
+    width: 32px;
+    height: 32px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    cursor: pointer;
+    color: #6B7280;
+    transition: background 0.15s;
+}
+
+.mcc-close:hover {
+    background: #E5E7EB;
+}
+
+.mcc-icon-wrap {
+    width: 72px;
+    height: 72px;
+    border-radius: 50%;
+    background: linear-gradient(135deg, #ECFDF5, #D1FAE5);
+    border: 2px solid #A7F3D0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    margin: 0 auto 20px;
+}
+
+.mcc-trophy {
+    color: #059669;
+}
+
+.mcc-titulo {
+    font-size: 24px;
+    font-weight: 700;
+    color: #111827;
+    margin-bottom: 10px;
+    letter-spacing: -0.02em;
+}
+
+.mcc-sub {
+    font-size: 14px;
+    color: #6B7280;
+    line-height: 1.7;
+    margin-bottom: 28px;
+}
+
+.mcc-btns {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+}
+
+.mcc-btn {
+    display: inline-flex;
+    align-items: center;
+    justify-content: center;
+    gap: 8px;
+    padding: 11px 20px;
+    border-radius: 10px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+    font-family: inherit;
+}
+
+.mcc-btn--primary {
+    background: #2563EB;
+    color: #fff;
+    border: none;
+    box-shadow: 0 2px 12px rgba(37, 99, 235, 0.25);
+}
+
+.mcc-btn--primary:hover {
+    background: #1A4A7A;
+    transform: translateY(-1px);
+}
+
+.mcc-btn--outline {
+    background: #fff;
+    color: #374151;
+    border: 1.5px solid #E5E7EB;
+}
+
+.mcc-btn--outline:hover {
+    background: #F9FAFB;
+    border-color: #D1D5DB;
+}

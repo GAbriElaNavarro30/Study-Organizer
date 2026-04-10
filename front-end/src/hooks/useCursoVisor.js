@@ -51,22 +51,26 @@ export function useCursoVisor() {
 
             const vistosDelServidor = new Set(data.progreso?.contenidos_vistos || []);
             setContenidosVistosIniciales(vistosDelServidor);
-            setContenidosVistos(new Set());
+            setContenidosVistos(new Set(vistosDelServidor));
 
             if (data.curso?.secciones) {
+                let ultimoSi = 0;
+                let ultimoCi = 0;
                 let encontrado = false;
+
                 for (let si = 0; si < data.curso.secciones.length; si++) {
                     const seccContenidos = data.curso.secciones[si].contenidos || [];
                     for (let ci = 0; ci < seccContenidos.length; ci++) {
-                        if (!vistosDelServidor.has(seccContenidos[ci].id_contenido)) {
-                            setSeccionIdx(si);
-                            setContenidoIdx(ci);
+                        if (vistosDelServidor.has(seccContenidos[ci].id_contenido)) {
+                            ultimoSi = si;
+                            ultimoCi = ci;
                             encontrado = true;
-                            break;
                         }
                     }
-                    if (encontrado) break;
                 }
+
+                setSeccionIdx(ultimoSi);
+                setContenidoIdx(ultimoCi);
             }
         } catch {
             navigate("/cursos");
@@ -182,13 +186,6 @@ export function useCursoVisor() {
     };
 
     const irAAnterior = () => {
-        if (contenidoActual?.id_contenido) {
-            setContenidosVistos(prev => {
-                const next = new Set(prev);
-                next.delete(contenidoActual.id_contenido);
-                return next;
-            });
-        }
         if (contenidoIdx > 0) {
             setContenidoIdx(ci => ci - 1);
         } else if (seccionIdx > 0) {

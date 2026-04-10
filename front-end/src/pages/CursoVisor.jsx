@@ -1,3 +1,4 @@
+import { useState, useRef, useEffect } from "react";
 import {
     IoArrowBackOutline, IoCheckmarkCircleOutline,
     IoChevronBackOutline, IoChevronForwardOutline,
@@ -10,6 +11,7 @@ import {
 import "../styles/cursoVisor.css";
 import { useCursoVisor } from "../hooks/useCursoVisor.js";
 import { ModalConfirmarSalirCurso } from "../components/ModalConfirmarSalirCurso.jsx";
+import { ModalCursoCompletado } from "../components/ModalCursoCompletado.jsx";
 
 /* ── Loading ── */
 function LoadingState() {
@@ -153,11 +155,23 @@ export function CursoVisor() {
         navigate,
     } = useCursoVisor();
 
+    const [mostrarModalCompletado, setMostrarModalCompletado] = useState(false);
+    const completadoPrevio = useRef(false);
+
+    const completado = progreso.completado;
+
+    // Dispara el modal solo la primera vez que se completa en esta sesión
+    useEffect(() => {
+        if (completado && !soloLectura && !completadoPrevio.current) {
+            completadoPrevio.current = true;
+            setMostrarModalCompletado(true);
+        }
+    }, [completado, soloLectura]);
+
     if (cargando) return <LoadingState />;
     if (!curso) return null;
 
     const pct = progreso.porcentaje;
-    const completado = progreso.completado;
     const secciones = curso.secciones || [];
 
     const todosLosContenidos = secciones.flatMap((s, si) =>
@@ -302,25 +316,7 @@ export function CursoVisor() {
                                             soloLectura={soloLectura}
                                         />
 
-                                        {completado && !soloLectura && (
-                                            <div className="cv-completado-banner">
-                                                <IoTrophyOutline size={44} className="cv-completado-icon" />
-                                                <h2 className="cv-completado-titulo">¡Felicidades!</h2>
-                                                <p className="cv-completado-sub">
-                                                    Completaste el curso <strong>{curso.titulo}</strong>.<br />
-                                                    Puedes retomarlo cuando quieras.
-                                                </p>
-                                                <div className="cv-completado-btns">
-                                                    <button className="cv-completado-btn" onClick={() => navigate("/cursos")}>
-                                                        <IoHomeOutline size={14} /> Ver más cursos
-                                                    </button>
-                                                    <button className="cv-completado-btn cv-completado-btn--outline"
-                                                        onClick={() => navigate("/cursos-detalle", { state: { id_curso: curso.id_curso } })}>
-                                                        <IoRefreshOutline size={14} /> Ver detalle
-                                                    </button>
-                                                </div>
-                                            </div>
-                                        )}
+                                        {/* Banner verde eliminado — reemplazado por modal */}
 
                                         {soloLectura && (
                                             <BannerArchivado
@@ -394,10 +390,18 @@ export function CursoVisor() {
                 </div>
             </main>
 
+            {/* ── MODALES ── */}
             {mostrarModalSalir && (
                 <ModalConfirmarSalirCurso
                     onConfirmar={handleConfirmarSalir}
                     onCancelar={() => setMostrarModalSalir(false)}
+                />
+            )}
+
+            {mostrarModalCompletado && (
+                <ModalCursoCompletado
+                    titulo={curso.titulo}
+                    onCerrar={() => setMostrarModalCompletado(false)}
                 />
             )}
         </div>
