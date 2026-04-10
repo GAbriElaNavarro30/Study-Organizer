@@ -1,4 +1,3 @@
-// src/hooks/useCursoResultado.js
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
@@ -7,6 +6,9 @@ export function useCursoResultado() {
     const { state } = useLocation();
     const id_curso  = state?.id_curso;
     const navigate  = useNavigate();
+
+    // ← Leer retroalimentación que viene del visor
+    const retroalimentacion = state?.retroalimentacion ?? [];
 
     const [resultado, setResultado] = useState(null);
     const [curso, setCurso]         = useState(null);
@@ -29,7 +31,6 @@ export function useCursoResultado() {
             setCurso(data.curso);
             setProgreso(data.progreso);
 
-            // Obtener resultado del último intento
             const { data: res } = await api.get(`/cursos/resultado?id_curso=${id_curso}`);
             setResultado(res.resultado);
         } catch {
@@ -48,5 +49,6 @@ export function useCursoResultado() {
         animado,
         error,
         navigate,
+        retroalimentacion, // ← nuevo
     };
 }

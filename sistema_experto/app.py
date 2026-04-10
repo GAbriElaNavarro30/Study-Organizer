@@ -5,6 +5,7 @@ from fastapi.middleware.cors import CORSMiddleware
 
 from routers.estilos_aprendizaje import router as router_ea
 from routers.metodos_estudio import router as router_me
+from routers.resultados_curso import router as router_cursos
 
 load_dotenv()
 
@@ -29,6 +30,7 @@ app.add_middleware(
 
 app.include_router(router_ea)
 app.include_router(router_me)
+app.include_router(router_cursos)
 
 @app.get("/")
 def health_check():

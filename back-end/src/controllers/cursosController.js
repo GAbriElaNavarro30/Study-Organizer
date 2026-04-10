@@ -12,6 +12,9 @@ import { ResultadoCurso } from "../models/ResultadoCurso.js";
 
 import { db } from "../config/db.js";
 import cloudinary from "../config/cloudinary.js";
+import axios from "axios";
+
+const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
 // ─────────────────────────────────────────────────────────────
 // Helpers
@@ -354,7 +357,6 @@ export const crearContenido = async (req, res) => {
 
         const [result] = await bloque.save();
 
-        // ── Actualizar total_contenidos de la sección ──
         await SeccionCurso.recalcularTotalContenidos(id);
 
         res.status(201).json({ ok: true, id_contenido: result.insertId, orden: ordenFinal });
@@ -394,15 +396,13 @@ export const actualizarContenido = async (req, res) => {
 
 export const eliminarContenido = async (req, res) => {
     try {
-        const { id } = req.params; // id_contenido
+        const { id } = req.params;
 
-        // Obtener id_seccion antes de eliminar
         const contenido = await Contenido.getById(id);
         const id_seccion = contenido?.id_seccion ?? null;
 
         await Contenido.delete(id);
 
-        // ── Actualizar total_contenidos de la sección ──
         if (id_seccion) {
             await SeccionCurso.recalcularTotalContenidos(id_seccion);
         }
@@ -787,6 +787,10 @@ export const marcarContenidoVisto = async (req, res) => {
     }
 };
 
+// ─────────────────────────────────────────────────────────────
+// RESPUESTAS TEST + SISTEMA EXPERTO
+// ─────────────────────────────────────────────────────────────
+
 export const guardarRespuestasTest = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -813,6 +817,7 @@ export const guardarRespuestasTest = async (req, res) => {
 
         await db.query("DELETE FROM Respuesta_Test_Curso WHERE id_intento = ?", [intento.id_intento]);
 
+        // ── Calcular correctas ──
         let correctas = 0;
         const filas = [];
         for (const r of respuestas) {
@@ -830,15 +835,36 @@ export const guardarRespuestasTest = async (req, res) => {
         const total = respuestas.length;
         const porcentaje = total > 0 ? parseFloat(((correctas / total) * 100).toFixed(2)) : 0;
 
+        // ── Llamar al sistema experto ──
+        let nivel = null;
+        let retroalimentacion = [];
+
+        try {
+            const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, { porcentaje });
+            nivel            = pythonRes.data.nombre_nivel;   // se guarda en BD
+            retroalimentacion = pythonRes.data.retroalimentacion ?? []; // solo para el front
+        } catch (errPython) {
+            console.error("guardarRespuestasTest — sistema experto no disponible:", errPython.message);
+        }
+
+        // ── Guardar resultado en BD (nivel incluido, retroalimentacion NO) ──
         const resultado = new ResultadoCurso({
-            total_preguntas: total,
+            total_preguntas:      total,
             respuestas_correctas: correctas,
             porcentaje,
+            nivel,
             id_intento: intento.id_intento,
         });
         await resultado.save();
 
-        res.json({ ok: true, correctas, total, porcentaje });
+        res.json({
+            ok: true,
+            correctas,
+            total,
+            porcentaje,
+            nivel,
+            retroalimentacion, // solo viaja al front, no se persiste
+        });
     } catch (error) {
         console.error("guardarRespuestasTest:", error);
         res.status(500).json({ ok: false, mensaje: "Error al guardar respuestas." });
@@ -958,7 +984,6 @@ export const historialResultadosEstudiante = async (req, res) => {
     }
 };
 
-// GET /cursos/mi-historial?id=<id_curso>
 export const miHistorialResultados = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;

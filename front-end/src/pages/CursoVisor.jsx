@@ -1,83 +1,39 @@
-// src/pages/Cursos/CursoVisor.jsx
-import { useEffect } from "react";
 import {
     IoArrowBackOutline, IoCheckmarkCircleOutline,
     IoChevronBackOutline, IoChevronForwardOutline,
     IoDocumentTextOutline, IoTrophyOutline,
     IoHomeOutline, IoRefreshOutline,
     IoHelpCircleOutline, IoCheckmarkDoneOutline,
-    IoReloadOutline, IoLayersOutline, IoSparkles,
-    IoArchiveOutline,
+    IoLayersOutline, IoArchiveOutline, IoLockClosedOutline,
+    IoChevronForwardOutline as IoNext,
 } from "react-icons/io5";
 import "../styles/cursoVisor.css";
 import { useCursoVisor } from "../hooks/useCursoVisor.js";
+import { ModalConfirmarSalirCurso } from "../components/ModalConfirmarSalirCurso.jsx";
 
 /* ── Loading ── */
 function LoadingState() {
     return (
-        <div style={{ minHeight: "100vh", display: "flex", alignItems: "center", justifyContent: "center", background: "#F8FAFC" }}>
-            <div style={{ display: "flex", flexDirection: "column", alignItems: "center", gap: 16 }}>
-                <div style={{ width: 32, height: 32, border: "3px solid #E2E8F0", borderTopColor: "#6366F1", borderRadius: "50%", animation: "cv-spin .7s linear infinite" }} />
-                <p style={{ fontSize: 14, fontWeight: 500, color: "#64748B", fontFamily: "'Inter',sans-serif" }}>
-                    Cargando visor...
-                </p>
+        <div className="cv-loading-root">
+            <div className="cv-loading-inner">
+                <div className="cv-loading-spinner" />
+                <p className="cv-loading-text">Cargando visor...</p>
             </div>
-            <style>{`@keyframes cv-spin { to { transform: rotate(360deg); } }`}</style>
         </div>
     );
 }
 
-/* ── Banner: curso archivado ── */
+/* ── Banner archivado ── */
 function BannerArchivado({ titulo, onVolver }) {
     return (
-        <div style={{
-            background: "#F5F3FF",
-            border: "1px solid #DDD6FE",
-            borderRadius: 14,
-            padding: "28px 24px",
-            display: "flex",
-            flexDirection: "column",
-            alignItems: "center",
-            gap: 12,
-            textAlign: "center",
-            marginTop: 24,
-        }}>
-            <div style={{
-                width: 52,
-                height: 52,
-                borderRadius: "50%",
-                background: "#EDE9FE",
-                display: "flex",
-                alignItems: "center",
-                justifyContent: "center",
-                color: "#7C3AED",
-            }}>
-                <IoArchiveOutline size={24} />
-            </div>
-            <h2 style={{ margin: 0, fontSize: 17, fontWeight: 600, color: "#3730A3" }}>
-                Curso archivado
-            </h2>
-            <p style={{ margin: 0, fontSize: 13.5, color: "#6D28D9", lineHeight: 1.6, maxWidth: 340 }}>
-                <strong>{titulo}</strong> está en modo solo lectura. Puedes navegar el contenido y consultar tus resultados, pero no registrar nuevo progreso ni responder cuestionarios.
+        <div className="cv-banner-archivado">
+            <div className="cv-banner-archivado__icon"><IoArchiveOutline size={24} /></div>
+            <h2 className="cv-banner-archivado__titulo">Curso archivado</h2>
+            <p className="cv-banner-archivado__desc">
+                <strong>{titulo}</strong> está en modo solo lectura. Puedes navegar el contenido y consultar tus
+                resultados, pero no registrar nuevo progreso ni responder cuestionarios.
             </p>
-            <button
-                onClick={onVolver}
-                style={{
-                    marginTop: 4,
-                    padding: "8px 18px",
-                    background: "#7C3AED",
-                    color: "#fff",
-                    border: "none",
-                    borderRadius: 9,
-                    fontSize: 13,
-                    fontWeight: 600,
-                    cursor: "pointer",
-                    fontFamily: "inherit",
-                    display: "flex",
-                    alignItems: "center",
-                    gap: 6,
-                }}
-            >
+            <button onClick={onVolver} className="cv-banner-archivado__btn">
                 <IoArrowBackOutline size={14} /> Volver al catálogo
             </button>
         </div>
@@ -85,76 +41,73 @@ function BannerArchivado({ titulo, onVolver }) {
 }
 
 /* ── Cuestionario ── */
-function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnviar, onReiniciar, soloLectura }) {
+function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnviar, soloLectura }) {
     if (!preguntas || preguntas.length === 0) return null;
     const todasRespondidas = preguntas.every(p => respuestas[p.id_test] !== undefined);
 
     return (
-        <div style={{ background: soloLectura ? "#F5F3FF" : "#F0F9FF", border: `1px solid ${soloLectura ? "#DDD6FE" : "#BAE6FD"}`, borderRadius: 12, padding: "18px 20px", display: "flex", flexDirection: "column", gap: 14, marginTop: 22 }}>
-            {/* Header */}
-            <div style={{ display: "flex", alignItems: "center", gap: 7, fontSize: 12, fontWeight: 700, textTransform: "uppercase", letterSpacing: "0.07em", color: soloLectura ? "#7C3AED" : "#0284C7", paddingBottom: 10, borderBottom: `1px solid ${soloLectura ? "#DDD6FE" : "#BAE6FD"}` }}>
-                <IoHelpCircleOutline size={13} /> Cuestionario de la sección
-                <span style={{ marginLeft: "auto", fontSize: 11, background: soloLectura ? "#EDE9FE" : "#E0F2FE", color: soloLectura ? "#7C3AED" : "#0284C7", padding: "2px 8px", borderRadius: 20, fontWeight: 600, textTransform: "none", letterSpacing: 0 }}>
+        <div className={`cv-bloque-test ${soloLectura ? "cv-bloque-test--archivado" : ""}`}>
+            <div className={`cv-bloque-test__header ${soloLectura ? "cv-bloque-test__header--archivado" : ""}`}>
+                <IoHelpCircleOutline size={13} />
+                Cuestionario de la sección
+                <span className={`cv-bloque-test__count ${soloLectura ? "cv-bloque-test__count--archivado" : ""}`}>
                     {preguntas.length} pregunta{preguntas.length !== 1 ? "s" : ""}
                 </span>
                 {soloLectura && (
-                    <span style={{ fontSize: 10, background: "#EDE9FE", color: "#7C3AED", padding: "2px 8px", borderRadius: 20, fontWeight: 600, textTransform: "none", display: "flex", alignItems: "center", gap: 4 }}>
+                    <span className="cv-bloque-test__solo-badge">
                         <IoArchiveOutline size={10} /> Solo lectura
                     </span>
                 )}
             </div>
 
-            {/* Aviso si es solo lectura */}
             {soloLectura && (
-                <div style={{ background: "#EDE9FE", borderRadius: 8, padding: "10px 14px", fontSize: 12.5, color: "#5B21B6", display: "flex", alignItems: "center", gap: 8 }}>
+                <div className="cv-bloque-test__aviso-archivado">
                     <IoArchiveOutline size={14} />
                     Este cuestionario no puede responderse porque el curso está archivado.
                 </div>
             )}
 
-            {/* Resultado */}
             {resultadoTest && (
-                <div style={{ background: resultadoTest.correctas === resultadoTest.total ? "#F0FDF4" : "#FFFBEB", border: `1px solid ${resultadoTest.correctas === resultadoTest.total ? "#BBF7D0" : "#FDE68A"}`, borderRadius: 10, padding: "14px 16px", display: "flex", alignItems: "center", justifyContent: "space-between", gap: 12 }}>
-                    <div style={{ display: "flex", alignItems: "center", gap: 10 }}>
-                        <IoCheckmarkDoneOutline size={20} color={resultadoTest.correctas === resultadoTest.total ? "#16A34A" : "#D97706"} />
+                <div className={`cv-bloque-test__resultado ${resultadoTest.correctas === resultadoTest.total ? "cv-bloque-test__resultado--perfecto" : "cv-bloque-test__resultado--parcial"}`}>
+                    <div className="cv-bloque-test__resultado-info">
+                        <IoCheckmarkDoneOutline size={20} className={resultadoTest.correctas === resultadoTest.total ? "cv-icon--success" : "cv-icon--warning"} />
                         <div>
-                            <p style={{ margin: 0, fontWeight: 700, fontSize: 14, color: "#0F172A" }}>{resultadoTest.correctas} / {resultadoTest.total} correctas</p>
-                            <p style={{ margin: 0, fontSize: 12, color: "#64748B" }}>{resultadoTest.correctas === resultadoTest.total ? "¡Perfecto! Respondiste todo correctamente." : "Puedes intentarlo de nuevo."}</p>
+                            <p className="cv-bloque-test__resultado-score">{resultadoTest.correctas} / {resultadoTest.total} correctas</p>
+                            <p className="cv-bloque-test__resultado-msg">
+                                {resultadoTest.correctas === resultadoTest.total
+                                    ? "¡Perfecto! Respondiste todo correctamente."
+                                    : "Puedes intentarlo de nuevo."}
+                            </p>
                         </div>
                     </div>
-                    {!soloLectura && (
-                        <button onClick={onReiniciar} style={{ display: "flex", alignItems: "center", gap: 6, background: "white", border: "1px solid #E2E8F0", borderRadius: 8, padding: "6px 12px", cursor: "pointer", fontSize: 12, fontWeight: 600, color: "#64748B", fontFamily: "'Inter',sans-serif" }}>
-                            <IoReloadOutline size={13} /> Reintentar
-                        </button>
-                    )}
                 </div>
             )}
 
-            {/* Preguntas */}
-            <div style={{ display: "flex", flexDirection: "column", gap: 20 }}>
+            <div className="cv-bloque-test__preguntas">
                 {preguntas.map((pregunta, pi) => {
                     const elegida = respuestas[pregunta.id_test];
                     const respondida = resultadoTest !== null;
                     return (
-                        <div key={pregunta.id_test}>
-                            <p style={{ fontSize: 14, fontWeight: 600, color: "#0F172A", marginBottom: 10, lineHeight: 1.5 }}>
-                                <span style={{ color: soloLectura ? "#7C3AED" : "#0284C7", marginRight: 6 }}>{pi + 1}.</span>{pregunta.texto_pregunta}
+                        <div key={pregunta.id_test} className="cv-pregunta">
+                            <p className="cv-pregunta__texto">
+                                <span className={`cv-pregunta__num ${soloLectura ? "cv-pregunta__num--archivado" : ""}`}>{pi + 1}.</span>
+                                {pregunta.texto_pregunta}
                             </p>
-                            <div style={{ display: "flex", flexDirection: "column", gap: 7 }}>
+                            <div className="cv-pregunta__opciones">
                                 {pregunta.opciones?.map(opcion => {
-                                    let bg = "white", border = "1.5px solid #E2E8F0", color = "#374151";
+                                    let mod = "";
                                     if (respondida) {
-                                        if (opcion.es_correcta) { bg = "#F0FDF4"; border = "1.5px solid #16A34A"; color = "#15803D"; }
-                                        else if (elegida === opcion.id_opcion) { bg = "#FEF2F2"; border = "1.5px solid #DC2626"; color = "#B91C1C"; }
+                                        if (opcion.es_correcta) mod = "cv-opcion--correcta";
+                                        else if (elegida === opcion.id_opcion) mod = "cv-opcion--incorrecta";
                                     } else if (elegida === opcion.id_opcion) {
-                                        bg = "#EEF2FF"; border = "1.5px solid #6366F1"; color = "#3730A3";
+                                        mod = "cv-opcion--elegida";
                                     }
                                     return (
                                         <button
                                             key={opcion.id_opcion}
                                             disabled={respondida || soloLectura}
                                             onClick={() => !respondida && !soloLectura && onSeleccionar(pregunta.id_test, opcion.id_opcion)}
-                                            style={{ background: bg, border, color, borderRadius: 8, padding: "10px 14px", textAlign: "left", cursor: (respondida || soloLectura) ? "default" : "pointer", fontSize: 13, fontWeight: 500, transition: "all .15s", width: "100%", fontFamily: "'Inter',sans-serif", opacity: soloLectura ? 0.7 : 1 }}
+                                            className={`cv-opcion ${mod} ${soloLectura ? "cv-opcion--readonly" : ""}`}
                                         >
                                             {opcion.texto_opcion}
                                         </button>
@@ -170,7 +123,7 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
                 <button
                     onClick={onEnviar}
                     disabled={!todasRespondidas}
-                    style={{ alignSelf: "flex-start", padding: "9px 20px", background: todasRespondidas ? "#6366F1" : "#CBD5E1", color: "white", border: "none", borderRadius: 9, fontSize: 13, fontWeight: 700, cursor: todasRespondidas ? "pointer" : "not-allowed", display: "flex", alignItems: "center", gap: 7, fontFamily: "'Inter',sans-serif" }}
+                    className={`cv-bloque-test__verificar-btn ${!todasRespondidas ? "cv-bloque-test__verificar-btn--disabled" : ""}`}
                 >
                     <IoCheckmarkDoneOutline size={15} /> Verificar respuestas
                 </button>
@@ -184,8 +137,7 @@ function BloqueTest({ preguntas, respuestas, resultadoTest, onSeleccionar, onEnv
 ══════════════════════════════════════════════════════════ */
 export function CursoVisor() {
     const {
-        curso, progreso,
-        soloLectura,
+        curso, progreso, soloLectura,
         contenidosVistos, contenidosVistosIniciales,
         cargando, animado,
         seccionIdx, contenidoIdx,
@@ -193,18 +145,13 @@ export function CursoVisor() {
         preguntasActuales,
         hayAnterior, haysSiguiente,
         respuestas, resultadoTest,
-        seleccionarRespuesta, enviarTest, reiniciarTest,
-        marcarVisto, irASiguiente, irAAnterior, irAContenido,
+        testPendiente, siguienteBloqueado,
+        mostrarModalSalir, setMostrarModalSalir,
+        seleccionarRespuesta, enviarTest,
+        irAAnterior, irAContenido,
+        handleSiguiente, handleVerResultados, handleConfirmarSalir,
         navigate,
     } = useCursoVisor();
-
-    useEffect(() => {
-        // Solo marcar visto si NO es solo lectura
-        if (contenidoActual?.id_contenido && !soloLectura) {
-            const timer = setTimeout(() => marcarVisto(contenidoActual.id_contenido), 3000);
-            return () => clearTimeout(timer);
-        }
-    }, [contenidoActual?.id_contenido, soloLectura]);
 
     if (cargando) return <LoadingState />;
     if (!curso) return null;
@@ -223,31 +170,18 @@ export function CursoVisor() {
 
             {/* ── TOPBAR ── */}
             <header className="cv-topbar">
-                <button className="cv-topbar-back"
-                    onClick={() => navigate("/cursos-detalle", { state: { id_curso: curso.id_curso } })}>
+                <button className="cv-topbar-back" onClick={() => setMostrarModalSalir(true)}>
                     <IoArrowBackOutline size={16} /> Volver
                 </button>
-
+                <span className="cv-topbar-curso-nombre">{curso.titulo}</span>
                 <div className="cv-topbar-prog">
                     {soloLectura ? (
-                        /* Badge de archivado en lugar de la barra de progreso */
-                        <span style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 6,
-                            padding: "4px 12px",
-                            background: "rgba(237,233,254,0.9)",
-                            color: "#7C3AED",
-                            borderRadius: 20,
-                            fontSize: 12,
-                            fontWeight: 600,
-                            backdropFilter: "blur(4px)",
-                        }}>
-                            <IoArchiveOutline size={13} /> Archivado — solo lectura
+                        <span className="cv-topbar-archivado-badge">
+                            <IoArchiveOutline size={13} /> Archivado
                         </span>
                     ) : (
                         <>
-                            <span className="cv-topbar-pct">{pct}% completado</span>
+                            <span className="cv-topbar-pct">{pct}%</span>
                             <div className="cv-topbar-track">
                                 <div className="cv-topbar-fill" style={{ width: `${pct}%` }} />
                             </div>
@@ -258,23 +192,9 @@ export function CursoVisor() {
 
             {/* ── MAIN ── */}
             <main className="cv-main">
-
-                {/* Banner archivado (visible solo en modo soloLectura, encima del grid) */}
                 {soloLectura && (
-                    <div style={{ padding: "0 0 8px" }}>
-                        <div style={{
-                            display: "inline-flex",
-                            alignItems: "center",
-                            gap: 8,
-                            padding: "8px 16px",
-                            background: "#EDE9FE",
-                            color: "#5B21B6",
-                            borderRadius: 10,
-                            fontSize: 13,
-                            fontWeight: 500,
-                            width: "100%",
-                            boxSizing: "border-box",
-                        }}>
+                    <div className="cv-aviso-archivado-top">
+                        <div className="cv-aviso-archivado-top__inner">
                             <IoArchiveOutline size={15} />
                             Este curso está archivado. Puedes ver el contenido, pero no registrar progreso ni responder cuestionarios.
                         </div>
@@ -284,101 +204,104 @@ export function CursoVisor() {
                 <div className="cv-preview-root">
                     <div className="cv-preview-layout">
 
-                        {/* SIDEBAR */}
+                        {/* ── SIDEBAR ── */}
                         <div className="cv-sidebar">
+                            <div className="cv-sidebar-curso-header">
+                                <div className="cv-sidebar-curso-label">Curso</div>
+                                <div className="cv-sidebar-curso-nombre">{curso.titulo}</div>
+                            </div>
                             <div className="cv-sidebar-header">
                                 <IoLayersOutline size={11} />
                                 {secciones.length} sección{secciones.length !== 1 ? "es" : ""}
                             </div>
-
-                            {secciones.map((seccion, si) => {
-                                const seccionActiva = si === seccionIdx;
-                                return (
-                                    <div key={seccion.id_seccion} className={`cv-seccion-nav ${seccionActiva ? "cv-seccion-nav--active" : ""}`}>
-                                        <div className="cv-seccion-nav-header">
-                                            <span className="cv-seccion-nav-num">{si + 1}</span>
-                                            <div style={{ flex: 1, minWidth: 0 }}>
-                                                <span className="cv-seccion-nav-label" style={{ fontSize: 12.5, display: "block", overflow: "hidden", textOverflow: "ellipsis", whiteSpace: "nowrap", color: seccionActiva ? "#4338CA" : "#64748B" }}>
-                                                    {seccion.titulo_seccion || `Sección ${si + 1}`}
-                                                </span>
-                                                {seccion.preguntas?.length > 0 && (
-                                                    <span style={{ fontSize: 10.5, color: "#94A3B8", marginTop: 2, display: "block" }}>
-                                                        {seccion.preguntas.length} preg.
+                            <div className="cv-sidebar-nav">
+                                {secciones.map((seccion, si) => {
+                                    const seccionActiva = si === seccionIdx;
+                                    return (
+                                        <div key={seccion.id_seccion} className={`cv-seccion-nav ${seccionActiva ? "cv-seccion-nav--active" : ""}`}>
+                                            <div className="cv-seccion-nav-header">
+                                                <span className="cv-seccion-nav-num">{si + 1}</span>
+                                                <div className="cv-seccion-nav-info">
+                                                    <span className={`cv-seccion-nav-label ${seccionActiva ? "cv-seccion-nav-label--active" : ""}`}>
+                                                        {seccion.titulo_seccion || `Sección ${si + 1}`}
                                                     </span>
-                                                )}
-                                            </div>
-                                        </div>
-
-                                        {(seccion.contenidos || []).map((c, ci) => {
-                                            const visto = contenidosVistos.has(c.id_contenido);
-                                            const activo = si === seccionIdx && ci === contenidoIdx;
-                                            return (
-                                                <div key={c.id_contenido}
-                                                    className={`cv-contenido-nav-item${activo ? " cv-contenido-nav-item--active" : ""}${visto && !activo ? " cv-contenido-nav-item--visto" : ""}`}
-                                                    onClick={() => irAContenido(si, ci)}>
-                                                    {visto
-                                                        ? <IoCheckmarkCircleOutline size={14} className="cv-nav-check" />
-                                                        : <span className="cv-nav-dot" />}
-                                                    {c.titulo || `Contenido ${ci + 1}`}
+                                                    {seccion.preguntas?.length > 0 && (
+                                                        <span className="cv-seccion-nav-pregs">{seccion.preguntas.length} preg.</span>
+                                                    )}
                                                 </div>
-                                            );
-                                        })}
-
-                                        {seccion.preguntas?.length > 0 && (
-                                            <div className="cv-contenido-nav-item cv-contenido-nav-item--test"
-                                                onClick={() => irAContenido(si, 0)}>
-                                                <IoHelpCircleOutline size={14} />
-                                                Cuestionario ({seccion.preguntas.length} preg.)
                                             </div>
-                                        )}
-                                    </div>
-                                );
-                            })}
+                                            {(seccion.contenidos || []).map((c, ci) => {
+                                                const visto = contenidosVistos.has(c.id_contenido);
+                                                const activo = si === seccionIdx && ci === contenidoIdx;
+                                                return (
+                                                    <div key={c.id_contenido}
+                                                        className={`cv-contenido-nav-item${activo ? " cv-contenido-nav-item--active" : ""}${visto && !activo ? " cv-contenido-nav-item--visto" : ""}`}
+                                                        onClick={() => irAContenido(si, ci)}>
+                                                        {visto
+                                                            ? <IoCheckmarkCircleOutline size={14} className="cv-nav-check" />
+                                                            : <span className="cv-nav-dot" />}
+                                                        {c.titulo || `Contenido ${ci + 1}`}
+                                                    </div>
+                                                );
+                                            })}
+                                            {seccion.preguntas?.length > 0 && (
+                                                <div className="cv-contenido-nav-item cv-contenido-nav-item--test"
+                                                    onClick={() => irAContenido(si, 0)}>
+                                                    <IoHelpCircleOutline size={14} />
+                                                    Cuestionario ({seccion.preguntas.length} preg.)
+                                                </div>
+                                            )}
+                                        </div>
+                                    );
+                                })}
+                            </div>
                         </div>
 
-                        {/* CONTENIDO PRINCIPAL */}
+                        {/* ── CONTENIDO PRINCIPAL ── */}
                         <div className="cv-content-wrapper">
                             <div className="cv-content-area">
                                 {contenidoActual ? (
                                     <>
-                                        <div className="cv-content-tag">
-                                            <IoDocumentTextOutline size={10} />
-                                            {seccionActual?.titulo_seccion}
+                                        <div className="cv-seccion-bloque">
+                                            <div className="cv-seccion-bloque__etiqueta">
+                                                <IoLayersOutline size={11} />
+                                                Sección {seccionIdx + 1}
+                                            </div>
+                                            <div className="cv-seccion-bloque__nombre">
+                                                {seccionActual?.titulo_seccion}
+                                            </div>
+                                            {seccionActual?.descripcion_seccion && (
+                                                <p className="cv-seccion-bloque__desc">
+                                                    {seccionActual.descripcion_seccion}
+                                                </p>
+                                            )}
                                         </div>
 
                                         <div className="cv-content-titulo">
                                             {contenidoActual.titulo || `Contenido ${contenidoIdx + 1}`}
                                         </div>
 
-                                        {contenidosVistosIniciales.has(contenidoActual.id_contenido) &&
-                                            !contenidosVistos.has(contenidoActual.id_contenido) &&
-                                            !soloLectura && (
-                                                <div className="cv-visto-badge">
-                                                    <IoCheckmarkCircleOutline size={15} />
-                                                    Ya viste este contenido anteriormente
-                                                </div>
-                                            )}
-
-                                        {contenidoActual.imagen_url && (
-                                            <img src={contenidoActual.imagen_url} alt={contenidoActual.titulo} className="cv-content-imagen" />
-                                        )}
-
                                         {contenidoActual.contenido && (
                                             <div className="cv-content-texto">{contenidoActual.contenido}</div>
                                         )}
 
-                                        {/* Cuestionario — siempre visible, pero bloqueado en solo lectura */}
+                                        {contenidoActual.imagen_url && (
+                                            <img
+                                                src={contenidoActual.imagen_url}
+                                                alt={contenidoActual.titulo}
+                                                className="cv-content-imagen"
+                                            />
+                                        )}
+
                                         <BloqueTest
                                             preguntas={preguntasActuales}
                                             respuestas={respuestas}
                                             resultadoTest={resultadoTest}
                                             onSeleccionar={seleccionarRespuesta}
                                             onEnviar={enviarTest}
-                                            onReiniciar={reiniciarTest}
                                             soloLectura={soloLectura}
                                         />
 
-                                        {/* Banner completado (solo si NO es solo lectura) */}
                                         {completado && !soloLectura && (
                                             <div className="cv-completado-banner">
                                                 <IoTrophyOutline size={44} className="cv-completado-icon" />
@@ -399,7 +322,6 @@ export function CursoVisor() {
                                             </div>
                                         )}
 
-                                        {/* Banner archivado al final del contenido */}
                                         {soloLectura && (
                                             <BannerArchivado
                                                 titulo={curso.titulo}
@@ -409,7 +331,7 @@ export function CursoVisor() {
                                     </>
                                 ) : (
                                     <div className="cv-no-content">
-                                        <IoDocumentTextOutline size={44} />
+                                        <IoDocumentTextOutline size={48} />
                                         <p>Este curso no tiene contenido disponible aún.</p>
                                     </div>
                                 )}
@@ -433,40 +355,51 @@ export function CursoVisor() {
                                     <span>Contenido {idxPlano + 1} de {todosLosContenidos.length}</span>
                                 </div>
 
-                                {/* Botón derecho: nunca mostrar "Ver resultados" en solo lectura,
-                                    solo navegar o indicar que el curso está archivado */}
                                 {soloLectura ? (
                                     haysSiguiente ? (
-                                        <button className="cv-nav-btn cv-nav-btn--next" onClick={irASiguiente}>
+                                        <button className="cv-nav-btn cv-nav-btn--next" onClick={handleSiguiente}>
                                             Siguiente <IoChevronForwardOutline size={14} />
                                         </button>
                                     ) : (
-                                        <button
-                                            className="cv-nav-btn"
-                                            style={{ background: "#EDE9FE", borderColor: "#C4B5FD", color: "#7C3AED" }}
-                                            onClick={() => navigate("/cursos")}
-                                        >
+                                        <button className="cv-nav-btn cv-nav-btn--catalogo" onClick={() => navigate("/cursos")}>
                                             <IoArchiveOutline size={14} /> Ver catálogo
                                         </button>
                                     )
                                 ) : haysSiguiente ? (
-                                    <button className="cv-nav-btn cv-nav-btn--next" onClick={irASiguiente}>
-                                        Siguiente <IoChevronForwardOutline size={14} />
+                                    <button
+                                        className={`cv-nav-btn cv-nav-btn--next${siguienteBloqueado ? " cv-nav-btn--locked" : ""}`}
+                                        onClick={handleSiguiente}
+                                        disabled={siguienteBloqueado}
+                                        title={siguienteBloqueado ? (testPendiente ? "Responde el cuestionario antes de continuar" : "Espera a que se registre el progreso") : ""}
+                                    >
+                                        {siguienteBloqueado
+                                            ? <><IoLockClosedOutline size={13} /> Cargando...</>
+                                            : <>Siguiente <IoChevronForwardOutline size={14} /></>}
                                     </button>
                                 ) : (
-                                    <button className="cv-nav-btn cv-nav-btn--next"
-                                        onClick={() => { marcarVisto(contenidoActual.id_contenido); navigate("/cursos/resultado", { state: { id_curso: curso.id_curso } }); }}
-                                        style={{ background: "#16A34A", borderColor: "#16A34A" }}>
-                                        <IoTrophyOutline size={14} /> Ver resultados
+                                    <button
+                                        className={`cv-nav-btn cv-nav-btn--next cv-nav-btn--resultado${siguienteBloqueado ? " cv-nav-btn--locked" : ""}`}
+                                        onClick={handleVerResultados}
+                                        disabled={siguienteBloqueado}
+                                        title={siguienteBloqueado ? (testPendiente ? "Responde el cuestionario antes de continuar" : "Espera a que se registre el progreso") : ""}
+                                    >
+                                        {siguienteBloqueado
+                                            ? <><IoLockClosedOutline size={13} /> Cargando...</>
+                                            : <><IoTrophyOutline size={14} /> Ver resultados</>}
                                     </button>
                                 )}
                             </div>
                         </div>
-
                     </div>
                 </div>
-
             </main>
+
+            {mostrarModalSalir && (
+                <ModalConfirmarSalirCurso
+                    onConfirmar={handleConfirmarSalir}
+                    onCancelar={() => setMostrarModalSalir(false)}
+                />
+            )}
         </div>
     );
 }

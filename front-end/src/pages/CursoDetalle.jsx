@@ -459,7 +459,7 @@ export function CursoDetalle() {
     const totalContenidos = curso?.secciones?.reduce((acc, s) => acc + (s.contenidos?.length || 0), 0) ?? 0;
     const totalPreguntas = curso?.secciones?.reduce((acc, s) => acc + (s.preguntas?.length || 0), 0) ?? 0;
     const pct = progreso?.porcentaje ?? 0;
-    const completado = progreso?.completado ?? false;
+    const completado = Boolean(progreso?.completado);
 
     const handleInscribirse = async () => {
         try {

@@ -1,10 +1,10 @@
-// src/pages/Cursos/CursoResultado.jsx
 import {
     IoTrophyOutline, IoCheckmarkCircleOutline,
     IoCloseCircleOutline, IoHomeOutline,
     IoArrowBackOutline, IoBookOutline,
     IoAnalyticsOutline, IoRibbonOutline,
     IoTimeOutline, IoRefreshOutline,
+    IoChatbubbleEllipsesOutline,       // ← nuevo icono para retroalimentación
 } from "react-icons/io5";
 import { useCursoResultado } from "../hooks/useCursoResultado.js";
 import "../styles/cursoResultado.css";
@@ -19,7 +19,11 @@ function LoadingState() {
 }
 
 export function CursoResultado() {
-    const { resultado, curso, progreso, cargando, animado, error, navigate } = useCursoResultado();
+    const {
+        resultado, curso, progreso,
+        cargando, animado, error,
+        navigate, retroalimentacion,   // ← nuevo
+    } = useCursoResultado();
 
     if (cargando) return <LoadingState />;
 
@@ -110,7 +114,6 @@ export function CursoResultado() {
                             </span>
                         </div>
                         <div className="cr-card-body">
-                            {/* Círculo */}
                             <div className="cr-circle-wrap">
                                 <div
                                     className="cr-circle-outer"
@@ -151,6 +154,26 @@ export function CursoResultado() {
                                     value={resultado.total_preguntas - resultado.respuestas_correctas}
                                 />
                             </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* ── Retroalimentación del sistema experto ── */}
+                {retroalimentacion?.length > 0 && (
+                    <div className="cr-card">
+                        <div className="cr-card-head">
+                            <IoChatbubbleEllipsesOutline size={15} className="cr-card-head-icon" />
+                            <p className="cr-card-head-title">Retroalimentación</p>
+                        </div>
+                        <div className="cr-card-body">
+                            <ul className="cr-retro-list">
+                                {retroalimentacion.map((msg, i) => (
+                                    <li key={i} className="cr-retro-item">
+                                        <IoCheckmarkCircleOutline size={15} className="cr-retro-icon" />
+                                        {msg}
+                                    </li>
+                                ))}
+                            </ul>
                         </div>
                     </div>
                 )}

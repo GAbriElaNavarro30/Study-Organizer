@@ -1,5 +1,4 @@
 // src/components/ModalCancelarInscripcion.jsx
-import { useEffect, useRef } from "react";
 import { createPortal } from "react-dom";
 import {
     IoWarningOutline,
@@ -8,41 +7,10 @@ import {
     IoBookOutline,
 } from "react-icons/io5";
 import "../styles/ModalCancelarInscripcion.css";
+import { useModalCancelarInscripcion } from "../hooks/useModalCancelarInscripcion.js";
 
-
-/**
- * ModalCancelarInscripcion
- *
- * Props:
- *  - abierto       {boolean}   controla visibilidad
- *  - curso         {object}    { titulo, foto, perfil_vark, nombre_tutor }  — puede ser null
- *  - onConfirmar   {function}  callback al confirmar cancelación
- *  - onCerrar      {function}  callback al cerrar/cancelar
- *  - cargando      {boolean}   muestra spinner en el botón confirmar
- */
 export function ModalCancelarInscripcion({ abierto, curso, onConfirmar, onCerrar, cargando = false }) {
-    const dialogRef = useRef(null);
-
-    /* Cierra con Escape */
-    useEffect(() => {
-        if (!abierto) return;
-        const handler = (e) => { if (e.key === "Escape") onCerrar(); };
-        document.addEventListener("keydown", handler);
-        return () => document.removeEventListener("keydown", handler);
-    }, [abierto, onCerrar]);
-
-    /* Bloquea scroll del body mientras el modal está abierto */
-    useEffect(() => {
-        document.body.style.overflow = abierto ? "hidden" : "";
-        return () => { document.body.style.overflow = ""; };
-    }, [abierto]);
-
-    /* Foco inicial al botón cancelar (acción no destructiva) */
-    useEffect(() => {
-        if (abierto) {
-            setTimeout(() => dialogRef.current?.querySelector(".mci-btn--cancel")?.focus(), 80);
-        }
-    }, [abierto]);
+    const { dialogRef } = useModalCancelarInscripcion({ abierto, onCerrar });
 
     if (!abierto) return null;
 

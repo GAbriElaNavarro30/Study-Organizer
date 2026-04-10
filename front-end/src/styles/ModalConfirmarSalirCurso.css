@@ -1,0 +1,153 @@
+.csc-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(17, 24, 39, 0.45);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    z-index: 999;
+    padding: 16px;
+    animation: csc-fade-in 0.15s ease;
+}
+
+@keyframes csc-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+.csc-modal {
+    background: #fff;
+    border-radius: 16px;
+    padding: 32px 28px 28px;
+    max-width: 400px;
+    width: 100%;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    text-align: center;
+    position: relative;
+    animation: csc-slide-up 0.18s ease;
+    box-shadow: 0 8px 40px rgba(26, 74, 122, 0.15);
+}
+
+@keyframes csc-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+.csc-close {
+    position: absolute;
+    top: 14px;
+    right: 14px;
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #9CA3AF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.15s, background 0.15s;
+}
+
+.csc-close:hover {
+    color: #374151;
+    background: #F3F4F6;
+}
+
+.csc-icon {
+    width: 52px;
+    height: 52px;
+    border-radius: 50%;
+    background: #EFF6FF;
+    border: 1px solid #DBEAFE;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #2563EB;
+    margin-bottom: 16px;
+}
+
+.csc-titulo {
+    font-family: 'Lora', Georgia, serif;
+    font-size: 19px;
+    font-weight: 700;
+    color: #111827;
+    margin: 0 0 10px;
+    letter-spacing: -0.01em;
+}
+
+.csc-desc {
+    font-size: 13.5px;
+    color: #6B7280;
+    line-height: 1.65;
+    margin: 0 0 24px;
+    max-width: 300px;
+}
+
+.csc-btns {
+    display: flex;
+    gap: 10px;
+    width: 100%;
+}
+
+.csc-btn {
+    flex: 1;
+    padding: 10px 16px;
+    border-radius: 8px;
+    font-size: 13px;
+    font-weight: 700;
+    cursor: pointer;
+    font-family: 'DM Sans', system-ui, sans-serif;
+    transition: all 0.15s;
+    border: none;
+}
+
+.csc-btn--cancelar {
+    background: #F3F4F6;
+    color: #374151;
+    border: 1.5px solid #E5E7EB;
+}
+
+.csc-btn--cancelar:hover {
+    background: #E5E7EB;
+}
+
+.csc-btn--confirmar {
+    background: #2563EB;
+    color: #fff;
+    box-shadow: 0 2px 10px rgba(37, 99, 235, 0.25);
+}
+
+.csc-btn--confirmar:hover {
+    background: #1D4ED8;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+@media (max-width: 480px) {
+    .csc-modal {
+        padding: 28px 20px 22px;
+    }
+
+    .csc-btns {
+        flex-direction: column;
+    }
+}
+
+.cv-app.cv-animated {
+    transform: none;
+}
