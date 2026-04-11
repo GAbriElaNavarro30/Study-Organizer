@@ -518,13 +518,10 @@
 .cv-content-imagen {
   display: block;
   width: auto;
-  max-width: 360px;
-  min-width: 100px;
-  height: auto;
-  max-height: 260px;
-  object-fit: cover;
-  border-radius: var(--cv-radius-md);
-  border: 1px solid var(--cv-cream-border);
+  max-width: 320px;
+  max-height: 200px;
+  object-fit: contain;
+  object-position: left center;
   box-shadow: var(--cv-shadow-sm);
   margin-top: 20px;
 }

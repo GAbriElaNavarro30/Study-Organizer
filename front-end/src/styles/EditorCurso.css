@@ -1741,12 +1741,13 @@
     height: auto;
     object-fit: contain;
     /* ← respeta el recorte exacto */
-    
-    
+
+
     display: block;
     /* ← para que margin: auto funcione */
     margin: 0;
     /* alineado a la izquierda */
+    align-self: flex-start;
 }
 
 /* Quiz dentro del preview */

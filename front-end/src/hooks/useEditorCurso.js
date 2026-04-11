@@ -229,13 +229,15 @@ export function useEditorCurso() {
     useEffect(() => {
         if (!modoEdicion) {
             const { info, secciones: secsGuardadas, paso: pasoGuardado, seccionActiva } = cargarBorrador(null);
-            if (info) setInfoCurso(info);
-            if (secsGuardadas) setSecciones(secsGuardadas);
-            if (pasoGuardado) setPaso(pasoGuardado);
-            if (seccionActiva !== null) setSeccionActivaIdx(seccionActiva);
+            if (info && pasoGuardado) {
+                setInfoCurso(info);
+                if (secsGuardadas) setSecciones(secsGuardadas);
+                setPaso(pasoGuardado);
+                if (seccionActiva !== null) setSeccionActivaIdx(seccionActiva);
+            }
             setTimeout(() => { initialLoadDone.current = true; }, 0);
         }
-    }, []); // eslint-disable-line
+    }, []);
 
     /* ── Carga inicial EDITAR ── */
     useEffect(() => {

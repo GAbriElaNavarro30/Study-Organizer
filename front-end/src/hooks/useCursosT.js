@@ -2,6 +2,7 @@
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
+import { limpiarBorrador } from "./useEditorCurso";
 
 /* ─────────────────────────────────────────────────────────
    CONSTANTES
@@ -218,7 +219,7 @@ export function useCursosT() {
             console.error("Error al archivar:", err.response?.data);
         }
     };
-    
+
     const handleConfirmarEliminar = async () => {
         const { id_curso, titulo } = modalEliminar;
         setModalEliminar(null);
@@ -235,7 +236,10 @@ export function useCursosT() {
     };
 
     /* ── Navegación ─────────────────────────────────────── */
-    const irACrear = () => navigate("/editor-curso");
+    const irACrear = () => {
+        limpiarBorrador(null);
+        navigate("/editor-curso");
+    };
     const irAEditar = (c) => navigate(`/editor-curso?id=${c.id_curso}`);
     const irAVistaPrevia = (c) => navigate(`/cursos-visor-tutor?id=${c.id_curso}`);
 

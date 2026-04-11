@@ -82,12 +82,12 @@ export class ResultadoCurso {
                 rc.porcentaje AS puntaje,
                 rc.nivel,
                 it.fecha_inicio AS fecha
-             FROM Resultado_Curso rc
-             JOIN Intento_Curso it ON rc.id_intento = it.id_intento
-             JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
-             JOIN Usuario u ON i.id_usuario = u.id_usuario
-             WHERE i.id_curso = ?
-               AND rc.id_resultado = (
+                FROM Resultado_Curso rc
+                JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+                JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
+                JOIN Usuario u ON i.id_usuario = u.id_usuario
+                WHERE i.id_curso = ?
+                AND rc.id_resultado = (
                    SELECT rc2.id_resultado
                    FROM Resultado_Curso rc2
                    JOIN Intento_Curso it2 ON rc2.id_intento = it2.id_intento
@@ -106,17 +106,40 @@ export class ResultadoCurso {
     static async getHistorialEstudiante(id_curso, id_usuario) {
         const [rows] = await db.query(
             `SELECT
-                rc.porcentaje AS puntaje,
-                rc.nivel,
-                it.fecha_inicio AS fecha,
-                TIMESTAMPDIFF(MINUTE, it.fecha_inicio, it.fecha_fin) AS duracion_minutos
-             FROM Resultado_Curso rc
-             JOIN Intento_Curso it ON rc.id_intento = it.id_intento
-             JOIN Inscripcion i ON it.id_inscripcion = i.id_inscripcion
-             WHERE i.id_curso = ? AND i.id_usuario = ?
-             ORDER BY it.fecha_inicio ASC`,
+            rc.porcentaje            AS puntaje,
+            rc.nivel,
+            rc.respuestas_correctas,
+            rc.total_preguntas,
+            it.id_intento,
+            it.fecha_inicio,
+            it.fecha_fin
+            FROM Resultado_Curso rc
+            JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+            JOIN Inscripcion i   ON it.id_inscripcion = i.id_inscripcion
+            WHERE i.id_curso = ? AND i.id_usuario = ?
+            ORDER BY it.fecha_inicio ASC`,
             [id_curso, id_usuario]
         );
         return rows;
     }
+
+    static async getDetalleIntento(id_intento) {
+        const [rows] = await db.query(
+            `SELECT
+            rc.id_resultado,
+            rc.total_preguntas,
+            rc.respuestas_correctas,
+            rc.porcentaje       AS puntaje,
+            rc.nivel,
+            it.fecha_inicio,
+            it.fecha_fin,
+            it.numero_intento
+            FROM Resultado_Curso rc
+            JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+            WHERE rc.id_intento = ?`,
+            [id_intento]
+        );
+        return rows[0] || null;
+    }
 }
+

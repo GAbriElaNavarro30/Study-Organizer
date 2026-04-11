@@ -34,7 +34,8 @@ import {
     eliminarCuestionarioSeccion,
     eliminarEstudianteCurso,
     historialResultadosEstudiante,
-    miHistorialResultados
+    miHistorialResultados,
+    obtenerResultadoIntento,
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -94,5 +95,6 @@ router.get("/mi-historial", miHistorialResultados);
 
 router.get("/cursos/:id/resultados", listarResultadosCurso);
 router.get("/cursos/:id/estudiantes/:id_usuario/historial", historialResultadosEstudiante);
+router.get("/intentos/:id_intento/resultado", obtenerResultadoIntento);
 
 export default router;

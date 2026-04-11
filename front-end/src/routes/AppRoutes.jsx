@@ -34,6 +34,7 @@ import { CursoVisorTutor } from "../pages/CursoVisorTutor";
 import { CursoResultado } from "../pages/CursoResultado.jsx";
 import { HistorialResultadoCurso } from "../pages/HistorialResultadoCurso.jsx";
 import { HistorialResultadoEstudianteCurso } from "../pages/HistorialResultadoEstudianteCurso.jsx";
+import { ResultadoIntento } from "../pages/ResultadoIntento.jsx";
 import { TestEA } from "../pages/TestEA";
 import { ResultadosTestEA } from "../pages/ResultadosTestEA";
 import { CorreoAlternativo } from "../pages/CorreoAlternativo";
@@ -275,6 +276,16 @@ export function AppRoutes() {
                         <PrivateRoute>
                             <LayoutInterno>
                                 <HistorialResultadoEstudianteCurso />
+                            </LayoutInterno>
+                        </PrivateRoute>
+                    }
+                />
+
+                <Route path="/resultado-intento"
+                    element={
+                        <PrivateRoute>
+                            <LayoutInterno>
+                                <ResultadoIntento />
                             </LayoutInterno>
                         </PrivateRoute>
                     }

@@ -489,7 +489,10 @@ export function CursoDetalle() {
     const handleIniciarCurso = async () => { await iniciarIntento(); navigate("/cursos-visor", { state: { id_curso } }); };
     const handleRetomarCurso = () => navigate("/cursos-visor", { state: { id_curso } });
     const handleVerResultados = () => navigate("/cursos/resultado", { state: { id_curso } });
-    const handleVerHistorial = () => navigate("/historial-resultados-estudiante-curso", { state: { id_curso } });
+    const handleVerHistorial = () => navigate(
+        "/historial-resultados-estudiante-curso",
+        { state: { idCurso: id_curso, nombreCurso: curso?.titulo } }
+    );
 
     if (cargando) return <LoadingState />;
 

@@ -1012,9 +1012,75 @@ export const miHistorialResultados = async (req, res) => {
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
         }
 
+        // Obtener datos del propio estudiante
+        const [[estudiante]] = await db.query(
+            `SELECT u.id_usuario, u.nombre, u.apellido, u.correo_electronico,
+                    u.foto_perfil, i.fecha_inscripcion
+             FROM Usuario u
+             JOIN Inscripcion i ON i.id_usuario = u.id_usuario
+             WHERE u.id_usuario = ? AND i.id_curso = ?`,
+            [id_usuario, id]
+        );
+
         const historial = await ResultadoCurso.getHistorialEstudiante(id, id_usuario);
-        res.json({ ok: true, historial });
+        res.json({ ok: true, historial, estudiante: estudiante || null });
     } catch (error) {
         res.status(500).json({ ok: false, mensaje: "Error al obtener el historial." });
+    }
+};
+
+export const obtenerResultadoIntento = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_intento } = req.params;
+
+        // Verificar que el intento pertenece al usuario o que el tutor tiene acceso
+        const [[intento]] = await db.query(
+            `SELECT ic.id_intento, ic.id_inscripcion, ic.numero_intento,
+                    i.id_usuario, i.id_curso
+             FROM Intento_Curso ic
+             JOIN Inscripcion i ON ic.id_inscripcion = i.id_inscripcion
+             WHERE ic.id_intento = ?`,
+            [id_intento]
+        );
+
+        if (!intento) {
+            return res.status(404).json({ ok: false, mensaje: "Intento no encontrado." });
+        }
+
+        // Permitir acceso si es el propio estudiante o el tutor del curso
+        const curso = await Curso.getById(intento.id_curso);
+        const esPropioEstudiante = intento.id_usuario === id_usuario;
+        const esTutor = curso?.id_usuario === id_usuario;
+
+        if (!esPropioEstudiante && !esTutor) {
+            return res.status(403).json({ ok: false, mensaje: "Sin acceso a este intento." });
+        }
+
+        const resultado = await ResultadoCurso.getDetalleIntento(id_intento);
+        if (!resultado) {
+            return res.status(404).json({ ok: false, mensaje: "Resultado no encontrado." });
+        }
+
+        // Retroalimentación del sistema experto
+        let retroalimentacion = [];
+        try {
+            const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
+                porcentaje: resultado.puntaje,
+            });
+            retroalimentacion = pythonRes.data.retroalimentacion ?? [];
+        } catch (errPython) {
+            console.error("obtenerResultadoIntento — sistema experto no disponible:", errPython.message);
+        }
+
+        res.json({
+            ok: true,
+            resultado,
+            curso: { id_curso: intento.id_curso, titulo: curso.titulo },
+            retroalimentacion,
+        });
+    } catch (error) {
+        console.error("obtenerResultadoIntento:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener el resultado del intento." });
     }
 };
