@@ -881,12 +881,32 @@ export const obtenerResultadoCurso = async (req, res) => {
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
         }
 
-        const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
-        if (!intento) {
-            return res.status(404).json({ ok: false, mensaje: "No hay intento." });
+        // ── Buscar el último intento que tenga resultado guardado ──
+        const [[intentoConResultado]] = await db.query(
+            `SELECT ic.id_intento
+             FROM Intento_Curso ic
+             INNER JOIN Resultado_Curso rc ON rc.id_intento = ic.id_intento
+             WHERE ic.id_inscripcion = ?
+             ORDER BY ic.numero_intento DESC
+             LIMIT 1`,
+            [inscripcion.id_inscripcion]
+        );
+
+        if (!intentoConResultado) {
+            return res.json({ ok: true, resultado: null, retroalimentacion: [] });
         }
 
-        const resultado = await ResultadoCurso.getByIntento(intento.id_intento);
+        const resultado = await ResultadoCurso.getByIntento(intentoConResultado.id_intento);
+
+        // ── Agregar fechas del intento al resultado ──
+        const [[intentoDetalle]] = await db.query(
+            `SELECT fecha_inicio, fecha_fin FROM Intento_Curso WHERE id_intento = ?`,
+            [intentoConResultado.id_intento]
+        );
+        if (resultado && intentoDetalle) {
+            resultado.fecha_inicio = intentoDetalle.fecha_inicio;
+            resultado.fecha_fin = intentoDetalle.fecha_fin;
+        }
 
         // ── Recalcular retroalimentación desde el sistema experto ──
         let retroalimentacion = [];
@@ -904,7 +924,7 @@ export const obtenerResultadoCurso = async (req, res) => {
         res.json({
             ok: true,
             resultado: resultado || null,
-            retroalimentacion, // ← para cuando viene del botón externo
+            retroalimentacion,
         });
     } catch (error) {
         console.error("obtenerResultadoCurso:", error);
@@ -1034,7 +1054,6 @@ export const obtenerResultadoIntento = async (req, res) => {
         const id_usuario = req.usuario.id;
         const { id_intento } = req.params;
 
-        // Verificar que el intento pertenece al usuario o que el tutor tiene acceso
         const [[intento]] = await db.query(
             `SELECT ic.id_intento, ic.id_inscripcion, ic.numero_intento,
                     i.id_usuario, i.id_curso
@@ -1048,7 +1067,6 @@ export const obtenerResultadoIntento = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "Intento no encontrado." });
         }
 
-        // Permitir acceso si es el propio estudiante o el tutor del curso
         const curso = await Curso.getById(intento.id_curso);
         const esPropioEstudiante = intento.id_usuario === id_usuario;
         const esTutor = curso?.id_usuario === id_usuario;
@@ -1062,7 +1080,22 @@ export const obtenerResultadoIntento = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "Resultado no encontrado." });
         }
 
-        // Retroalimentación del sistema experto
+        // ── Datos del tutor ──
+        const [[tutorData]] = await db.query(
+            `SELECT u.nombre, u.apellido, u.foto_perfil, u.descripcion, u.correo_electronico
+             FROM Usuario u
+             WHERE u.id_usuario = ?`,
+            [curso.id_usuario]
+        );
+
+        const tutor = tutorData ? {
+            nombre: `${tutorData.nombre || ""} ${tutorData.apellido || ""}`.trim(),
+            foto: tutorData.foto_perfil || null,
+            descripcion: tutorData.descripcion || null,
+            correo: tutorData.correo_electronico || null,
+        } : null;
+
+        // ── Retroalimentación del sistema experto ──
         let retroalimentacion = [];
         try {
             const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
@@ -1076,7 +1109,11 @@ export const obtenerResultadoIntento = async (req, res) => {
         res.json({
             ok: true,
             resultado,
-            curso: { id_curso: intento.id_curso, titulo: curso.titulo },
+            curso: {
+                id_curso: intento.id_curso,
+                titulo: curso.titulo,
+                tutor,
+            },
             retroalimentacion,
         });
     } catch (error) {
