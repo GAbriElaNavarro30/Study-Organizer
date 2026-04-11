@@ -1,0 +1,604 @@
+/* ─── Root ───────────────────────────────────────────────── */
+.hrc-root {
+    min-height: 100vh;
+    background: #EFF6FF;
+    font-family: "Inter", sans-serif;
+}
+
+/* ─── Loading / Error ────────────────────────────────────── */
+.hrc-loading,
+.hrc-error {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    min-height: 60vh;
+    gap: 12px;
+    color: #64748B;
+    font-size: 14px;
+    font-weight: 500;
+}
+
+.hrc-error button {
+    margin-top: 8px;
+    padding: 8px 18px;
+    border-radius: 8px;
+    border: 1.5px solid #BFDBFE;
+    background: #fff;
+    color: #1D4ED8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+}
+
+.hrc-spinner {
+    width: 32px;
+    height: 32px;
+    border: 3px solid #DBEAFE;
+    border-top-color: #1D4ED8;
+    border-radius: 50%;
+    animation: hrc-spin .7s linear infinite;
+}
+
+@keyframes hrc-spin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+/* ─── Topbar ─────────────────────────────────────────────── */
+.hrc-topbar {
+    position: sticky;
+    top: 0;
+    z-index: 50;
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px 24px;
+    background: #fff;
+    border-bottom: 1.5px solid #DBEAFE;
+    box-shadow: 0 1px 4px rgba(37, 99, 235, .06);
+}
+
+.hrc-back-btn {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border-radius: 8px;
+    border: 1.5px solid #BFDBFE;
+    background: #EFF6FF;
+    color: #1D4ED8;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background .15s;
+    white-space: nowrap;
+    font-family: inherit;
+}
+
+.hrc-back-btn:hover {
+    background: #DBEAFE;
+}
+
+.hrc-topbar-title {
+    font-size: 15px;
+    font-weight: 700;
+    color: #0F172A;
+}
+
+.hrc-topbar-sub {
+    font-size: 12px;
+    color: #64748B;
+    font-weight: 500;
+    margin-top: 2px;
+}
+
+/* ─── Main ───────────────────────────────────────────────── */
+.hrc-main {
+    max-width: 100%;
+    margin: 0 auto;
+    padding: 28px 24px 48px;
+    box-sizing: border-box;
+    background-color: #f1f5f9
+}
+
+/* ─── Hero ───────────────────────────────────────────────── */
+.hrc-hero {
+    border: 1.5px solid #93C5FD;
+    border-radius: 18px;
+    padding: 28px;
+    display: grid;
+    grid-template-columns: auto 1fr;
+    gap: 24px;
+    align-items: center;
+    margin-bottom: 24px;
+    background-color: #fff;
+}
+
+/* ─── Avatar ─────────────────────────────────────────────── */
+.hrc-avatar {
+    width: 110px;
+    height: 110px;
+    border-radius: 50%;
+    background: #DBEAFE;
+    border: 3px solid #60A5FA;
+    box-shadow: 0 0 0 5px #EFF6FF;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 28px;
+    font-weight: 800;
+    color: #1D4ED8;
+    letter-spacing: -1px;
+    flex-shrink: 0;
+    overflow: hidden;
+}
+
+.hrc-avatar img {
+    width: 100%;
+    height: 100%;
+    object-fit: cover;
+}
+
+/* ─── Hero info ──────────────────────────────────────────── */
+.hrc-hero-info {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.hrc-hero-name {
+    font-size: 22px;
+    font-weight: 800;
+    color: #0F172A;
+    letter-spacing: -0.3px;
+    line-height: 1.2;
+}
+
+.hrc-hero-meta {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 8px;
+    font-size: 13px;
+    color: #475569;
+    font-weight: 500;
+    margin-bottom: 4px;
+}
+
+.hrc-meta-dot {
+    width: 4px;
+    height: 4px;
+    border-radius: 50%;
+    background: #CBD5E1;
+    align-self: center;
+}
+
+/* ─── Stat chips ─────────────────────────────────────────── */
+.hrc-stats {
+    display: grid;
+    grid-template-columns: repeat(4, 1fr);
+    gap: 10px;
+}
+
+.hrc-stat-chip {
+    background: #EFF6FF;
+    border: 1.5px solid #BFDBFE;
+    border-radius: 12px;
+    padding: 12px 14px;
+    text-align: center;
+}
+
+.hrc-sv {
+    font-size: 20px;
+    font-weight: 800;
+    color: #1D4ED8;
+    letter-spacing: -0.5px;
+}
+
+.hrc-sv-sm {
+    font-size: 14px;
+    font-weight: 700;
+}
+
+.hrc-sl {
+    font-size: 11px;
+    color: #64748B;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: .06em;
+    margin-top: 3px;
+}
+
+/* ─── Section title ──────────────────────────────────────── */
+.hrc-sec-title {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    font-size: 12px;
+    font-weight: 800;
+    text-transform: uppercase;
+    letter-spacing: .09em;
+    color: #1D4ED8;
+    margin-bottom: 12px;
+}
+
+.hrc-sec-dot {
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #60A5FA;
+    flex-shrink: 0;
+}
+
+/* ─── Chart card ─────────────────────────────────────────── */
+.hrc-chart-card {
+    background: #fff;
+    border: 1.5px solid #DBEAFE;
+    border-radius: 16px;
+    padding: 20px 24px 16px;
+    margin-bottom: 24px;
+}
+
+.hrc-chart-inner {
+    display: flex;
+    align-items: flex-end;
+    gap: 10px;
+    height: 140px;
+    overflow-x: auto;
+    overflow-y: visible;
+    padding-bottom: 4px;
+    padding-top: 24px;     /* ← espacio para los números */
+    box-sizing: content-box;
+    scrollbar-width: none;
+}
+
+.hrc-chart-inner::-webkit-scrollbar {
+    display: none;
+}
+
+.hrc-bar-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 5px;
+    min-width: 44px;
+    flex-shrink: 0;
+    justify-content: flex-end;
+    /* ← barras ancladas al fondo */
+    height: 100%;
+}
+
+.hrc-bar-val {
+    font-size: 11px;
+    font-weight: 700;
+    color: #334155;
+    flex-shrink: 0;
+}
+
+.hrc-bar {
+    width: 36px;
+    border-radius: 10px 10px 3px 3px;
+    background: linear-gradient(180deg, #BAD8FB 0%, #93C5FD 100%);
+    box-shadow: 0 -3px 8px rgba(147, 197, 253, 0.5);
+    transition: height .3s ease;
+    flex-shrink: 0;
+}
+
+.hrc-bar.best {
+    background: linear-gradient(180deg, #3B82F6 0%, #1E40AF 100%);
+    box-shadow: 0 -4px 14px rgba(30, 64, 175, 0.5);
+}
+
+.hrc-bar.latest {
+    background: linear-gradient(180deg, #7DC4FA 0%, #2563EB 100%);
+    box-shadow: 0 -3px 10px rgba(37, 99, 235, 0.45);
+}
+
+.hrc-bar-lbl {
+    font-size: 10px;
+    color: #94A3B8;
+    font-weight: 600;
+    white-space: nowrap;
+    flex-shrink: 0;
+}
+
+.hrc-chart-legend {
+    display: flex;
+    gap: 16px;
+    margin-top: 14px;
+    flex-wrap: wrap;
+}
+
+.hrc-chart-legend span {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    font-size: 12px;
+    color: #475569;
+    font-weight: 600;
+}
+
+.hrc-legend-dot {
+    width: 10px;
+    height: 10px;
+    border-radius: 50%;
+    background: #BFDBFE;
+    display: inline-block;
+    flex-shrink: 0;
+}
+
+.hrc-legend-dot.best {
+    background: #1D4ED8;
+}
+
+.hrc-legend-dot.latest {
+    background: #60A5FA;
+}
+
+/* ─── Tabla ──────────────────────────────────────────────── */
+.hrc-tl-card {
+    background: #fff;
+    border: 1.5px solid #408ab5;
+    border-radius: 16px;
+    overflow: hidden;
+}
+
+.hrc-table {
+    width: 100%;
+    border-collapse: collapse;
+    font-size: 13px;
+}
+
+.hrc-table thead tr {
+    background: #EFF6FF;
+    border-bottom: 2px solid #BFDBFE;
+}
+
+.hrc-table thead th {
+    padding: 12px 16px;
+    text-align: left;
+    font-size: 11px;
+    font-weight: 800;
+    color: #1D4ED8;
+    text-transform: uppercase;
+    letter-spacing: .07em;
+    white-space: nowrap;
+}
+
+.hrc-table tbody tr {
+    border-bottom: 1px solid #F0F6FF;
+    transition: background .12s;
+}
+
+.hrc-table tbody tr:last-child {
+    border-bottom: none;
+}
+
+.hrc-table tbody tr:hover {
+    background: #F8FBFF;
+}
+
+.hrc-row-best {
+    background: #FFFDF5 !important;
+}
+
+.hrc-table tbody td {
+    padding: 13px 16px;
+    color: #0F172A;
+    font-weight: 500;
+    vertical-align: middle;
+}
+
+.hrc-td-num {
+    font-weight: 800;
+    color: #1D4ED8;
+    font-size: 13px;
+}
+
+.hrc-td-muted {
+    color: #475569;
+    font-size: 12px;
+    font-weight: 500;
+}
+
+/* ─── Dot indicador ──────────────────────────────────────── */
+.hrc-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    background: #BFDBFE;
+    display: inline-block;
+}
+
+.hrc-dot.best {
+    background: #1D4ED8;
+}
+
+.hrc-dot.latest {
+    background: #60A5FA;
+}
+
+/* ─── Barra de puntaje ───────────────────────────────────── */
+.hrc-pb-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    min-width: 120px;
+}
+
+.hrc-pb-val {
+    font-size: 13px;
+    font-weight: 800;
+    color: #0F172A;
+    min-width: 36px;
+    text-align: right;
+}
+
+.hrc-pb-bar {
+    flex: 1;
+    height: 7px;
+    background: #DBEAFE;
+    border-radius: 999px;
+    overflow: hidden;
+    min-width: 50px;
+}
+
+.hrc-pb-fill {
+    height: 100%;
+    background: linear-gradient(90deg, #60A5FA, #1D4ED8);
+    border-radius: 999px;
+    transition: width .4s ease;
+}
+
+/* ─── Nivel pills ────────────────────────────────────────── */
+.hrc-nivel-pill {
+    display: inline-flex;
+    align-items: center;
+    padding: 5px 12px;
+    border-radius: 20px;
+    font-size: 12px;
+    font-weight: 700;
+    border: 1.5px solid transparent;
+    white-space: nowrap;
+}
+
+.n-excelente {
+    background: #ECFDF5;
+    color: #065F46;
+    border-color: #6EE7B7;
+}
+
+.n-muy-bueno {
+    background: #E8F6EF;
+    color: #14532D;
+    border-color: #86EFAC;
+}
+
+.n-bueno {
+    background: #EFF6FF;
+    color: #1D4ED8;
+    border-color: #93C5FD;
+}
+
+.n-regular {
+    background: #FFFBEB;
+    color: #92400E;
+    border-color: #FCD34D;
+}
+
+.n-deficiente {
+    background: #FEF2F2;
+    color: #991B1B;
+    border-color: #FCA5A5;
+}
+
+.n-sin-nivel {
+    background: #F8FAFC;
+    color: #64748B;
+    border-color: #CBD5E1;
+}
+
+/* ─── Chip correctas ─────────────────────────────────────── */
+.hrc-correct-chip {
+    display: inline-flex;
+    align-items: center;
+    padding: 4px 11px;
+    border-radius: 8px;
+    font-size: 12px;
+    font-weight: 700;
+}
+
+.hrc-correct-chip.good {
+    background: #ECFDF5;
+    color: #065F46;
+}
+
+.hrc-correct-chip.mid {
+    background: #FFFBEB;
+    color: #92400E;
+}
+
+.hrc-correct-chip.low {
+    background: #FEF2F2;
+    color: #991B1B;
+}
+
+/* ─── th icon ────────────────────────────────────────────── */
+.hrc-th-icon {
+    display: inline-flex;
+    align-items: center;
+    gap: 4px;
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — 768px
+══════════════════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .hrc-main {
+        padding: 16px 14px 48px;
+    }
+
+    .hrc-hero {
+        grid-template-columns: 1fr;
+        justify-items: center;
+        text-align: center;
+        padding: 20px 16px;
+    }
+
+    .hrc-hero-meta {
+        justify-content: center;
+    }
+
+    .hrc-stats {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .hrc-hero-name {
+        font-size: 18px;
+    }
+
+    .hrc-chart-card {
+        padding: 16px;
+    }
+
+    .hrc-table {
+        min-width: 500px;
+    }
+
+    .hrc-tl-card {
+        overflow-x: auto;
+    }
+
+    .hrc-topbar {
+        padding: 10px 14px;
+    }
+}
+
+/* ══════════════════════════════════════════════════════════
+   RESPONSIVE — 480px
+══════════════════════════════════════════════════════════ */
+@media (max-width: 480px) {
+    .hrc-back-btn span {
+        display: none;
+    }
+
+    .hrc-stat-chip {
+        flex: 1 1 calc(50% - 5px);
+        min-width: 0;
+    }
+
+    .hrc-sv {
+        font-size: 17px;
+    }
+
+    .hrc-avatar {
+        width: 80px;
+        height: 80px;
+        font-size: 22px;
+    }
+
+    .hrc-hero-name {
+        font-size: 16px;
+    }
+}

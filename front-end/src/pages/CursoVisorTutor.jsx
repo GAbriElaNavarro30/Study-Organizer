@@ -501,6 +501,14 @@ const TabResultados = ({ idCurso, curso }) => {
         navegarAHistorial,
     } = useTabResultados(idCurso);
 
+    const formatFecha = (fecha) =>
+        fecha
+            ? new Date(fecha).toLocaleString("es-MX", {
+                day: "2-digit", month: "short", year: "numeric",
+                hour: "2-digit", minute: "2-digit", hour12: true,
+            })
+            : "—";
+
     if (cargando) return <div className="vct-tab-loading"><div className="vct-spinner" /><p>Cargando resultados…</p></div>;
     if (error) return <div className="vct-tab-error"><IoAlertCircleOutline size={22} /><p>{error}</p></div>;
     if (resultados.length === 0) return (
@@ -538,8 +546,10 @@ const TabResultados = ({ idCurso, curso }) => {
                         <tr>
                             <th>Estudiante</th>
                             <th>Puntaje</th>
+                            <th>Respuestas</th>
                             <th>Nivel</th>
-                            <th>Fecha</th>
+                            <th>Fecha inicio</th>
+                            <th>Fecha término</th>
                         </tr>
                     </thead>
                     <tbody>
@@ -549,6 +559,7 @@ const TabResultados = ({ idCurso, curso }) => {
                                 className="vct-table--resultados-row"
                                 onDoubleClick={() => navegarAHistorial(r, curso)}
                             >
+                                {/* Estudiante */}
                                 <td>
                                     <div className="vct-student-cell">
                                         <div className="vct-avatar">
@@ -559,9 +570,13 @@ const TabResultados = ({ idCurso, curso }) => {
                                         <span>{r.nombre} {r.apellido}</span>
                                     </div>
                                 </td>
+
+                                {/* Puntaje con barra */}
                                 <td>
                                     <div className="vct-puntaje-wrap">
-                                        <span className="vct-puntaje-val">{Number(r.puntaje || 0).toFixed(1)}</span>
+                                        <span className="vct-puntaje-val">
+                                            {Number(r.puntaje || 0).toFixed(1)}
+                                        </span>
                                         <div className="vct-puntaje-bar">
                                             <div
                                                 className="vct-puntaje-fill"
@@ -570,18 +585,35 @@ const TabResultados = ({ idCurso, curso }) => {
                                         </div>
                                     </div>
                                 </td>
+
+                                {/* Respuestas correctas X/Y */}
+                                <td>
+                                    <span className="vct-respuestas-pill">
+                                        {r.respuestas_correctas ?? "—"}/{r.total_preguntas ?? "—"}
+                                    </span>
+                                </td>
+
+                                {/* Nivel */}
                                 <td>
                                     <span className={`vct-nivel-pill vct-nivel--${r.nivel || "sin-nivel"}`}>
                                         {r.nivel || "Sin nivel"}
                                     </span>
                                 </td>
+
+                                {/* Fecha inicio */}
                                 <td className="vct-td-muted">
-                                    {r.fecha
-                                        ? new Date(r.fecha).toLocaleString("es-MX", {
-                                            day: "2-digit", month: "short", year: "numeric",
-                                            hour: "2-digit", minute: "2-digit", hour12: true
-                                        })
-                                        : "—"}
+                                    <span className="vct-fecha-cell">
+                                        <IoCalendarOutline size={13} />
+                                        {formatFecha(r.fecha_inicio)}
+                                    </span>
+                                </td>
+
+                                {/* Fecha término */}
+                                <td className="vct-td-muted">
+                                    <span className="vct-fecha-cell">
+                                        <IoTimeOutline size={13} />
+                                        {formatFecha(r.fecha_fin)}
+                                    </span>
                                 </td>
                             </tr>
                         ))}

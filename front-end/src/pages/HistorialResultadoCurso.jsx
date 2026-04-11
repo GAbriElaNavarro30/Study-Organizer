@@ -128,7 +128,7 @@ export function HistorialResultadoCurso() {
                                                 style={{ height: `${Math.max(pct, 6)}px` }}
                                             />
                                             <div className="hrc-bar-lbl">
-                                                {new Date(r.fecha).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+                                                {new Date(r.fecha_inicio).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
                                             </div>
                                         </div>
                                     );
@@ -152,9 +152,10 @@ export function HistorialResultadoCurso() {
                                 <th></th>
                                 <th>#</th>
                                 <th>Puntaje</th>
+                                <th>Respuestas</th>
                                 <th>Nivel</th>
-                                <th>Fecha</th>
-                                <th>Duración</th>
+                                <th>Fecha inicio</th>
+                                <th>Fecha fin</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -175,20 +176,30 @@ export function HistorialResultadoCurso() {
                                                 </div>
                                             </div>
                                         </td>
+                                        <td className="hrc-td-muted">
+                                            {r.respuestas_correctas ?? "—"}/{r.total_preguntas ?? "—"}
+                                        </td>
                                         <td>
                                             <span className={`hrc-nivel-pill ${NIVEL_CLASS[r.nivel] || "n-sin-nivel"}`}>
                                                 {r.nivel || "Sin nivel"}
                                             </span>
                                         </td>
                                         <td className="hrc-td-muted">
-                                            {r.fecha
-                                                ? new Date(r.fecha).toLocaleString("es-MX", {
+                                            {r.fecha_inicio
+                                                ? new Date(r.fecha_inicio).toLocaleString("es-MX", {
                                                     day: "2-digit", month: "short", year: "numeric",
                                                     hour: "2-digit", minute: "2-digit", hour12: true,
                                                 })
                                                 : "—"}
                                         </td>
-                                        <td className="hrc-td-muted">{r.duracion_minutos ? `${r.duracion_minutos} min` : "—"}</td>
+                                        <td className="hrc-td-muted">
+                                            {r.fecha_fin
+                                                ? new Date(r.fecha_fin).toLocaleString("es-MX", {
+                                                    day: "2-digit", month: "short", year: "numeric",
+                                                    hour: "2-digit", minute: "2-digit", hour12: true,
+                                                })
+                                                : "—"}
+                                        </td>
                                     </tr>
                                 );
                             })}
