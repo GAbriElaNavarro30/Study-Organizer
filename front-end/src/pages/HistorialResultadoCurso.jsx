@@ -1,11 +1,9 @@
 // src/pages/HistorialResultadoCurso.jsx
-import { useState, useEffect } from "react";
-import { useNavigate, useLocation } from "react-router-dom";
 import {
-    IoArrowBackOutline, IoPersonOutline, IoPeopleOutline,
-    IoTrophyOutline, IoBarChartOutline, IoTimeOutline,
+    IoArrowBackOutline, IoPersonOutline,
+    IoBarChartOutline, IoTimeOutline,
 } from "react-icons/io5";
-import api from "../services/api";
+import { useHistorialResultadoCurso } from "../hooks/useHistorialResultadoCurso";
 import "../styles/HistorialResultadoCurso.css";
 
 const NIVEL_CLASS = {
@@ -15,53 +13,34 @@ const NIVEL_CLASS = {
 };
 
 export function HistorialResultadoCurso() {
-    const navigate = useNavigate();
-    const { state } = useLocation();
-    // state: { idCurso, idUsuario, nombreEstudiante, fotoPerfil }
+    const {
+        navigate,
+        state,
+        cargando,
+        error,
+        historial,
+        estudiante: est,
+        iniciales,
+        promedio,
+        mejorPuntaje,
+        mejorIdx,
+        ultimoNivel,
+        maxP,
+    } = useHistorialResultadoCurso();
 
-    const [historial, setHistorial] = useState([]);
-    const [estudiante, setEstudiante] = useState(null);
-    const [cargando, setCargando] = useState(true);
-    const [error, setError] = useState(null);
+    if (cargando) return (
+        <div className="hrc-loading">
+            <div className="hrc-spinner" />
+            <p>Cargando historial…</p>
+        </div>
+    );
 
-    useEffect(() => {
-        if (!state?.idCurso || !state?.idUsuario) {
-            setError("Faltan parámetros de navegación.");
-            setCargando(false);
-            return;
-        }
-        (async () => {
-            try {
-                const { data } = await api.get(
-                    `/cursos/cursos/${state.idCurso}/estudiantes/${state.idUsuario}/historial`
-                );
-                setHistorial(data.historial || []);
-                setEstudiante(data.estudiante || null);
-            } catch (err) {
-                setError(err.response?.data?.mensaje || "No se pudo cargar el historial.");
-            } finally {
-                setCargando(false);
-            }
-        })();
-    }, [state]);
-
-    const promedio = historial.length
-        ? historial.reduce((s, r) => s + Number(r.puntaje || 0), 0) / historial.length
-        : 0;
-    const mejorPuntaje = historial.length
-        ? Math.max(...historial.map(r => Number(r.puntaje || 0)))
-        : 0;
-    const mejorIdx = historial.findIndex(r => Number(r.puntaje) === mejorPuntaje);
-    const ultimoNivel = historial.at(-1)?.nivel || "—";
-
-    // Para la gráfica
-    const maxP = mejorPuntaje || 100;
-
-    if (cargando) return <div className="hrc-loading"><div className="hrc-spinner" /><p>Cargando historial…</p></div>;
-    if (error) return <div className="hrc-error"><p>{error}</p><button onClick={() => navigate(-1)}>Volver</button></div>;
-
-    const est = estudiante || {};
-    const iniciales = `${est.nombre?.[0] || ""}${est.apellido?.[0] || ""}`.toUpperCase();
+    if (error) return (
+        <div className="hrc-error">
+            <p>{error}</p>
+            <button onClick={() => navigate(-1)}>Volver</button>
+        </div>
+    );
 
     return (
         <div className="hrc-root">
@@ -91,15 +70,20 @@ export function HistorialResultadoCurso() {
                         <div className="hrc-hero-meta">
                             <span>{est.correo_electronico}</span>
                             {est.fecha_inscripcion && (
-                                <span>Inscrito: {new Date(est.fecha_inscripcion).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" })}</span>
+                                <span>
+                                    Inscrito:{" "}
+                                    {new Date(est.fecha_inscripcion).toLocaleDateString("es-MX", {
+                                        day: "2-digit", month: "short", year: "numeric",
+                                    })}
+                                </span>
                             )}
                         </div>
                         <div className="hrc-stats">
                             {[
-                                { v: historial.length, l: "Intentos" },
-                                { v: promedio.toFixed(1), l: "Promedio" },
+                                { v: historial.length,        l: "Intentos" },
+                                { v: promedio.toFixed(1),     l: "Promedio" },
                                 { v: mejorPuntaje.toFixed(1), l: "Mejor puntaje" },
-                                { v: ultimoNivel || "—", l: "Nivel actual" },
+                                { v: ultimoNivel || "—",      l: "Nivel actual" },
                             ].map(({ v, l }) => (
                                 <div key={l} className="hrc-stat-chip">
                                     <div className="hrc-sv">{v}</div>
@@ -113,7 +97,9 @@ export function HistorialResultadoCurso() {
                 {/* Gráfica */}
                 {historial.length > 0 && (
                     <>
-                        <div className="hrc-sec-title"><IoBarChartOutline size={13} /> Evolución de puntajes</div>
+                        <div className="hrc-sec-title">
+                            <IoBarChartOutline size={13} /> Evolución de puntajes
+                        </div>
                         <div className="hrc-chart-card">
                             <div className="hrc-chart-inner">
                                 {historial.map((r, i) => {
@@ -122,13 +108,17 @@ export function HistorialResultadoCurso() {
                                     const esUltimo = i === historial.length - 1;
                                     return (
                                         <div key={i} className="hrc-bar-wrap">
-                                            <div className="hrc-bar-val">{Number(r.puntaje).toFixed(0)}</div>
+                                            <div className="hrc-bar-val">
+                                                {Number(r.puntaje).toFixed(0)}
+                                            </div>
                                             <div
                                                 className={`hrc-bar ${esMejor ? "best" : esUltimo ? "latest" : ""}`}
                                                 style={{ height: `${Math.max(pct, 6)}px` }}
                                             />
                                             <div className="hrc-bar-lbl">
-                                                {new Date(r.fecha_inicio).toLocaleDateString("es-MX", { day: "2-digit", month: "short" })}
+                                                {new Date(r.fecha_inicio).toLocaleDateString("es-MX", {
+                                                    day: "2-digit", month: "short",
+                                                })}
                                             </div>
                                         </div>
                                     );
@@ -144,7 +134,9 @@ export function HistorialResultadoCurso() {
                 )}
 
                 {/* Tabla */}
-                <div className="hrc-sec-title"><IoTimeOutline size={13} /> Todos los intentos</div>
+                <div className="hrc-sec-title">
+                    <IoTimeOutline size={13} /> Todos los intentos
+                </div>
                 <div className="hrc-tl-card">
                     <table className="hrc-table">
                         <thead>
@@ -172,7 +164,10 @@ export function HistorialResultadoCurso() {
                                             <div className="hrc-pb-wrap">
                                                 <span className="hrc-pb-val">{Number(r.puntaje).toFixed(1)}</span>
                                                 <div className="hrc-pb-bar">
-                                                    <div className="hrc-pb-fill" style={{ width: `${Math.min(r.puntaje, 100)}%` }} />
+                                                    <div
+                                                        className="hrc-pb-fill"
+                                                        style={{ width: `${Math.min(r.puntaje, 100)}%` }}
+                                                    />
                                                 </div>
                                             </div>
                                         </td>

@@ -86,7 +86,7 @@ export class PreguntaTest {
             [id_seccion]
         );
         return count > 0;
-    }
+    } 
 
     static async getIdCursoPorPregunta(id_test) {
         const [[row]] = await db.query(
