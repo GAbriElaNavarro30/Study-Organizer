@@ -778,6 +778,82 @@ export const marcarContenidoVisto = async (req, res) => {
 
         if (pct === 100 && !intento.completado) {
             await IntentoCurso.completar(intento.id_intento);
+
+            // ── Verificar si el curso tiene cuestionarios ──
+            const [[{ total_cuestionarios }]] = await db.query(
+                `SELECT COUNT(DISTINCT pt.id_seccion) AS total_cuestionarios
+                 FROM Pregunta_Test pt
+                 JOIN Seccion_Curso sc ON pt.id_seccion = sc.id_seccion
+                 WHERE sc.id_curso = ?`,
+                [id_curso]
+            );
+
+            let porcentaje_final = 0;
+            let total_preguntas_global = 0;
+            let correctas_global = 0;
+            let nivel = null;
+            let retroalimentacion = [];
+
+            if (total_cuestionarios > 0) {
+                // ── Promedio de puntajes por sección ──
+                const [[{ promedio }]] = await db.query(
+                    `SELECT AVG(sub.pct) AS promedio
+                     FROM (
+                         SELECT 
+                             pt.id_seccion,
+                             (SUM(rtc.es_correcta) / COUNT(*)) * 100 AS pct
+                         FROM Respuesta_Test_Curso rtc
+                         JOIN Pregunta_Test pt ON rtc.id_test = pt.id_test
+                         WHERE rtc.id_intento = ?
+                         GROUP BY pt.id_seccion
+                     ) sub`,
+                    [intento.id_intento]
+                );
+
+                // ── Totales globales ──
+                const [[totales]] = await db.query(
+                    `SELECT COUNT(*) AS total, SUM(es_correcta) AS correctas
+                     FROM Respuesta_Test_Curso
+                     WHERE id_intento = ?`,
+                    [intento.id_intento]
+                );
+
+                porcentaje_final = parseFloat((Number(promedio) || 0).toFixed(2));
+                total_preguntas_global = totales.total || 0;
+                correctas_global = totales.correctas || 0;
+
+                // ── Llamar al Sistema Experto ──
+                try {
+                    const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
+                        porcentaje: porcentaje_final
+                    });
+                    nivel = pythonRes.data.nombre_nivel;
+                    retroalimentacion = pythonRes.data.retroalimentacion ?? [];
+                } catch (errPython) {
+                    console.error("marcarContenidoVisto — sistema experto no disponible:", errPython.message);
+                }
+
+                // ── Guardar resultado final en BD ──
+                const resultado = new ResultadoCurso({
+                    total_preguntas: total_preguntas_global,
+                    respuestas_correctas: correctas_global,
+                    porcentaje: porcentaje_final,
+                    nivel,
+                    id_intento: intento.id_intento,
+                });
+                await resultado.save();
+            }
+
+            return res.json({
+                ok: true,
+                porcentaje: pct,
+                completado: true,
+                resultado: {
+                    porcentaje: porcentaje_final,
+                    nivel,
+                    retroalimentacion,
+                }
+            });
         }
 
         res.json({ ok: true, porcentaje: pct, completado: pct === 100 });
@@ -815,9 +891,7 @@ export const guardarRespuestasTest = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
         }
 
-        await db.query("DELETE FROM Respuesta_Test_Curso WHERE id_intento = ?", [intento.id_intento]);
-
-        // ── Calcular correctas ──
+        // ── Calcular correctas de este cuestionario ──
         let correctas = 0;
         const filas = [];
         for (const r of respuestas) {
@@ -830,40 +904,20 @@ export const guardarRespuestasTest = async (req, res) => {
             filas.push({ es_correcta, id_test: r.id_test, id_opcion: r.id_opcion });
         }
 
+        // ── Guardar respuestas acumulando las de todos los cuestionarios ──
         await RespuestaTestCurso.saveMany(intento.id_intento, filas);
 
         const total = respuestas.length;
-        const porcentaje = total > 0 ? parseFloat(((correctas / total) * 100).toFixed(2)) : 0;
+        const porcentaje = total > 0
+            ? parseFloat(((correctas / total) * 100).toFixed(2))
+            : 0;
 
-        // ── Llamar al sistema experto ──
-        let nivel = null;
-        let retroalimentacion = [];
-
-        try {
-            const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, { porcentaje });
-            nivel = pythonRes.data.nombre_nivel;   // se guarda en BD
-            retroalimentacion = pythonRes.data.retroalimentacion ?? []; // solo para el front
-        } catch (errPython) {
-            console.error("guardarRespuestasTest — sistema experto no disponible:", errPython.message);
-        }
-
-        // ── Guardar resultado en BD (nivel incluido, retroalimentacion NO) ──
-        const resultado = new ResultadoCurso({
-            total_preguntas: total,
-            respuestas_correctas: correctas,
-            porcentaje,
-            nivel,
-            id_intento: intento.id_intento,
-        });
-        await resultado.save();
-
+        // ── Solo devolver resultado parcial de este cuestionario al front ──
         res.json({
             ok: true,
             correctas,
             total,
             porcentaje,
-            nivel,
-            retroalimentacion, // solo viaja al front, no se persiste
         });
     } catch (error) {
         console.error("guardarRespuestasTest:", error);

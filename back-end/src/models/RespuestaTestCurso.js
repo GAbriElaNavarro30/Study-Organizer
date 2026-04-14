@@ -45,4 +45,11 @@ export class RespuestaTestCurso {
         );
         return correctas;
     }
+
+    static async deleteByIntento(id_intento) {
+        return await db.query(
+            "DELETE FROM Respuesta_Test_Curso WHERE id_intento = ?",
+            [id_intento]
+        );
+    }
 }

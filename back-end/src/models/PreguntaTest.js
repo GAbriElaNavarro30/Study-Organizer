@@ -86,7 +86,7 @@ export class PreguntaTest {
             [id_seccion]
         );
         return count > 0;
-    } 
+    }
 
     static async getIdCursoPorPregunta(id_test) {
         const [[row]] = await db.query(
@@ -97,5 +97,12 @@ export class PreguntaTest {
             [id_test]
         );
         return row?.id_curso ?? null;
+    }
+
+    static async deleteBySeccion(id_seccion) {
+        return await db.query(
+            "DELETE FROM Pregunta_Test WHERE id_seccion = ?",
+            [id_seccion]
+        );
     }
 }

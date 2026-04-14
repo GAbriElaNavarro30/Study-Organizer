@@ -65,12 +65,4 @@ export class Contenido {
         );
         return row?.id_curso ?? null;
     }
-
-    static async getById(id) {
-        const [rows] = await db.query(
-            "SELECT * FROM Contenido WHERE id_contenido = ?",
-            [id]
-        );
-        return rows[0];
-    }
 }

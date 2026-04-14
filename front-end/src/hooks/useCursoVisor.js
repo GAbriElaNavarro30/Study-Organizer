@@ -131,6 +131,12 @@ export function useCursoVisor() {
         setContenidosVistos(prev => new Set([...prev, id_contenido]));
         if (!soloLectura) {
             api.post(`/cursos/progreso/${id_contenido}`, { id_curso: id })
+                .then(({ data }) => {
+                    // Capturar retroalimentación cuando el curso se completa
+                    if (data.completado && data.resultado?.retroalimentacion?.length) {
+                        setRetroalimentacion(data.resultado.retroalimentacion);
+                    }
+                })
                 .catch(() => { });
         }
     }, [contenidosVistos, id, soloLectura]);
@@ -160,17 +166,15 @@ export function useCursoVisor() {
 
         if (!soloLectura) {
             try {
-                const { data } = await api.post("/cursos/test/respuestas", {
+                await api.post("/cursos/test/respuestas", {
                     id_curso: id,
                     respuestas: Object.entries(respuestasActuales).map(([id_test, id_opcion]) => ({
                         id_test: Number(id_test),
                         id_opcion: Number(id_opcion),
                     })),
                 });
-                // Guardar retroalimentación que viene del sistema experto
-                if (data.retroalimentacion?.length) {
-                    setRetroalimentacion(data.retroalimentacion);
-                }
+                // ← Se quitó la captura de retroalimentacion porque
+                //    ahora viene de marcarVisto cuando el curso se completa
             } catch { }
         }
     };

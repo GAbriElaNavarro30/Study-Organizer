@@ -63,7 +63,7 @@ export function ModalArchivar({ isOpen, curso, onConfirm, onClose }) {
                     <p className="marc-body">
                         {esArchivar
                             ? "El curso dejará de aparecer en tu panel principal y no será visible para los estudiantes. Podrás restaurarlo cuando quieras."
-                            : "El curso volverá a tu panel principal como borrador. Podrás editarlo y publicarlo nuevamente cuando estés listo."
+                            : "El curso volverá a tu panel principal. Podrás editarlo nuevamente cuando estés listo."
                         }
                     </p>
 
@@ -85,7 +85,7 @@ export function ModalArchivar({ isOpen, curso, onConfirm, onClose }) {
                         ) : (
                             <span className="marc-pill marc-pill--unarch">
                                 <CheckIconSm />
-                                Vuelve como borrador
+                                Vuelve al panel principal
                             </span>
                         )}
                     </div>
