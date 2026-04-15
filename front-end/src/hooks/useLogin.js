@@ -22,7 +22,8 @@ export function useLogin() {
   // ================== DETERMINAR RUTA SEGÚN ROL ==================
   const determinarRutaPorRol = (rol) => {
     if (rol === 2) return "/dashboard";
-    if (rol === 1 || rol === 3) return "/home";
+    if (rol === 1) return "/home";
+    if (rol === 3) return "/bienvenida";
     return "/";
   };
 

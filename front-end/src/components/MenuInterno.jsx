@@ -30,7 +30,7 @@ export function MenuInterno() {
         ],
 
         3: [ // TUTOR
-            { to: "/home", label: "Bienvenida" },
+            { to: "/bienvenida", label: "Dashboard" },
             { to: "/cursos-tutor", label: "Cursos Tutor" },
             { to: "/perfil", label: "Perfil" },
         ],

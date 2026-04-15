@@ -1,317 +1,1062 @@
-/* ================= CONTENEDOR PRINCIPAL ================= */
-.dashboard-container {
-    min-height: 100vh;
-    background: #f1f5f9;
-    padding: 32px;
-    font-family: 'Inter', system-ui, sans-serif;
-    display: flex;
-    flex-direction: column;
-    gap: 32px;
-    color: #0f172a;
+/* ============================================================
+   DASHBOARD — Study Organizer
+   Paleta: azul medianoche + blanco + acentos por categoría
+   Tipografía: Sora (display) + DM Sans (body)
+============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Sora:wght@400;600;700;800&family=DM+Sans:ital,wght@0,400;0,500;0,600;1,400&display=swap');
+
+/* ── Variables ── */
+:root {
+    --db-bg: #f0f4fc;
+    --db-surface: #ffffff;
+    --db-border: #e2e8f0;
+    --db-text: #0f1c3f;
+    --db-muted: #64748b;
+    --db-accent: #2563eb;
+    --db-accent-light: #eff6ff;
+
+    --db-positiva: #10b981;
+    --db-negativa: #f59e0b;
+    --db-critica: #ef4444;
+    --db-neutra: #6366f1;
+
+    --db-radius: 18px;
+    --db-shadow: 0 2px 16px rgba(15, 28, 63, 0.07);
+    --db-shadow-lg: 0 8px 32px rgba(15, 28, 63, 0.12);
+
+    --font-display: 'Sora', sans-serif;
+    --font-body: 'DM Sans', sans-serif;
 }
 
-/* ================= BIENVENIDA / PERFIL ================= */
-.bienvenida-perfil {
-    display: flex;
-    align-items: center;
-    gap: 20px;
-    background: #ffffff;
-    padding: 20px 24px;
-    border-radius: 16px;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
-}
-
-/* FOTO */
-.perfil-foto img {
-    width: 110px;
-    height: 110px;
-    border-radius: 50%;
-    object-fit: cover;
-}
-
-/* INFO */
-.perfil-info {
-    display: flex;
-    flex-direction: column;
-    gap: 6px;
-}
-
-/* SALUDO */
-.perfil-saludo h2 {
+/* ── Reset ── */
+.db-root * {
+    box-sizing: border-box;
     margin: 0;
-    font-size: 20px;
-    font-weight: 600;
-    color: #0f172a;
+    padding: 0;
 }
 
-/* ROL */
-.perfil-rol {
+.db-root {
+    font-family: var(--font-body);
+    background: var(--db-bg);
+    min-height: 100vh;
+}
+
+/* ── Iconos globales (react-icons genera SVG inline) ── */
+.db-root svg {
+    display: inline-block;
+    vertical-align: middle;
+    flex-shrink: 0;
+}
+
+/* Icono pequeño en línea con texto */
+.db-inline-icon {
     font-size: 14px;
-    color: #2563eb;
-    font-weight: 500;
+    margin-right: 5px;
+    vertical-align: middle;
 }
 
-/* DESCRIPCIÓN */
-.perfil-descripcion {
-    font-size: 14px;
-    color: #64748b;
-    max-width: 520px;
+/* Icono en botones */
+.db-btn-icon {
+    font-size: 15px;
 }
 
-/* ================= FRASE PRINCIPAL ================= */
-.bienvenida-frase-principal {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 16px;
-    text-align: center;
-    color: #475569;
-    font-style: italic;
-}
-
-/* ================= LIKERT ================= */
-.dashboard-likert {
-    background: #ffffff;
-    padding: 28px;
-    border-radius: 16px;
-}
-
-.dashboard-likert h3 {
-    margin-bottom: 6px;
-}
-
-.likert-subtitle {
-    color: #64748b;
-    margin-bottom: 20px;
-}
-
-/* OPCIONES */
-.likert-opciones {
+/* ══════════════════════════════════════════
+   HEADER
+══════════════════════════════════════════ */
+.db-header {
     display: flex;
-    flex-wrap: wrap;
-    gap: 12px;
-}
-
-.likert-opcion {
-    padding: 10px 18px;
-    border-radius: 999px;
-    border: 1px solid #cbd5f5;
-    background: #f8fafc;
-    color: #1e3a8a;
-    cursor: pointer;
-    transition: all 0.2s ease;
-    white-space: nowrap;
-}
-
-.likert-opcion:hover {
-    background: #e0e7ff;
-}
-
-.likert-opcion.activa {
-    background: #2563eb;
-    color: #ffffff;
-    border-color: #2563eb;
-}
-
-/* BOTÓN OTRO */
-.likert-opcion.otro {
-    background: #ffffff;
-    font-weight: 500;
-    color: rgb(82, 82, 82);
-}
-
-.likert-opcion.otro.activa {
-    background: #bfe3f2;
-    font-weight: 500;
-    color: rgb(0, 0, 0);
-}
-
-/* ================= INPUT EMOCIÓN PERSONALIZADA ================= */
-.likert-input {
-    margin-top: 18px;
-    display: flex;
-    gap: 10px;
     align-items: center;
-    flex-wrap: wrap;
-}
-
-.likert-input input {
-    flex: 1;
-    min-width: 220px;
-    padding: 10px 14px;
-    border-radius: 10px;
-    border: 1px solid #cbd5f5;
-    font-size: 14px;
-    outline: none;
-    transition: border 0.2s ease, box-shadow 0.2s ease;
-}
-
-.likert-input input:focus {
-    border-color: #2563eb;
-    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.15);
-}
-
-/* BOTONES INPUT */
-.likert-input button {
-    padding: 10px 16px;
-    border-radius: 10px;
-    border: none;
-    font-size: 14px;
-    cursor: pointer;
-    transition: all 0.2s ease;
-}
-
-.likert-input-acciones {
-    display: flex;
-    gap: 12px; /* espacio entre botones */
-}
-
-/* AGREGAR */
-.likert-input button.btn-agregar-dash {
-    background: #2563eb;
-    color: #ffffff;
-}
-
-.likert-input button.btn-agregar-dash:hover {
-    background: #1e40af;
-}
-
-/* CANCELAR */
-.likert-input button.btn-cancelar-dash {
-    background: #e5e7eb;
-    color: #334155;
-}
-
-.likert-input button.btn-cancelar-dash:hover {
-    background: #d1d5db;
-}
-
-/* ================= RESUMEN ================= */
-.dashboard-resumen h3 {
-    margin-bottom: 14px;
-}
-
-.resumen-cards {
-    display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    justify-content: space-between;
+    padding: 18px 36px;
+    background: var(--db-surface);
+    border-bottom: 1px solid var(--db-border);
+    position: sticky;
+    top: 0;
+    z-index: 100;
     gap: 16px;
 }
 
-.card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 14px;
-    text-align: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+.db-header-left {
+    display: flex;
+    align-items: center;
+    gap: 28px;
 }
 
-.card span {
-    display: block;
-    color: #64748b;
-    margin-bottom: 6px;
+.db-logo {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--db-text);
+    white-space: nowrap;
 }
 
-.card strong {
-    font-size: 22px;
-    color: #2563eb;
+.db-logo em {
+    font-style: normal;
+    color: var(--db-accent);
 }
 
-/* ================= IMAGEN INSPIRACIÓN ================= */
-.bienvenida-inspiracion {
-    position: relative;
-    border-radius: 18px;
-    overflow: hidden;
+.db-header-greeting {
+    display: flex;
+    flex-direction: column;
 }
 
-.bienvenida-inspiracion img {
-    width: 100%;
-    height: 240px;
+.db-saludo {
+    font-size: 12px;
+    color: var(--db-muted);
+    font-weight: 500;
+}
+
+.db-header-greeting h1 {
+    font-family: var(--font-display);
+    font-size: 18px;
+    font-weight: 700;
+    color: var(--db-text);
+}
+
+.db-header-right {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+}
+
+.db-badge-alerta {
+    display: flex;
+    align-items: center;
+    gap: 6px;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    color: #ef4444;
+    font-size: 13px;
+    font-weight: 600;
+    padding: 6px 12px;
+    border-radius: 999px;
+    cursor: pointer;
+    transition: all 0.2s;
+    font-family: var(--font-body);
+}
+
+/* Icono de notificación en header */
+.db-badge-alerta svg {
+    font-size: 17px;
+}
+
+.db-badge-alerta span {
+    background: #ef4444;
+    color: #fff;
+    border-radius: 999px;
+    width: 18px;
+    height: 18px;
+    font-size: 11px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db-badge-alerta:hover {
+    background: #fee2e2;
+}
+
+.db-avatar {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+.db-avatar img,
+.db-avatar>span:first-child {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
     object-fit: cover;
+    background: var(--db-accent);
+    color: #fff;
+    font-family: var(--font-display);
+    font-weight: 700;
+    font-size: 15px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-.inspiracion-overlay {
+.db-avatar-info {
+    display: flex;
+    flex-direction: column;
+}
+
+.db-avatar-info strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--db-text);
+}
+
+.db-avatar-info em {
+    font-style: normal;
+    font-size: 12px;
+    color: var(--db-muted);
+}
+
+/* ══════════════════════════════════════════
+   GRID PRINCIPAL
+══════════════════════════════════════════ */
+.db-grid {
+    display: grid;
+    grid-template-columns: 1fr 380px;
+    gap: 24px;
+    padding: 28px 36px;
+    max-width: 1400px;
+    margin: 0 auto;
+    align-items: start;
+}
+
+.db-col-left,
+.db-col-right {
+    display: flex;
+    flex-direction: column;
+    gap: 24px;
+}
+
+/* ══════════════════════════════════════════
+   CARD BASE
+══════════════════════════════════════════ */
+.db-card {
+    background: var(--db-surface);
+    border-radius: var(--db-radius);
+    padding: 24px;
+    box-shadow: var(--db-shadow);
+    border: 1px solid var(--db-border);
+    transition: box-shadow 0.2s;
+}
+
+.db-card:hover {
+    box-shadow: var(--db-shadow-lg);
+}
+
+.db-card-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 20px;
+}
+
+.db-card-header h2 {
+    font-family: var(--font-display);
+    font-size: 16px;
+    font-weight: 700;
+    color: var(--db-text);
+}
+
+.db-card-header p {
+    font-size: 12px;
+    color: var(--db-muted);
+    margin-top: 2px;
+}
+
+.db-badge-registrado {
+    display: flex;
+    align-items: center;
+    gap: 5px;
+    background: #ecfdf5;
+    border: 1px solid #a7f3d0;
+    color: #059669;
+    font-size: 12px;
+    font-weight: 600;
+    padding: 4px 10px;
+    border-radius: 999px;
+    white-space: nowrap;
+}
+
+/* Icono del badge registrado */
+.db-badge-registrado svg {
+    font-size: 15px;
+}
+
+/* ══════════════════════════════════════════
+   CARD EMOCION
+══════════════════════════════════════════ */
+.db-emociones-grid {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.db-emocion-btn {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 8px 16px;
+    border-radius: 999px;
+    border: 1.5px solid var(--db-border);
+    background: #f8fafc;
+    color: var(--db-text);
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.db-emocion-btn:hover {
+    background: var(--db-accent-light);
+    border-color: var(--db-accent);
+    color: var(--db-accent);
+}
+
+.db-emocion-btn.activa {
+    color: #fff;
+    border-color: transparent;
+    font-weight: 600;
+    box-shadow: 0 3px 10px rgba(0, 0, 0, 0.15);
+}
+
+/* Icono dentro del botón "Otra emoción" */
+.db-emocion-btn svg {
+    font-size: 16px;
+}
+
+.db-emocion-dot {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.db-emocion-btn.activa .db-emocion-dot {
+    background: rgba(255, 255, 255, 0.7) !important;
+}
+
+.db-emocion-otro {
+    border-style: dashed;
+    background: transparent;
+    color: var(--db-muted);
+}
+
+.db-emocion-otro:hover,
+.db-emocion-otro.activa-otro {
+    background: var(--db-accent-light);
+    border-color: var(--db-accent);
+    color: var(--db-accent);
+    border-style: solid;
+}
+
+.db-input-otro {
+    display: flex;
+    gap: 10px;
+    align-items: center;
+    margin-bottom: 20px;
+    flex-wrap: wrap;
+}
+
+.db-input-otro input {
+    flex: 1;
+    min-width: 220px;
+    padding: 10px 14px;
+    border-radius: 12px;
+    border: 1.5px solid var(--db-border);
+    font-family: var(--font-body);
+    font-size: 14px;
+    color: var(--db-text);
+    outline: none;
+    transition: border 0.2s, box-shadow 0.2s;
+    background: #f8fafc;
+}
+
+.db-input-otro input:focus {
+    border-color: var(--db-accent);
+    box-shadow: 0 0 0 3px rgba(37, 99, 235, 0.12);
+    background: #fff;
+}
+
+.db-input-btns {
+    display: flex;
+    gap: 8px;
+}
+
+.db-btn-add,
+.db-btn-cancel {
+    padding: 9px 16px;
+    border-radius: 10px;
+    border: none;
+    font-family: var(--font-body);
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.18s;
+}
+
+.db-btn-add {
+    background: var(--db-accent);
+    color: #fff;
+}
+
+.db-btn-add:hover {
+    background: #1d4ed8;
+}
+
+.db-btn-cancel {
+    background: #f1f5f9;
+    color: var(--db-muted);
+}
+
+.db-btn-cancel:hover {
+    background: #e2e8f0;
+}
+
+.db-btn-registrar {
+    width: 100%;
+    padding: 13px;
+    background: var(--db-accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.2s;
+    letter-spacing: 0.01em;
+}
+
+.db-btn-registrar:hover:not(:disabled) {
+    background: #1d4ed8;
+    box-shadow: 0 4px 14px rgba(37, 99, 235, 0.35);
+    transform: translateY(-1px);
+}
+
+.db-btn-registrar:disabled {
+    background: #cbd5e1;
+    cursor: not-allowed;
+}
+
+/* Ya registrado */
+.db-ya-registrado {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.db-emocion-actual {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 16px;
+    border-radius: 14px;
+    border: 2px solid;
+    background: #f8fafc;
+}
+
+/* Icono grande del estado emocional registrado */
+.db-emocion-icono {
+    font-size: 32px;
+    display: flex;
+    align-items: center;
+}
+
+.db-emocion-icono svg {
+    font-size: 32px;
+}
+
+.db-emocion-actual div {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.db-emocion-actual strong {
+    font-size: 17px;
+    font-weight: 700;
+    color: var(--db-text);
+}
+
+.db-emocion-actual span {
+    font-size: 13px;
+    font-weight: 600;
+}
+
+.db-registrado-msg {
+    font-size: 13px;
+    color: var(--db-muted);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+/* ══════════════════════════════════════════
+   CARD HISTORIAL SEMANAL
+══════════════════════════════════════════ */
+.db-semana {
+    display: grid;
+    grid-template-columns: repeat(7, 1fr);
+    gap: 6px;
+    text-align: center;
+}
+
+.db-dia {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+}
+
+.db-dia-label {
+    font-size: 11px;
+    font-weight: 600;
+    color: var(--db-muted);
+    text-transform: uppercase;
+}
+
+.db-dia-circulo {
+    width: 40px;
+    height: 40px;
+    border-radius: 50%;
+    background: #f1f5f9;
+    border: 2px solid var(--db-border);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    font-size: 18px;
+    transition: all 0.2s;
+}
+
+.db-dia-circulo.con-registro {
+    border-color: transparent;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.15);
+}
+
+/* Icono dentro del círculo de día */
+.db-dia-icono {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #fff;
+}
+
+.db-dia-icono svg {
+    font-size: 19px;
+}
+
+.db-dia-num {
+    font-size: 13px;
+    font-weight: 600;
+    color: var(--db-muted);
+}
+
+.db-dia-emocion {
+    font-size: 10px;
+    color: var(--db-muted);
+    max-width: 52px;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
+}
+
+/* ══════════════════════════════════════════
+   CARD TESTS
+══════════════════════════════════════════ */
+.db-tests-grid {
+    display: flex;
+    flex-direction: column;
+    gap: 12px;
+}
+
+.db-test-item {
+    display: flex;
+    align-items: center;
+    gap: 14px;
+    padding: 14px;
+    border-radius: 12px;
+    background: #f8fafc;
+    border: 1px solid var(--db-border);
+}
+
+/* Icono del test */
+.db-test-icon {
+    font-size: 26px;
+    color: var(--db-accent);
+    display: flex;
+    align-items: center;
+}
+
+.db-test-icon svg {
+    font-size: 26px;
+}
+
+.db-test-info {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+}
+
+.db-test-info strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--db-text);
+}
+
+.db-test-resultado {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.db-test-resultado.sin {
+    color: var(--db-muted);
+}
+
+.db-btn-test {
+    padding: 7px 14px;
+    border-radius: 8px;
+    background: var(--db-accent-light);
+    color: var(--db-accent);
+    border: 1px solid #bfdbfe;
+    font-family: var(--font-body);
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    white-space: nowrap;
+    transition: all 0.18s;
+}
+
+.db-btn-test:hover {
+    background: var(--db-accent);
+    color: #fff;
+    border-color: var(--db-accent);
+}
+
+/* ══════════════════════════════════════════
+   CARD FRASE DEL DÍA
+══════════════════════════════════════════ */
+.db-card-frase {
+    position: relative;
+    overflow: hidden;
+    padding: 28px;
+    border: none;
+}
+
+.db-card-frase::before {
+    content: '"';
     position: absolute;
+    top: -10px;
+    left: 12px;
+    font-family: var(--font-display);
+    font-size: 120px;
+    font-weight: 800;
+    opacity: 0.06;
+    color: var(--db-text);
+    line-height: 1;
+    pointer-events: none;
+}
+
+.db-frase-positiva {
+    background: linear-gradient(135deg, #ecfdf5 0%, #d1fae5 100%);
+    border: 1px solid #a7f3d0;
+}
+
+.db-frase-negativa {
+    background: linear-gradient(135deg, #fffbeb 0%, #fef3c7 100%);
+    border: 1px solid #fde68a;
+}
+
+.db-frase-critica {
+    background: linear-gradient(135deg, #eff6ff 0%, #dbeafe 100%);
+    border: 1px solid #bfdbfe;
+}
+
+.db-frase-neutra {
+    background: linear-gradient(135deg, #eff6ff 0%, #e0e7ff 100%);
+    border: 1px solid #c7d2fe;
+}
+
+.db-frase-tag {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--db-muted);
+    text-transform: uppercase;
+    letter-spacing: 0.08em;
+    margin-bottom: 14px;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+/* Icono de la frase tag */
+.db-frase-tag-icon {
+    display: flex;
+    align-items: center;
+}
+
+.db-frase-tag-icon svg {
+    font-size: 15px;
+}
+
+.db-card-frase blockquote {
+    font-family: var(--font-display);
+    font-size: 17px;
+    font-weight: 600;
+    color: var(--db-text);
+    line-height: 1.6;
+    border: none;
+    padding: 0;
+    font-style: italic;
+}
+
+.db-frase-hint {
+    margin-top: 12px;
+    font-size: 12px;
+    color: var(--db-muted);
+    text-align: center;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    gap: 5px;
+}
+
+.db-frase-hint svg {
+    font-size: 14px;
+}
+
+/* ══════════════════════════════════════════
+   CARD EMOCIONES PREDOMINANTES
+══════════════════════════════════════════ */
+.db-predominantes-lista {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.db-predominante-item {
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+}
+
+.db-predominante-info {
+    display: flex;
+    align-items: center;
+    gap: 10px;
+}
+
+/* Icono de categoría en predominantes */
+.db-predominante-icono {
+    font-size: 20px;
+    display: flex;
+    align-items: center;
+}
+
+.db-predominante-icono svg {
+    font-size: 20px;
+}
+
+.db-predominante-info div {
+    display: flex;
+    flex-direction: column;
+    gap: 1px;
+}
+
+.db-predominante-info strong {
+    font-size: 14px;
+    font-weight: 600;
+    color: var(--db-text);
+}
+
+.db-predominante-info span {
+    font-size: 12px;
+    font-weight: 600;
+}
+
+.db-predominante-barra-wrap {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+.db-predominante-barra-wrap>span {
+    font-size: 12px;
+    font-weight: 700;
+    color: var(--db-muted);
+    white-space: nowrap;
+}
+
+.db-predominante-barra {
+    height: 7px;
+    border-radius: 999px;
+    flex: 1;
+    min-width: 10px;
+    transition: width 0.6s ease;
+}
+
+.db-empty {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 8px;
+    padding: 20px;
+    color: var(--db-muted);
+    text-align: center;
+}
+
+/* Icono vacío grande */
+.db-empty-icon {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: var(--db-muted);
+}
+
+.db-empty-icon svg {
+    font-size: 36px;
+}
+
+.db-empty p {
+    font-size: 13px;
+}
+
+/* ══════════════════════════════════════════
+   CARD PERFIL
+══════════════════════════════════════════ */
+.db-card-perfil {
+    display: flex;
+    align-items: center;
+    gap: 16px;
+    padding: 20px;
+}
+
+.db-perfil-foto img,
+.db-perfil-iniciales {
+    width: 56px;
+    height: 56px;
+    border-radius: 50%;
+    object-fit: cover;
+    background: var(--db-accent);
+    color: #fff;
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    flex-shrink: 0;
+}
+
+.db-perfil-datos {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+}
+
+.db-perfil-datos strong {
+    font-size: 15px;
+    font-weight: 700;
+    color: var(--db-text);
+}
+
+.db-perfil-datos span {
+    font-size: 12px;
+    color: var(--db-accent);
+    font-weight: 600;
+}
+
+.db-perfil-datos p {
+    font-size: 12px;
+    color: var(--db-muted);
+    margin-top: 4px;
+}
+
+/* Icono decorativo en perfil */
+.db-perfil-icon-wrap {
+    color: #e2e8f0;
+    display: flex;
+    align-items: center;
+}
+
+.db-perfil-icon {
+    font-size: 28px;
+}
+
+/* ══════════════════════════════════════════
+   MODAL ALERTA EMOCIONAL
+══════════════════════════════════════════ */
+.db-alerta-overlay {
+    position: fixed;
     inset: 0;
-    background: rgba(15, 23, 42, 0.45);
+    background: rgba(15, 28, 63, 0.55);
+    backdrop-filter: blur(4px);
+    z-index: 1000;
     display: flex;
     align-items: center;
     justify-content: center;
     padding: 20px;
+    animation: db-fade-in 0.25s ease;
 }
 
-.inspiracion-overlay p {
-    color: #ffffff;
-    font-size: 18px;
-    text-align: center;
-    max-width: 600px;
+@keyframes db-fade-in {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
 }
 
-.card {
-    background: #ffffff;
-    padding: 20px;
-    border-radius: 14px;
+.db-alerta-modal {
+    background: var(--db-surface);
+    border-radius: 20px;
+    padding: 36px 32px;
+    max-width: 440px;
+    width: 100%;
     text-align: center;
-    box-shadow: 0 6px 18px rgba(0, 0, 0, 0.05);
+    box-shadow: 0 20px 60px rgba(0, 0, 0, 0.25);
+    animation: db-slide-up 0.3s ease;
+    border-top: 5px solid;
+}
 
+.db-alerta-modal.urgente {
+    border-color: #ef4444;
+}
+
+.db-alerta-modal.recomendada {
+    border-color: #f59e0b;
+}
+
+@keyframes db-slide-up {
+    from {
+        opacity: 0;
+        transform: translateY(20px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* Icono grande del modal */
+.db-alerta-icon {
+    font-size: 48px;
+    margin-bottom: 12px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.db-alerta-icon svg {
+    font-size: 48px;
+}
+
+.db-alerta-modal h3 {
+    font-family: var(--font-display);
+    font-size: 20px;
+    font-weight: 800;
+    color: var(--db-text);
+    margin-bottom: 12px;
+}
+
+.db-alerta-modal p {
+    font-size: 14px;
+    color: var(--db-muted);
+    line-height: 1.7;
+    margin-bottom: 20px;
+}
+
+.db-centros {
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 12px;
+    padding: 14px 16px;
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 8px;
+    margin-bottom: 20px;
+    text-align: left;
 }
 
-.card button {
-    margin-top: auto;
-
-    align-self: center;      /* 👈 centra el botón */
-    width: fit-content;     /* 👈 evita que se estire */
-    padding: 8px 14px;      /* 👈 más pequeño */
-
-    border-radius: 999px;   /* 👈 estilo suave */
-    border: none;
-    background: #2563eb;
-    color: #ffffff;
+.db-centros span {
     font-size: 13px;
-    font-weight: 500;
+    color: var(--db-text);
+    display: flex;
+    align-items: center;
+    gap: 8px;
+}
+
+/* Iconos dentro del bloque de centros */
+.db-centros-icon {
+    font-size: 16px;
+    color: #ef4444;
+    flex-shrink: 0;
+}
+
+.db-centros strong {
+    color: #ef4444;
+}
+
+.db-alerta-cerrar {
+    background: var(--db-accent);
+    color: #fff;
+    border: none;
+    border-radius: 12px;
+    padding: 12px 28px;
+    font-family: var(--font-display);
+    font-size: 15px;
+    font-weight: 700;
     cursor: pointer;
+    transition: all 0.2s;
 }
 
-.card button:hover {
-    background: #1e40af;
+.db-alerta-cerrar:hover {
+    background: #1d4ed8;
 }
 
-.card button:active {
-    transform: translateY(0);
-}
-
-
-.card button:hover {
-    background: #1e40af;
-}
-
-.card button:active {
-    transform: translateY(0);
-}
-
-
-/* ================= RESPONSIVE ================= */
-@media (max-width: 768px) {
-    .dashboard-container {
+/* ══════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════ */
+@media (max-width: 1024px) {
+    .db-grid {
+        grid-template-columns: 1fr;
         padding: 20px;
     }
 
-    .bienvenida-perfil {
-        flex-direction: column;
-        text-align: center;
+    .db-col-right {
+        order: -1;
+    }
+}
+
+@media (max-width: 640px) {
+    .db-header {
+        padding: 14px 18px;
     }
 
-    .perfil-descripcion {
-        max-width: 100%;
+    .db-header-greeting h1 {
+        font-size: 15px;
     }
 
-    .likert-input {
-        flex-direction: column;
-        align-items: stretch;
+    .db-logo {
+        font-size: 17px;
     }
 
-    .bienvenida-inspiracion img {
-        height: 200px;
+    .db-avatar-info {
+        display: none;
+    }
+
+    .db-grid {
+        padding: 14px;
+        gap: 14px;
+    }
+
+    .db-semana {
+        gap: 3px;
+    }
+
+    .db-dia-circulo {
+        width: 32px;
+        height: 32px;
+    }
+
+    .db-dia-icono svg {
+        font-size: 15px;
     }
 }

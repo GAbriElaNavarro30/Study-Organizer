@@ -23,6 +23,7 @@ import { Notas } from "../pages/Notas";
 import { EditorNota } from "../pages/EditorNota";
 import { Bienvenida } from "../pages/Bienvenida";
 import { Dashboard } from "../pages/Dashboard";
+import { DashboardTutor } from "../pages/DashboardTutor.jsx";
 import { EstilosAprendizaje } from "../pages/EstilosAprendizaje";
 import { MetodosEstudio } from "../pages/MetodosEstudio";
 import { CursosE } from "../pages/CursosE";
@@ -75,6 +76,15 @@ export function AppRoutes() {
                     <PrivateRoute>
                         <LayoutInterno>
                             <Dashboard />
+                        </LayoutInterno>
+                    </PrivateRoute>
+                }
+                />
+
+                <Route path="/bienvenida" element={
+                    <PrivateRoute>
+                        <LayoutInterno>
+                            <DashboardTutor />
                         </LayoutInterno>
                     </PrivateRoute>
                 }

@@ -13,7 +13,7 @@ import cursosRoutes from "../src/routes/cursos.js";
 import dashboardRoutes from "../src/routes/dashboard.js";
 
 import "../src/cron/recordatoriosCron.js";
-//import { iniciarCronTipDiario } from "./cron/tipDiario.cron.js";
+import "./cron/tipDiario.cron.js";
 
 const app = express(); // crea la app para recibir y responder http
 
@@ -35,15 +35,14 @@ app.get("/", (req, res) => {
 });
 
 // rutas
-//iniciarCronTipDiario();
 app.use("/usuarios", usuarioRoutes); // ej. 
 app.use("/tareas", tareasRoutes); // /ej. /tareas/crear
 app.use("/notas", notasRoutes);
-app.use("/dashboard", dashboardRoutes);
 app.use("/estilosaprendizaje", estilosAprendizajeRoutes);
 app.use("/metodosestudio", metodosEstudioRoutes);
 app.use("/cursos", cursosRoutes);
 app.use("/contacto", contactoRoutes);
+app.use("/dashboard", dashboardRoutes);
 // cursos
 
 export default app;

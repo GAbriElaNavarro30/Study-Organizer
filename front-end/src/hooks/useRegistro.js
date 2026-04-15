@@ -262,7 +262,7 @@ export function useRegistro() {
 
     if (Object.keys(erroresFrontend).length > 0) {
       setErrores(erroresFrontend);
-      return;
+      return { success: false };
     }
 
     // ============== FECHA FORMATEADA ==============

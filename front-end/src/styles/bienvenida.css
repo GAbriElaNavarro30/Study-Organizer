@@ -9,61 +9,118 @@
     gap: 28px;
 }
 
-/* ================= PERFIL ================= */
+/* ================= TARJETA PERFIL ================= */
 .bienvenida-perfil {
     background: #ffffff;
-    border-radius: 16px;
-    padding: 28px;
+    border-radius: 18px;
+    padding: 28px 32px;
     display: flex;
-    gap: 28px;
+    gap: 24px;
     align-items: center;
-    box-shadow: 0 8px 24px rgba(0, 0, 0, 0.06);
+    border: 0.5px solid #c9e0f5;
+    position: relative;
+    overflow: hidden;
 }
 
-.perfil-foto img {
+.perfil-deco-circle {
+    position: absolute;
+    border-radius: 50%;
+    pointer-events: none;
+}
+
+.perfil-deco-1 {
+    width: 160px;
+    height: 160px;
+    background: #ddeef8;
+    top: -50px;
+    right: -30px;
+    opacity: 0.7;
+}
+
+.perfil-deco-2 {
+    width: 80px;
+    height: 80px;
+    background: #c9e0f5;
+    top: 30px;
+    right: 60px;
+    opacity: 0.5;
+}
+
+/* ================= FOTO ================= */
+.perfil-foto {
+    flex-shrink: 0;
+    position: relative;
+    z-index: 1;
+}
+
+.perfil-foto-ring {
     width: 130px;
     height: 130px;
     border-radius: 50%;
-    object-fit: cover;
-    border: 3px solid #53eb25;
+    background: linear-gradient(135deg, #1be64e, #7ecbf5);
+    padding: 3px;
+    display: flex;
+    align-items: center;
+    justify-content: center;
 }
 
-/* ================= TEXTO PERFIL ================= */
+.perfil-foto-ring img {
+    width: 100%;
+    height: 100%;
+    border-radius: 50%;
+    object-fit: cover;
+    display: block;
+}
+
+/* ================= INFO PERFIL ================= */
 .perfil-info {
     display: flex;
     flex-direction: column;
-}
-
-.perfil-saludo-bienvenida {
-    display: flex;
-    align-items: baseline;
     gap: 8px;
+    position: relative;
+    z-index: 1;
 }
 
-.perfil-saludo-bienvenida h2 {
+.perfil-saludo {
     margin: 0;
-    font-size: 24px;
+    font-size: 22px;
     font-weight: 700;
-    color: #0f172a;
+    color: #0d4d7a;
+    line-height: 2;
+}
+
+.perfil-nombre {
+    color: #3b9ede;
 }
 
 .perfil-rol {
-    display: inline-block;
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
     width: fit-content;
-    font-size: 13px;
-    padding: 4px 12px;
+    font-size: 12px;
+    padding: 4px 14px;
     border-radius: 999px;
-    background: #e0e7ff;
-    color: #1e3a8a;
-    margin-top: 8px;
+    background: #ddeef8;
+    color: #1a6fa8;
+    border: 0.5px solid #b0d4ee;
+    font-weight: 500;
+    margin-bottom: 20px;
+}
+
+.perfil-rol::before {
+    content: '';
+    width: 6px;
+    height: 6px;
+    border-radius: 50%;
+    background: #3b9ede;
+    flex-shrink: 0;
 }
 
 .perfil-descripcion {
-    margin-top: 12px;
-    font-size: 15px;
-    color: #475569;
-    max-width: 520px;
-    line-height: 1.5;
+    margin: 0;
+    font-size: 14px;
+    color: #0a5e8e;
 }
 
 /* ================= FRASE PRINCIPAL ================= */
@@ -126,6 +183,8 @@
 
     .perfil-info {
         align-items: center;
+        flex: 1;
+        min-width: 0;
     }
 
     .perfil-descripcion {
@@ -142,20 +201,28 @@
     }
 }
 
-/* ================= MÓVIL ================= */
+/* ================= MÓVIL (480px) ================= */
 @media (max-width: 480px) {
     .bienvenida-container {
-        padding: 25px 16px;
+        padding: 16px 12px;
         gap: 20px;
     }
 
-    .perfil-foto img {
+    .perfil-foto-ring {
         width: 90px;
         height: 90px;
     }
 
-    .perfil-saludo-bienvenida h2 {
-        font-size: 22px;
+    .perfil-saludo {
+        font-size: 18px;
+        line-height: 1.4;
+        word-break: break-word;
+    }
+
+    .perfil-rol {
+        font-size: 11px;
+        padding: 3px 10px;
+        margin-bottom: 8px;
     }
 
     .perfil-descripcion {
@@ -173,7 +240,27 @@
     }
 
     .inspiracion-overlay p {
-        font-size: 18px;
+        font-size: 16px;
         max-width: 90%;
+    }
+}
+
+/* ================= MÓVIL PEQUEÑO (360px) ================= */
+@media (max-width: 360px) {
+    .perfil-foto-ring {
+        width: 76px;
+        height: 76px;
+    }
+
+    .perfil-saludo {
+        font-size: 16px;
+    }
+
+    .bienvenida-inspiracion {
+        height: 140px;
+    }
+
+    .inspiracion-overlay p {
+        font-size: 14px;
     }
 }

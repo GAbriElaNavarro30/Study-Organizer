@@ -1175,3 +1175,261 @@ export const obtenerResultadoIntento = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al obtener el resultado del intento." });
     }
 };
+
+// para el dashboard del tutor
+export const estadisticasTutor = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+
+        // ── Conteos básicos + total estudiantes ──
+        const [[conteos]] = await db.query(
+            `SELECT
+                COUNT(*)                                 AS total_cursos,
+                SUM(es_publicado = 1 AND archivado = 0)  AS cursos_publicados,
+                SUM(archivado = 1)                        AS cursos_archivados,
+                (
+                    SELECT COUNT(i.id_usuario)
+                    FROM Inscripcion i
+                    INNER JOIN Curso c ON c.id_curso = i.id_curso
+                    WHERE c.id_usuario = ?
+                )                                         AS total_estudiantes
+             FROM Curso
+             WHERE id_usuario = ?`,
+            [id_usuario, id_usuario]
+        );
+
+        // ── Lista de cursos del tutor (para el filtro del frontend) ──
+        const [cursos_tutor] = await db.query(
+            `SELECT id_curso, titulo FROM Curso WHERE id_usuario = ? ORDER BY titulo`,
+            [id_usuario]
+        );
+
+        // ── Cursos y alumnos por perfil VARK ──
+        const [vark] = await db.query(
+            `SELECT
+                p.perfil,
+                COUNT(DISTINCT c.id_curso)       AS cursos,
+                COUNT(DISTINCT i.id_usuario)     AS estudiantes
+            FROM (
+                SELECT 'V'    AS perfil, 1  AS orden UNION ALL
+                SELECT 'A',              2           UNION ALL
+                SELECT 'R',              3           UNION ALL
+                SELECT 'K',              4           UNION ALL
+                SELECT 'VA',             5           UNION ALL
+                SELECT 'VR',             6           UNION ALL
+                SELECT 'VK',             7           UNION ALL
+                SELECT 'AR',             8           UNION ALL
+                SELECT 'AK',             9           UNION ALL
+                SELECT 'RK',             10          UNION ALL
+                SELECT 'VAR',            11          UNION ALL
+                SELECT 'VAK',            12          UNION ALL
+                SELECT 'VRK',            13          UNION ALL
+                SELECT 'ARK',            14          UNION ALL
+                SELECT 'VARK',           15
+            ) p
+            LEFT JOIN Curso c
+                    ON c.perfil_vark = p.perfil AND c.id_usuario = ?
+            LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+            GROUP BY p.perfil, p.orden
+            ORDER BY p.orden`,
+            [id_usuario]
+        );
+
+        // ── Cursos y alumnos por dimensión ──
+        const [dimensiones] = await db.query(
+            `SELECT
+        d.nombre_dimension                            AS nombre,
+        COUNT(DISTINCT c.id_curso)                    AS cursos,
+        COUNT(DISTINCT i.id_usuario)                  AS estudiantes
+     FROM Dimension_Evaluar d
+     LEFT JOIN Curso c ON c.id_dimension = d.id_dimension AND c.id_usuario = ?
+     LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+     GROUP BY d.id_dimension, d.nombre_dimension
+     ORDER BY d.nombre_dimension`,
+            [id_usuario]
+        );
+
+        // ── Inscripciones por mes (últimos 12 meses) ──
+        const [inscripciones_mes] = await db.query(
+            `SELECT
+                DATE_FORMAT(i.fecha_inscripcion, '%b %Y') AS mes,
+                COUNT(*)                                   AS total
+             FROM Inscripcion i
+             INNER JOIN Curso c ON c.id_curso = i.id_curso
+             WHERE c.id_usuario = ?
+               AND i.fecha_inscripcion >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+             GROUP BY YEAR(i.fecha_inscripcion), MONTH(i.fecha_inscripcion)
+             ORDER BY YEAR(i.fecha_inscripcion), MONTH(i.fecha_inscripcion)`,
+            [id_usuario]
+        );
+
+        // ── Promedio de alumnos por curso ──
+        const [promedios_cursos] = await db.query(
+            `SELECT
+        c.titulo,
+        COUNT(DISTINCT i.id_usuario)          AS estudiantes,
+        COALESCE(ROUND(AVG(ultimo.porcentaje), 1), 0) AS promedio
+     FROM Curso c
+     LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+     LEFT JOIN (
+         SELECT rc.porcentaje, it.id_inscripcion
+         FROM Resultado_Curso rc
+         JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+         WHERE rc.id_resultado = (
+             SELECT rc2.id_resultado
+             FROM Resultado_Curso rc2
+             JOIN Intento_Curso it2 ON rc2.id_intento = it2.id_intento
+             WHERE it2.id_inscripcion = it.id_inscripcion
+             ORDER BY rc2.id_resultado DESC
+             LIMIT 1
+         )
+     ) ultimo ON ultimo.id_inscripcion = i.id_inscripcion
+     WHERE c.id_usuario = ?
+     GROUP BY c.id_curso, c.titulo
+     ORDER BY promedio DESC`,
+            [id_usuario]
+        );
+
+        // ── Distribución de niveles — solo el último intento por alumno ──
+        const [distribucion_niveles] = await db.query(
+            `SELECT rc.nivel, COUNT(*) AS total
+             FROM Resultado_Curso rc
+             JOIN Intento_Curso ic ON rc.id_intento = ic.id_intento
+             JOIN Inscripcion i    ON ic.id_inscripcion = i.id_inscripcion
+             JOIN Curso c          ON i.id_curso = c.id_curso
+             WHERE c.id_usuario = ?
+               AND rc.nivel IS NOT NULL
+               AND rc.id_resultado = (
+                   SELECT rc2.id_resultado
+                   FROM Resultado_Curso rc2
+                   JOIN Intento_Curso ic2 ON rc2.id_intento = ic2.id_intento
+                   WHERE ic2.id_inscripcion = i.id_inscripcion
+                   ORDER BY rc2.id_resultado DESC
+                   LIMIT 1
+               )
+             GROUP BY rc.nivel
+             ORDER BY rc.nivel`,
+            [id_usuario]
+        );
+
+        // ── Tasa de finalización por curso ──
+// ── Tasa de finalización por curso ──
+        const [finalizacion_cursos] = await db.query(
+            `SELECT
+                c.titulo,
+                COUNT(DISTINCT i.id_usuario)        AS inscritos,
+                COUNT(DISTINCT ultimo.id_usuario)   AS completados,
+                ROUND(
+                    COUNT(DISTINCT ultimo.id_usuario) * 100.0 /
+                    NULLIF(COUNT(DISTINCT i.id_usuario), 0)
+                , 1) AS tasa
+            FROM Curso c
+            LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+            LEFT JOIN (
+                SELECT i2.id_usuario, i2.id_curso
+                FROM Inscripcion i2
+                INNER JOIN Intento_Curso ic2 ON ic2.id_inscripcion = i2.id_inscripcion
+                INNER JOIN Resultado_Curso rc2 ON rc2.id_intento = ic2.id_intento
+                WHERE rc2.id_resultado = (
+                    SELECT rc3.id_resultado
+                    FROM Resultado_Curso rc3
+                    INNER JOIN Intento_Curso ic3 ON rc3.id_intento = ic3.id_intento
+                    WHERE ic3.id_inscripcion = i2.id_inscripcion
+                    ORDER BY rc3.id_resultado DESC
+                    LIMIT 1
+                )
+            ) ultimo ON ultimo.id_usuario = i.id_usuario
+                    AND ultimo.id_curso  = c.id_curso
+            WHERE c.id_usuario = ?
+            GROUP BY c.id_curso, c.titulo
+            ORDER BY tasa DESC`,
+            [id_usuario]
+        );
+
+        // ── Actividad reciente (últimas 10 acciones) ──
+        const [actividad_reciente] = await db.query(
+            `(SELECT
+        'inscripcion' AS tipo,
+        CONCAT(u.nombre, ' ', u.apellido) AS actor,
+        c.titulo AS recurso,
+        i.fecha_inscripcion AS fecha
+      FROM Inscripcion i
+      JOIN Usuario u ON u.id_usuario = i.id_usuario
+      JOIN Curso c   ON c.id_curso   = i.id_curso
+      WHERE c.id_usuario = ?)
+     UNION ALL
+     (SELECT
+        'completado' AS tipo,
+        CONCAT(u.nombre, ' ', u.apellido) AS actor,
+        c.titulo AS recurso,
+        ic.fecha_fin AS fecha
+      FROM Intento_Curso ic
+      JOIN Inscripcion i  ON ic.id_inscripcion = i.id_inscripcion
+      JOIN Usuario u      ON u.id_usuario = i.id_usuario
+      JOIN Curso c        ON c.id_curso   = i.id_curso
+      JOIN Resultado_Curso rc ON rc.id_intento = ic.id_intento
+      WHERE c.id_usuario = ?)
+     ORDER BY fecha DESC
+     LIMIT 10`,
+            [id_usuario, id_usuario]
+        );
+
+        res.json({
+            ok: true,
+            total_cursos: Number(conteos.total_cursos) || 0,
+            cursos_publicados: Number(conteos.cursos_publicados) || 0,
+            cursos_archivados: Number(conteos.cursos_archivados) || 0,
+            total_estudiantes: Number(conteos.total_estudiantes) || 0,
+            vark,
+            dimensiones,
+            inscripciones_mes,
+            promedios_cursos,
+            distribucion_niveles,
+            finalizacion_cursos,
+            actividad_reciente,
+            cursos_tutor,          // ← nuevo: lista para el select del filtro
+        });
+    } catch (error) {
+        console.error("estadisticasTutor:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener estadísticas." });
+    }
+};
+
+// ── Niveles filtrados por curso específico ──────────────────────────────────
+export const nivelesPorCurso = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.query;
+
+        if (!id_curso) {
+            return res.status(400).json({ ok: false, mensaje: "id_curso es requerido." });
+        }
+
+        const [distribucion_niveles] = await db.query(
+            `SELECT rc.nivel, COUNT(*) AS total
+             FROM Resultado_Curso rc
+             JOIN Intento_Curso ic ON rc.id_intento = ic.id_intento
+             JOIN Inscripcion i    ON ic.id_inscripcion = i.id_inscripcion
+             JOIN Curso c          ON i.id_curso = c.id_curso
+             WHERE c.id_usuario = ?
+               AND c.id_curso = ?
+               AND rc.nivel IS NOT NULL
+               AND rc.id_resultado = (
+                   SELECT rc2.id_resultado
+                   FROM Resultado_Curso rc2
+                   JOIN Intento_Curso ic2 ON rc2.id_intento = ic2.id_intento
+                   WHERE ic2.id_inscripcion = i.id_inscripcion
+                   ORDER BY rc2.id_resultado DESC
+                   LIMIT 1
+               )
+             GROUP BY rc.nivel
+             ORDER BY rc.nivel`,
+            [id_usuario, id_curso]
+        );
+
+        res.json({ ok: true, distribucion_niveles });
+    } catch (error) {
+        console.error("nivelesPorCurso:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al filtrar niveles por curso." });
+    }
+};
