@@ -1,6 +1,3 @@
-import { useContext, useState, useEffect } from "react";
-import { AuthContext } from "../context/AuthContext";
-import api from "../services/api";
 import {
     IoSchool, IoEye, IoArchive, IoPeople, IoTrendingUp, IoStar,
     IoBarChart, IoPieChart, IoCalendar, IoMedal, IoBookmarks,
@@ -12,20 +9,37 @@ import {
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
     Area, AreaChart,
 } from "recharts";
+import { useDashboardTutor } from "../hooks/useDashboardTutor";
 import "../styles/DashboardTutor.css";
 
-const COLORS_VARK = ["#4A90D9", "#6BB8F5", "#3A7BD5", "#87CEEB"];
-const COLORS_DIM = ["#4A90D9", "#5BA8E5", "#3A7BD5", "#7AC0F5", "#2E6BC4", "#9DD0FF"];
+const COLORS_VARK = [
+    "#4A90D9", // Azul
+    "#B39DDB", // Lila
+    "#F48FB1", // Rosa palo
+    "#80CBC4", // Menta
+    "#FFAB91", // Durazno
+    "#A5D6A7", // Verde suave
+    "#FFD54F", // Amarillo suave
+    "#90CAF9", // Azul claro
+    "#CE93D8", // Morado claro
+    "#EF9A9A", // Rojo suave
+    "#80DEEA", // Cyan claro
+    "#BCAAA4", // Marrón suave
+    "#F0A8D0", // Rosa chicle suave
+    "#C5E1A5", // Verde lima suave
+    "#FFF176", // Amarillo muy claro
+];
+const COLORS_DIM = ["#4A90D9", "#B39DDB", "#F48FB1", "#80CBC4", "#FFB74D", "#A5D6A7"];
 const COLORS_NIVEL = {
-    "Básico": "#87CEEB",
-    "Intermedio": "#4A90D9",
-    "Avanzado": "#3A7BD5",
-    "Experto": "#2E6BC4",
-    "Excelente": "#2E6BC4",
-    "Muy bueno": "#3A7BD5",
-    "Bueno": "#4A90D9",
-    "Regular": "#6BB8F5",
-    "Deficiente": "#87CEEB",
+    "Básico": "#F48FB1", // rosa palo
+    "Intermedio": "#B39DDB", // lila
+    "Avanzado": "#4A90D9", // azul
+    "Experto": "#3A7BD5", // azul oscuro
+    "Excelente": "#3A7BD5",
+    "Muy bueno": "#4A90D9",
+    "Bueno": "#B39DDB", // lila
+    "Regular": "#F48FB1", // rosa
+    "Deficiente": "#FFAB91", // durazno suave
 };
 const VARK_ORDER = ['V', 'A', 'R', 'K', 'VA', 'VR', 'VK', 'AR', 'AK', 'RK', 'VAR', 'VAK', 'VRK', 'ARK', 'VARK'];
 
@@ -68,7 +82,7 @@ function CustomTooltip({ active, payload, label }) {
 
 // ── Tasa de finalización ──────────────────────────────────────
 function FinalizacionRow({ titulo, inscritos, completados, tasa, index }) {
-    const color = tasa >= 70 ? "#3A7BD5" : tasa >= 40 ? "#4A90D9" : "#87CEEB";
+    const color = tasa >= 70 ? "#4A90D9" : tasa >= 40 ? "#B39DDB" : "#F48FB1";
     return (
         <div className="fin-row">
             <span className="fin-num">{index + 1}</span>
@@ -114,94 +128,24 @@ function ActividadItem({ tipo, actor, recurso, fecha }) {
 
 // ── Componente principal ──────────────────────────────────────
 export function DashboardTutor({ tutor, estadisticas }) {
-    const [animado, setAnimado] = useState(false);
-    const [fotoError, setFotoError] = useState(false);
-
-    useEffect(() => {
-        const t = setTimeout(() => setAnimado(true), 100);
-        return () => clearTimeout(t);
-    }, []);
-
-    const { usuario: usuarioCtx } = useContext(AuthContext);
-    const usuario = tutor || {
-        nombre: usuarioCtx?.nombre || "",
-        apellido: usuarioCtx?.apellido || "",
-        foto_perfil: usuarioCtx?.foto_perfil || null,
-        descripcion: usuarioCtx?.descripcion || "",
-        rol: usuarioCtx?.rol_texto || "Tutor",
-    };
-
-    useEffect(() => { setFotoError(false); }, [usuario.foto_perfil]);
-
-    // ── Stats principales ──────────────────────────────────────
-    const [statsReales, setStatsReales] = useState(null);
-
-    useEffect(() => {
-        api.get("/cursos/estadisticas-tutor")
-            .then(res => setStatsReales({
-                total_cursos: res.data.total_cursos,
-                cursos_publicados: res.data.cursos_publicados,
-                cursos_archivados: res.data.cursos_archivados,
-                total_estudiantes: res.data.total_estudiantes,
-                vark: res.data.vark || [],
-                dimensiones: res.data.dimensiones || [],
-                inscripciones_mes: res.data.inscripciones_mes || [],
-                promedios_cursos: res.data.promedios_cursos || [],
-                distribucion_niveles: res.data.distribucion_niveles || [],
-                finalizacion_cursos: res.data.finalizacion_cursos || [],
-                actividad_reciente: res.data.actividad_reciente || [],
-                cursos_tutor: res.data.cursos_tutor || [],
-            }))
-            .catch(err => console.error("Error stats tutor:", err));
-    }, []);
-
-    const stats = statsReales || estadisticas || {
-        total_cursos: 0, cursos_publicados: 0, cursos_archivados: 0,
-        total_estudiantes: 0, vark: [], dimensiones: [],
-        inscripciones_mes: [], promedios_cursos: [],
-        distribucion_niveles: [], finalizacion_cursos: [],
-        actividad_reciente: [], cursos_tutor: [],
-    };
-
-    // ── Filtro de niveles por curso ────────────────────────────
-    const [cursoFiltroNivel, setCursoFiltroNivel] = useState("todos");
-    const [nivelesFiltrados, setNivelesFiltrados] = useState(null);
-    const [cargandoNiveles, setCargandoNiveles] = useState(false);
-
-    useEffect(() => {
-        if (cursoFiltroNivel === "todos") {
-            setNivelesFiltrados(null);
-            return;
-        }
-        setCargandoNiveles(true);
-        api.get(`/cursos/estadisticas-tutor/niveles?id_curso=${cursoFiltroNivel}`)
-            .then(res => setNivelesFiltrados(res.data.distribucion_niveles || []))
-            .catch(err => console.error("Error filtro niveles:", err))
-            .finally(() => setCargandoNiveles(false));
-    }, [cursoFiltroNivel]);
-
-    const dataNiveles = nivelesFiltrados ?? stats.distribucion_niveles;
-
-    // ── Métricas derivadas ─────────────────────────────────────
-    const promedio_general = stats.promedios_cursos.length
-        ? (stats.promedios_cursos.reduce((s, c) => s + Number(c.promedio), 0) / stats.promedios_cursos.length).toFixed(1)
-        : 0;
-
-    const mejor_curso = stats.promedios_cursos.reduce(
-        (best, c) => (Number(c.promedio) > Number(best?.promedio || 0) ? c : best), null
-    );
-
-    const tasa_global = stats.finalizacion_cursos.length
-        ? Math.round(
-            stats.finalizacion_cursos.reduce((s, c) => s + Number(c.completados), 0) * 100 /
-            Math.max(stats.finalizacion_cursos.reduce((s, c) => s + Number(c.inscritos), 0), 1)
-        )
-        : 0;
-
-    const initials = `${usuario.nombre?.[0] || ""}${usuario.apellido?.[0] || ""}`.toUpperCase();
-    const mostrarFoto = usuario.foto_perfil
-        && !usuario.foto_perfil.includes("perfil-usuario.png")
-        && !fotoError;
+    const {
+        animado,
+        setFotoError,
+        usuario,
+        initials,
+        mostrarFoto,
+        stats,
+        cursoFiltroNivel, setCursoFiltroNivel,
+        mesFiltroNivel, setMesFiltroNivel,
+        anioFiltroNivel, setAnioFiltroNivel,
+        mesesDisponibles,
+        aniosDisponibles,
+        dataNiveles,
+        cargandoNiveles,
+        promedio_general,
+        mejor_curso,
+        tasa_global,
+    } = useDashboardTutor(tutor, estadisticas);
 
     return (
         <div className={`dash-root ${animado ? "loaded" : ""}`}>
@@ -243,11 +187,11 @@ export function DashboardTutor({ tutor, estadisticas }) {
                 <h2 className="section-title"><IoBarChart size={18} /> Resumen general</h2>
                 <div className="kpi-grid">
                     <KPICard icon={IoBookmarks} label="Cursos totales" value={stats.total_cursos} color="#4A90D9" trend={12} />
-                    <KPICard icon={IoEye} label="Cursos publicados" value={stats.cursos_publicados} color="#3A9AD9" />
-                    <KPICard icon={IoArchive} label="Cursos archivados" value={stats.cursos_archivados} color="#87CEEB" />
-                    <KPICard icon={IoPeople} label="Total estudiantes" value={stats.total_estudiantes} color="#2E6BC4" trend={8} />
-                    <KPICard icon={IoStar} label="Promedio general" value={`${promedio_general}%`} color="#5BA8E5" />
-                    <KPICard icon={IoCheckmarkDone} label="Tasa finalización" value={`${tasa_global}%`} color="#3A7BD5" />
+                    <KPICard icon={IoEye} label="Cursos publicados" value={stats.cursos_publicados} color="#B39DDB" />
+                    <KPICard icon={IoArchive} label="Cursos archivados" value={stats.cursos_archivados} color="#F48FB1" />
+                    <KPICard icon={IoPeople} label="Total estudiantes" value={stats.total_estudiantes} color="#80CBC4" trend={8} />
+                    <KPICard icon={IoStar} label="Promedio general" value={`${promedio_general}%`} color="#B39DDB" />
+                    <KPICard icon={IoCheckmarkDone} label="Tasa finalización" value={`${tasa_global}%`} color="#4A90D9" />
                 </div>
             </section>
 
@@ -265,7 +209,13 @@ export function DashboardTutor({ tutor, estadisticas }) {
                             </defs>
                             <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" />
                             <XAxis dataKey="mes" tick={{ fill: "#6B8BAF", fontSize: 12 }} axisLine={false} tickLine={false} />
-                            <YAxis tick={{ fill: "#6B8BAF", fontSize: 12 }} axisLine={false} tickLine={false} />
+                            <YAxis
+                                tick={{ fill: "#6B8BAF", fontSize: 12 }}
+                                axisLine={false}
+                                tickLine={false}
+                                allowDecimals={false}
+                                tickFormatter={(v) => Number.isInteger(v) ? v : ""}
+                            />
                             <Tooltip content={<CustomTooltip />} />
                             <Area type="monotone" dataKey="total" name="Inscritos"
                                 stroke="#4A90D9" strokeWidth={2.5}
@@ -289,16 +239,41 @@ export function DashboardTutor({ tutor, estadisticas }) {
                             <h3 className="chart-subtitle niveles-subtitle">
                                 Distribución de niveles alcanzados
                             </h3>
-                            <select
-                                value={cursoFiltroNivel}
-                                onChange={e => setCursoFiltroNivel(e.target.value)}
-                                className="niveles-select"
-                            >
-                                <option value="todos">Todos los cursos</option>
-                                {stats.cursos_tutor.map(c => (
-                                    <option key={c.id_curso} value={c.id_curso}>{c.titulo}</option>
-                                ))}
-                            </select>
+                            <div className="niveles-filtros">
+                                <select
+                                    value={cursoFiltroNivel}
+                                    onChange={e => setCursoFiltroNivel(e.target.value)}
+                                    className="niveles-select"
+                                >
+                                    <option value="todos">Todos los cursos</option>
+                                    {stats.cursos_tutor.map(c => (
+                                        <option key={c.id_curso} value={c.id_curso}>{c.titulo}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={anioFiltroNivel}
+                                    onChange={e => { setAnioFiltroNivel(e.target.value); setMesFiltroNivel("todos"); }}
+                                    className="niveles-select"
+                                >
+                                    <option value="todos">Todos los años</option>
+                                    {aniosDisponibles.map(a => (
+                                        <option key={a} value={a}>{a}</option>
+                                    ))}
+                                </select>
+
+                                <select
+                                    value={mesFiltroNivel}
+                                    onChange={e => setMesFiltroNivel(e.target.value)}
+                                    className="niveles-select"
+                                    disabled={anioFiltroNivel === "todos"}  // mes solo tiene sentido con año
+                                >
+                                    <option value="todos">Todos los meses</option>
+                                    {mesesDisponibles.map(m => (
+                                        <option key={m.valor} value={m.valor}>{m.label}</option>
+                                    ))}
+                                </select>
+                            </div>
                         </div>
 
                         {/* Contenido */}
@@ -428,7 +403,13 @@ export function DashboardTutor({ tutor, estadisticas }) {
                             >
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" vertical={false} />
                                 <XAxis dataKey="perfil" tick={{ fill: "#6B8BAF", fontSize: 10 }} axisLine={false} tickLine={false} />
-                                <YAxis tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis
+                                    tick={{ fill: "#6B8BAF", fontSize: 11 }}
+                                    axisLine={false}
+                                    tickLine={false}
+                                    allowDecimals={false}
+                                    tickFormatter={(v) => Number.isInteger(v) ? v : ""}
+                                />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
                                 <Bar dataKey="estudiantes" name="Estudiantes" radius={[6, 6, 0, 0]}>
                                     {[...stats.vark]
@@ -444,10 +425,10 @@ export function DashboardTutor({ tutor, estadisticas }) {
                     <div className="chart-card">
                         <h3 className="chart-subtitle">Cursos por dimensión</h3>
                         <ResponsiveContainer width="100%" height={280}>
-                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 180, bottom: 5 }} barSize={16}>
+                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
                                 <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis type="category" dataKey="nombre" width={175} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
                                 <Bar dataKey="cursos" name="Cursos" radius={[0, 6, 6, 0]}>
                                     {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
@@ -459,10 +440,10 @@ export function DashboardTutor({ tutor, estadisticas }) {
                     <div className="chart-card">
                         <h3 className="chart-subtitle">Estudiantes por dimensión</h3>
                         <ResponsiveContainer width="100%" height={280}>
-                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 180, bottom: 5 }} barSize={16}>
+                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
                                 <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
                                 <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis type="category" dataKey="nombre" width={175} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
                                 <Bar dataKey="estudiantes" name="Estudiantes" radius={[0, 6, 6, 0]}>
                                     {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
@@ -487,7 +468,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                                 <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
                                 <Bar dataKey="promedio" name="Promedio %" radius={[6, 6, 0, 0]}>
                                     {stats.promedios_cursos.map((c, i) => (
-                                        <Cell key={i} fill={c.promedio >= 85 ? "#3A7BD5" : c.promedio >= 70 ? "#4A90D9" : "#87CEEB"} />
+                                        <Cell key={i} fill={c.promedio >= 85 ? "#4A90D9" : c.promedio >= 70 ? "#B39DDB" : "#F48FB1"} />
                                     ))}
                                 </Bar>
                             </BarChart>
@@ -510,7 +491,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                                     <span className="rank-score rank-score--dynamic" style={{ color: c.promedio >= 85 ? "#3A7BD5" : c.promedio >= 70 ? "#4A90D9" : "#87CEEB" }}>
                                         {c.promedio}%
                                         <div className="score-bar">
-                                            <div className="score-fill" style={{ width: `${c.promedio}%`, background: c.promedio >= 85 ? "#3A7BD5" : "#6BB8F5" }} />
+                                            <div className="score-fill" style={{ width: `${c.promedio}%`, background: c.promedio >= 85 ? "#4A90D9" : "#B39DDB" }} />
                                         </div>
                                     </span>
                                 </div>

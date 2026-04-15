@@ -1313,7 +1313,7 @@ export const estadisticasTutor = async (req, res) => {
         );
 
         // ── Tasa de finalización por curso ──
-// ── Tasa de finalización por curso ──
+        // ── Tasa de finalización por curso ──
         const [finalizacion_cursos] = await db.query(
             `SELECT
                 c.titulo,
@@ -1399,11 +1399,16 @@ export const estadisticasTutor = async (req, res) => {
 export const nivelesPorCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
-        const { id_curso } = req.query;
+        const { id_curso, mes, anio } = req.query;
 
         if (!id_curso) {
             return res.status(400).json({ ok: false, mensaje: "id_curso es requerido." });
         }
+
+        // Filtro de fecha opcional
+        const filtroFecha = (mes && anio)
+            ? `AND MONTH(ic.fecha_fin) = ${db.escape(mes)} AND YEAR(ic.fecha_fin) = ${db.escape(anio)}`
+            : (anio ? `AND YEAR(ic.fecha_fin) = ${db.escape(anio)}` : "");
 
         const [distribucion_niveles] = await db.query(
             `SELECT rc.nivel, COUNT(*) AS total
@@ -1412,8 +1417,9 @@ export const nivelesPorCurso = async (req, res) => {
              JOIN Inscripcion i    ON ic.id_inscripcion = i.id_inscripcion
              JOIN Curso c          ON i.id_curso = c.id_curso
              WHERE c.id_usuario = ?
-               AND c.id_curso = ?
+               AND (? = 'todos' OR c.id_curso = ?)
                AND rc.nivel IS NOT NULL
+               ${filtroFecha}
                AND rc.id_resultado = (
                    SELECT rc2.id_resultado
                    FROM Resultado_Curso rc2
@@ -1424,7 +1430,7 @@ export const nivelesPorCurso = async (req, res) => {
                )
              GROUP BY rc.nivel
              ORDER BY rc.nivel`,
-            [id_usuario, id_curso]
+            [id_usuario, id_curso, id_curso]
         );
 
         res.json({ ok: true, distribucion_niveles });

@@ -132,7 +132,7 @@
     align-items: flex-start;
 }
 
-/* Avatar */
+/* ── Avatar ────────────────────────────────────────────────── */
 .avatar-wrap {
     position: relative;
     flex-shrink: 0;
@@ -140,8 +140,8 @@
 
 .avatar-img,
 .avatar-initials {
-    width: 72px;
-    height: 72px;
+    width: 115px;
+    height: 115px;
     border-radius: 50%;
     object-fit: cover;
     border: 3px solid var(--blue-200);
@@ -154,7 +154,7 @@
     background: linear-gradient(135deg, var(--blue-400), var(--blue-300));
     color: #fff;
     font-family: var(--font-head);
-    font-size: 24px;
+    font-size: 30px;
     font-weight: 800;
     letter-spacing: 1px;
 }
@@ -170,7 +170,7 @@
     line-height: 0;
 }
 
-/* Texto bienvenida */
+/* ── Texto bienvenida ──────────────────────────────────────── */
 .welcome-greeting {
     font-size: 13px;
     color: var(--text-light);
@@ -365,7 +365,6 @@
     flex-wrap: wrap;
 }
 
-/* ── charts-row con margin-bottom ──────────────────────────── */
 .charts-row--mb {
     margin-bottom: 16px;
 }
@@ -393,10 +392,11 @@
     color: var(--text-mid);
 }
 
-/* ── Niveles header (filtro por curso) ─────────────────────── */
+/* ── Niveles header ────────────────────────────────────────── */
 .niveles-header {
     display: flex;
-    align-items: center;
+    flex-direction: column;
+    align-items: flex-start;
     justify-content: space-between;
     margin-bottom: 14px;
     gap: 10px;
@@ -405,6 +405,14 @@
 
 .niveles-subtitle {
     margin: 0 !important;
+}
+
+.niveles-filtros {
+    display: flex;
+    gap: 8px;
+    flex-wrap: wrap;
+    align-items: center;
+    width: 100%;
 }
 
 .niveles-select {
@@ -417,8 +425,9 @@
     background: var(--blue-50);
     cursor: pointer;
     outline: none;
-    max-width: 200px;
-    min-width: 140px;
+    flex: 1;
+    min-width: 120px;
+    max-width: 100%;
     box-shadow: 0 1px 3px rgba(74, 144, 217, 0.1);
 }
 
@@ -488,15 +497,6 @@
     gap: 4px;
 }
 
-.rank-score {
-    font-size: 13px;
-    font-weight: 700;
-    display: flex;
-    flex-direction: column;
-    gap: 3px;
-}
-
-/* rank-score con color dinámico (solo color se aplica inline) */
 .rank-score--dynamic {
     font-size: 13px;
     font-weight: 700;
@@ -559,40 +559,6 @@
 
 .best-meta strong {
     color: var(--blue-600);
-}
-
-/* ── Responsive ────────────────────────────────────────────── */
-@media (max-width: 900px) {
-    .dash-root {
-        padding: 18px 16px 40px;
-    }
-
-    .dash-welcome {
-        flex-direction: column;
-        gap: 16px;
-    }
-
-    .welcome-right {
-        align-items: flex-start;
-    }
-
-    .charts-row {
-        flex-direction: column;
-    }
-
-    .kpi-grid {
-        grid-template-columns: repeat(2, 1fr);
-    }
-}
-
-@media (max-width: 500px) {
-    .kpi-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .welcome-name {
-        font-size: 20px;
-    }
 }
 
 /* ── Tasa de finalización ──────────────────────────────────── */
@@ -773,25 +739,203 @@
     line-height: 1.5;
 }
 
-/* ── Responsive nuevo ──────────────────────────────────────── */
-@media (max-width: 900px) {
+/* ══════════════════════════════════════════════════════════════
+   RESPONSIVE
+══════════════════════════════════════════════════════════════ */
 
+@media (max-width: 900px) {
+    .dash-root {
+        padding: 16px 14px 40px;
+    }
+
+    /* Bienvenida */
+    .dash-welcome {
+        flex-direction: column;
+        gap: 16px;
+        padding: 20px 18px;
+    }
+
+    .welcome-right {
+        align-items: flex-start;
+        flex-direction: row;
+        flex-wrap: wrap;
+        gap: 12px;
+        width: 100%;
+    }
+
+    /* KPIs */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 12px;
+    }
+
+    /* Charts en columna */
+    .charts-row {
+        flex-direction: column;
+    }
+
+    .chart-card.medium {
+        min-width: unset;
+        width: 100%;
+    }
+
+    /* Finalización */
     .fin-head,
     .fin-row {
-        grid-template-columns: 28px 1fr 80px 100px 50px;
+        grid-template-columns: 28px minmax(0, 2fr) 90px minmax(60px, 1fr) 56px;
+        font-size: 11px;
+        gap: 6px;
+    }
+
+    /* Ranking */
+    .ranking-head,
+    .ranking-row {
+        grid-template-columns: 28px 1fr 60px 80px;
+        gap: 6px;
+    }
+
+    /* Niveles filtros */
+    .niveles-filtros {
+        flex-direction: column;
+    }
+
+    .niveles-select {
+        width: 100%;
+        max-width: 100%;
     }
 }
 
 @media (max-width: 600px) {
-    .fin-head {
-        display: none;
+    .dash-root {
+        padding: 12px 10px 32px;
     }
 
+    /* Avatar */
+    .avatar-img,
+    .avatar-initials {
+        width: 72px;
+        height: 72px;
+    }
+
+    .avatar-initials {
+        font-size: 24px;
+    }
+
+    /* Bienvenida */
+    .welcome-name {
+        font-size: 20px;
+    }
+
+    .welcome-left {
+        gap: 12px;
+    }
+
+    .welcome-right {
+        flex-direction: column;
+        gap: 8px;
+    }
+
+    /* KPIs — siempre 2 columnas */
+    .kpi-grid {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 10px;
+    }
+
+    .kpi-value {
+        font-size: 18px;
+    }
+
+    .kpi-card {
+        padding: 14px 12px;
+        gap: 10px;
+    }
+
+    .kpi-icon-wrap {
+        width: 38px;
+        height: 38px;
+    }
+
+    /* Finalización compacta pero completa */
+    .fin-head,
     .fin-row {
-        grid-template-columns: 1fr 80px 50px;
+        grid-template-columns: 22px minmax(0, 2fr) 72px minmax(44px, 1fr) 48px;
+        gap: 4px;
+        padding: 7px 4px;
+        font-size: 10px;
     }
 
-    .fin-row> :first-child {
-        display: none;
+    .fin-titulo {
+        font-size: 11px;
+    }
+
+    .fin-tasa {
+        font-size: 11px;
+    }
+
+    .fin-meta {
+        font-size: 10px;
+    }
+
+    /* Ranking compacto pero completo */
+    .ranking-head,
+    .ranking-row {
+        grid-template-columns: 22px 1fr 50px 70px;
+        gap: 5px;
+        font-size: 10px;
+    }
+
+    .rank-titulo {
+        font-size: 11px;
+    }
+
+    .rank-alumnos {
+        font-size: 10px;
+    }
+
+    .rank-score--dynamic {
+        font-size: 11px;
+    }
+
+    /* Chart cards */
+    .chart-card {
+        padding: 16px 12px 12px;
+    }
+
+    /* Best course banner */
+    .best-course-banner {
+        flex-direction: column;
+        gap: 12px;
+        padding: 18px 16px;
+    }
+
+    .best-titulo {
+        font-size: 16px;
+    }
+
+    .best-meta {
+        flex-wrap: wrap;
+    }
+}
+
+@media (max-width: 400px) {
+
+    /* KPIs en 1 columna solo en pantallas muy pequeñas */
+    .kpi-grid {
+        grid-template-columns: 1fr;
+    }
+
+    /* Finalización mínima pero visible */
+    .fin-head,
+    .fin-row {
+        grid-template-columns: 18px minmax(0, 2fr) 60px minmax(36px, 1fr) 42px;
+        gap: 3px;
+        font-size: 9px;
+    }
+
+    .ranking-head,
+    .ranking-row {
+        grid-template-columns: 18px 1fr 44px 62px;
+        gap: 4px;
+        font-size: 9px;
     }
 }
