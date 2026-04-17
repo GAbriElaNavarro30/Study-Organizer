@@ -17,4 +17,4 @@ router.get("/resultado", verificarToken, obtenerResultado);
 router.get("/resultado-guardado", verificarToken, obtenerResultadoGuardado);
 router.get("/historial", verificarToken, obtenerHistorial);
 
-export default router; // exporta las rutsd para que app las use
+export default router; // exporta las rutsd para que app las use 

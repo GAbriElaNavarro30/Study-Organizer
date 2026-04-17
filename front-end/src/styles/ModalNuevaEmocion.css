@@ -1,0 +1,401 @@
+/* ══════════════════════════════════════════════════
+   MODAL NUEVA EMOCIÓN  —  mnemo-*
+══════════════════════════════════════════════════ */
+
+/* ── Overlay ── */
+.mnemo-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.55);
+    backdrop-filter: blur(3px);
+    -webkit-backdrop-filter: blur(3px);
+    z-index: 1000;
+    animation: mnemoFadeIn 0.18s ease;
+}
+
+/* ── Caja ── */
+.mnemo-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 1001;
+    width: min(480px, calc(100vw - 32px));
+    background: #ffffff;
+    border-radius: 18px;
+    box-shadow:
+        0 0 0 1px rgba(14, 165, 233, 0.08),
+        0 8px 32px rgba(15, 23, 42, 0.16),
+        0 2px 8px rgba(15, 23, 42, 0.08);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+    animation: mnemoSlideUp 0.22s cubic-bezier(0.34, 1.56, 0.64, 1);
+}
+
+/* ── Cabecera ── */
+.mnemo-header {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 20px 20px 16px;
+    border-bottom: 1px solid #f1f5f9;
+}
+
+.mnemo-header-icon {
+    width: 36px;
+    height: 36px;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #e0f2fe, #bae6fd);
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    color: #0284c7;
+    flex-shrink: 0;
+}
+
+.mnemo-title {
+    font-size: 1rem;
+    font-weight: 700;
+    color: #0f172a;
+    margin: 0 0 2px;
+    line-height: 1.3;
+}
+
+.mnemo-subtitle {
+    font-size: 0.78rem;
+    color: #94a3b8;
+    margin: 0;
+}
+
+.mnemo-close {
+    margin-left: auto;
+    width: 32px;
+    height: 32px;
+    border-radius: 8px;
+    border: none;
+    background: transparent;
+    color: #94a3b8;
+    cursor: pointer;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    transition: background 0.15s, color 0.15s;
+    flex-shrink: 0;
+}
+
+.mnemo-close:hover {
+    background: #f1f5f9;
+    color: #475569;
+}
+
+/* ── Cuerpo ── */
+.mnemo-body {
+    padding: 18px 20px;
+    display: flex;
+    flex-direction: column;
+    gap: 18px;
+    max-height: 60vh;
+    overflow-y: auto;
+    scrollbar-width: thin;
+    scrollbar-color: #e2e8f0 transparent;
+}
+
+.mnemo-body::-webkit-scrollbar {
+    width: 4px;
+}
+
+.mnemo-body::-webkit-scrollbar-thumb {
+    background: #e2e8f0;
+    border-radius: 4px;
+}
+
+/* ── Campo ── */
+.mnemo-field {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mnemo-label {
+    font-size: 0.8rem;
+    font-weight: 600;
+    color: #475569;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.mnemo-input {
+    width: 100%;
+    padding: 10px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    font-size: 0.95rem;
+    color: #0f172a;
+    background: #f8fafc;
+    outline: none;
+    transition: border-color 0.15s, box-shadow 0.15s, background 0.15s;
+    box-sizing: border-box;
+}
+
+.mnemo-input:focus {
+    border-color: #38bdf8;
+    background: #ffffff;
+    box-shadow: 0 0 0 3px rgba(56, 189, 248, 0.12);
+}
+
+.mnemo-input::placeholder {
+    color: #cbd5e1;
+}
+
+.mnemo-counter {
+    font-size: 0.72rem;
+    color: #94a3b8;
+    text-align: right;
+    margin-top: -4px;
+}
+
+/* ── Clasificación ── */
+.mnemo-clasif-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.mnemo-clasif-btn {
+    padding: 8px 4px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 9px;
+    background: #f8fafc;
+    color: #64748b;
+    font-size: 0.8rem;
+    font-weight: 600;
+    cursor: pointer;
+    text-align: center;
+    transition: all 0.15s;
+}
+
+.mnemo-clasif-btn:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+}
+
+.mnemo-clasif-btn--sel {
+    font-weight: 700;
+    box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
+}
+
+/* ── Niveles ── */
+.mnemo-nivel-grid {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+}
+
+.mnemo-nivel-btn {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 4px;
+    padding: 12px 8px 10px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 12px;
+    background: #f8fafc;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mnemo-nivel-btn:hover {
+    border-color: #cbd5e1;
+    background: #f1f5f9;
+    transform: translateY(-1px);
+}
+
+.mnemo-nivel-btn--sel {
+    box-shadow: 0 3px 12px rgba(0, 0, 0, 0.1);
+    transform: translateY(-2px);
+}
+
+.mnemo-nivel-icon {
+    display: flex;
+    align-items: center;
+}
+
+.mnemo-nivel-label {
+    font-size: 0.82rem;
+    font-weight: 700;
+    color: #475569;
+    transition: color 0.15s;
+}
+
+.mnemo-nivel-desc {
+    font-size: 0.7rem;
+    color: #94a3b8;
+    text-align: center;
+    line-height: 1.3;
+}
+
+/* ── Vista previa ── */
+.mnemo-preview {
+    display: flex;
+    flex-direction: column;
+    gap: 8px;
+}
+
+.mnemo-preview-label {
+    font-size: 0.72rem;
+    font-weight: 600;
+    color: #94a3b8;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.mnemo-preview-chip {
+    display: inline-flex;
+    align-items: center;
+    gap: 6px;
+    padding: 7px 14px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 999px;
+    background: #f8fafc;
+    font-size: 0.88rem;
+    font-weight: 600;
+    color: #475569;
+    transition: all 0.2s;
+    width: fit-content;
+}
+
+.mnemo-preview-tag {
+    font-size: 0.7rem;
+    font-weight: 600;
+    opacity: 0.7;
+    padding: 2px 7px;
+    background: rgba(0, 0, 0, 0.06);
+    border-radius: 999px;
+}
+
+/* ── Error ── */
+.mnemo-error {
+    font-size: 0.82rem;
+    color: #ef4444;
+    background: #fef2f2;
+    border: 1px solid #fecaca;
+    border-radius: 8px;
+    padding: 9px 12px;
+    margin: 0;
+    animation: mnemoShake 0.3s ease;
+}
+
+/* ── Footer ── */
+.mnemo-footer {
+    display: flex;
+    gap: 10px;
+    justify-content: flex-end;
+    padding: 14px 20px 18px;
+    border-top: 1px solid #f1f5f9;
+}
+
+.mnemo-btn-cancel {
+    padding: 9px 18px;
+    border: 1.5px solid #e2e8f0;
+    border-radius: 10px;
+    background: transparent;
+    color: #64748b;
+    font-size: 0.88rem;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.15s;
+}
+
+.mnemo-btn-cancel:hover {
+    background: #f1f5f9;
+    border-color: #cbd5e1;
+}
+
+.mnemo-btn-save {
+    display: flex;
+    align-items: center;
+    gap: 7px;
+    padding: 9px 22px;
+    border: none;
+    border-radius: 10px;
+    background: linear-gradient(135deg, #38bdf8, #0284c7);
+    color: #ffffff;
+    font-size: 0.88rem;
+    font-weight: 700;
+    cursor: pointer;
+    transition: all 0.18s;
+    box-shadow: 0 2px 8px rgba(2, 132, 199, 0.3);
+}
+
+.mnemo-btn-save:hover:not(:disabled) {
+    transform: translateY(-1px);
+    box-shadow: 0 4px 14px rgba(2, 132, 199, 0.4);
+}
+
+.mnemo-btn-save:disabled {
+    opacity: 0.7;
+    cursor: not-allowed;
+    transform: none;
+}
+
+.mnemo-btn-save--ok {
+    background: linear-gradient(135deg, #34d399, #059669) !important;
+    box-shadow: 0 2px 8px rgba(5, 150, 105, 0.3) !important;
+}
+
+/* ── Spinner ── */
+.mnemo-spinner {
+    width: 13px;
+    height: 13px;
+    border: 2px solid rgba(255, 255, 255, 0.35);
+    border-top-color: #ffffff;
+    border-radius: 50%;
+    animation: mnemoSpin 0.6s linear infinite;
+    display: inline-block;
+}
+
+/* ── Animaciones ── */
+@keyframes mnemoFadeIn {
+    from {
+        opacity: 0;
+    }
+
+    to {
+        opacity: 1;
+    }
+}
+
+@keyframes mnemoSlideUp {
+    from {
+        opacity: 0;
+        transform: translate(-50%, calc(-50% + 18px));
+    }
+
+    to {
+        opacity: 1;
+        transform: translate(-50%, -50%);
+    }
+}
+
+@keyframes mnemoSpin {
+    to {
+        transform: rotate(360deg);
+    }
+}
+
+@keyframes mnemoShake {
+
+    0%,
+    100% {
+        transform: translateX(0);
+    }
+
+    20% {
+        transform: translateX(-5px);
+    }
+
+    60% {
+        transform: translateX(5px);
+    }
+}

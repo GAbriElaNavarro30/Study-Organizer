@@ -6,13 +6,15 @@ import {
   responder,
   obtenerResultado,
   obtenerHistorial,
+  obtenerUltimoResultado,
 } from "../controllers/metodosEstudioController.js";
 
 const router = Router();
 
 router.get("/preguntas", verificarToken, obtenerTest);
 router.post("/guardar-respuestas", verificarToken, responder);
+router.get("/ultimo-resultado",   verificarToken, obtenerUltimoResultado);
 router.get("/resultado/:id_intento", verificarToken, obtenerResultado);
 router.get("/historial", verificarToken, obtenerHistorial);
 
-export default router;
+export default router; 

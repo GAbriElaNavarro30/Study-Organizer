@@ -10,7 +10,7 @@ from hechos.hechos_me import (
 NIVELES_A_MEJORAR = ("deficiente", "regular", "bueno")
 NIVELES_POSITIVOS = ("muy_bueno", "excelente")
 
-
+ 
 class MotorMetodosEstudio(KnowledgeEngine):
 
     # ── BLOQUE 1: Error específico por pregunta ──

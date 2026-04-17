@@ -1,7 +1,7 @@
 import "../styles/bienvenida.css";
 import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
 import { useBienvenida } from "../hooks/useBienvenida";
-
+ 
 export function Bienvenida() {
     const { usuario, frase, cargandoFrase } = useBienvenida();
 

@@ -37,7 +37,8 @@ import {
     miHistorialResultados,
     obtenerResultadoIntento,
     estadisticasTutor,
-    nivelesPorCurso
+    nivelesPorCurso,
+    misCursosConResultados
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -102,5 +103,8 @@ router.get("/intentos/:id_intento/resultado", obtenerResultadoIntento);
 // para el dahsboard del tutor
 router.get("/estadisticas-tutor/niveles", verificarToken, nivelesPorCurso);
 router.get("/estadisticas-tutor", verificarToken, estadisticasTutor);
+
+// para el dashboard del estudiante
+router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
 
 export default router;

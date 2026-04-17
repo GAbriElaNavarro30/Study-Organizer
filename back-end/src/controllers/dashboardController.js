@@ -1,4 +1,5 @@
 // ============================== DASHBOARD CONTROLLER ==============================
+import axios from "axios";
 import { db } from "../config/db.js";
 import { Emocion } from "../models/Emocion.js";
 import { RegistroEmocion } from "../models/RegistroEmocion.js";
@@ -6,13 +7,86 @@ import { AlertaEmocional } from "../models/AlertaEmocional.js";
 import { TipDiario } from "../models/TipDiario.js";
 import { FraseRandom } from "../models/FraseRandom.js";
 
+const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
+
+// Reemplaza la función getFechaHoy por estas dos:
+function getFechaHoy() {
+    // Solo la fecha "YYYY-MM-DD" — para comparaciones en WHERE
+    return new Date().toLocaleDateString("sv-SE", {
+        timeZone: "America/Mexico_City",
+    });
+}
+
+function getFechaHoraActual() {
+    // Fecha+hora "YYYY-MM-DD HH:MM:SS" — para guardar en BD
+    return new Date().toLocaleString("sv-SE", {
+        timeZone: "America/Mexico_City",
+    });
+}
+
+function normalizarTexto(texto) {
+    return texto
+        .toLowerCase()
+        .normalize("NFD")
+        .replace(/[\u0300-\u036f]/g, "")
+        .trim();
+}
+
+function stemearTexto(texto) {
+    const norm = normalizarTexto(texto);
+    // Quita sufijos: -ada, -ado, -a, -o  (en ese orden, del más largo al más corto)
+    return norm
+        .replace(/adas?$/, "ad")   // cansadas / cansada → cansad
+        .replace(/ados?$/, "ad")   // cansados / cansado → cansad
+        .replace(/idas?$/, "id")   // aburridas / aburrida → aburrid
+        .replace(/idos?$/, "id")   // aburridos / aburrido → aburrid
+        .replace(/as$/, "")        // plural femenino
+        .replace(/os$/, "")        // plural masculino
+        .replace(/a$/, "")         // femenino singular  enojada → enojad... → enoja → enoj
+        .replace(/o$/, "");        // masculino singular
+}
+
+async function obtenerFraseSistemaExperto(idUsuario, categoria, nivel) {
+    try {
+        // Calcular días consecutivos con emociones negativas/críticas
+        const [registros] = await db.query(`
+            SELECT e.categoria
+            FROM Registro_Emocion re
+            JOIN Emocion e ON re.id_emocion = e.id_emocion
+            WHERE re.id_usuario = ?
+            ORDER BY re.fecha_registro ASC
+            LIMIT 10
+        `, [idUsuario]);
+
+        let diasConsecutivos = 0;
+        for (const r of registros) {
+            if (r.categoria === "negativa" || r.categoria === "critica") {
+                diasConsecutivos++;
+            } else {
+                break;
+            }
+        }
+
+        const response = await axios.post(`${PYTHON_URL}/frases/obtener`, {
+            clasificacion: categoria,
+            nivel: nivel,
+            dias_consecutivos: diasConsecutivos,
+        });
+
+        return response.data; // { frase, tipo, mostrar_alerta }
+    } catch (error) {
+        console.error("Error al consultar sistema experto de frases:", error.message);
+        return null;
+    }
+}
+
 /* ===================================================
  --------------- FRASES ADMINISTRADOR ----------------
 =================================================== */
 export const obtenerTipDiarioBienvenida = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const hoy = new Date().toISOString().split("T")[0];
+        const hoy = getFechaHoy()
 
         // El cron ya lo generó, solo lo retornamos
         const tip = await TipDiario.getByFecha(hoy, idUsuario);
@@ -52,13 +126,7 @@ export const obtenerEmociones = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
 
-        // Emociones globales (predeterminadas) + las personalizadas del usuario
-        const [emociones] = await db.query(`
-            SELECT id_emocion, nombre_emocion, categoria
-            FROM Emocion
-            WHERE id_usuario IS NULL OR id_usuario = ?
-            ORDER BY id_emocion ASC
-        `, [idUsuario]);
+        const emociones = await Emocion.getByUsuario(idUsuario);
 
         res.json({ emociones });
     } catch (error) {
@@ -73,34 +141,49 @@ export const obtenerEmociones = async (req, res) => {
 export const agregarEmocionPersonalizada = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const { nombre_emocion } = req.body;
+        const { nombre_emocion, categoria, nivel = "medio" } = req.body;
 
         if (!nombre_emocion || nombre_emocion.trim() === "") {
             return res.status(400).json({ mensaje: "El nombre de la emoción es obligatorio" });
         }
 
-        const nombreNorm = nombre_emocion.trim().toLowerCase();
+        const CATEGORIAS_VALIDAS = ["positiva", "negativa", "neutra"];
+        if (!categoria || !CATEGORIAS_VALIDAS.includes(categoria)) {
+            return res.status(400).json({
+                mensaje: "Debes indicar si la emoción es positiva, negativa o neutra"
+            });
+        }
+
+        const nombreNorm = normalizarTexto(nombre_emocion);
 
         if (nombreNorm.length > 100) {
-            return res.status(400).json({ mensaje: "El nombre de la emoción no puede superar 100 caracteres" });
+            return res.status(400).json({
+                mensaje: "El nombre no puede superar 100 caracteres"
+            });
         }
 
-        // Verificar que no exista ya (global o del usuario)
-        const [existe] = await db.query(`
-            SELECT id_emocion FROM Emocion
-            WHERE LOWER(nombre_emocion) = ? AND (id_usuario IS NULL OR id_usuario = ?)
-        `, [nombreNorm, idUsuario]);
+        // Nueva validación (reemplaza la anterior)
+        const [todasEmociones] = await db.query(`
+            SELECT nombre_emocion FROM Emocion
+            WHERE id_usuario IS NULL OR id_usuario = ?
+        `, [idUsuario]);
 
-        if (existe.length > 0) {
-            return res.status(400).json({ mensaje: "Esta emoción ya existe en tu lista" });
+        const stemNueva = stemearTexto(nombre_emocion);
+
+        const yaExiste = todasEmociones.some(e =>
+            stemearTexto(e.nombre_emocion) === stemNueva
+        );
+
+        if (yaExiste) {
+            return res.status(400).json({
+                mensaje: "Esta emoción ya existe en tu lista"
+            });
         }
-
-        // SISTEMA EXPERTO: Inferir categoría automáticamente
-        const categoria = inferirCategoriaEmocion(nombreNorm);
 
         const emocion = new Emocion({
             nombre_emocion: nombre_emocion.trim(),
             categoria,
+            nivel,
             id_usuario: idUsuario
         });
 
@@ -111,9 +194,11 @@ export const agregarEmocionPersonalizada = async (req, res) => {
             emocion: {
                 id_emocion: result.insertId,
                 nombre_emocion: nombre_emocion.trim(),
-                categoria
+                categoria,
+                nivel,
             }
         });
+
     } catch (error) {
         console.error("Error al agregar emoción:", error);
         res.status(500).json({ mensaje: "Error al agregar la emoción" });
@@ -126,25 +211,23 @@ export const agregarEmocionPersonalizada = async (req, res) => {
 export const registrarEmocion = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const { id_emocion } = req.body;
+        const { id_emocion, nivel = "medio" } = req.body; // ← nivel viene del body
 
         if (!id_emocion) {
             return res.status(400).json({ mensaje: "Debes seleccionar una emoción" });
         }
 
-        const hoy = new Date().toISOString().split("T")[0];
+        const hoy = getFechaHoy();
 
-        // Verificar si ya registró hoy
         const [yaRegistro] = await db.query(`
             SELECT id_registro FROM Registro_Emocion
-            WHERE id_usuario = ? AND fecha_registro = ?
+            WHERE id_usuario = ? AND DATE(fecha_registro) = ?
         `, [idUsuario, hoy]);
 
         if (yaRegistro.length > 0) {
             return res.status(400).json({ mensaje: "Ya registraste tu emoción del día" });
         }
 
-        // Verificar que la emoción existe y pertenece al usuario o es global
         const [emocionExiste] = await db.query(`
             SELECT id_emocion, nombre_emocion, categoria FROM Emocion
             WHERE id_emocion = ? AND (id_usuario IS NULL OR id_usuario = ?)
@@ -156,18 +239,16 @@ export const registrarEmocion = async (req, res) => {
 
         const emocion = emocionExiste[0];
 
-        // Guardar el registro
         const registro = new RegistroEmocion({
-            fecha_registro: hoy,
+            fecha_registro: getFechaHoraActual(),
             id_emocion,
-            id_usuario: idUsuario
+            id_usuario: idUsuario,
+            nivel, // ← guardado en Registro_Emocion
         });
         await registro.save();
 
-        // SISTEMA EXPERTO: Evaluar si se genera alerta
         const alertaData = await evaluarAlertaEmocional(idUsuario);
         if (alertaData) {
-            // Verificar que no exista ya una alerta del mismo tipo hoy
             const [alertaExiste] = await db.query(`
                 SELECT id_alerta FROM Alerta_Emocional
                 WHERE id_usuario = ? AND fecha_alerta = ? AND tipo = ?
@@ -199,47 +280,116 @@ export const registrarEmocion = async (req, res) => {
 };
 
 /* ====================================================
-  -------------- TIP / FRASE DEL DÍA -----------------
-  =====================================================
-  Regla del sistema experto:
-  - Si el usuario ya registró emoción hoy → frase según categoria
-  - Si no registró → frase neutra motivacional
-  - Las emociones personalizadas ya tienen categoría inferida
-======================================================*/
-export const obtenerTipDiario = async (req, res) => {
+  ------------ REGISTRAR EMOCIÓN EXISTENTE ------------
+  Solo registra el día, no crea nueva emoción
+  =====================================================*/
+export const registrarEmocionDia = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const hoy = new Date().toISOString().split("T")[0];
+        const { id_emocion, nivel = "medio" } = req.body;
 
-        // Buscar el registro de hoy
-        const [registro] = await db.query(`
-            SELECT e.categoria
-            FROM Registro_Emocion re
-            JOIN Emocion e ON re.id_emocion = e.id_emocion
-            WHERE re.id_usuario = ? AND re.fecha_registro = ?
-        `, [idUsuario, hoy]);
-
-        let categoria = "neutra";
-        if (registro.length > 0) {
-            categoria = registro[0].categoria;
-            // Las críticas reciben frases positivas/motivacionales (no negativas)
-            if (categoria === "critica") categoria = "positiva";
+        if (!id_emocion) {
+            return res.status(400).json({ mensaje: "Debes seleccionar una emoción." });
         }
 
-        // Obtener frase random de esa categoría
-        const [frases] = await db.query(
-            "SELECT frase FROM Frase WHERE categoria = ? ORDER BY RAND() LIMIT 1",
-            [categoria]
+        const hoy = getFechaHoy();
+
+        const [yaRegistro] = await db.query(`
+            SELECT id_registro FROM Registro_Emocion
+            WHERE id_usuario = ? AND DATE(fecha_registro) = ?
+        `, [idUsuario, hoy]);
+
+        if (yaRegistro.length > 0) {
+            return res.status(400).json({ mensaje: "Ya registraste tu emoción del día." });
+        }
+
+        const [emocionExiste] = await db.query(`
+            SELECT id_emocion, nombre_emocion, categoria FROM Emocion  /* ← eliminado nivel del SELECT */
+            WHERE id_emocion = ? AND (id_usuario IS NULL OR id_usuario = ?)
+        `, [id_emocion, idUsuario]);
+
+        if (emocionExiste.length === 0) {
+            return res.status(404).json({ mensaje: "Emoción no válida." });
+        }
+
+        const emocion = emocionExiste[0];
+        // nivel ya no se hereda de Emocion; viene del body con default "medio"
+
+        const fraseData = await obtenerFraseSistemaExperto(
+            idUsuario,
+            emocion.categoria,
+            nivel // ← usa el nivel del registro, no de la emoción
         );
 
-        const texto = frases.length > 0
-            ? frases[0].frase
-            : "Cada día es una oportunidad para crecer. ¡Tú puedes!";
+        const registro = new RegistroEmocion({
+            fecha_registro: getFechaHoraActual(),
+            id_emocion,
+            id_usuario: idUsuario,
+            nivel, // ← guardado en Registro_Emocion
+            frase_dia: fraseData?.frase ?? null,
+        });
+        await registro.save();
 
-        res.json({ texto, categoria, registroHoy: registro.length > 0 });
+        const alertaData = await evaluarAlertaEmocional(idUsuario);
+        if (alertaData) {
+            const [alertaExiste] = await db.query(`
+                SELECT id_alerta FROM Alerta_Emocional
+                WHERE id_usuario = ? AND fecha_alerta = ? AND tipo = ?
+            `, [idUsuario, hoy, alertaData.tipo]);
+
+            if (alertaExiste.length === 0) {
+                const alerta = new AlertaEmocional({
+                    fecha_alerta: hoy,
+                    tipo: alertaData.tipo,
+                    mensaje: alertaData.mensaje,
+                    id_usuario: idUsuario,
+                });
+                await alerta.save();
+            }
+        }
+
+        res.status(201).json({
+            mensaje: "Emoción registrada correctamente.",
+            emocion: {
+                id_emocion: emocion.id_emocion,
+                nombre: emocion.nombre_emocion,
+                categoria: emocion.categoria,
+            },
+            alerta: alertaData ? alertaData.tipo : null,
+            frase: fraseData?.frase ?? null,
+            mostrar_alerta_frase: fraseData?.mostrar_alerta ?? false,
+        });
+
     } catch (error) {
-        console.error("Error al obtener tip diario:", error);
-        res.status(500).json({ mensaje: "Error al obtener el tip diario" });
+        console.error("Error al registrar emoción del día:", error);
+        res.status(500).json({ mensaje: "Error al registrar la emoción." });
+    }
+};
+
+/* ====================================================
+  ----------- FRASE DEL DÍA (post-registro) -----------
+======================================================*/
+export const obtenerFraseHoy = async (req, res) => {
+    try {
+        const idUsuario = req.usuario.id;
+        const hoy = getFechaHoy();
+
+        const [registro] = await db.query(`
+            SELECT frase_dia
+            FROM Registro_Emocion
+            WHERE id_usuario = ? AND DATE(fecha_registro) = ?
+            LIMIT 1
+        `, [idUsuario, hoy]);
+
+        if (registro.length === 0 || !registro[0].frase_dia) {
+            return res.json({ frase: null });
+        }
+
+        res.json({ frase: registro[0].frase_dia });
+
+    } catch (error) {
+        console.error("Error al obtener frase del día:", error);
+        res.status(500).json({ mensaje: "Error al obtener la frase del día." });
     }
 };
 
@@ -254,6 +404,7 @@ export const obtenerEmocionesPredomnantes = async (req, res) => {
             SELECT 
                 e.nombre_emocion,
                 e.categoria,
+                re.nivel,                              /* ← nivel de Registro_Emocion */
                 COUNT(*) as total,
                 ROUND(COUNT(*) * 100.0 / (
                     SELECT COUNT(*) FROM Registro_Emocion WHERE id_usuario = ?
@@ -261,7 +412,7 @@ export const obtenerEmocionesPredomnantes = async (req, res) => {
             FROM Registro_Emocion re
             JOIN Emocion e ON re.id_emocion = e.id_emocion
             WHERE re.id_usuario = ?
-            GROUP BY e.id_emocion, e.nombre_emocion, e.categoria
+            GROUP BY e.id_emocion, e.nombre_emocion, e.categoria, re.nivel  /* ← re.nivel en GROUP BY */
             ORDER BY total DESC
             LIMIT 3
         `, [idUsuario, idUsuario]);
@@ -320,20 +471,21 @@ export const marcarAlertaVista = async (req, res) => {
 export const verificarRegistroHoy = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const hoy = new Date().toISOString().split("T")[0];
+        const hoy = getFechaHoy();
 
         const [registro] = await db.query(`
-            SELECT re.id_registro, e.nombre_emocion, e.categoria
+            SELECT re.id_registro, e.nombre_emocion, e.categoria, re.nivel  /* ← re.nivel */
             FROM Registro_Emocion re
             JOIN Emocion e ON re.id_emocion = e.id_emocion
-            WHERE re.id_usuario = ? AND re.fecha_registro = ?
+            WHERE re.id_usuario = ? AND DATE(re.fecha_registro) = ?
         `, [idUsuario, hoy]);
 
         if (registro.length > 0) {
             return res.json({
                 registrado: true,
                 emocion: registro[0].nombre_emocion,
-                categoria: registro[0].categoria
+                categoria: registro[0].categoria,
+                nivel: registro[0].nivel  // ← ya viene de re.nivel
             });
         }
 
@@ -353,13 +505,13 @@ export const obtenerHistorialEmocional = async (req, res) => {
 
         const [historial] = await db.query(`
             SELECT 
-                re.fecha_registro,
+                DATE_FORMAT(re.fecha_registro, '%Y-%m-%d') AS fecha_registro,
                 e.nombre_emocion,
-                e.categoria
+                e.categoria,
+                re.nivel                               /* ← re.nivel */
             FROM Registro_Emocion re
             JOIN Emocion e ON re.id_emocion = e.id_emocion
             WHERE re.id_usuario = ?
-              AND re.fecha_registro >= DATE_SUB(CURDATE(), INTERVAL 7 DAY)
             ORDER BY re.fecha_registro ASC
         `, [idUsuario]);
 
@@ -370,3 +522,35 @@ export const obtenerHistorialEmocional = async (req, res) => {
     }
 };
 
+/* ====================================================
+  ----------- SISTEMA EXPERTO: EVALUAR ALERTA ---------
+======================================================*/
+async function evaluarAlertaEmocional(idUsuario) {
+    const [registros] = await db.query(`
+        SELECT e.categoria, re.nivel           /* ← re.nivel incluido */
+        FROM Registro_Emocion re
+        JOIN Emocion e ON re.id_emocion = e.id_emocion
+        WHERE re.id_usuario = ?
+        ORDER BY re.fecha_registro DESC
+        LIMIT 3
+    `, [idUsuario]);
+
+    if (registros.length < 3) return null;
+
+    const todasDificiles = registros.every(
+        r => r.categoria === "negativa" || r.categoria === "critica"
+    );
+
+    if (todasDificiles) {
+        // Alerta más urgente si además el nivel es "alto" en todos los registros
+        const todasAltas = registros.every(r => r.nivel === "alto");
+        return {
+            tipo: "consecutivas_negativas",
+            mensaje: todasAltas
+                ? "Has registrado emociones difíciles de alta intensidad varios días seguidos. Te recomendamos hablar con un especialista de bienestar."
+                : "Has registrado emociones difíciles varios días seguidos. Te recomendamos hablar con un especialista de bienestar.",
+        };
+    }
+
+    return null;
+}

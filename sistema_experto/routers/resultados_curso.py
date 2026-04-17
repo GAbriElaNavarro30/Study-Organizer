@@ -41,5 +41,3 @@ def evaluar_curso(data: ResultadoInput):
         return resultado
     except RuntimeError as e:
         raise HTTPException(status_code=500, detail=str(e))
-
-

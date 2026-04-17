@@ -355,7 +355,7 @@ export function MetodosEstudioResultado() {
                 </div>
                 <h2 className="mer-card-title">Áreas de oportunidad</h2>
                 <p className="mer-card-text mer-card-text--spaced-lg">
-                  El sistema experto identificó los siguientes aspectos que podrías trabajar para mejorar tus hábitos:
+                  El sistema identificó los siguientes aspectos erróneos que debes trabajar para mejorar tus hábitos:
                 </p>
                 <div className="mer-errores-grid">
                   {errores_detectados.map((e, i) => (

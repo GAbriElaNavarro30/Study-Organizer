@@ -6,17 +6,21 @@ export class RegistroEmocion {
         fecha_registro,
         id_emocion,
         id_usuario,
+        nivel = "medio",
+        frase_dia = null,
     }) {
         this.fecha_registro = fecha_registro;
         this.id_emocion = id_emocion;
         this.id_usuario = id_usuario;
+        this.nivel = nivel;
+        this.frase_dia = frase_dia;
     }
 
     async save() {
         return await db.query(
-            `INSERT INTO Registro_Emocion (fecha_registro, id_emocion, id_usuario)
-            VALUES (?, ?, ?)`,
-            [this.fecha_registro, this.id_emocion, this.id_usuario]
+            `INSERT INTO Registro_Emocion (fecha_registro, id_emocion, id_usuario, nivel, frase_dia)
+             VALUES (?, ?, ?, ?, ?)`,
+            [this.fecha_registro, this.id_emocion, this.id_usuario, this.nivel, this.frase_dia]
         );
     }
 
@@ -25,6 +29,8 @@ export class RegistroEmocion {
             SELECT 
                 re.id_registro,
                 re.fecha_registro,
+                re.nivel,
+                re.frase_dia,
                 re.id_usuario,
                 e.nombre_emocion,
                 e.categoria
@@ -47,6 +53,8 @@ export class RegistroEmocion {
             SELECT 
                 re.id_registro,
                 re.fecha_registro,
+                re.nivel,
+                re.frase_dia,
                 e.nombre_emocion,
                 e.categoria
             FROM Registro_Emocion re
@@ -59,7 +67,7 @@ export class RegistroEmocion {
 
     static async getByFecha(id_usuario, fecha) {
         const [rows] = await db.query(
-            "SELECT * FROM Registro_Emocion WHERE id_usuario = ? AND fecha_registro = ?",
+            "SELECT * FROM Registro_Emocion WHERE id_usuario = ? AND DATE(fecha_registro) = ?",
             [id_usuario, fecha]
         );
         return rows[0];

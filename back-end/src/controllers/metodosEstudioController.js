@@ -269,3 +269,48 @@ export async function obtenerHistorial(req, res) {
     res.status(500).json({ error: "Error al obtener historial" });
   }
 }
+
+/* ══════════════════════════════════════════════════════
+   Obtener el último resultado del usuario
+══════════════════════════════════════════════════════ */
+export async function obtenerUltimoResultado(req, res) {
+  try {
+    const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
+
+    // 1. Buscar el intento más reciente
+    const [intentos] = await db.query(
+      `SELECT id_intento, fecha_intento 
+       FROM Intento_Test 
+       WHERE id_usuario = ? AND tipo_test = 'metodos_estudio'
+       ORDER BY fecha_intento DESC LIMIT 1`,
+      [id_usuario]
+    );
+
+    if (intentos.length === 0) return res.status(404).json({ error: "Sin resultados" });
+
+    const { id_intento, fecha_intento } = intentos[0];
+
+    // 2. Traer resultados por dimensión directo de la BD
+    const dimensiones = await ResultadoME.getByIntento(id_intento);
+
+    // 3. Calcular puntaje global y nivel
+    const puntaje_global = dimensiones.reduce((sum, d) => sum + d.puntaje_obtenido, 0) / dimensiones.length;
+    const { nivel_global } = calcularGlobal(dimensiones.map(d => ({ puntaje: d.puntaje_obtenido })));
+
+    res.json({
+      id_intento,
+      fecha_intento,
+      puntaje_global: Math.floor(puntaje_global * 100) / 100,
+      nivel_global,
+      resultados_por_dimension: dimensiones.map(d => ({
+        id_dimension: d.id_dimension,
+        nombre_dimension: d.nombre_dimension,
+        puntaje: d.puntaje_obtenido,
+      })),
+    });
+
+  } catch (err) {
+    console.error("Error al obtener último resultado ME:", err);
+    res.status(500).json({ error: "Error al obtener último resultado" });
+  }
+}

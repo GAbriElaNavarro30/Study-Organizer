@@ -219,6 +219,7 @@ export async function obtenerResultadoGuardado(req, res) {
         res.json({
             perfil_dominante: resultado.perfil_dominante,
             nombre_perfil: resultado.nombre_perfil,
+            fecha_intento: resultado.fecha_intento,
             puntajes: { v: resultado.puntaje_v, a: resultado.puntaje_a, r: resultado.puntaje_r, k: resultado.puntaje_k },
             porcentajes,
             recomendaciones,

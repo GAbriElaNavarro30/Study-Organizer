@@ -43,105 +43,125 @@ DIMENSIONES_INFO = {
 # Las preguntas negativas generan error cuando se contesta Frecuentemente(3) o Siempre(4)
 ERRORES_POR_PREGUNTA = {
     # ── Dimensión 1: Actitud ante el estudio ──
-    1:  "Estudias con frecuencia sin un objetivo claro para esa sesión, lo que reduce tu enfoque.",
-    2:  "Te distraes con facilidad; las interrupciones digitales afectan tu concentración habitualmente.",
-    3:  "Pocas veces conectas lo que estudias con tus metas personales, lo que disminuye tu motivación.",
-    4:  "Postergas el inicio del estudio con frecuencia, generando acumulación de pendientes.",
+    1:  "Estudias sin una meta definida, lo que disminuye tu motivación y dificulta encontrarle sentido a tus actividades.",
+    2:  "Te distraes con facilidad; las interrupciones digitales o del entorno afectan tu concentración habitualmente.",
+    3:  "Existe una desconexión entre lo que estudias y tus metas personales o profesionales, lo que puede reducir tu interés y compromiso.",
+    4:  "Tiendes a evitar iniciar el estudio, generando acumulación de pendientes.",
 
     # ── Dimensión 2: Lugar de estudio ──
-    5:  "Tu espacio de estudio tiene distracciones que reducen tu rendimiento.",
+    5:  "No cuentas con un espacio fijo, ordenado y libre de ruido para estudiar, lo que afecta tu concentración.",
     6:  "Estudias frecuentemente en ambientes ruidosos o con interrupciones que dificultan la concentración.",
-    7:  "No tienes un lugar fijo de estudio, lo que dificulta crear el hábito y mantener el enfoque.",
-    8:  "Tu espacio de estudio suele estar desorganizado, lo que afecta tu concentración.",
+    7:  "Tu espacio de estudio presenta deficiencias en iluminación y ventilación, lo cual afecta tu concentración..",
+    8:  "Cambias constantemente de lugar para estudiar sin establecer un espacio habitual, lo que afecta tu concentración.",
 
     # ── Dimensión 3: Estado físico y bienestar ──
-    9:  "Pocas veces duermes las horas suficientes antes de estudiar, lo que reduce tu retención.",
+    9:  "No duermes lo suficiente para rendir bien en tus estudios, lo que afecta tu concentración y desempeño académico.",
     10: "Estudias frecuentemente en estado de agotamiento, disminuyendo tu capacidad de aprendizaje.",
-    11: "Rara vez mantienes una alimentación adecuada durante épocas de exámenes.",
-    12: "No incorporas actividad física regularmente, lo que afecta tu concentración y energía.",
+    11: "No incorporas actividad física regularmente, lo que afecta tu concentración y energía.",
+    12: "Te alimentas de manera irregular o saltas comidas con frecuencia, lo que afecta tu energía y rendimiento académico.",
+    
 
     # ── Dimensión 4: Plan de trabajo ──
-    13: "Pocas veces planificas tu estudio con anticipación, lo que genera ineficiencia.",
-    14: "Dejas todo el estudio para el último momento con frecuencia, generando estrés.",
-    15: "Rara vez estableces metas específicas por sesión de estudio.",
-    16: "No revisas ni ajustas tu plan de estudio de forma regular.",
+    13: "No elaboras un plan o cronograma de estudio, lo que afecta tu organización y cumplimiento de actividades.",
+    14: "Estudias sin un orden definido, abordando temas al azar, generando estrés, lo que afecta tu organización y aprendizaje.",
+    15: "No divides el material de estudio en partes manejables ni estableces metas por sesión, lo que afecta tu organización y aprendizaje.",
+    16: "Sueles dejar el estudio para el día anterior, lo que puede generar estrés y afectar tu desempeño académico.",
 
     # ── Dimensión 5: Técnicas de estudio ──
-    17: "Pocas veces usas técnicas activas como mapas mentales o resúmenes propios.",
-    18: "Lees el material de forma pasiva con frecuencia, sin procesar activamente la información.",
-    19: "Rara vez te autoevalúas después de estudiar para verificar tu comprensión.",
-    20: "Memorizas mecánicamente con frecuencia sin comprender los conceptos, dificultando su aplicación.",
+    17: "Pocas veces usas técnicas activas como mapas mentales o resúmenes, lo que puede dificultar tu comprensión y retención de la información.",
+    18: "Tiendes a leer sin procesar activamente la información, lo que puede dificultar tu comprensión y retención del contenido.",
+    19: "No te autoevalúas ni realizas preguntas después de estudiar, lo que afecta tu comprensión y refuerzo del aprendizaje.",
+    20: "Memorizas sin comprender los conceptos, lo que afecta tu aprendizaje, genera estrés y dificulta la retención de la información.",
 
     # ── Dimensión 6: Preparación para exámenes ──
-    21: "Pocas veces comienzas a repasar con suficiente anticipación antes de los exámenes.",
-    22: "Experimentas ansiedad ante los exámenes con frecuencia, lo que bloquea tu desempeño.",
-    23: "Rara vez practicas con exámenes anteriores o preguntas de práctica.",
-    24: "Estudias solo los temas que crees que vendrán con frecuencia, dejando vacíos importantes.",
+    21: "Pocas veces comienzas a repasar con suficiente anticipación, lo que afecta tu preparación y genera estrés antes del examen.",
+    22: "Experimentas ansiedad ante los exámenes con frecuencia, lo que bloquea tu conocimiento y retención de información.",
+    23: "Rara vez revisas tus errores en evaluaciones anteriores, lo que puede impedir que identifiques áreas de mejora.",
+    24: "Te enfocas únicamente en los temas que crees que vendrán en el examen, lo que limita tu aprendizaje y preparación, dejando vacíos importantes.",
 
     # ── Dimensión 7: Trabajos académicos ──
-    25: "Pocas veces planificas tus trabajos con etapas y fechas internas.",
-    26: "Entregas trabajos con errores o incompletos con frecuencia por falta de planificación.",
-    27: "Rara vez revisas y corriges tu trabajo antes de entregarlo.",
-    28: "Copias o parafraseas sin comprender las fuentes con frecuencia, limitando tu aprendizaje.",
+    25: "No planificas tus trabajos con anticipación, lo que afecta tu organización y cumplimiento de entregas.",
+    26: "Entregas trabajos con errores o incompletos con frecuencia por falta de planificación y prioridad.",
+    27: "Rara vez revisas y corriges tu trabajo antes de entregarlo.No consultas fuentes confiables al elaborar tus trabajos, lo que afecta la calidad y validez de tu información.",
+    28: "Copias o parafraseas información sin comprenderla, limitando tu aprendizaje y afectando la calidad de tus trabajos.",
 
     # ── Dimensión 8: Gestión del tiempo ──
-    29: "Pocas veces priorizas tus tareas académicas de forma efectiva.",
-    30: "Pierdes tiempo en actividades no académicas con frecuencia cuando deberías estudiar.",
-    31: "Rara vez bloqueas tiempo en tu agenda exclusivamente para estudiar.",
-    32: "Sientes con frecuencia que el tiempo no te alcanza, lo que indica falta de planificación.",
+    29: "No distribuyes tu tiempo de forma equilibrada entre estudio, descanso y actividades personales, lo que afecta tu rendimiento y bienestar.",
+    30: "Pierdes tiempo en actividades no académicas cuando deberías estar estudiando, lo que afecta tu rendimiento en clase, exámenes o cumplimiento de tareas.",
+    31: "No estableces prioridades claras ni te enfocas en las tareas más importantes, lo que afecta tu organización y rendimiento.",
+    32: "Sientes que el tiempo no te alcanza para cubrir el material de estudio, lo que indica una posible falta de planificación, genera estrés y afecta tu rendimiento académico.",
 
     # ── Dimensión 9: Uso de recursos de aprendizaje ──
-    33: "Pocas veces combinas más de una fuente de estudio por tema.",
-    34: "Te limitas frecuentemente a los apuntes de clase sin buscar fuentes adicionales.",
-    35: "Rara vez exploras plataformas educativas complementarias para reforzar temas.",
-    36: "Dependes con frecuencia de un único recurso para estudiar, limitando tu aprendizaje.",
+    33: "No utilizas recursos adicionales para reforzar lo aprendido, lo que puede indicar un aprendizaje limitado y afectar tu comprensión y rendimiento académico.",
+    34: "Te limitas únicamente a los apuntes de clase sin buscar material complementario, lo que limita tu comprensión y aprendizaje.",
+    35: "No participas activamente en clases, foros o grupos de estudio, lo que puede indicar un aprendizaje pasivo y afectar tu comprensión y rendimiento académico.",
+    36: "Dependes con frecuencia de un único recurso para estudiar, limitando tu aprendizaje y preparación para exámenes o foros de discusión.",
 }
 
+
 RECOMENDACIONES_GENERALES = {
+
+    # ── Dimensión 1: Actitud ante el estudio ──
     1: [
-        "Establece un ritual de inicio de estudio: silencia notificaciones y usa apps como Forest o Focus To-Do.",
-        "Conecta el material de estudio con tus metas a largo plazo para mantener la motivación.",
+        "Define un objetivo claro antes de cada sesión de estudio (ej: 'entender el tema X').",
+        "Relaciona cada tema con una meta personal o profesional para aumentar tu motivación.",
         "Aplica la técnica Pomodoro: 25 minutos de estudio enfocado y 5 de descanso.",
     ],
+
+    # ── Dimensión 2: Lugar de estudio ──
     2: [
-        "Designa un espacio exclusivo para estudiar: mismo lugar, misma silla, mismo horario.",
-        "Asegúrate de que tu espacio tenga buena luz natural o iluminación blanca fría.",
-        "Ordena tu escritorio antes de comenzar; el orden externo favorece el orden mental.",
+        "Establece un lugar fijo para estudiar y úsalo siempre que sea posible.",
+        "Reduce distracciones: apaga la TV, silencia el celular y usa audífonos si es necesario.",
+        "Mejora la iluminación y ventilación de tu espacio para favorecer la concentración.",
     ],
+
+    # ── Dimensión 3: Estado físico y bienestar ──
     3: [
-        "Prioriza dormir 7-8 horas; la consolidación de la memoria ocurre durante el sueño.",
-        "Incorpora al menos 20 minutos de actividad física diaria para mejorar la concentración.",
-        "Mantén una alimentación regular con desayuno incluido en épocas de exámenes.",
+        "Duerme entre 7 y 8 horas diarias para mejorar tu concentración y memoria.",
+        "Evita estudiar cuando estés muy cansado; toma descansos antes de continuar.",
+        "Mantén horarios de comida regulares e incluye actividad física en tu rutina.",
     ],
+
+    # ── Dimensión 4: Plan de trabajo ──
     4: [
-        "Usa un planificador semanal dividiendo el material en bloques pequeños por día.",
-        "Establece metas específicas por sesión: 'hoy leo y resumo el capítulo 3'.",
-        "Revisa tu plan cada domingo y ajusta según el avance real de la semana.",
+        "Elabora un cronograma semanal distribuyendo los temas por día.",
+        "Divide el contenido en partes pequeñas y manejables por sesión.",
+        "Evita dejar todo al final comenzando con tareas pequeñas desde días antes.",
     ],
+
+    # ── Dimensión 5: Técnicas de estudio ──
     5: [
-        "Practica el método SQ3R: Survey, Question, Read, Recite, Review.",
-        "Elabora mapas conceptuales o mentales para conectar ideas clave.",
-        "Autoevalúate al finalizar cada sesión con preguntas sobre lo que acabas de estudiar.",
+        "Utiliza técnicas activas como resúmenes, mapas mentales o esquemas.",
+        "Toma notas mientras estudias para procesar mejor la información.",
+        "Realiza autoevaluaciones o preguntas después de cada sesión de estudio.",
     ],
+
+    # ── Dimensión 6: Preparación para exámenes ──
     6: [
-        "Comienza a repasar con 5-7 días de anticipación; distribuye el material por día.",
-        "Practica con exámenes anteriores o crea tus propias preguntas de práctica.",
-        "Aplica técnicas de respiración o mindfulness breve antes del examen para reducir la ansiedad.",
+        "Comienza a repasar con varios días de anticipación al examen.",
+        "Estudia todos los temas, no solo los que crees que vendrán.",
+        "Practica técnicas de respiración para controlar la ansiedad durante el examen.",
     ],
+
+    # ── Dimensión 7: Trabajos académicos ──
     7: [
-        "Divide los trabajos en etapas con fechas internas (investigar, redactar, revisar).",
-        "Usa el método PICO o similares para buscar fuentes académicas confiables.",
-        "Revisa y corrige tu trabajo al menos una vez antes de entregarlo.",
+        "Planifica tus trabajos con anticipación dividiéndolos en etapas.",
+        "Revisa y corrige tus trabajos antes de entregarlos.",
+        "Consulta fuentes confiables y asegúrate de comprender la información antes de usarla.",
     ],
+
+    # ── Dimensión 8: Gestión del tiempo ──
     8: [
-        "Registra cómo usas tu tiempo durante una semana para identificar dónde lo pierdes.",
-        "Prioriza las tareas usando la Matriz de Eisenhower (urgente/importante).",
-        "Bloquea en tu calendario las sesiones de estudio como compromisos inamovibles.",
+        "Establece prioridades claras y comienza por las tareas más importantes.",
+        "Reduce el tiempo en actividades no académicas durante tus horas de estudio.",
+        "Organiza tu tiempo equilibrando estudio, descanso y actividades personales.",
     ],
+
+    # ── Dimensión 9: Uso de recursos de aprendizaje ──
     9: [
-        "Combina al menos dos fuentes distintas por tema: libro de texto + video + artículo.",
-        "Explora plataformas como Khan Academy, Coursera o YouTube Edu para reforzar temas.",
-        "Únete o crea un grupo de estudio para contrastar comprensiones del material.",
+        "Complementa tus apuntes con videos, artículos o plataformas educativas.",
+        "Evita depender de una sola fuente; usa al menos dos recursos por tema.",
+        "Participa en clases o grupos de estudio para reforzar tu aprendizaje.",
     ],
 }
 

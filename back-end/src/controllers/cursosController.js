@@ -1439,3 +1439,41 @@ export const nivelesPorCurso = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al filtrar niveles por curso." });
     }
 };
+
+export const misCursosConResultados = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+
+        const [cursos] = await db.query(
+            `SELECT 
+                c.id_curso,
+                c.titulo,
+                c.foto,
+                ultimo.porcentaje AS puntaje,
+                ultimo.nivel
+             FROM Curso c
+             JOIN Inscripcion i ON i.id_curso = c.id_curso AND i.id_usuario = ?
+             LEFT JOIN (
+                 SELECT rc.porcentaje, rc.nivel, ic.id_inscripcion
+                 FROM Resultado_Curso rc
+                 JOIN Intento_Curso ic ON rc.id_intento = ic.id_intento
+                 WHERE rc.id_resultado = (
+                     SELECT rc2.id_resultado
+                     FROM Resultado_Curso rc2
+                     JOIN Intento_Curso ic2 ON rc2.id_intento = ic2.id_intento
+                     WHERE ic2.id_inscripcion = ic.id_inscripcion
+                     ORDER BY rc2.id_resultado DESC
+                     LIMIT 1
+                 )
+             ) ultimo ON ultimo.id_inscripcion = i.id_inscripcion
+             WHERE c.es_publicado = 1
+             ORDER BY c.titulo`,
+            [id_usuario]
+        );
+
+        res.json({ ok: true, cursos });
+    } catch (error) {
+        console.error("misCursosConResultados:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener cursos." });
+    }
+};
