@@ -13,7 +13,7 @@ import cursosRoutes from "../src/routes/cursos.js";
 import dashboardRoutes from "../src/routes/dashboard.js";
 
 import "../src/cron/recordatoriosCron.js";
-import "./cron/tipDiario.cron.js";
+//import "./cron/tipDiario.cron.js";
 
 const app = express(); // crea la app para recibir y responder http
 
