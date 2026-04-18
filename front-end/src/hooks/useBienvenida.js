@@ -4,30 +4,49 @@ import api from "../services/api";
 
 export function useBienvenida() {
     const { usuario, refrescarUsuario } = useContext(AuthContext);
-    const [frase, setFrase] = useState("");
-    const [cargandoFrase, setCargandoFrase] = useState(true);
 
-    const obtenerTipDiario = async () => {
-        try {
-            const res = await api.get("/dashboard/tip-diario");
-            setFrase(res.data.texto);
-        } catch (error) {
-            console.error("Error al obtener el tip diario:", error);
-            setFrase("La organización es el primer paso hacia el éxito.");
-        } finally {
-            setCargandoFrase(false);
-        }
-    };
+    const [datos, setDatos] = useState([]);
+    const [cargandoDashboard, setCargandoDashboard] = useState(false);
+    const [mesSeleccionado, setMesSeleccionado] = useState(0);
+    const [anioSeleccionado, setAnioSeleccionado] = useState(0);
+    const [aniosDisponibles, setAniosDisponibles] = useState([]);
 
     useEffect(() => {
         refrescarUsuario();
-        obtenerTipDiario();
         window.scrollTo(0, 0);
     }, []);
 
+    // Cargar datos del dashboard solo si el usuario es admin (id_rol === 1)
+    useEffect(() => {
+        if (usuario?.rol === 1) {
+            cargarDatos();
+        }
+    }, [usuario?.rol]);
+
+    const cargarDatos = async () => {
+        try {
+            setCargandoDashboard(true);
+            const resp = await api.get("/usuarios/registros-dashboard");
+            // resp.data = [{ mes, anio, genero, rol }, ...]
+            setDatos(resp.data);
+            const years = [...new Set(resp.data.map((r) => r.anio))].sort();
+            setAniosDisponibles(years);
+        } catch (error) {
+            console.error("Error al cargar dashboard:", error);
+        } finally {
+            setCargandoDashboard(false);
+        }
+    };
+
     return {
         usuario,
-        frase,
-        cargandoFrase,
+        datos,
+        cargandoDashboard,
+        mesSeleccionado,
+        setMesSeleccionado,
+        anioSeleccionado,
+        setAnioSeleccionado,
+        aniosDisponibles,
+        cargarDatos,
     };
 }

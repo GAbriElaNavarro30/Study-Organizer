@@ -698,3 +698,29 @@ export const recuperarConAlternativo = async (req, res) => {
         res.status(500).json({ mensaje: "Error al enviar el enlace de recuperación" });
     }
 };
+
+export const registrosDashboard = async (req, res) => {
+    try {
+        // Verificar que sea administrador (id_rol === 1)
+        if (req.usuario.id_rol !== 1) {
+            return res.status(403).json({ mensaje: "Acceso denegado" });
+        }
+
+        const [rows] = await db.query(`
+            SELECT
+                MONTH(u.fecha_creacion)  AS mes,
+                YEAR(u.fecha_creacion)   AS anio,
+                u.genero                 AS genero,
+                r.tipo_rol               AS rol
+            FROM Usuario u
+            JOIN Rol r ON u.id_rol = r.id_rol
+            WHERE u.fecha_creacion IS NOT NULL
+            ORDER BY u.fecha_creacion ASC
+        `);
+
+        res.json(rows);
+    } catch (error) {
+        console.error("Error en registrosDashboard:", error);
+        res.status(500).json({ mensaje: "Error al obtener registros del dashboard" });
+    }
+};

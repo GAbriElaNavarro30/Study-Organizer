@@ -7,7 +7,8 @@ import {
   obtenerUsuarios, altaUsuario, editarUsuario,
   buscarUsuarios, eliminarUsuario, actualizarPerfil,
   recuperarContrasena, resetearContrasena,
-  verificarCorreoAlternativo, recuperarConAlternativo
+  verificarCorreoAlternativo, recuperarConAlternativo,
+  registrosDashboard
 } from "../controllers/usuarioController.js";
 
 const storage = multer.memoryStorage();
@@ -42,5 +43,8 @@ router.post("/recuperar-contrasena", recuperarContrasena);
 router.post("/resetear-contrasena", resetearContrasena);
 router.post("/verificar-correo-alternativo", verificarCorreoAlternativo);
 router.post("/recuperar-con-alternativo", recuperarConAlternativo);
+
+// dashboard del administrador
+router.get("/registros-dashboard", verificarToken, registrosDashboard);
 
 export default router;

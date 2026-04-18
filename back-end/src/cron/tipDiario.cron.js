@@ -1,6 +1,6 @@
 // src/cron/tipDiario.cron.js
 
-import cron from "node-cron";
+/*import cron from "node-cron";
 import { db } from "../config/db.js";
 import dayjs from "dayjs";
 import utc from "dayjs/plugin/utc.js";
@@ -9,12 +9,14 @@ import timezone from "dayjs/plugin/timezone.js";
 dayjs.extend(utc);
 dayjs.extend(timezone);
 
-// ✅ Sin función wrapper, corre directo al importarse
 cron.schedule("0 0 * * *", async () => {
     try {
         const hoy = dayjs().tz("America/Mexico_City").format("YYYY-MM-DD");
 
-        const [totalResult] = await db.query(`SELECT COUNT(*) as total FROM Frase_Random`);
+        // Solo frases de tipo Administrador (para la vista /home)
+        const [totalResult] = await db.query(
+            `SELECT COUNT(*) as total FROM Frase WHERE tipo = 'Administrador'`
+        );
         const total = totalResult[0].total;
 
         const [usuarios] = await db.query(`SELECT id_usuario FROM Usuario`);
@@ -37,20 +39,22 @@ cron.schedule("0 0 * * *", async () => {
             let fraseDisponible;
 
             if (idsUsados.length >= total || idsUsados.length === 0) {
-                const [rand] = await db.query(`SELECT id_frase FROM Frase_Random ORDER BY RAND() LIMIT 1`);
+                const [rand] = await db.query(
+                    `SELECT id_frase FROM Frase WHERE tipo = 'Administrador' ORDER BY RAND() LIMIT 1`
+                );
                 fraseDisponible = rand[0];
             } else {
                 const placeholders = idsUsados.map(() => "?").join(",");
                 const [disponibles] = await db.query(
-                    `SELECT id_frase FROM Frase_Random WHERE id_frase NOT IN (${placeholders}) ORDER BY RAND() LIMIT 1`,
+                    `SELECT id_frase FROM Frase WHERE tipo = 'Administrador' AND id_frase NOT IN (${placeholders}) ORDER BY RAND() LIMIT 1`,
                     idsUsados
                 );
                 fraseDisponible = disponibles[0];
             }
 
             await db.query(
-                `INSERT INTO tip_diario (fecha, frase_id, id_usuario) VALUES (?, ?, ?)`,
-                [hoy, fraseDisponible.id_frase, idUsuario]
+                `INSERT INTO tip_diario (fecha, tipo_tip, frase_id, id_usuario) VALUES (?, ?, ?, ?)`,
+                [hoy, "aleatorio", fraseDisponible.id_frase, idUsuario]
             );
         }
 
@@ -59,4 +63,4 @@ cron.schedule("0 0 * * *", async () => {
     }
 }, { timezone: "America/Mexico_City" });
 
-console.log("Cron de frases diarias iniciado");
+console.log("Cron de frases diarias iniciado");*/

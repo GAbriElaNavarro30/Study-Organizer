@@ -12,7 +12,8 @@ import {
     verificarRegistroHoy,
     obtenerHistorialEmocional,
     registrarEmocionDia,
-    obtenerFraseHoy
+    obtenerFraseHoy,
+    obtenerFraseDiaria
 } from "../controllers/dashboardController.js";
 
 const router = Router();
@@ -35,6 +36,7 @@ router.get("/alertas", verificarToken, obtenerAlertas);
 router.patch("/alertas/:id/vista", verificarToken, marcarAlertaVista);
 
 router.get("/frase-hoy", verificarToken, obtenerFraseHoy);
+router.get("/tip-frase", verificarToken, obtenerFraseDiaria);
 
 export default router;
 

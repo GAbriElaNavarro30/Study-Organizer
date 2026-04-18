@@ -678,19 +678,35 @@
     border-radius: 999px;
     font-size: 12px;
     margin-top: 10px;
-    align-self: flex-start;  /* ← agrega esta línea */
+    align-self: flex-start;
+    /* ← agrega esta línea */
 }
 
-/* ═══════════════════════════════════════════════
-   TESTS
-═══════════════════════════════════════════════ */
-.tests-grid {
+/* ── LAYOUT TESTS ── */
+.tests-layout {
     display: grid;
     grid-template-columns: 1fr 1fr;
     gap: 14px;
-    margin-bottom: 20px;
+    align-items: start;
 }
 
+.tests-col-left {
+    display: flex;
+    flex-direction: column;
+    gap: 14px;
+}
+
+.tests-col-right {
+    display: flex;
+    flex-direction: column;
+}
+
+/* card que estira hasta llenar la columna derecha */
+.test-card--tall {
+    height: 100%;
+}
+
+/* ── CARDS ── */
 .test-card {
     background: var(--sky-50);
     border: 0.5px solid var(--sky-200);
@@ -705,58 +721,83 @@
     display: flex;
     align-items: center;
     gap: 7px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--sky-700);
+    font-size: 11px;
+    font-weight: 700;
+    color: var(--sky-500);
+    text-transform: uppercase;
+    letter-spacing: 0.06em;
+    padding-bottom: 10px;
+    border-bottom: 0.5px solid var(--sky-200);
     margin-bottom: 6px;
 }
 
 .test-resultado {
-    font-size: 17px;
-    font-weight: 500;
+    font-size: 18px;
+    font-weight: 600;
     color: var(--sky-800);
 }
 
 .test-fecha {
     font-size: 11px;
     color: var(--gray-400);
+    margin-bottom: 4px;
 }
 
 .test-sin {
     font-size: 13px;
     color: var(--gray-400);
+    padding: 16px 0;
+    text-align: center;
+}
+
+.test-global-wrap {
+    background: var(--white);
+    border: 0.5px solid var(--sky-200);
+    border-radius: var(--radius-md);
+    padding: 10px 12px;
+    margin: 4px 0 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.test-compat-label {
+    font-size: 11px;
+    color: var(--gray-400);
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.test-compat-pct {
+    font-size: 20px;
+    font-weight: 700;
+    color: var(--sky-600);
+    line-height: 1;
 }
 
 .test-barras {
     display: flex;
     flex-direction: column;
-    gap: 6px;
-    margin-top: 4px;
+    gap: 7px;
+    margin-top: 2px;
 }
 
 .test-barra-label {
     display: flex;
     justify-content: space-between;
     font-size: 11px;
-    color: var(--gray-400);
+    color: var(--gray-500);
     margin-bottom: 2px;
 }
 
-.test-compat-label {
-    font-size: 11px;
-    color: var(--gray-400);
-    margin-top: 6px;
+.test-barra-label span:last-child {
+    font-weight: 600;
+    color: var(--sky-600);
 }
 
-.test-compat-pct {
-    font-size: 11px;
-    color: var(--sky-500);
-    margin-top: 3px;
-}
-
-/* Barras genéricas */
+/* Barras */
 .barra-track {
-    height: 6px;
+    height: 5px;
     background: var(--sky-200);
     border-radius: 999px;
     overflow: hidden;
@@ -765,32 +806,36 @@
 .barra-fill {
     height: 100%;
     border-radius: 999px;
-    background: var(--sky-400);
-    transition: width 0.4s ease;
+    background: linear-gradient(90deg, var(--sky-400), var(--sky-600));
+    transition: width 0.5s ease;
 }
 
-/* ═══════════════════════════════════════════════
-   CURSOS
-═══════════════════════════════════════════════ */
-.cursos-section {
-    border-top: 0.5px solid var(--sky-100);
-    padding-top: 16px;
-}
-
-.cursos-header {
-    display: flex;
-    align-items: center;
-    gap: 7px;
-    font-size: 13px;
-    font-weight: 500;
-    color: var(--sky-700);
-    margin-bottom: 12px;
-}
-
+/* ── CURSOS (dentro del card izquierdo) ── */
 .cursos-list {
     display: flex;
     flex-direction: column;
-    gap: 12px;
+    gap: 10px;
+    max-height: 300px;
+    overflow-y: auto;
+    padding-right: 4px;
+}
+
+.cursos-list::-webkit-scrollbar {
+    width: 4px;
+}
+
+.cursos-list::-webkit-scrollbar-track {
+    background: var(--sky-100);
+    border-radius: 999px;
+}
+
+.cursos-list::-webkit-scrollbar-thumb {
+    background: var(--sky-300);
+    border-radius: 999px;
+}
+
+.cursos-list::-webkit-scrollbar-thumb:hover {
+    background: var(--sky-400);
 }
 
 .curso-row {
@@ -798,12 +843,13 @@
     grid-template-columns: 1fr auto auto;
     grid-template-rows: auto auto;
     column-gap: 10px;
-    row-gap: 4px;
+    row-gap: 6px;
     align-items: center;
 }
 
 .curso-nombre {
     font-size: 13px;
+    font-weight: 500;
     color: var(--gray-700);
     grid-column: 1;
     grid-row: 1;
@@ -811,19 +857,43 @@
 
 .curso-nivel {
     font-size: 11px;
-    padding: 2px 8px;
+    padding: 2px 9px;
     border-radius: 999px;
-    background: var(--sky-100);
-    color: var(--sky-700);
+    font-weight: 600;
     grid-column: 2;
     grid-row: 1;
     white-space: nowrap;
 }
 
-.curso-puntaje {
-    font-size: 13px;
-    font-weight: 500;
+.nivel-Excelente {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.nivel-Bueno {
+    background: #dbeafe;
+    color: #1d4ed8;
+}
+
+.nivel-Regular {
+    background: #fef9c3;
+    color: #ca8a04;
+}
+
+.nivel-Deficiente {
+    background: #fee2e2;
+    color: #dc2626;
+}
+
+.nivel-sin {
+    background: var(--sky-100);
     color: var(--sky-600);
+}
+
+.curso-puntaje {
+    font-size: 14px;
+    font-weight: 700;
+    color: var(--sky-700);
     grid-column: 3;
     grid-row: 1;
     text-align: right;
@@ -832,12 +902,19 @@
 
 .curso-max {
     font-size: 10px;
-    color: var(--sky-400);
+    color: var(--gray-400);
+    font-weight: 400;
 }
 
 .curso-barra {
     grid-column: 1 / -1;
     grid-row: 2;
+}
+
+@media (max-width: 600px) {
+    .tests-layout {
+        grid-template-columns: 1fr;
+    }
 }
 
 /* ═══════════════════════════════════════════════
@@ -1038,5 +1115,6 @@
     border-radius: 3px;
     display: inline-block;
     flex-shrink: 0;
-    border: 1px solid rgba(0, 0, 0, 0.12);  /* ← borde sutil */
+    border: 1px solid rgba(0, 0, 0, 0.12);
+    /* ← borde sutil */
 }

@@ -1,11 +1,10 @@
 // ============================== DASHBOARD CONTROLLER ==============================
 import axios from "axios";
 import { db } from "../config/db.js";
+import { Frase_Diaria } from "../models/Frase_Diaria.js";
 import { Emocion } from "../models/Emocion.js";
 import { RegistroEmocion } from "../models/RegistroEmocion.js";
 import { AlertaEmocional } from "../models/AlertaEmocional.js";
-import { TipDiario } from "../models/TipDiario.js";
-import { FraseRandom } from "../models/FraseRandom.js";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
@@ -86,27 +85,23 @@ async function obtenerFraseSistemaExperto(idUsuario, categoria, nivel) {
 export const obtenerTipDiarioBienvenida = async (req, res) => {
     try {
         const idUsuario = req.usuario.id;
-        const hoy = getFechaHoy()
+        const hoy = getFechaHoy();
 
-        // El cron ya lo generó, solo lo retornamos
         const tip = await TipDiario.getByFecha(hoy, idUsuario);
-
         if (tip) {
             return res.json({ texto: tip.frase });
         }
 
-        // Si el cron aún no corrió (ej. usuario nuevo registrado hoy)
-        // generamos el tip manualmente como fallback
-        const fraseElegida = await FraseRandom.getRandom();
-
+        // Fallback: usa frases de Administrador para /home
+        const fraseElegida = await Frase.getRandomAdmin(); // ← cambiado
         if (!fraseElegida) {
-            return res.json({ texto: "No hay frases disponibles aún" });
+            return res.json({ texto: null });
         }
 
         const nuevoTip = new TipDiario({
             fecha: hoy,
             frase_id: fraseElegida.id_frase,
-            id_usuario: idUsuario
+            id_usuario: idUsuario,
         });
 
         await nuevoTip.save();
@@ -554,3 +549,47 @@ async function evaluarAlertaEmocional(idUsuario) {
 
     return null;
 }
+
+
+/* ====================================================
+  ----------- TIP DIARIO DASHBOARD (solo lectura) -----
+  Solo frases de tipo Estudiante, sin INSERT
+  =====================================================*/
+export const obtenerFraseDiaria = async (req, res) => {
+    try {
+        const idUsuario = req.usuario.id;
+        const hoy = getFechaHoy();
+
+        // Buscar si ya existe una frase Estudiante para hoy
+        const [tipExistente] = await db.query(`
+            SELECT f.frase
+            FROM Tip_Diario td
+            JOIN Frase f ON td.frase_id = f.id_frase
+            WHERE td.id_usuario = ? AND td.fecha = ? AND f.tipo = 'Estudiante'
+            LIMIT 1
+        `, [idUsuario, hoy]);
+
+        if (tipExistente.length > 0) {
+            return res.json({ texto: tipExistente[0].frase });
+        }
+
+        // No existe, generar y guardar
+        const fraseElegida = await Frase.getRandom();
+        if (!fraseElegida) {
+            return res.json({ texto: null });
+        }
+
+        // ← Guarda para que sea la misma todo el día
+        await db.query(`
+            INSERT INTO Tip_Diario (fecha, frase_id, id_usuario)
+            VALUES (?, ?, ?)
+        `, [hoy, fraseElegida.id_frase, idUsuario]);
+
+        return res.json({ texto: fraseElegida.frase });
+
+    } catch (error) {
+        console.error("Error en tip diario dashboard:", error);
+        res.status(500).json({ mensaje: "Error al obtener el tip diario" });
+    }
+};
+

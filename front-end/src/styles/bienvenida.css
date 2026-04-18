@@ -168,7 +168,280 @@
     line-height: 1.4;
 }
 
-/* ================= TABLET ================= */
+/* =====================================================
+   ================= DASHBOARD ADMIN =================
+   ===================================================== */
+
+.adm-dashboard {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+}
+
+/* ---- Encabezado + filtros ---- */
+.adm-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 16px;
+}
+
+.adm-title {
+    margin: 0 0 4px;
+    font-size: 19px;
+    font-weight: 700;
+    color: #0d4d7a;
+}
+
+.adm-sub {
+    margin: 0;
+    font-size: 13px;
+    color: #64748b;
+}
+
+.adm-filters {
+    display: flex;
+    align-items: flex-end;
+    gap: 12px;
+    flex-wrap: wrap;
+}
+
+.adm-filter-group {
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.adm-filter-group label {
+    font-size: 11px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.04em;
+}
+
+.adm-filter-group select {
+    font-size: 13px;
+    padding: 7px 12px;
+    border-radius: 8px;
+    border: 0.5px solid #b0d4ee;
+    background: #ffffff;
+    color: #0f172a;
+    cursor: pointer;
+    outline: none;
+    min-width: 110px;
+}
+
+.adm-filter-group select:focus {
+    border-color: #3a7ebf;
+}
+
+.adm-refresh-btn {
+    padding: 7px 14px;
+    border: 0.5px solid #b0d4ee;
+    border-radius: 8px;
+    background: #ffffff;
+    color: #1a6fa8;
+    font-size: 13px;
+    cursor: pointer;
+    transition: background 0.15s;
+    align-self: flex-end;
+}
+
+.adm-refresh-btn:hover {
+    background: #ddeef8;
+}
+
+/* ---- Loading ---- */
+.adm-loading {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 24px 0;
+    color: #64748b;
+    font-size: 14px;
+}
+
+.adm-spinner {
+    width: 28px;
+    height: 28px;
+    border: 3px solid #ddeef8;
+    border-top-color: #3a7ebf;
+    border-radius: 50%;
+    animation: adm-spin 0.8s linear infinite;
+    flex-shrink: 0;
+}
+
+@keyframes adm-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* ---- KPI grid ---- */
+.adm-kpi-grid {
+    display: grid;
+    grid-template-columns: repeat(auto-fit, minmax(120px, 1fr));
+    gap: 12px;
+}
+
+.adm-kpi-card {
+    background: #ffffff;
+    border: 0.5px solid #c9e0f5;
+    border-radius: 14px;
+    padding: 16px 18px;
+    display: flex;
+    flex-direction: column;
+    gap: 4px;
+}
+
+.adm-kpi-card.adm-kpi-total {
+    background: #ddeef8;
+    border-color: #a8cceb;
+}
+
+.adm-kpi-label {
+    margin: 0;
+    font-size: 12px;
+    color: #64748b;
+    display: flex;
+    align-items: center;
+    gap: 6px;
+}
+
+.adm-dot {
+    display: inline-block;
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+}
+
+.adm-kpi-value {
+    margin: 0;
+    font-size: 26px;
+    font-weight: 700;
+    color: #0d4d7a;
+    line-height: 1.1;
+}
+
+.adm-kpi-pct {
+    margin: 0;
+    font-size: 12px;
+    color: #3b9ede;
+    font-weight: 500;
+}
+
+/* ---- Donas ---- */
+.adm-donuts-row {
+    display: grid;
+    grid-template-columns: 1fr 1fr;
+    gap: 16px;
+}
+
+.adm-chart-card {
+    background: #ffffff;
+    border: 0.5px solid #c9e0f5;
+    border-radius: 16px;
+    padding: 20px 22px;
+}
+
+.adm-card-title {
+    margin: 0 0 16px;
+    font-size: 12px;
+    font-weight: 600;
+    color: #64748b;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.adm-donut-wrap {
+    display: flex;
+    align-items: center;
+    gap: 20px;
+}
+
+.adm-donut-canvas-wrap {
+    position: relative;
+    width: 120px;
+    height: 120px;
+    flex-shrink: 0;
+}
+
+.adm-donut-center {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    justify-content: center;
+    pointer-events: none;
+}
+
+.adm-donut-total {
+    font-size: 22px;
+    font-weight: 700;
+    color: #0d4d7a;
+    line-height: 1;
+}
+
+.adm-donut-label {
+    font-size: 11px;
+    color: #94a3b8;
+}
+
+/* ---- Leyenda ---- */
+.adm-legend {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    flex: 1;
+}
+
+.adm-legend-item {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    font-size: 12px;
+    color: #64748b;
+}
+
+.adm-legend-sq {
+    width: 10px;
+    height: 10px;
+    border-radius: 2px;
+    flex-shrink: 0;
+}
+
+.adm-legend-text {
+    flex: 1;
+}
+
+.adm-legend-val {
+    font-weight: 600;
+    font-size: 13px;
+    color: #0d4d7a;
+}
+
+/* ---- Gráfica de línea ---- */
+.adm-line-wrap {
+    position: relative;
+    width: 100%;
+    height: 230px;
+}
+
+.adm-empty {
+    text-align: center;
+    color: #94a3b8;
+    font-size: 14px;
+    padding: 40px 0;
+    margin: 0;
+}
+
+/* =====================================================
+   ================= RESPONSIVE ====================
+   ===================================================== */
+
+/* ---- Tablet (768px) ---- */
 @media (max-width: 768px) {
     .bienvenida-container {
         padding: 20px;
@@ -199,9 +472,18 @@
     .inspiracion-overlay p {
         font-size: 20px;
     }
+
+    .adm-header {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .adm-donuts-row {
+        grid-template-columns: 1fr;
+    }
 }
 
-/* ================= MÓVIL (480px) ================= */
+/* ---- Móvil (480px) ---- */
 @media (max-width: 480px) {
     .bienvenida-container {
         padding: 16px 12px;
@@ -243,9 +525,35 @@
         font-size: 16px;
         max-width: 90%;
     }
+
+    .adm-kpi-grid {
+        grid-template-columns: repeat(auto-fit, minmax(110px, 1fr));
+    }
+
+    .adm-kpi-value {
+        font-size: 22px;
+    }
+
+    .adm-donut-canvas-wrap {
+        width: 96px;
+        height: 96px;
+    }
+
+    .adm-donut-total {
+        font-size: 18px;
+    }
+
+    .adm-filters {
+        flex-direction: column;
+        align-items: flex-start;
+    }
+
+    .adm-title {
+        font-size: 16px;
+    }
 }
 
-/* ================= MÓVIL PEQUEÑO (360px) ================= */
+/* ---- Móvil pequeño (360px) ---- */
 @media (max-width: 360px) {
     .perfil-foto-ring {
         width: 76px;

@@ -14,7 +14,7 @@ export function MenuInterno() {
     // MENÚS SEGÚN ROL
     const menusPorRol = {
         1: [ // ADMIN
-            { to: "/home", label: "Bienvenida" },
+            { to: "/home", label: "Dashboard" },
             { to: "/crud", label: "Crud" },
             { to: "/perfil", label: "Perfil" },
         ],

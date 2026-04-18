@@ -19,6 +19,7 @@ import { AuthContext } from "../context/AuthContext";
 import "../styles/dashboard.css";
 import { ModalNuevaEmocion } from "../components/ModalNuevaEmocion";
 import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
+import { BannerApoyoEmocional } from "../components/BannerApoyoEmocional";
 
 /* ─── Paleta de colores para la dona ─── */
 const DONA_COLORES = [
@@ -37,9 +38,8 @@ const EMOCIONES_BASE = [
     { label: "Estresado/a", clasif: "negativa" },
 ];
 
-const CLASIFS = ["critica", "negativa", "neutra", "positiva"];
+const CLASIFS = ["negativa", "neutra", "positiva"];
 const CLASIF_LABELS = {
-    critica: "Crítica",
     negativa: "Negativa",
     neutra: "Neutra",
     positiva: "Positiva",
@@ -253,7 +253,7 @@ function VistaSemanal({ historial }) {
     const NIVEL_COLORES = {
         positiva: "#a8e6cf",
         negativa: "#ffd6e0",
-        critica: "#d4b8e0",
+        //critica: "#d4b8e0",
         neutra: "#fff5a0",
     };
 
@@ -385,6 +385,7 @@ export function Dashboard() {
     const [hoy, setHoy] = useState(
         new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" })
     );
+    const [tipBienvenida, setTipBienvenida] = useState(null);
 
     // ══ 2. DERIVACIONES (dependen de los estados) ══
     const emocionHoy = historial.find(h => h.fecha === hoy) || null;
@@ -563,6 +564,26 @@ export function Dashboard() {
         cargar();
     }, []);
 
+    // Función reutilizable fuera del useEffect
+    const cargarTipBienvenida = async () => {
+        try {
+            const res = await fetch("http://localhost:3000/dashboard/tip-frase", {
+                credentials: "include",
+            });
+            if (!res.ok) return;
+            const data = await res.json();
+            if (data.texto) setTipBienvenida(data.texto);
+        } catch (error) {
+            console.error("Error al cargar tip de bienvenida:", error);
+        }
+    };
+
+    // Reemplaza el useEffect del tip que ya tienes por este:
+    useEffect(() => {
+        cargarTipBienvenida();
+    }, []);
+
+    // Y el useEffect de medianoche queda así:
     useEffect(() => {
         const calcularMsHastaMedianoche = () => {
             const ahora = new Date();
@@ -577,7 +598,9 @@ export function Dashboard() {
             setEmocionSeleccionada(null);
             setPendienteRegistro(null);
             setModalVisible(true);
-            setFraseHoy(null);   // ← esta línea es la que borra la frase a medianoche
+            setFraseHoy(null);
+            setTipBienvenida(null);      // ← limpia la frase vieja
+            cargarTipBienvenida();       // ← carga la nueva del día siguiente
         }, calcularMsHastaMedianoche());
 
         return () => clearTimeout(timeout);
@@ -668,17 +691,16 @@ export function Dashboard() {
                 <div className="perfil-info">
                     <h2>Bienvenid@, {usuario?.nombre ?? "Sofía"} {usuario?.apellido ?? "Martínez"}</h2>
                     <span className="perfil-rol">{usuario?.rol_texto ?? "Estudiante"}</span>
-                    <p className="perfil-desc">{usuario?.descripcion ?? "Apasionada por el aprendizaje y el crecimiento personal."}</p>
+                    <p className="perfil-desc">{usuario?.descripcion ?? ""}</p>
                 </div>
             </section>
 
-            {/* ── FRASE ESTÁTICA (solo si no hay registro hoy) ── */}
-            {!emocionHoy && (
-                <section className="frase-estatica">
-                    <span className="frase-comilla">"</span>
-                    <p>Disfruta de tu experiencia con Study Organizer, un espacio diseñado para ti, con calma, organización y claridad.</p>
-                </section>
-            )}
+            <section className="frase-estatica">
+                <span className="frase-comilla">"</span>
+                <p>
+                    Disfruta de tu experiencia con Study Organizer, un espacio diseñado para ti, con calma, organización y claridad.
+                </p>
+            </section>
 
             {/* ── ALERTA ESPECIALISTA ── */}
             {mostrarAlerta && (
@@ -821,108 +843,117 @@ export function Dashboard() {
                     Resultados de evaluaciones
                 </h3>
 
-                <div className="tests-grid">
+                <div className="tests-layout">
 
-                    {/* ── VARK ── */}
-                    <div className="test-card">
-                        <div className="test-card-header">
-                            <IoGridOutline size={16} color="#0ea5e9" />
-                            <span>Test VARK</span>
-                        </div>
-                        {cargandoVark ? (
-                            <p className="test-sin">Cargando resultado...</p>
-                        ) : vark ? (
-                            <>
-                                <div className="test-resultado">{vark.resultado}</div>
-                                <div className="test-fecha">{vark.fecha}</div>
-                                <div className="test-barras">
-                                    {Object.entries(vark.detalle).map(([k, v]) => (
-                                        <div key={k}>
-                                            <div className="test-barra-label">
-                                                <span>{k.charAt(0).toUpperCase() + k.slice(1)}</span>
-                                                <span>{v}%</span>
-                                            </div>
-                                            <div className="barra-track">
-                                                <div className="barra-fill" style={{ width: `${v}%` }} />
-                                            </div>
-                                        </div>
-                                    ))}
-                                </div>
-                            </>
-                        ) : (
-                            <p className="test-sin">Sin realizar</p>
-                        )}
-                    </div>
+                    {/* ── COLUMNA IZQUIERDA: VARK + CURSOS ── */}
+                    <div className="tests-col-left">
 
-                    {/* ── MÉTODOS DE ESTUDIO ── */}
-                    <div className="test-card">
-                        <div className="test-card-header">
-                            <IoGridOutline size={16} color="#0ea5e9" />
-                            <span>Métodos de estudio</span>
-                        </div>
-                        {cargandoMe ? (
-                            <p className="test-sin">Cargando resultado...</p>
-                        ) : estudio ? (
-                            <>
-                                <div className="test-resultado">{estudio.resultado}</div>
-                                <div className="test-fecha">{estudio.fecha}</div>
-                                <div className="test-compat-label">Puntaje global</div>
-                                <div className="barra-track">
-                                    <div className="barra-fill" style={{ width: `${estudio.compatibilidad}%` }} />
-                                </div>
-                                <div className="test-compat-pct">{estudio.compatibilidad}%</div>
-                                {estudio.dimensiones?.length > 0 && (
+                        {/* VARK */}
+                        <div className="test-card">
+                            <div className="test-card-header">
+                                <IoGridOutline size={14} color="#0ea5e9" />
+                                <span>Test VARK</span>
+                            </div>
+                            {cargandoVark ? (
+                                <p className="test-sin">Cargando resultado...</p>
+                            ) : vark ? (
+                                <>
+                                    <div className="test-resultado">{vark.resultado}</div>
+                                    <div className="test-fecha">{vark.fecha}</div>
                                     <div className="test-barras">
-                                        {estudio.dimensiones.map((d) => (
-                                            <div key={d.id_dimension ?? d.nombre_dimension}>
+                                        {Object.entries(vark.detalle).map(([k, v]) => (
+                                            <div key={k}>
                                                 <div className="test-barra-label">
-                                                    <span>{d.nombre_dimension}</span>
-                                                    <span>{Math.round(d.puntaje)}%</span>
+                                                    <span>{k.charAt(0).toUpperCase() + k.slice(1)}</span>
+                                                    <span>{v}%</span>
                                                 </div>
                                                 <div className="barra-track">
-                                                    <div className="barra-fill" style={{ width: `${Math.round(d.puntaje)}%` }} />
+                                                    <div className="barra-fill" style={{ width: `${v}%` }} />
                                                 </div>
                                             </div>
                                         ))}
                                     </div>
+                                </>
+                            ) : (
+                                <p className="test-sin">Sin realizar</p>
+                            )}
+                        </div>
+
+                        {/* CURSOS */}
+                        <div className="test-card">
+                            <div className="test-card-header">
+                                <IoSchoolOutline size={14} color="#0ea5e9" />
+                                <span>Puntaje por curso</span>
+                            </div>
+                            <div className="cursos-list">
+                                {cursosEstudiante.length === 0 ? (
+                                    <p className="test-sin">No estás inscrito en ningún curso aún.</p>
+                                ) : (
+                                    cursosEstudiante.map((c) => (
+                                        <div key={c.id_curso} className="curso-row">
+                                            <span className="curso-nombre">{c.titulo}</span>
+                                            <span className={`curso-nivel nivel-${c.nivel ?? "sin"}`}>
+                                                {c.nivel ?? "Sin completar"}
+                                            </span>
+                                            <span className="curso-puntaje">
+                                                {c.puntaje != null
+                                                    ? <>{Math.round(c.puntaje)}<span className="curso-max">/100</span></>
+                                                    : <span className="curso-max">—</span>
+                                                }
+                                            </span>
+                                            <div className="barra-track curso-barra">
+                                                <div className="barra-fill" style={{ width: `${c.puntaje ?? 0}%` }} />
+                                            </div>
+                                        </div>
+                                    ))
                                 )}
-                            </>
-                        ) : (
-                            <p className="test-sin">Sin realizar</p>
-                        )}
+                            </div>
+                        </div>
+
                     </div>
 
-                </div>
-
-                {/* ── Cursos ── */}
-                <div className="cursos-section">
-                    <div className="cursos-header">
-                        <IoSchoolOutline size={16} color="#0ea5e9" />
-                        <span>Puntaje por curso</span>
-                    </div>
-                    <div className="cursos-list">
-                        {cursosEstudiante.length === 0 ? (
-                            <p className="test-sin">No estás inscrito en ningún curso aún.</p>
-                        ) : (
-                            cursosEstudiante.map((c) => (
-                                <div key={c.id_curso} className="curso-row">
-                                    <span className="curso-nombre">{c.titulo}</span>
-                                    <span className={`curso-nivel nivel-${c.nivel ?? "sin"}`}>
-                                        {c.nivel ?? "Sin completar"}
-                                    </span>
-                                    <span className="curso-puntaje">
-                                        {c.puntaje != null
-                                            ? <>{Math.round(c.puntaje)}<span className="curso-max">/100</span></>
-                                            : <span className="curso-max">—</span>
-                                        }
-                                    </span>
-                                    <div className="barra-track curso-barra">
-                                        <div className="barra-fill" style={{ width: `${c.puntaje ?? 0}%` }} />
+                    {/* ── COLUMNA DERECHA: MÉTODOS DE ESTUDIO ── */}
+                    <div className="tests-col-right">
+                        <div className="test-card test-card--tall">
+                            <div className="test-card-header">
+                                <IoGridOutline size={14} color="#0ea5e9" />
+                                <span>Métodos de estudio</span>
+                            </div>
+                            {cargandoMe ? (
+                                <p className="test-sin">Cargando resultado...</p>
+                            ) : estudio ? (
+                                <>
+                                    <div className="test-resultado">{estudio.resultado}</div>
+                                    <div className="test-fecha">{estudio.fecha}</div>
+                                    <div className="test-global-wrap">
+                                        <span className="test-compat-label">Puntaje global</span>
+                                        <span className="test-compat-pct">{estudio.compatibilidad}%</span>
+                                        <div className="barra-track">
+                                            <div className="barra-fill" style={{ width: `${estudio.compatibilidad}%` }} />
+                                        </div>
                                     </div>
-                                </div>
-                            ))
-                        )}
+                                    {estudio.dimensiones?.length > 0 && (
+                                        <div className="test-barras">
+                                            {estudio.dimensiones.map((d) => (
+                                                <div key={d.id_dimension ?? d.nombre_dimension}>
+                                                    <div className="test-barra-label">
+                                                        <span>{d.nombre_dimension}</span>
+                                                        <span>{Math.round(d.puntaje)}%</span>
+                                                    </div>
+                                                    <div className="barra-track">
+                                                        <div className="barra-fill" style={{ width: `${Math.round(d.puntaje)}%` }} />
+                                                    </div>
+                                                </div>
+                                            ))}
+                                        </div>
+                                    )}
+                                </>
+                            ) : (
+                                <p className="test-sin">Sin realizar</p>
+                            )}
+                        </div>
                     </div>
+
                 </div>
             </section>
 
@@ -934,9 +965,9 @@ export function Dashboard() {
                     <p>
                         {fraseHoy
                             ? `"${fraseHoy}"`
-                            : emocionHoy
-                                ? "Cargando frase del día..."
-                                : "Disfruta de tu experiencia con Study Organizer, un espacio diseñado para ti, con calma, organización y claridad."
+                            : tipBienvenida
+                                ? `"${tipBienvenida}"`
+                                : "Disfruta de tu experiencia con Study Organizer..."
                         }
                     </p>
                 </div>
@@ -946,6 +977,10 @@ export function Dashboard() {
                 visible={modalOtraVisible}
                 onClose={() => setModalOtraVisible(false)}
                 onGuardar={handleNuevaEmocionGuardada}
+            />
+
+            <BannerApoyoEmocional
+                visible={mostrarAlertaFrase}
             />
 
         </main>
