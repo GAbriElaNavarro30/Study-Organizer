@@ -5,21 +5,19 @@ import {
     IoBookOutline,
     IoGridOutline,
     IoSchoolOutline,
-    IoNotificationsOutline,
     IoWarningOutline,
     IoCheckmarkCircleOutline,
     IoAddOutline,
-    IoCloseOutline,
     IoTrendingUpOutline,
     IoLeafOutline,
     IoWaterOutline,
     IoFlameOutline,
+    IoSparklesOutline
 } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/dashboard.css";
 import { ModalNuevaEmocion } from "../components/ModalNuevaEmocion";
-import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
-import { BannerApoyoEmocional } from "../components/BannerApoyoEmocional";
+import { ModalAlertaEspecialista } from "../components/ModalAlertaEspecialista";
 
 /* ─── Paleta de colores para la dona ─── */
 const DONA_COLORES = [
@@ -28,17 +26,6 @@ const DONA_COLORES = [
     "#1e40af", "#e0f2fe",
 ];
 
-/* ─── Emociones base con clasificación ─── */
-const EMOCIONES_BASE = [
-    { label: "Tranquilo/a", clasif: "neutra" },
-    { label: "Feliz", clasif: "positiva" },
-    { label: "Motivado/a", clasif: "positiva" },
-    { label: "Ansioso/a", clasif: "negativa" },
-    { label: "Cansado/a", clasif: "negativa" },
-    { label: "Estresado/a", clasif: "negativa" },
-];
-
-const CLASIFS = ["negativa", "neutra", "positiva"];
 const CLASIF_LABELS = {
     negativa: "Negativa",
     neutra: "Neutra",
@@ -71,14 +58,19 @@ function DonaEmociones({ historial }) {
     const [filtroEmo, setFiltroEmo] = useState("");
     const [filtroMes, setFiltroMes] = useState("");
     const [filtroAnio, setFiltroAnio] = useState("");
+    const [filtroNivel, setFiltroNivel] = useState("");
+    const [filtroClasif, setFiltroClasif] = useState("");  // ← nuevo
 
     const aniosDisponibles = [...new Set(historial.map(h => new Date(h.fecha).getFullYear()))].sort();
+    const emocionesDisponibles = [...new Set(historial.map(h => h.emo))].sort();
 
     const datosFiltrados = historial.filter(h => {
         const d = new Date(h.fecha);
         if (filtroEmo && h.emo !== filtroEmo) return false;
         if (filtroMes !== "" && d.getMonth() !== Number(filtroMes)) return false;
         if (filtroAnio && d.getFullYear() !== Number(filtroAnio)) return false;
+        if (filtroNivel && h.nivel !== filtroNivel) return false;
+        if (filtroClasif && h.clasif !== filtroClasif) return false;  // ← nuevo
         return true;
     });
 
@@ -88,7 +80,7 @@ function DonaEmociones({ historial }) {
     const total = datosFiltrados.length;
     const dominante = entradas[0]?.[0] || "—";
     const positivas = datosFiltrados.filter(h => h.clasif === "positiva").length;
-    const dificiles = datosFiltrados.filter(h => h.clasif === "negativa" || h.clasif === "critica").length;
+    const dificiles = datosFiltrados.filter(h => h.clasif === "negativa").length;
 
     useEffect(() => {
         if (!canvasRef.current) return;
@@ -131,7 +123,7 @@ function DonaEmociones({ historial }) {
         });
 
         return () => { if (chartRef.current) chartRef.current.destroy(); };
-    }, [filtroEmo, filtroMes, filtroAnio, historial]);
+    }, [filtroEmo, filtroMes, filtroAnio, filtroNivel, filtroClasif, historial]);  // ← filtroClasif en deps
 
     return (
         <div className="dona-card">
@@ -145,16 +137,33 @@ function DonaEmociones({ historial }) {
             <div className="dona-filtros">
                 <select value={filtroEmo} onChange={e => setFiltroEmo(e.target.value)}>
                     <option value="">Todas las emociones</option>
-                    {EMOCIONES_BASE.map(em => (
-                        <option key={em.label}>{em.label}</option>
+                    {emocionesDisponibles.map(emo => (
+                        <option key={emo} value={emo}>{emo}</option>
                     ))}
                 </select>
+
+                <select value={filtroClasif} onChange={e => setFiltroClasif(e.target.value)}>
+                    <option value="">Todas las categorías</option>
+                    <option value="positiva">Positiva</option>
+                    <option value="neutra">Neutra</option>
+                    <option value="negativa">Negativa</option>
+                </select>
+
+                <select value={filtroNivel} onChange={e => setFiltroNivel(e.target.value)}>
+                    <option value="">Todos los niveles</option>
+                    <option value="bajo">Bajo</option>
+                    <option value="medio">Medio</option>
+                    <option value="alto">Alto</option>
+                     <option value="critico">Crítico</option>  
+                </select>
+
                 <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)}>
                     <option value="">Todos los meses</option>
                     {MESES.map((m, i) => (
                         <option key={i} value={i}>{m}</option>
                     ))}
                 </select>
+
                 <select value={filtroAnio} onChange={e => setFiltroAnio(e.target.value)}>
                     <option value="">Todos los años</option>
                     {aniosDisponibles.map(a => (
@@ -201,7 +210,8 @@ function DonaEmociones({ historial }) {
                                             />
                                         </div>
                                     </div>
-                                    <span className="dona-leg-count">{e[1]}</span>
+                                    {/* ← muestra conteo y porcentaje */}
+                                    <span className="dona-leg-count">{e[1]} <span className="dona-leg-pct">({pct}%)</span></span>
                                 </div>
                             );
                         })}
@@ -218,9 +228,16 @@ function DonaEmociones({ historial }) {
                     <span className="dona-kpi-label">Emoción dominante</span>
                     <span className="dona-kpi-val dona-kpi-val--sm">{dominante}</span>
                 </div>
+                {/* ← reemplaza el KPI anterior por este */}
                 <div className="dona-kpi-item">
-                    <span className="dona-kpi-label">Positivas / difíciles</span>
-                    <span className="dona-kpi-val dona-kpi-val--sm">{positivas} / {dificiles}</span>
+                    <span className="dona-kpi-label">Positivas / Neutras / Difíciles</span>
+                    <span className="dona-kpi-val dona-kpi-val--sm">
+                        {positivas} ({total ? Math.round(positivas / total * 100) : 0}%)
+                        {" · "}
+                        {datosFiltrados.filter(h => h.clasif === "neutra").length} ({total ? Math.round(datosFiltrados.filter(h => h.clasif === "neutra").length / total * 100) : 0}%)
+                        {" · "}
+                        {dificiles} ({total ? Math.round(dificiles / total * 100) : 0}%)
+                    </span>
                 </div>
             </div>
         </div>
@@ -249,11 +266,10 @@ function VistaSemanal({ historial }) {
         return { dia: diaLabel, fecha: key, reg };
     });
 
-    const nivelANum = { bajo: 1, medio: 2, alto: 3 };
+    const nivelANum = { bajo: 1, medio: 2, alto: 3, critico: 4 };
     const NIVEL_COLORES = {
         positiva: "#a8e6cf",
         negativa: "#ffd6e0",
-        //critica: "#d4b8e0",
         neutra: "#fff5a0",
     };
 
@@ -264,7 +280,7 @@ function VistaSemanal({ historial }) {
         const labels = ultimos7.map(d => d.dia);
         const valores = ultimos7.map(d => d.reg ? (nivelANum[d.reg.nivel] ?? 2) : 0);
         const colores = ultimos7.map(d =>
-            d.reg ? (NIVEL_COLORES[d.reg.clasif] ?? "#d4b8e0") : "#eff6ff"
+            d.reg ? (NIVEL_COLORES[d.reg.clasif] ?? "#e2e8f0") : "#eff6ff"
         );
 
         chartRef.current = new window.Chart(canvasRef.current, {
@@ -285,10 +301,10 @@ function VistaSemanal({ historial }) {
                 scales: {
                     y: {
                         min: 0,
-                        max: 3,
+                        max: 4,
                         ticks: {
                             stepSize: 1,
-                            callback: v => ["", "Bajo", "Medio", "Alto"][v] ?? "",
+                            callback: v => ["", "Bajo", "Medio", "Alto", "Crítico"][v] ?? "",
                             color: "#64748b",
                             font: { size: 11 },
                         },
@@ -308,7 +324,7 @@ function VistaSemanal({ historial }) {
                             label: ctx => {
                                 const d = ultimos7[ctx.dataIndex];
                                 if (!d.reg) return " Sin registro";
-                                const nivel = ["", "Bajo", "Medio", "Alto"][ctx.parsed.y] ?? "";
+                                const nivel = ["", "Bajo", "Medio", "Alto", "Crítico"][ctx.parsed.y] ?? "";
                                 return ` ${d.reg.emo} · ${nivel}`;
                             },
                         },
@@ -344,16 +360,13 @@ function VistaSemanal({ historial }) {
                     role="img"
                     aria-label="Gráfico de barras con intensidad emocional de los últimos 7 días"
                 >
-                    {ultimos7.map(d => d.reg ? `${d.dia}: ${d.reg.emo} (${d.reg.nivel})` : `${d.dia}: sin registro`).join(", ")}
+                    {ultimos7.map(d => d.reg
+                        ? `${d.dia}: ${d.reg.emo} (${d.reg.nivel})`
+                        : `${d.dia}: sin registro`
+                    ).join(", ")}
                 </canvas>
             </div>
 
-            {dom && (
-                <div className="semana-dominante">
-                    <IoTrendingUpOutline size={14} />
-                    Predomina esta semana: <strong>{dom[0]}</strong>
-                </div>
-            )}
         </div>
     );
 }
@@ -364,17 +377,12 @@ function VistaSemanal({ historial }) {
 export function Dashboard() {
     const { usuario, refrescarUsuario } = useContext(AuthContext);
 
-    // ══ 1. TODOS LOS USESTATE ══
+    // ══ 1. ESTADOS ══
     const [modalOtraVisible, setModalOtraVisible] = useState(false);
     const [pendienteRegistro, setPendienteRegistro] = useState(null);
     const [emociones, setEmociones] = useState([]);
     const [emocionSeleccionada, setEmocionSeleccionada] = useState(null);
-    const [mostrarInput, setMostrarInput] = useState(false);
-    const [emocionNueva, setEmocionNueva] = useState("");
-    const [selClasif, setSelClasif] = useState(null);
     const [historial, setHistorial] = useState([]);
-    const [modalVisible, setModalVisible] = useState(true);
-    const [frase, setFrase] = useState("");
     const [fraseHoy, setFraseHoy] = useState(null);
     const [mostrarAlertaFrase, setMostrarAlertaFrase] = useState(false);
     const [vark, setVark] = useState(null);
@@ -385,14 +393,14 @@ export function Dashboard() {
     const [hoy, setHoy] = useState(
         new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" })
     );
-    const [tipBienvenida, setTipBienvenida] = useState(null);
+    const [mostrarAlertaEspecialista, setMostrarAlertaEspecialista] = useState(false);
 
-    // ══ 2. DERIVACIONES (dependen de los estados) ══
+    // ══ 2. DERIVACIONES ══
     const emocionHoy = historial.find(h => h.fecha === hoy) || null;
 
     const mostrarAlerta = (() => {
         const sorted = [...historial].sort((a, b) => a.fecha > b.fecha ? -1 : 1).slice(0, 3);
-        return sorted.length >= 3 && sorted.every(h => h.clasif === "negativa" || h.clasif === "critica");
+        return sorted.length >= 3 && sorted.every(h => h.clasif === "negativa");
     })();
 
     // ══ 3. FUNCIONES ══
@@ -430,52 +438,25 @@ export function Dashboard() {
                 setMostrarAlertaFrase(data.mostrar_alerta_frase ?? false);
             }
 
+            if (data.mostrar_alerta_especialista) {
+                setMostrarAlertaEspecialista(true);
+            }
+
         } catch (error) {
             console.error("Error al registrar emoción:", error);
         }
     };
 
-    const confirmarRegistro_conNivel = async (id_emocion, label, clasif, nivel) => {
-        try {
-            const res = await fetch("http://localhost:3000/dashboard/emociones/registrar-dia", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_emocion, nivel }),
-            });
-            const data = await res.json();
-            if (!res.ok) { console.warn(data.mensaje); return; }
-            setHistorial(prev => [...prev, { fecha: hoy, emo: label, clasif, nivel }]);
-            setEmocionSeleccionada(label);
-            setModalVisible(false);
-            if (data.frase) {
-                setFraseHoy(data.frase);
-                setMostrarAlertaFrase(data.mostrar_alerta_frase ?? false);
-            }
-        } catch (error) {
-            console.error("Error:", error);
-        }
+    const handleNuevaEmocionGuardada = ({ label, clasif, id }) => {
+        setEmociones(prev => [...prev, { label, clasif, id_emocion: id }]);
+        setPendienteRegistro({ id_emocion: id, label, clasif });
+        setModalOtraVisible(false);
     };
 
-    const handleNuevaEmocionGuardada = ({ label, clasif, nivel, id }) => {
-        setEmociones(prev => [...prev, { label, clasif, nivel, id_emocion: id }]);
-        confirmarRegistro_conNivel(id, label, clasif, nivel);
-    };
-
-    const agregarEmocion = () => {
-        if (!emocionNueva.trim() || !selClasif) return;
-        const nueva = { label: emocionNueva.trim(), clasif: selClasif };
-        setEmociones(prev => [...prev, nueva]);
-        setEmocionNueva("");
-        setSelClasif(null);
-        setMostrarInput(false);
-    };
-
-    // ══ 4. TODOS LOS USEEFFECT ══
+    // ══ 4. EFECTOS ══
     useEffect(() => { refrescarUsuario(); }, []);
     useEffect(() => { window.scrollTo(0, 0); }, []);
 
-    // Reemplaza este useEffect:
     useEffect(() => {
         if (!emocionHoy) return;
         const cargarFrase = async () => {
@@ -485,15 +466,13 @@ export function Dashboard() {
                 });
                 if (!res.ok) return;
                 const data = await res.json();
-                if (data.frase) {
-                    setFraseHoy(data.frase);
-                }
+                if (data.frase) setFraseHoy(data.frase);
             } catch (error) {
                 console.error("Error al cargar frase del día:", error);
             }
         };
         cargarFrase();
-    }, [emocionHoy]); // ← aquí estaba el bug, tenía [hoy]
+    }, [emocionHoy]);
 
     useEffect(() => {
         const verificar = async () => {
@@ -511,7 +490,7 @@ export function Dashboard() {
                             fecha: hoy,
                             emo: data.emocion,
                             clasif: data.categoria,
-                            nivel: data.nivel   // ← ¿ya viene aquí? si no, agrégalo
+                            nivel: data.nivel,
                         }];
                     });
                 }
@@ -534,7 +513,7 @@ export function Dashboard() {
                     fecha: h.fecha_registro.slice(0, 10),
                     emo: h.nombre_emocion,
                     clasif: h.categoria,
-                    nivel: h.nivel ?? "medio",   // ← agregar el fallback
+                    nivel: h.nivel ?? "medio",
                 }));
                 setHistorial(normalizado);
             } catch (error) {
@@ -547,7 +526,7 @@ export function Dashboard() {
     useEffect(() => {
         const cargar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/emociones", {
+                const res = await fetch("http://localhost:3000/dashboard/obtener-emociones", {
                     credentials: "include",
                 });
                 if (!res.ok) return;
@@ -564,26 +543,6 @@ export function Dashboard() {
         cargar();
     }, []);
 
-    // Función reutilizable fuera del useEffect
-    const cargarTipBienvenida = async () => {
-        try {
-            const res = await fetch("http://localhost:3000/dashboard/tip-frase", {
-                credentials: "include",
-            });
-            if (!res.ok) return;
-            const data = await res.json();
-            if (data.texto) setTipBienvenida(data.texto);
-        } catch (error) {
-            console.error("Error al cargar tip de bienvenida:", error);
-        }
-    };
-
-    // Reemplaza el useEffect del tip que ya tienes por este:
-    useEffect(() => {
-        cargarTipBienvenida();
-    }, []);
-
-    // Y el useEffect de medianoche queda así:
     useEffect(() => {
         const calcularMsHastaMedianoche = () => {
             const ahora = new Date();
@@ -597,18 +556,11 @@ export function Dashboard() {
             setHoy(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" }));
             setEmocionSeleccionada(null);
             setPendienteRegistro(null);
-            setModalVisible(true);
             setFraseHoy(null);
-            setTipBienvenida(null);      // ← limpia la frase vieja
-            cargarTipBienvenida();       // ← carga la nueva del día siguiente
         }, calcularMsHastaMedianoche());
 
         return () => clearTimeout(timeout);
     }, [hoy]);
-
-    useEffect(() => {
-        if (emocionHoy) setModalVisible(false);
-    }, [emocionHoy]);
 
     useEffect(() => {
         const cargar = async () => {
@@ -702,17 +654,6 @@ export function Dashboard() {
                 </p>
             </section>
 
-            {/* ── ALERTA ESPECIALISTA ── */}
-            {mostrarAlerta && (
-                <div className="alerta-box">
-                    <IoWarningOutline size={20} color="#ea580c" style={{ flexShrink: 0, marginTop: 2 }} />
-                    <div>
-                        <p className="alerta-titulo">Se detectaron emociones difíciles consecutivas</p>
-                        <p className="alerta-body">Hemos notado que has registrado emociones negativas o críticas varios días seguidos. Te invitamos a hablar con un orientador o especialista de bienestar. Pedir ayuda es una señal de fortaleza.</p>
-                    </div>
-                </div>
-            )}
-
             {/* ── REGISTRO DE EMOCIONES ── */}
             <section className="card" id="emociones-section">
                 <div className="sec-title">
@@ -758,7 +699,6 @@ export function Dashboard() {
                             </button>
                         </div>
 
-                        {/* ── SELECTOR DE NIVEL ── */}
                         {pendienteRegistro && (
                             <div className="nivel-selector">
                                 <p className="nivel-selector-titulo">
@@ -769,6 +709,10 @@ export function Dashboard() {
                                         { value: "bajo", label: "Bajo", desc: "Apenas perceptible", Icon: IoLeafOutline },
                                         { value: "medio", label: "Medio", desc: "Notablemente presente", Icon: IoWaterOutline },
                                         { value: "alto", label: "Alto", desc: "Muy intenso", Icon: IoFlameOutline },
+                                        ...(pendienteRegistro.clasif === "negativa"
+                                            ? [{ value: "critico", label: "Crítico", desc: "Abrumador", Icon: IoWarningOutline }]
+                                            : []
+                                        ),
                                     ].map(n => (
                                         <button
                                             key={n.value}
@@ -789,44 +733,22 @@ export function Dashboard() {
                                 </button>
                             </div>
                         )}
-
-                        {mostrarInput && (
-                            <div className="otra-form">
-                                <input
-                                    type="text"
-                                    placeholder="Escribe cómo te sientes..."
-                                    value={emocionNueva}
-                                    onChange={e => setEmocionNueva(e.target.value)}
-                                />
-                                <div className="clasif-label">Clasificación:</div>
-                                <div className="clasif-row">
-                                    {CLASIFS.map(c => (
-                                        <button
-                                            key={c}
-                                            className={`clasif-btn clasif-btn--${c} ${selClasif === c ? "clasif-btn--sel" : ""}`}
-                                            onClick={() => setSelClasif(c)}
-                                        >
-                                            {CLASIF_LABELS[c]}
-                                        </button>
-                                    ))}
-                                </div>
-                                <div className="otra-actions">
-                                    <button className="btn-primary" onClick={agregarEmocion}>
-                                        Guardar emoción
-                                    </button>
-                                    <button
-                                        className="btn-ghost"
-                                        onClick={() => { setMostrarInput(false); setEmocionNueva(""); setSelClasif(null); }}
-                                    >
-                                        <IoCloseOutline size={14} style={{ marginRight: 4 }} />
-                                        Cancelar
-                                    </button>
-                                </div>
-                            </div>
-                        )}
                     </>
                 )}
             </section>
+
+            {/* ── REFLEXIÓN DEL DÍA (sistema experto) ── */}
+            {emocionHoy && fraseHoy && (
+                <section className="card reflexion-card">
+                    <div className="reflexion-header">
+                        <div className="reflexion-icon">
+                            <IoSparklesOutline size={14} color="#0ea5e9" />
+                        </div>
+                        <span className="reflexion-label">Mensaje para ti</span>
+                    </div>
+                    <p className="reflexion-texto">"{fraseHoy}"</p>
+                </section>
+            )}
 
             {/* ── VISTA SEMANAL ── */}
             <section className="card">
@@ -957,30 +879,15 @@ export function Dashboard() {
                 </div>
             </section>
 
-            {/* ── FRASE DEL DÍA (sistema experto) ── */}
-            {/* ── FRASE DEL DÍA (sistema experto) ── */}
-            <section className="bienvenida-inspiracion">
-                <img src={inspiracion} alt="Inspiración" />
-                <div className="inspiracion-overlay">
-                    <p>
-                        {fraseHoy
-                            ? `"${fraseHoy}"`
-                            : tipBienvenida
-                                ? `"${tipBienvenida}"`
-                                : "Disfruta de tu experiencia con Study Organizer..."
-                        }
-                    </p>
-                </div>
-            </section>
-
             <ModalNuevaEmocion
                 visible={modalOtraVisible}
                 onClose={() => setModalOtraVisible(false)}
                 onGuardar={handleNuevaEmocionGuardada}
             />
 
-            <BannerApoyoEmocional
-                visible={mostrarAlertaFrase}
+            <ModalAlertaEspecialista
+                visible={mostrarAlertaEspecialista}
+                onClose={() => setMostrarAlertaEspecialista(false)}
             />
 
         </main>

@@ -1,0 +1,88 @@
+.mae-overlay {
+    position: fixed;
+    inset: 0;
+    background: rgba(15, 23, 42, 0.45);
+    backdrop-filter: blur(2px);
+    z-index: 200;
+}
+
+.mae-box {
+    position: fixed;
+    top: 50%;
+    left: 50%;
+    transform: translate(-50%, -50%);
+    z-index: 201;
+    background: #fff;
+    border-radius: 16px;
+    width: 90%;
+    max-width: 400px;
+    box-shadow: 0 20px 60px rgba(14, 165, 233, 0.15);
+    padding: 28px 28px 24px;
+}
+
+.mae-header {
+    display: flex;
+    align-items: flex-start;
+    justify-content: space-between;
+    margin-bottom: 16px;
+}
+
+.mae-icon {
+    width: 44px;
+    height: 44px;
+    border-radius: 12px;
+    background: #e0f2fe;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.mae-close {
+    background: none;
+    border: none;
+    cursor: pointer;
+    color: #94a3b8;
+    padding: 4px;
+    border-radius: 6px;
+    transition: color 0.2s;
+}
+
+.mae-close:hover {
+    color: #475569;
+}
+
+.mae-titulo {
+    font-size: 17px;
+    font-weight: 700;
+    color: #1e293b;
+    margin: 0 0 10px;
+}
+
+.mae-mensaje {
+    font-size: 14px;
+    color: #64748b;
+    line-height: 1.65;
+    margin: 0;
+}
+
+.mae-footer {
+    margin-top: 24px;
+    display: flex;
+    justify-content: flex-end;
+}
+
+.mae-btn-ok {
+    background: #0ea5e9;
+    color: #fff;
+    border: none;
+    border-radius: 8px;
+    padding: 10px 24px;
+    font-size: 14px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s;
+}
+
+.mae-btn-ok:hover {
+    background: #0284c7;
+}

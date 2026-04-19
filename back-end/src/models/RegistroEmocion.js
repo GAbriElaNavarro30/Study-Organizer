@@ -1,35 +1,30 @@
-// ============================== MÓDULO REGISTRO EMOCION ==============================
+// model/Registro_Emocion.js
 import { db } from "../config/db.js";
 
 export class RegistroEmocion {
-    constructor({
-        fecha_registro,
-        id_emocion,
-        id_usuario,
-        nivel = "medio",
-        frase_dia = null,
-    }) {
+    constructor({ nivel = "medio", fecha_registro, frase_dia = null, id_emocion, id_usuario }) {
+        this.nivel = nivel;
         this.fecha_registro = fecha_registro;
+        this.frase_dia = frase_dia;
         this.id_emocion = id_emocion;
         this.id_usuario = id_usuario;
-        this.nivel = nivel;
-        this.frase_dia = frase_dia;
     }
 
     async save() {
-        return await db.query(
-            `INSERT INTO Registro_Emocion (fecha_registro, id_emocion, id_usuario, nivel, frase_dia)
+        const [result] = await db.query(
+            `INSERT INTO Registro_Emocion (nivel, fecha_registro, frase_dia, id_emocion, id_usuario)
              VALUES (?, ?, ?, ?, ?)`,
-            [this.fecha_registro, this.id_emocion, this.id_usuario, this.nivel, this.frase_dia]
+            [this.nivel, this.fecha_registro, this.frase_dia, this.id_emocion, this.id_usuario]
         );
+        return result;
     }
 
     static async getAll() {
         const [rows] = await db.query(`
             SELECT 
                 re.id_registro,
-                re.fecha_registro,
                 re.nivel,
+                re.fecha_registro,
                 re.frase_dia,
                 re.id_usuario,
                 e.nombre_emocion,
@@ -40,20 +35,20 @@ export class RegistroEmocion {
         return rows;
     }
 
-    static async getById(id) {
+    static async getById(id_registro) {
         const [rows] = await db.query(
-            "SELECT * FROM Registro_Emocion WHERE id_registro = ?",
-            [id]
+            `SELECT * FROM Registro_Emocion WHERE id_registro = ?`,
+            [id_registro]
         );
-        return rows[0];
+        return rows[0] ?? null;
     }
 
     static async getByUsuario(id_usuario) {
         const [rows] = await db.query(`
             SELECT 
                 re.id_registro,
-                re.fecha_registro,
                 re.nivel,
+                re.fecha_registro,
                 re.frase_dia,
                 e.nombre_emocion,
                 e.categoria
@@ -67,9 +62,10 @@ export class RegistroEmocion {
 
     static async getByFecha(id_usuario, fecha) {
         const [rows] = await db.query(
-            "SELECT * FROM Registro_Emocion WHERE id_usuario = ? AND DATE(fecha_registro) = ?",
+            `SELECT * FROM Registro_Emocion 
+             WHERE id_usuario = ? AND DATE(fecha_registro) = ?`,
             [id_usuario, fecha]
         );
-        return rows[0];
+        return rows[0] ?? null;
     }
 }

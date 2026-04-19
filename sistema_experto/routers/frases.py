@@ -11,17 +11,12 @@ router = APIRouter(prefix="/frases", tags=["Frases Emocionales"])
 # ─────────────────────────────────────────────────────────────
 
 CLASIFICACIONES_VALIDAS = {"positiva", "neutra", "negativa"}
-NIVELES_VALIDOS         = {"bajo", "medio", "alto"}
+NIVELES_VALIDOS         = {"bajo", "medio", "alto", "critico"}
 
 
 class FraseInput(BaseModel):
-    clasificacion:     str = Field(..., description="positiva | neutra | negativa | critica")
-    nivel:             str = Field(..., description="bajo | medio | alto")
-    dias_consecutivos: int = Field(
-        default=0,
-        ge=0,
-        description="Días seguidos con emoción negativa/crítica (0 si hoy es positivo/neutro)",
-    )
+    clasificacion: str = Field(..., description="positiva | neutra | negativa")
+    nivel:         str = Field(..., description="bajo | medio | alto")
 
     @field_validator("clasificacion")
     @classmethod
@@ -41,9 +36,8 @@ class FraseInput(BaseModel):
 
 
 class FraseOutput(BaseModel):
-    frase:          str
-    tipo:           str
-    mostrar_alerta: bool
+    frase: str
+    tipo:  str
 
 
 # ─────────────────────────────────────────────────────────────
@@ -53,19 +47,14 @@ class FraseOutput(BaseModel):
 @router.post("/obtener", response_model=FraseOutput)
 def obtener_frase_emocional(data: FraseInput):
     """
-    Recibe el estado emocional del día y devuelve una frase
-    personalizada determinada por el sistema experto.
-
-    El campo `mostrar_alerta` indica al frontend si debe
-    mostrar además el banner de alerta de apoyo especializado.
+    Recibe la clasificación y nivel emocional del día
+    y devuelve una frase aleatoria del pool correspondiente.
     """
     try:
         from motor.motor_frase import obtener_frase
-        resultado = obtener_frase(
+        return obtener_frase(
             clasificacion=data.clasificacion,
             nivel=data.nivel,
-            dias_consecutivos=data.dias_consecutivos,
         )
-        return resultado
     except Exception as e:
         raise HTTPException(status_code=500, detail=str(e))
