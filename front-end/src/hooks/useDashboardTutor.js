@@ -152,4 +152,4 @@ export function useDashboardTutor(tutor, estadisticas) {
         mejor_curso,
         tasa_global,
     };
-} 
+}  

@@ -1238,14 +1238,16 @@ export const estadisticasTutor = async (req, res) => {
         // ── Cursos y alumnos por dimensión ──
         const [dimensiones] = await db.query(
             `SELECT
-        d.nombre_dimension                            AS nombre,
-        COUNT(DISTINCT c.id_curso)                    AS cursos,
-        COUNT(DISTINCT i.id_usuario)                  AS estudiantes
-     FROM Dimension_Evaluar d
-     LEFT JOIN Curso c ON c.id_dimension = d.id_dimension AND c.id_usuario = ?
-     LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
-     GROUP BY d.id_dimension, d.nombre_dimension
-     ORDER BY d.nombre_dimension`,
+                d.id_dimension,
+                d.nombre_dimension,
+                d.nombre_dimension AS nombre,
+                COUNT(DISTINCT c.id_curso)   AS cursos,
+                COUNT(DISTINCT i.id_usuario) AS estudiantes
+            FROM Dimension_Evaluar d
+            LEFT JOIN Curso c ON c.id_dimension = d.id_dimension AND c.id_usuario = ?
+            LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+            GROUP BY d.id_dimension, d.nombre_dimension
+            ORDER BY d.nombre_dimension`,
             [id_usuario]
         );
 
@@ -1475,5 +1477,49 @@ export const misCursosConResultados = async (req, res) => {
     } catch (error) {
         console.error("misCursosConResultados:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener cursos." });
+    }
+};
+
+export const inscripcionesFiltradas = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso, perfil_vark, id_dimension, mes, anio } = req.query;
+
+        let where = "c.id_usuario = ?";
+        const params = [id_usuario];
+
+        if (id_curso && id_curso !== "todos") {
+            where += " AND c.id_curso = ?";
+            params.push(id_curso);
+        }
+        if (perfil_vark && perfil_vark !== "todos") {
+            where += " AND c.perfil_vark = ?";
+            params.push(perfil_vark);
+        }
+        if (id_dimension && id_dimension !== "todos") {
+            where += " AND c.id_dimension = ?";
+            params.push(id_dimension);
+        }
+        if (anio && anio !== "todos") {
+            where += " AND YEAR(i.fecha_inscripcion) = ?";
+            params.push(anio);
+        }
+        if (mes && mes !== "todos" && anio && anio !== "todos") {
+            where += " AND MONTH(i.fecha_inscripcion) = ?";
+            params.push(mes);
+        }
+
+        const [[{ total }]] = await db.query(
+            `SELECT COUNT(i.id_inscripcion) AS total
+             FROM Curso c
+             LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
+             WHERE ${where}`,
+            params
+        );
+
+        res.json({ ok: true, total: Number(total) });
+    } catch (error) {
+        console.error("inscripcionesFiltradas:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener inscripciones." });
     }
 };

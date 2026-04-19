@@ -11,6 +11,7 @@ import {
 } from "recharts";
 import { useDashboardTutor } from "../hooks/useDashboardTutor";
 import "../styles/DashboardTutor.css";
+import { InscripcionesKPI } from "../components/InscripcionesKPI";
 
 const COLORS_VARK = [
     "#4A90D9", // Azul
@@ -193,6 +194,14 @@ export function DashboardTutor({ tutor, estadisticas }) {
                     <KPICard icon={IoStar} label="Promedio general" value={`${promedio_general}%`} color="#B39DDB" />
                     <KPICard icon={IoCheckmarkDone} label="Tasa finalización" value={`${tasa_global}%`} color="#4A90D9" />
                 </div>
+            </section>
+
+            <section className="dash-section">
+                <h2 className="section-title"><IoPeople size={18} /> Inscripciones filtradas</h2>
+                <InscripcionesKPI
+                    cursosTutor={stats.cursos_tutor}
+                    dimensiones={stats.dimensiones}
+                />
             </section>
 
             {/* ── INSCRIPCIONES POR MES ────────────────────── */}

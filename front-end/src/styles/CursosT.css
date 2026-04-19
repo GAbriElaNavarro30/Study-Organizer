@@ -1395,3 +1395,337 @@
         font-size: 12px;
     }
 }
+
+/* ══ INSCRIPCIONES KPI ═════════════════════════════════════ */
+.ikpi-card {
+    background: #FFFFFF;
+    border: 1px solid #E2E8F0;
+    border-radius: 14px;
+    padding: 20px 22px;
+}
+
+.ikpi-title {
+    font-size: 14px;
+    font-weight: 600;
+    color: #0F172A;
+    margin: 0 0 3px;
+}
+
+.ikpi-subtitle {
+    font-size: 12px;
+    color: #64748B;
+    margin: 0 0 1rem;
+}
+
+.ikpi-filters {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 1rem;
+}
+
+.ikpi-filters select {
+    width: 100%;
+    height: 34px;
+    padding: 0 28px 0 10px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    background: #FFFFFF;
+    font-size: 12px;
+    font-family: inherit;
+    color: #334155;
+    cursor: pointer;
+    outline: none;
+    appearance: none;
+    background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='10' viewBox='0 0 24 24' fill='none' stroke='%2394A3B8' stroke-width='2.5' stroke-linecap='round' stroke-linejoin='round'%3E%3Cpolyline points='6 9 12 15 18 9'%3E%3C/polyline%3E%3C/svg%3E");
+    background-repeat: no-repeat;
+    background-position: right 8px center;
+    transition: border-color 0.15s, box-shadow 0.15s;
+    /* Evita que el texto del option desborde */
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
+}
+
+.ikpi-filters select:focus {
+    border-color: #93C5FD;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
+}
+
+.ikpi-filters select:disabled {
+    background-color: #F8FAFF;
+    color: #CBD5E1;
+    cursor: not-allowed;
+}
+
+/* Fila de meta */
+.ikpi-meta-row {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+    margin-bottom: 0.75rem;
+    min-height: 32px;
+}
+
+.ikpi-btn-link {
+    background: none;
+    border: none;
+    font-size: 11px;
+    cursor: pointer;
+    color: #2563EB;
+    padding: 0 3px;
+    font-family: inherit;
+    white-space: nowrap;
+}
+
+.ikpi-btn-link:hover { text-decoration: underline; }
+.ikpi-btn-link--danger { color: #DC2626; }
+
+/* Input de meta */
+.dona-meta-input {
+    height: 30px;
+    width: 80px;
+    padding: 0 8px;
+    border: 1px solid #E2E8F0;
+    border-radius: 8px;
+    font-size: 12px;
+    font-family: inherit;
+    background: #FFFFFF;
+    color: #0F172A;
+    outline: none;
+    flex-shrink: 0;
+}
+
+.dona-meta-input:focus {
+    border-color: #93C5FD;
+    box-shadow: 0 0 0 3px rgba(147, 197, 253, 0.2);
+}
+
+/* Gauge wrapper con overlay relativo */
+.ikpi-gauge-wrap {
+    position: relative;
+    display: flex;
+    justify-content: center;
+    margin: 4px 0 8px;
+}
+
+.ikpi-gauge-wrap svg {
+    width: 100%;
+    max-width: 300px;
+    height: auto;
+    display: block;
+}
+
+.ikpi-gauge-overlay {
+    position: absolute;
+    inset: 0;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    background: rgba(255, 255, 255, 0.65);
+    border-radius: 8px;
+}
+
+.ikpi-spinner {
+    width: 22px;
+    height: 22px;
+    border: 2px solid #DBEAFE;
+    border-top-color: #2563EB;
+    border-radius: 50%;
+    animation: ikpi-spin 0.7s linear infinite;
+}
+
+@keyframes ikpi-spin {
+    to { transform: rotate(360deg); }
+}
+
+/* Badge centrado */
+.ikpi-badge-row {
+    display: flex;
+    justify-content: center;
+    margin-bottom: 14px;
+}
+
+/* Totales */
+.ikpi-totales {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-top: 4px;
+}
+
+.ikpi-tot-item {
+    background: #F8FAFF;
+    border: 1px solid #E2E8F0;
+    border-left: 3px solid var(--tot-color, #4A90D9);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+    min-width: 0;
+}
+
+.ikpi-tot-val {
+    font-size: 22px;
+    font-weight: 600;
+    color: #0F172A;
+    line-height: 1;
+}
+
+.ikpi-tot-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94A3B8;
+    white-space: nowrap;
+}
+
+/* Badges */
+.gauge-badge {
+    display: inline-flex;
+    align-items: center;
+    gap: 5px;
+    font-size: 11px;
+    font-weight: 500;
+    padding: 4px 12px;
+    border-radius: 20px;
+    text-align: center;
+}
+
+.gauge-badge--ok {
+    background: #DCFCE7;
+    color: #166534;
+}
+
+.gauge-badge--pend {
+    background: #DBEAFE;
+    color: #1E40AF;
+}
+
+.gauge-badge--alerta {
+    background: #FEE2E2;
+    color: #991B1B;
+}
+
+/* ── Responsive KPI ──────────────────────────────────────── */
+
+/* Tablet: 1024px → 2 columnas en filtros, año + mes juntos */
+@media (max-width: 1024px) {
+    .ikpi-filters {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* El quinto select (mes) ocupa la mitad derecha */
+    .ikpi-filters select:nth-child(5) {
+        grid-column: 2 / 3;
+    }
+}
+
+/* Tablet chico / móvil grande: 768px → filtros en 2 col, totales en 3 */
+@media (max-width: 768px) {
+    .ikpi-card {
+        padding: 16px 16px;
+    }
+
+    .ikpi-filters {
+        grid-template-columns: repeat(2, 1fr);
+        gap: 6px;
+    }
+
+    /* Curso y perfiles — fila completa en móvil */
+    .ikpi-filters select:nth-child(1) {
+        grid-column: 1 / -1;
+    }
+
+    .ikpi-tot-val {
+        font-size: 18px;
+    }
+
+    .ikpi-tot-item {
+        padding: 8px 10px;
+    }
+}
+
+/* Móvil: 480px → filtros en 1 columna, totales apilados de a 2 */
+@media (max-width: 480px) {
+    .ikpi-card {
+        padding: 14px 14px;
+    }
+
+    .ikpi-filters {
+        grid-template-columns: 1fr 1fr;
+        gap: 6px;
+    }
+
+    /* Curso ocupa toda la fila */
+    .ikpi-filters select:nth-child(1) {
+        grid-column: 1 / -1;
+    }
+
+    /* Año y mes en la misma fila */
+    .ikpi-filters select:nth-child(4),
+    .ikpi-filters select:nth-child(5) {
+        grid-column: auto;
+    }
+
+    .ikpi-totales {
+        grid-template-columns: repeat(3, 1fr);
+        gap: 6px;
+    }
+
+    .ikpi-tot-val {
+        font-size: 16px;
+    }
+
+    .ikpi-tot-lbl {
+        font-size: 9px;
+        letter-spacing: 0.3px;
+    }
+
+    .ikpi-tot-item {
+        padding: 8px 8px;
+    }
+
+    .gauge-badge {
+        font-size: 10px;
+        padding: 4px 10px;
+        text-align: center;
+    }
+}
+
+/* Móvil muy pequeño: 360px */
+@media (max-width: 360px) {
+    .ikpi-filters {
+        grid-template-columns: 1fr;
+    }
+
+    .ikpi-filters select:nth-child(1),
+    .ikpi-filters select:nth-child(4),
+    .ikpi-filters select:nth-child(5) {
+        grid-column: auto;
+    }
+
+    .ikpi-totales {
+        grid-template-columns: 1fr;
+    }
+
+    .ikpi-tot-item {
+        flex-direction: row;
+        align-items: center;
+        justify-content: space-between;
+        padding: 8px 12px;
+    }
+
+    .ikpi-tot-val {
+        font-size: 18px;
+        order: 2;
+    }
+
+    .ikpi-tot-lbl {
+        order: 1;
+        font-size: 10px;
+    }
+}

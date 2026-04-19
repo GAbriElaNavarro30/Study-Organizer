@@ -206,17 +206,35 @@ export const registrarEmocionDia = async (req, res) => {
         LIMIT 14
     `, [id_usuario]);
 
-            if (ultimos14.length === 14) {
+            // Por esto:
+            if (ultimos14.length >= 14) {
                 const esRachaCritica = ultimos14.every(
                     r => r.categoria === "negativa" && r.nivel === "critico"
                 );
 
                 if (esRachaCritica) {
-                    const yaExiste = await AlertaEspecialista.existeAlertaReciente(id_usuario);
-                    if (!yaExiste) {
+                    // Contar cuántos días consecutivos lleva realmente
+                    const [todosRegistros] = await db.query(`
+                    SELECT re.nivel, e.categoria, DATE(re.fecha_registro) as fecha
+                    FROM Registro_Emocion re
+                    JOIN Emocion e ON re.id_emocion = e.id_emocion
+                    WHERE re.id_usuario = ?
+                    ORDER BY re.fecha_registro DESC
+                `, [id_usuario]);
+
+                    let diasConsecutivos = 0;
+                    for (const r of todosRegistros) {
+                        if (r.categoria === "negativa" && r.nivel === "critico") {
+                            diasConsecutivos++;
+                        } else {
+                            break;
+                        }
+                    }
+
+                    if (diasConsecutivos >= 14) {
                         const alerta = new AlertaEspecialista({
                             fecha_alerta: getFechaHoraActual(),
-                            dias_consecutivos: 14,
+                            dias_consecutivos: diasConsecutivos,
                             id_usuario,
                         });
                         await alerta.save();
