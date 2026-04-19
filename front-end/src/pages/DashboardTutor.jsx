@@ -57,7 +57,7 @@ function KPICard({ icon: Icon, label, value, sublabel, color, trend }) {
             {trend !== undefined && (
                 <div className={`kpi-trend ${trend >= 0 ? "up" : "down"}`}>
                     <IoTrendingUp size={14} />
-                    <span>{Math.abs(trend)}%</span>
+                    {/*<span>{Math.abs(trend)}%</span>*/}
                 </div>
             )}
         </div>
@@ -197,7 +197,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
             </section>
 
             <section className="dash-section">
-                <h2 className="section-title"><IoPeople size={18} /> Inscripciones filtradas</h2>
+                <h2 className="section-title"><IoPeople size={18} />KPI Inscripciones</h2>
                 <InscripcionesKPI
                     cursosTutor={stats.cursos_tutor}
                     dimensiones={stats.dimensiones}

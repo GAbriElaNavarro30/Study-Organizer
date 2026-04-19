@@ -22,6 +22,8 @@ import "../styles/dashboard.css";
 import { ModalNuevaEmocion } from "../components/ModalNuevaEmocion";
 import { ModalAlertaEspecialista } from "../components/ModalAlertaEspecialista";
 import { useDashboard } from "../hooks/useDashboard";
+import logo from "../assets/imagenes/logotipo.png";
+import { CustomAlert } from "../components/CustomAlert";
 
 /* ─── Paleta de colores para la dona ─── */
 const DONA_COLORES = [
@@ -629,6 +631,8 @@ export function Dashboard() {
         confirmarRegistro,
         handleNuevaEmocionGuardada,
         cerrarAlertaEspecialista,
+        alertData,
+        handleCloseAlert,
     } = useDashboard();
 
     return (
@@ -926,6 +930,16 @@ export function Dashboard() {
                 visible={mostrarAlertaEspecialista}
                 onClose={cerrarAlertaEspecialista}
             />
+
+            {alertData.visible && (
+                <CustomAlert
+                    type={alertData.type}
+                    title={alertData.title}
+                    message={alertData.message}
+                    logo={logo}
+                    onClose={handleCloseAlert}
+                />
+            )}
 
         </main>
     );

@@ -1,5 +1,6 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
+import api from "../services/api";
 
 function formatearFechaHora(fechaRaw) {
     const fecha = new Date(fechaRaw);
@@ -33,6 +34,7 @@ export function useDashboard() {
     );
     const [mostrarAlertaEspecialista, setMostrarAlertaEspecialista] = useState(false);
     const [alertasEspecialista, setAlertasEspecialista] = useState([]);
+    const [alertData, setAlertData] = useState({ visible: false, type: "success", title: "", message: "" });
 
     // ══ 2. DERIVACIONES ══
     const emocionHoy = historial.find(h => h.fecha === hoy) || null;
@@ -41,6 +43,14 @@ export function useDashboard() {
         const sorted = [...historial].sort((a, b) => a.fecha > b.fecha ? -1 : 1).slice(0, 3);
         return sorted.length >= 3 && sorted.every(h => h.clasif === "negativa");
     })();
+
+    const showAlert = (type, title, message) => {
+        setAlertData({ visible: true, type, title, message });
+    };
+
+    const handleCloseAlert = () => {
+        setAlertData(prev => ({ ...prev, visible: false }));
+    };
 
     // ══ 3. FUNCIONES ══
     const seleccionarEmocion = (id_emocion, label, clasif) => {
@@ -53,24 +63,17 @@ export function useDashboard() {
         const { id_emocion, label, clasif } = pendienteRegistro;
 
         try {
-            const res = await fetch("http://localhost:3000/dashboard/emociones/registrar-dia", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({ id_emocion, nivel }),
+            const { data } = await api.post("/dashboard/emociones/registrar-dia", {
+                id_emocion,
+                nivel,
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                alert(data.mensaje);
-                setPendienteRegistro(null);
-                return;
-            }
 
             setHistorial(prev => [...prev, { fecha: hoy, emo: label, clasif, nivel }]);
             setEmocionSeleccionada(label);
             setPendienteRegistro(null);
+
+            // ALERTA DE ÉXITO AL REGISTRAR EMOCIÓN
+            showAlert("success", "¡Emoción registrada!", `Tu emoción de hoy es: ${label}`);
 
             if (data.frase) {
                 setFraseHoy(data.frase);
@@ -78,18 +81,19 @@ export function useDashboard() {
             }
 
             if (data.mostrar_alerta_especialista) {
-                const resAlertas = await fetch("http://localhost:3000/dashboard/alertas", {
-                    credentials: "include",
-                });
-                if (resAlertas.ok) {
-                    const dataAlertas = await resAlertas.json();
+                try {
+                    const { data: dataAlertas } = await api.get("/dashboard/alertas");
                     setAlertasEspecialista(dataAlertas.alertas || []);
+                } catch (error) {
+                    console.error("Error al cargar alertas:", error);
                 }
                 setMostrarAlertaEspecialista(true);
             }
 
         } catch (error) {
-            console.error("Error al registrar emoción:", error);
+            const data = error.response?.data;
+            showAlert("error", "Error", data?.mensaje || "Error al registrar emoción.");
+            setPendienteRegistro(null);
         }
     };
 
@@ -97,6 +101,9 @@ export function useDashboard() {
         setEmociones(prev => [...prev, { label, clasif, id_emocion: id }]);
         setPendienteRegistro({ id_emocion: id, label, clasif });
         setModalOtraVisible(false);
+
+        // ALERTA DE ÉXITO AL CREAR NUEVA EMOCIÓN
+        showAlert("success", "¡Emoción creada!", `"${label}" fue agregada a tu lista.`);
     };
 
     const cerrarAlertaEspecialista = async () => {
@@ -104,10 +111,7 @@ export function useDashboard() {
         const alertaNoVista = alertasEspecialista.find(a => !a.vista);
         if (alertaNoVista) {
             try {
-                await fetch(`http://localhost:3000/dashboard/alertas/${alertaNoVista.id_alerta}/vista`, {
-                    method: "PATCH",
-                    credentials: "include",
-                });
+                await api.patch(`/dashboard/alertas/${alertaNoVista.id_alerta}/vista`);
                 setAlertasEspecialista(prev =>
                     prev.map(a =>
                         a.id_alerta === alertaNoVista.id_alerta ? { ...a, vista: true } : a
@@ -127,11 +131,7 @@ export function useDashboard() {
         if (!emocionHoy) return;
         const cargarFrase = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/frase-hoy", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/dashboard/frase-hoy");
                 if (data.frase) setFraseHoy(data.frase);
             } catch (error) {
                 console.error("Error al cargar frase del día:", error);
@@ -143,11 +143,7 @@ export function useDashboard() {
     useEffect(() => {
         const verificar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/emociones/verificar-hoy", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/dashboard/emociones/verificar-hoy");
                 if (data.registrado) {
                     setHistorial(prev => {
                         const yaEsta = prev.find(h => h.fecha === hoy);
@@ -170,11 +166,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargarHistorial = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/emociones/historial", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/dashboard/emociones/historial");
                 const normalizado = data.historial.map(h => ({
                     fecha: h.fecha_registro.slice(0, 10),
                     emo: h.nombre_emocion,
@@ -192,11 +184,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/obtener-emociones", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/dashboard/obtener-emociones");
                 setEmociones(data.emociones.map(e => ({
                     label: e.nombre_emocion,
                     clasif: e.categoria,
@@ -231,11 +219,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/cursos/inscripciones/mis-cursos-resultados", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/cursos/inscripciones/mis-cursos-resultados");
                 setCursosEstudiante(data.cursos || []);
             } catch (error) {
                 console.error("Error al cargar cursos:", error);
@@ -247,11 +231,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/estilosaprendizaje/resultado-guardado", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/estilosaprendizaje/resultado-guardado");
                 setVark({
                     fecha: formatearFechaHora(data.fecha_intento),
                     resultado: data.nombre_perfil,
@@ -274,11 +254,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargar = async () => {
             try {
-                const res = await fetch("http://localhost:3000/metodosestudio/ultimo-resultado", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/metodosestudio/ultimo-resultado");
                 setEstudio({
                     fecha: formatearFechaHora(data.fecha_intento),
                     resultado: data.nivel_global,
@@ -297,11 +273,7 @@ export function useDashboard() {
     useEffect(() => {
         const cargarAlertas = async () => {
             try {
-                const res = await fetch("http://localhost:3000/dashboard/alertas", {
-                    credentials: "include",
-                });
-                if (!res.ok) return;
-                const data = await res.json();
+                const { data } = await api.get("/dashboard/alertas");
                 setAlertasEspecialista(data.alertas || []);
             } catch (error) {
                 console.error("Error al cargar alertas:", error);
@@ -311,15 +283,12 @@ export function useDashboard() {
     }, []);
 
     return {
-        // auth
         usuario,
-        // estados UI
         modalOtraVisible,
         setModalOtraVisible,
         pendienteRegistro,
         setPendienteRegistro,
         emocionSeleccionada,
-        // datos
         emociones,
         historial,
         fraseHoy,
@@ -330,15 +299,14 @@ export function useDashboard() {
         cargandoMe,
         cursosEstudiante,
         alertasEspecialista,
-        // modales
         mostrarAlertaEspecialista,
-        // derivaciones
         emocionHoy,
         mostrarAlerta,
-        // funciones
         seleccionarEmocion,
         confirmarRegistro,
         handleNuevaEmocionGuardada,
         cerrarAlertaEspecialista,
+        alertData,
+        handleCloseAlert,
     };
 }

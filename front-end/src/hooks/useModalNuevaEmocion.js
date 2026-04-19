@@ -1,4 +1,5 @@
 import { useState, useEffect, useRef } from "react";
+import api from "../services/api";
 
 export function useModalNuevaEmocion({ visible, onClose, onGuardar }) {
     const [nombre, setNombre] = useState("");
@@ -32,23 +33,10 @@ export function useModalNuevaEmocion({ visible, onClose, onGuardar }) {
         setCargando(true);
 
         try {
-            const res = await fetch("http://localhost:3000/dashboard/crear-emocion", {
-                method: "POST",
-                credentials: "include",
-                headers: { "Content-Type": "application/json" },
-                body: JSON.stringify({
-                    nombre_emocion: nombreTrim,
-                    categoria: clasif,
-                }),
+            const { data } = await api.post("/dashboard/crear-emocion", {
+                nombre_emocion: nombreTrim,
+                categoria: clasif,
             });
-
-            const data = await res.json();
-
-            if (!res.ok) {
-                setError(data.mensaje || "Error al guardar la emoción.");
-                setCargando(false);
-                return;
-            }
 
             setExito(true);
             setTimeout(() => {
@@ -56,8 +44,9 @@ export function useModalNuevaEmocion({ visible, onClose, onGuardar }) {
                 onClose();
             }, 900);
 
-        } catch {
-            setError("No se pudo conectar con el servidor.");
+        } catch (err) {
+            const data = err.response?.data;
+            setError(data?.mensaje || "Error al guardar la emoción.");
             setCargando(false);
         }
     };
