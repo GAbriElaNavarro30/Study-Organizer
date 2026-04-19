@@ -3,7 +3,7 @@ import axios from "axios";
 import { db } from "../config/db.js";
 import { Emocion } from "../models/Emocion.js";
 import { RegistroEmocion } from "../models/RegistroEmocion.js";
-import { AlertaEmocional } from "../models/AlertaEmocional.js";
+import { AlertaEspecialista } from "../models/AlertaEspecialista.js";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
@@ -194,21 +194,35 @@ export const registrarEmocionDia = async (req, res) => {
         await registro.save();
 
         // ── Verificar racha de 14 días consecutivos de emoción negativa alta ──
+        // ── Verificar racha de 14 días consecutivos de emoción negativa crítica ──
         let mostrar_alerta_especialista = false;
         try {
             const [ultimos14] = await db.query(`
-                SELECT re.nivel, e.categoria
-                FROM Registro_Emocion re
-                JOIN Emocion e ON re.id_emocion = e.id_emocion
-                WHERE re.id_usuario = ?
-                ORDER BY re.fecha_registro DESC
-                LIMIT 14
-            `, [id_usuario]);
+        SELECT re.nivel, e.categoria
+        FROM Registro_Emocion re
+        JOIN Emocion e ON re.id_emocion = e.id_emocion
+        WHERE re.id_usuario = ?
+        ORDER BY re.fecha_registro DESC
+        LIMIT 14
+    `, [id_usuario]);
 
             if (ultimos14.length === 14) {
-                mostrar_alerta_especialista = ultimos14.every(
+                const esRachaCritica = ultimos14.every(
                     r => r.categoria === "negativa" && r.nivel === "critico"
                 );
+
+                if (esRachaCritica) {
+                    const yaExiste = await AlertaEspecialista.existeAlertaReciente(id_usuario);
+                    if (!yaExiste) {
+                        const alerta = new AlertaEspecialista({
+                            fecha_alerta: getFechaHoraActual(),
+                            dias_consecutivos: 14,
+                            id_usuario,
+                        });
+                        await alerta.save();
+                        mostrar_alerta_especialista = true;
+                    }
+                }
             }
         } catch (errAlerta) {
             console.warn("No se pudo verificar racha:", errAlerta.message);
@@ -279,5 +293,31 @@ export const obtenerHistorialEmocional = async (req, res) => {
     } catch (error) {
         console.error("Error al obtener historial:", error);
         res.status(500).json({ mensaje: "Error al obtener historial emocional." });
+    }
+};
+
+// ===================== obtener alertas del especialista ==========================
+export const obtenerAlertasEspecialista = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const alertas = await AlertaEspecialista.getByUsuario(id_usuario);
+        res.json({ alertas });
+    } catch (error) {
+        console.error("Error al obtener alertas:", error);
+        res.status(500).json({ mensaje: "Error al obtener alertas." });
+    }
+};
+
+// ===================== marcar alerta como vista ==========================
+export const marcarAlertaVista = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id } = req.params;
+
+        await AlertaEspecialista.marcarVista(id, id_usuario);
+        res.json({ mensaje: "Alerta marcada como vista." });
+    } catch (error) {
+        console.error("Error al marcar alerta:", error);
+        res.status(500).json({ mensaje: "Error al marcar la alerta." });
     }
 };

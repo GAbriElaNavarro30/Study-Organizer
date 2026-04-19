@@ -37,7 +37,6 @@ const MESES = [
     "Julio", "Agosto", "Septiembre", "Octubre", "Noviembre", "Diciembre",
 ];
 
-/* ── Helper para formatear fecha y hora ── */
 function formatearFechaHora(fechaRaw) {
     const fecha = new Date(fechaRaw);
     const fechaStr = fecha.toLocaleDateString("es-MX", {
@@ -59,7 +58,7 @@ function DonaEmociones({ historial }) {
     const [filtroMes, setFiltroMes] = useState("");
     const [filtroAnio, setFiltroAnio] = useState("");
     const [filtroNivel, setFiltroNivel] = useState("");
-    const [filtroClasif, setFiltroClasif] = useState("");  // ← nuevo
+    const [filtroClasif, setFiltroClasif] = useState("");
 
     const aniosDisponibles = [...new Set(historial.map(h => new Date(h.fecha).getFullYear()))].sort();
     const emocionesDisponibles = [...new Set(historial.map(h => h.emo))].sort();
@@ -70,7 +69,7 @@ function DonaEmociones({ historial }) {
         if (filtroMes !== "" && d.getMonth() !== Number(filtroMes)) return false;
         if (filtroAnio && d.getFullYear() !== Number(filtroAnio)) return false;
         if (filtroNivel && h.nivel !== filtroNivel) return false;
-        if (filtroClasif && h.clasif !== filtroClasif) return false;  // ← nuevo
+        if (filtroClasif && h.clasif !== filtroClasif) return false;
         return true;
     });
 
@@ -123,7 +122,7 @@ function DonaEmociones({ historial }) {
         });
 
         return () => { if (chartRef.current) chartRef.current.destroy(); };
-    }, [filtroEmo, filtroMes, filtroAnio, filtroNivel, filtroClasif, historial]);  // ← filtroClasif en deps
+    }, [filtroEmo, filtroMes, filtroAnio, filtroNivel, filtroClasif, historial]);
 
     return (
         <div className="dona-card">
@@ -154,7 +153,7 @@ function DonaEmociones({ historial }) {
                     <option value="bajo">Bajo</option>
                     <option value="medio">Medio</option>
                     <option value="alto">Alto</option>
-                     <option value="critico">Crítico</option>  
+                    <option value="critico">Crítico</option>
                 </select>
 
                 <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)}>
@@ -210,7 +209,6 @@ function DonaEmociones({ historial }) {
                                             />
                                         </div>
                                     </div>
-                                    {/* ← muestra conteo y porcentaje */}
                                     <span className="dona-leg-count">{e[1]} <span className="dona-leg-pct">({pct}%)</span></span>
                                 </div>
                             );
@@ -228,7 +226,6 @@ function DonaEmociones({ historial }) {
                     <span className="dona-kpi-label">Emoción dominante</span>
                     <span className="dona-kpi-val dona-kpi-val--sm">{dominante}</span>
                 </div>
-                {/* ← reemplaza el KPI anterior por este */}
                 <div className="dona-kpi-item">
                     <span className="dona-kpi-label">Positivas / Neutras / Difíciles</span>
                     <span className="dona-kpi-val dona-kpi-val--sm">
@@ -250,7 +247,6 @@ function DonaEmociones({ historial }) {
 function VistaSemanal({ historial }) {
     const canvasRef = useRef(null);
     const chartRef = useRef(null);
-
     const hoy = new Date();
 
     const ultimos7 = Array.from({ length: 7 }, (_, i) => {
@@ -336,15 +332,9 @@ function VistaSemanal({ historial }) {
         return () => { if (chartRef.current) chartRef.current.destroy(); };
     }, [historial]);
 
-    const conReg = ultimos7.filter(d => d.reg);
-    const conteos = {};
-    conReg.forEach(d => { conteos[d.reg.emo] = (conteos[d.reg.emo] || 0) + 1; });
-    const dom = Object.entries(conteos).sort((a, b) => b[1] - a[1])[0];
-
     return (
         <div className="semana-section">
             <h4 className="sec-title-sm">Últimos 7 días</h4>
-
             <div className="semana-leyenda">
                 {Object.entries(NIVEL_COLORES).map(([clasif, color]) => (
                     <span key={clasif} className="semana-ley-item">
@@ -353,7 +343,6 @@ function VistaSemanal({ historial }) {
                     </span>
                 ))}
             </div>
-
             <div style={{ position: "relative", width: "100%", height: "180px" }}>
                 <canvas
                     ref={canvasRef}
@@ -366,7 +355,6 @@ function VistaSemanal({ historial }) {
                     ).join(", ")}
                 </canvas>
             </div>
-
         </div>
     );
 }
@@ -394,6 +382,7 @@ export function Dashboard() {
         new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" })
     );
     const [mostrarAlertaEspecialista, setMostrarAlertaEspecialista] = useState(false);
+    const [alertasEspecialista, setAlertasEspecialista] = useState([]);
 
     // ══ 2. DERIVACIONES ══
     const emocionHoy = historial.find(h => h.fecha === hoy) || null;
@@ -439,6 +428,14 @@ export function Dashboard() {
             }
 
             if (data.mostrar_alerta_especialista) {
+                // Recargar alertas para que aparezca la nueva en el historial
+                const resAlertas = await fetch("http://localhost:3000/dashboard/alertas", {
+                    credentials: "include",
+                });
+                if (resAlertas.ok) {
+                    const dataAlertas = await resAlertas.json();
+                    setAlertasEspecialista(dataAlertas.alertas || []);
+                }
                 setMostrarAlertaEspecialista(true);
             }
 
@@ -451,6 +448,26 @@ export function Dashboard() {
         setEmociones(prev => [...prev, { label, clasif, id_emocion: id }]);
         setPendienteRegistro({ id_emocion: id, label, clasif });
         setModalOtraVisible(false);
+    };
+
+    const cerrarAlertaEspecialista = async () => {
+        setMostrarAlertaEspecialista(false);
+        const alertaNoVista = alertasEspecialista.find(a => !a.vista);
+        if (alertaNoVista) {
+            try {
+                await fetch(`http://localhost:3000/dashboard/alertas/${alertaNoVista.id_alerta}/vista`, {
+                    method: "PATCH",
+                    credentials: "include",
+                });
+                setAlertasEspecialista(prev =>
+                    prev.map(a =>
+                        a.id_alerta === alertaNoVista.id_alerta ? { ...a, vista: true } : a
+                    )
+                );
+            } catch (error) {
+                console.error("Error al marcar alerta como vista:", error);
+            }
+        }
     };
 
     // ══ 4. EFECTOS ══
@@ -628,6 +645,22 @@ export function Dashboard() {
         cargar();
     }, []);
 
+    useEffect(() => {
+        const cargarAlertas = async () => {
+            try {
+                const res = await fetch("http://localhost:3000/dashboard/alertas", {
+                    credentials: "include",
+                });
+                if (!res.ok) return;
+                const data = await res.json();
+                setAlertasEspecialista(data.alertas || []);
+            } catch (error) {
+                console.error("Error al cargar alertas:", error);
+            }
+        };
+        cargarAlertas();
+    }, []);
+
     // ══ 5. RENDER ══
     return (
         <main className="dashboard-container">
@@ -737,7 +770,7 @@ export function Dashboard() {
                 )}
             </section>
 
-            {/* ── REFLEXIÓN DEL DÍA (sistema experto) ── */}
+            {/* ── REFLEXIÓN DEL DÍA ── */}
             {emocionHoy && fraseHoy && (
                 <section className="card reflexion-card">
                     <div className="reflexion-header">
@@ -758,6 +791,44 @@ export function Dashboard() {
             {/* ── KPI DONA ── */}
             <DonaEmociones historial={historial} />
 
+            {/* ── ALERTAS DE ESPECIALISTA ── */}
+            {alertasEspecialista.length > 0 && (
+                <section className="card alertas-card">
+                    <h3 className="sec-title">
+                        <IoWarningOutline size={17} style={{ marginRight: 6 }} color="#f59e0b" />
+                        Momentos que merecen atención
+                    </h3>
+                    <p className="sec-sub">
+                        Estos son los periodos en los que tu bienestar emocional estuvo más comprometido.
+                    </p>
+                    <div className="alertas-list">
+                        {alertasEspecialista.map(a => (
+                            <div
+                                key={a.id_alerta}
+                                className={`alerta-row ${!a.vista ? "alerta-row--nueva" : ""}`}
+                            >
+                                <div className="alerta-row-icono">
+                                    <IoWarningOutline size={16} color={a.vista ? "#94a3b8" : "#f59e0b"} />
+                                </div>
+                                <div className="alerta-row-info">
+                                    <span className="alerta-row-fecha">
+                                        {new Date(a.fecha_alerta).toLocaleDateString("es-MX", {
+                                            day: "2-digit",
+                                            month: "long",
+                                            year: "numeric",
+                                        })}
+                                    </span>
+                                    <span className="alerta-row-desc">
+                                        {a.dias_consecutivos} días consecutivos de alta intensidad emocional
+                                    </span>
+                                </div>
+                                {!a.vista && <span className="alerta-row-badge">Nueva</span>}
+                            </div>
+                        ))}
+                    </div>
+                </section>
+            )}
+
             {/* ── RESULTADOS DE TESTS ── */}
             <section className="card">
                 <h3 className="sec-title">
@@ -767,7 +838,6 @@ export function Dashboard() {
 
                 <div className="tests-layout">
 
-                    {/* ── COLUMNA IZQUIERDA: VARK + CURSOS ── */}
                     <div className="tests-col-left">
 
                         {/* VARK */}
@@ -834,7 +904,6 @@ export function Dashboard() {
 
                     </div>
 
-                    {/* ── COLUMNA DERECHA: MÉTODOS DE ESTUDIO ── */}
                     <div className="tests-col-right">
                         <div className="test-card test-card--tall">
                             <div className="test-card-header">
@@ -887,7 +956,7 @@ export function Dashboard() {
 
             <ModalAlertaEspecialista
                 visible={mostrarAlertaEspecialista}
-                onClose={() => setMostrarAlertaEspecialista(false)}
+                onClose={cerrarAlertaEspecialista}
             />
 
         </main>

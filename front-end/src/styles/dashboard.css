@@ -348,6 +348,7 @@
     padding: 10px 14px;
     font-size: 13px;
     color: var(--sky-700);
+    flex-wrap: wrap;
 }
 
 .clasif-tag {
@@ -395,6 +396,7 @@
     outline: none;
     color: var(--gray-900);
     transition: border 0.2s;
+    box-sizing: border-box;
 }
 
 .otra-form input:focus {
@@ -492,6 +494,7 @@
     outline: none;
     cursor: pointer;
     transition: border 0.15s;
+    min-width: 0;
 }
 
 .dona-filtros select:focus {
@@ -500,7 +503,7 @@
 
 .dona-body {
     display: grid;
-    grid-template-columns: 200px 1fr;
+    grid-template-columns: minmax(0, 200px) 1fr;
     gap: 24px;
     align-items: center;
     margin-bottom: 18px;
@@ -541,12 +544,14 @@
     display: flex;
     flex-direction: column;
     gap: 10px;
+    min-width: 0;
 }
 
 .dona-leg-row {
     display: flex;
     align-items: center;
     gap: 10px;
+    min-width: 0;
 }
 
 .dona-leg-dot {
@@ -559,12 +564,16 @@
 
 .dona-leg-info {
     flex: 1;
+    min-width: 0;
 }
 
 .dona-leg-name {
     font-size: 13px;
     color: var(--gray-700);
     display: block;
+    white-space: nowrap;
+    overflow: hidden;
+    text-overflow: ellipsis;
 }
 
 .dona-leg-track {
@@ -587,6 +596,7 @@
     color: var(--sky-700);
     min-width: 24px;
     text-align: right;
+    flex-shrink: 0;
 }
 
 .dona-empty {
@@ -679,13 +689,12 @@
     font-size: 12px;
     margin-top: 10px;
     align-self: flex-start;
-    /* ← agrega esta línea */
 }
 
 /* ── LAYOUT TESTS ── */
 .tests-layout {
     display: grid;
-    grid-template-columns: 1fr 1fr;
+    grid-template-columns: repeat(auto-fit, minmax(260px, 1fr));
     gap: 14px;
     align-items: start;
 }
@@ -701,7 +710,6 @@
     flex-direction: column;
 }
 
-/* card que estira hasta llenar la columna derecha */
 .test-card--tall {
     height: 100%;
 }
@@ -853,6 +861,10 @@
     color: var(--gray-700);
     grid-column: 1;
     grid-row: 1;
+    min-width: 0;
+    overflow: hidden;
+    text-overflow: ellipsis;
+    white-space: nowrap;
 }
 
 .curso-nivel {
@@ -911,12 +923,6 @@
     grid-row: 2;
 }
 
-@media (max-width: 600px) {
-    .tests-layout {
-        grid-template-columns: 1fr;
-    }
-}
-
 /* ═══════════════════════════════════════════════
    FRASE INSPIRADORA
 ═══════════════════════════════════════════════ */
@@ -942,57 +948,8 @@
 }
 
 /* ═══════════════════════════════════════════════
-   RESPONSIVE
+   NIVEL SELECTOR
 ═══════════════════════════════════════════════ */
-@media (max-width: 600px) {
-    .dashboard-container {
-        padding: 16px;
-    }
-
-    .perfil-card {
-        flex-direction: column;
-        text-align: center;
-    }
-
-    .perfil-desc {
-        max-width: 100%;
-    }
-
-    .dona-body {
-        grid-template-columns: 1fr;
-    }
-
-    .dona-wrap {
-        margin: 0 auto;
-    }
-
-    .dona-kpis {
-        grid-template-columns: 1fr 1fr;
-    }
-
-    .tests-grid {
-        grid-template-columns: 1fr;
-    }
-
-    .curso-row {
-        grid-template-columns: 1fr auto;
-    }
-
-    .curso-puntaje {
-        grid-column: 2;
-    }
-
-    .curso-nivel {
-        grid-column: 1 / -1;
-        grid-row: 2;
-        width: fit-content;
-    }
-
-    .curso-barra {
-        grid-row: 3;
-    }
-}
-
 .nivel-selector {
     margin-top: 14px;
     padding: 16px;
@@ -1000,6 +957,8 @@
     border: 1.5px solid #e2e8f0;
     border-radius: 14px;
     animation: fadeSlideDown 0.2s ease;
+    max-width: 100%;
+    box-sizing: border-box;
 }
 
 .nivel-selector-titulo {
@@ -1010,7 +969,7 @@
 
 .nivel-selector-opciones {
     display: grid;
-    grid-template-columns: repeat(auto-fit, minmax(140px, 1fr));
+    grid-template-columns: repeat(auto-fit, minmax(130px, 1fr));
     gap: 8px;
     margin-bottom: 10px;
 }
@@ -1094,6 +1053,9 @@
     color: #dc2626;
 }
 
+/* ═══════════════════════════════════════════════
+   SEMANA SECTION
+═══════════════════════════════════════════════ */
 .semana-section {
     display: flex;
     flex-direction: column;
@@ -1122,26 +1084,31 @@
     display: inline-block;
     flex-shrink: 0;
     border: 1px solid rgba(0, 0, 0, 0.12);
-    /* ← borde sutil */
 }
 
+/* ═══════════════════════════════════════════════
+   REFLEXIÓN
+═══════════════════════════════════════════════ */
 .reflexion-card {
-    border-left: 3px solid #bae6fd;
+    background: linear-gradient(135deg, #e0f2fe 0%, #f0f9ff 60%, #e0f2fe 100%);
+    border: 1.5px solid var(--sky-300);
+    border-left: 4px solid var(--sky-500);
+    box-shadow: 0 4px 20px rgba(14, 165, 233, 0.12);
 }
 
 .reflexion-header {
     display: flex;
     align-items: center;
     gap: 8px;
-    margin-bottom: 12px;
+    margin-bottom: 14px;
 }
 
 .reflexion-icon {
-    width: 28px;
-    height: 28px;
+    width: 32px;
+    height: 32px;
     border-radius: 50%;
-    background: #f0f9ff;
-    border: 1px solid #bae6fd;
+    background: white;
+    border: none;
     display: flex;
     align-items: center;
     justify-content: center;
@@ -1150,25 +1117,235 @@
 
 .reflexion-label {
     font-size: 12px;
-    font-weight: 500;
-    color: #0369a1;
+    font-weight: 700;
+    color: var(--sky-600);
     text-transform: uppercase;
-    letter-spacing: 0.05em;
+    letter-spacing: 0.08em;
 }
 
 .reflexion-texto {
-    font-size: 14px;
-    color: var(--gray-700);
-    line-height: 1.75;
+    font-size: 15px;
+    color: var(--sky-900);
+    line-height: 1.8;
     font-style: italic;
-    border-left: 3px solid #bae6fd;
-    padding-left: 14px;
+    font-weight: 500;
+    border-left: 3px solid var(--sky-400);
+    padding: 10px 16px;
     margin: 0;
+    background: rgba(255, 255, 255, 0.6);
+    border-radius: 0 var(--radius-md) var(--radius-md) 0;
 }
 
+/* ═══════════════════════════════════════════════
+   DONA LEYENDA EXTRAS
+═══════════════════════════════════════════════ */
 .dona-leg-pct {
     font-size: 11px;
     color: #94a3b8;
     font-weight: 400;
     margin-left: 2px;
+}
+
+/* ═══════════════════════════════════════════════
+   ALERTAS ESPECIALISTA
+═══════════════════════════════════════════════ */
+.alertas-card {
+    margin-top: 0;
+}
+
+.alertas-list {
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-top: 14px;
+}
+
+.alerta-row {
+    display: flex;
+    align-items: center;
+    gap: 12px;
+    padding: 12px 14px;
+    border-radius: 10px;
+    background: #f8fafc;
+    border: 1px solid #e2e8f0;
+    flex-wrap: wrap;
+}
+
+.alerta-row--nueva {
+    background: #fffbeb;
+    border-color: #fcd34d;
+}
+
+.alerta-row-icono {
+    flex-shrink: 0;
+}
+
+.alerta-row-info {
+    display: flex;
+    flex-direction: column;
+    gap: 2px;
+    flex: 1;
+    min-width: 0;
+}
+
+.alerta-row-fecha {
+    font-size: 13px;
+    font-weight: 600;
+    color: #334155;
+}
+
+.alerta-row-desc {
+    font-size: 12px;
+    color: #64748b;
+}
+
+.alerta-row-badge {
+    font-size: 11px;
+    font-weight: 600;
+    color: #b45309;
+    background: #fef3c7;
+    border: 1px solid #fcd34d;
+    border-radius: 20px;
+    padding: 2px 10px;
+    white-space: nowrap;
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — tablet
+═══════════════════════════════════════════════ */
+@media (max-width: 768px) {
+    .dashboard-container {
+        padding: 20px;
+        gap: 16px;
+    }
+
+    .dona-kpis {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    .dona-kpis .dona-kpi-item:last-child {
+        grid-column: 1 / -1;
+    }
+}
+
+/* ═══════════════════════════════════════════════
+   RESPONSIVE — móvil
+═══════════════════════════════════════════════ */
+@media (max-width: 640px) {
+    .dashboard-container {
+        padding: 12px;
+        gap: 12px;
+    }
+
+    /* Perfil */
+    .perfil-card {
+        flex-direction: column;
+        text-align: center;
+        align-items: center;
+    }
+
+    .perfil-rol {
+        align-self: center;
+    }
+
+    .perfil-desc {
+        max-width: 100%;
+    }
+
+    /* Card base */
+    .card {
+        padding: 16px;
+    }
+
+    .dona-card {
+        padding: 16px;
+    }
+
+    /* Dona */
+    .dona-filtros {
+        gap: 8px;
+    }
+
+    .dona-filtros select {
+        flex: 1 1 calc(50% - 4px);
+        font-size: 12px;
+        padding: 6px 8px;
+    }
+
+    .dona-body {
+        grid-template-columns: 1fr;
+        justify-items: center;
+    }
+
+    .dona-wrap {
+        width: 180px;
+        height: 180px;
+        margin: 0 auto;
+    }
+
+    .dona-legend {
+        width: 100%;
+    }
+
+    .dona-kpis {
+        grid-template-columns: 1fr;
+    }
+
+    /* Tests */
+    .test-card--tall {
+        height: auto;
+    }
+
+    /* Cursos */
+    .curso-row {
+        grid-template-columns: 1fr auto;
+    }
+
+    .curso-nombre {
+        grid-column: 1;
+        grid-row: 1;
+    }
+
+    .curso-puntaje {
+        grid-column: 2;
+        grid-row: 1;
+    }
+
+    .curso-nivel {
+        grid-column: 1 / -1;
+        grid-row: 2;
+        width: fit-content;
+    }
+
+    .curso-barra {
+        grid-column: 1 / -1;
+        grid-row: 3;
+    }
+
+    /* Nivel selector */
+    .nivel-selector-opciones {
+        grid-template-columns: repeat(2, 1fr);
+    }
+
+    /* Alertas */
+    .alerta-row {
+        gap: 8px;
+    }
+
+    .alerta-row-badge {
+        margin-left: auto;
+    }
+
+    /* Frase */
+    .frase-estatica {
+        padding: 12px 14px;
+    }
+
+    .frase-comilla {
+        font-size: 28px;
+    }
+
+    .frase-estatica p {
+        font-size: 13px;
+    }
 }
