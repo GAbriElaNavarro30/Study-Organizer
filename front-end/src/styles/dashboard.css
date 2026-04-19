@@ -1349,3 +1349,196 @@
         font-size: 13px;
     }
 }
+
+/* ═══════════════════════════════════════════════
+   GAUGE KPI
+═══════════════════════════════════════════════ */
+.dona-gauge-section {
+    padding-top: 5px;
+    display: flex;
+    flex-direction: column;
+    gap: 10px;
+    margin-bottom: 20px;
+}
+
+.dona-gauge-header {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+}
+
+.dona-gauge-titulo {
+    font-size: 12px;
+    font-weight: 500;
+    color: var(--sky-700);
+    display: flex;
+    align-items: center;
+    text-transform: uppercase;
+    letter-spacing: 0.05em;
+}
+
+.dona-gauge-empty {
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    flex-wrap: wrap;
+    gap: 10px;
+    padding: 10px 0;
+}
+
+.dona-gauge-empty p {
+    font-size: 12px;
+    color: var(--gray-400);
+    margin: 0;
+}
+
+.gauge-wrap {
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+    gap: 10px;
+    
+}
+
+.gauge-svg {
+    width: 100%;
+    max-width: 400px;
+    height: 180px;
+}
+
+.gauge-footer {
+    display: flex;
+    justify-content: center;
+}
+
+.gauge-badge {
+    display: inline-flex;
+    align-items: center;
+    font-size: 12px;
+    font-weight: 500;
+    padding: 5px 14px;
+    border-radius: 999px;
+}
+
+.gauge-badge--ok {
+    background: #dcfce7;
+    color: #16a34a;
+}
+
+.gauge-badge--pend {
+    background: var(--sky-100);
+    color: var(--sky-700);
+}
+
+/* Botones de meta reutilizados */
+.dona-meta-btn-link {
+    background: none;
+    border: none;
+    font-size: 12px;
+    color: var(--sky-500);
+    cursor: pointer;
+    padding: 0;
+    transition: color 0.15s;
+}
+
+.dona-meta-btn-link:hover {
+    color: var(--sky-700);
+}
+
+.dona-meta-btn-link--danger {
+    color: #dc2626;
+}
+
+.dona-meta-btn-link--danger:hover {
+    color: #991b1b;
+}
+
+.dona-meta-set-btn {
+    padding: 5px 14px;
+    border-radius: 999px;
+    background: var(--white);
+    border: 1px solid var(--sky-300);
+    color: var(--sky-600);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dona-meta-set-btn:hover {
+    background: var(--sky-100);
+}
+
+.dona-meta-form {
+    display: flex;
+    align-items: center;
+    gap: 8px;
+    flex-wrap: wrap;
+}
+
+.dona-meta-input {
+    width: 90px;
+    padding: 7px 10px;
+    border-radius: var(--radius-md);
+    border: 1px solid var(--sky-300);
+    background: var(--white);
+    font-size: 13px;
+    color: var(--gray-900);
+    outline: none;
+    transition: border 0.15s;
+}
+
+.dona-meta-input:focus {
+    border-color: var(--sky-500);
+    box-shadow: 0 0 0 3px rgba(14, 165, 233, 0.12);
+}
+
+.dona-meta-input::-webkit-inner-spin-button,
+.dona-meta-input::-webkit-outer-spin-button {
+    -webkit-appearance: none;
+}
+
+.dona-meta-form-label {
+    font-size: 12px;
+    color: var(--gray-400);
+}
+
+.dona-meta-confirm-btn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: var(--sky-500);
+    color: var(--white);
+    border: none;
+    font-size: 12px;
+    font-weight: 500;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dona-meta-confirm-btn:hover {
+    background: var(--sky-600);
+}
+
+.dona-meta-cancel-btn {
+    padding: 6px 14px;
+    border-radius: 999px;
+    background: transparent;
+    color: var(--gray-400);
+    border: 1px solid var(--gray-200);
+    font-size: 12px;
+    cursor: pointer;
+    transition: background 0.15s;
+}
+
+.dona-meta-cancel-btn:hover {
+    background: var(--gray-100);
+}
+
+.gauge-badge--alerta {
+    background: #fee2e2;
+    color: #991b1b;
+}
+
+.gauge-badge--neutro {
+    background: var(--sky-100);
+    color: var(--sky-700);
+}

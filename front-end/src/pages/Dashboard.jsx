@@ -12,7 +12,11 @@ import {
     IoLeafOutline,
     IoWaterOutline,
     IoFlameOutline,
-    IoSparklesOutline
+    IoSparklesOutline,
+    IoAlertCircleOutline,
+    IoArrowUpOutline,
+    IoArrowDownOutline,
+    IoRemoveOutline,
 } from "react-icons/io5";
 import { AuthContext } from "../context/AuthContext";
 import "../styles/dashboard.css";
@@ -48,9 +52,202 @@ function formatearFechaHora(fechaRaw) {
     return `${fechaStr} · ${horaStr}`;
 }
 
+
 /* ══════════════════════════════════════════════════════════════
    COMPONENTE DONA
 ══════════════════════════════════════════════════════════════ */
+
+function GaugeKPI({ total, meta, filtroClasif }) {
+    const svgRef = useRef(null);
+
+    // ── Interpretación según contexto ──
+    const superaMeta = total > meta;
+    const alcanzaMeta = total === meta;
+    const bajoDeMeta = total < meta;
+    const diff = Math.abs(total - meta);
+
+    const interpretacion = (() => {
+        if (filtroClasif === "positiva") {
+            if (superaMeta) return { estado: "en-tendencia", icono: <IoArrowUpOutline size={13} />, badge: `Excelente — ${diff} registros extra sobre la meta` };
+            if (alcanzaMeta) return { estado: "en-tendencia", icono: <IoCheckmarkCircleOutline size={13} />, badge: `Meta alcanzada exactamente` };
+            return { estado: "fuera", icono: <IoArrowDownOutline size={13} />, badge: `Fuera de tendencia — faltan ${diff} registros` };
+        }
+        if (filtroClasif === "negativa") {
+            if (superaMeta) return { estado: "alerta", icono: <IoAlertCircleOutline size={13} />, badge: `Alerta — ${diff} registros de más en emociones negativas` };
+            if (alcanzaMeta) return { estado: "alerta", icono: <IoAlertCircleOutline size={13} />, badge: `Alerta — alcanzaste el límite de emociones negativas` };
+            return { estado: "en-tendencia", icono: <IoCheckmarkCircleOutline size={13} />, badge: `Controlado — ${diff} registros por debajo de la meta` };
+        }
+        // Sin filtro o neutra
+        if (superaMeta) return { estado: "neutro-ok", icono: <IoArrowUpOutline size={13} />, badge: `Superado — ${diff} registros extra` };
+        if (alcanzaMeta) return { estado: "neutro-ok", icono: <IoCheckmarkCircleOutline size={13} />, badge: `Meta alcanzada exactamente` };
+        return { estado: "neutro-pend", icono: <IoRemoveOutline size={13} />, badge: `En progreso — faltan ${diff} registros` };
+    })();
+
+    // Colores del arco según estado
+    const COLORES_ARCO = {
+        "en-tendencia": { principal: "#38bdf8", exceso: "#16a34a" },
+        "fuera": { principal: "#38bdf8", exceso: "#38bdf8" },
+        "alerta": { principal: "#38bdf8", exceso: "#dc2626" },
+        "neutro-ok": { principal: "#38bdf8", exceso: "#0369a1" },
+        "neutro-pend": { principal: "#38bdf8", exceso: "#38bdf8" },
+    };
+
+    const COLORES_BADGE = {
+        "en-tendencia": "gauge-badge--ok",
+        "fuera": "gauge-badge--pend",
+        "alerta": "gauge-badge--alerta",
+        "neutro-ok": "gauge-badge--neutro",
+        "neutro-pend": "gauge-badge--pend",
+    };
+
+    const coloresArco = COLORES_ARCO[interpretacion.estado];
+
+    useEffect(() => {
+        if (!svgRef.current) return;
+
+        const svg = svgRef.current;
+        const W = 280, H = 175;
+        const cx = W / 2, cy = 148;
+        const R = 110, r = 78;
+        const DEG_MIN = 180, DEG_MAX = 0;
+
+        const maxValor = Math.ceil(Math.max(meta * 1.5, total + 2, 10));
+
+        const degToRad = d => (d * Math.PI) / 180;
+        const valorAAngulo = val => DEG_MIN - Math.min(val / maxValor, 1) * 180;
+        const polarToXY = (angleDeg, radio) => ({
+            x: cx + radio * Math.cos(degToRad(angleDeg)),
+            y: cy - radio * Math.sin(degToRad(angleDeg)),
+        });
+
+        const mk = (tag, attrs) => {
+            const el = document.createElementNS("http://www.w3.org/2000/svg", tag);
+            Object.entries(attrs).forEach(([k, v]) => el.setAttribute(k, v));
+            return el;
+        };
+
+        while (svg.firstChild) svg.removeChild(svg.firstChild);
+        svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
+
+        const anguloMeta = valorAAngulo(meta);
+        const anguloActual = valorAAngulo(total);
+
+        // ── Fondo gris completo ──
+        const bgPath = (() => {
+            const s = degToRad(DEG_MIN), e = degToRad(DEG_MAX);
+            return `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
+                    A ${R} ${R} 0 0 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                    A ${r} ${r} 0 0 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`;
+        })();
+        svg.appendChild(mk("path", { d: bgPath, fill: "#e2e8f0" }));
+
+        // ── Arco hasta el mínimo(meta, actual) en color principal ──
+        const anguloHastaMenor = valorAAngulo(Math.min(total, meta));
+        if (Math.min(total, meta) > 0) {
+            const s = degToRad(DEG_MIN), e = degToRad(anguloHastaMenor);
+            const largeArc = Math.abs(DEG_MIN - anguloHastaMenor) > 180 ? 1 : 0;
+            svg.appendChild(mk("path", {
+                d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
+                    A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                    A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+                fill: coloresArco.principal,
+            }));
+        }
+
+        // ── Arco de exceso (zona más allá de la meta) ──
+        if (superaMeta || alcanzaMeta) {
+            const s = degToRad(anguloMeta), e = degToRad(anguloActual);
+            const largeArc = Math.abs(anguloMeta - anguloActual) > 180 ? 1 : 0;
+            svg.appendChild(mk("path", {
+                d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
+                    A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                    A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+                fill: coloresArco.exceso,
+            }));
+        }
+
+        // ── Línea de meta ──
+        const mp1 = polarToXY(anguloMeta, r - 6);
+        const mp2 = polarToXY(anguloMeta, R + 6);
+        svg.appendChild(mk("line", {
+            x1: mp1.x, y1: mp1.y, x2: mp2.x, y2: mp2.y,
+            stroke: "#f59e0b", "stroke-width": "2.5", "stroke-dasharray": "4 3",
+        }));
+
+        // Etiqueta meta pegada a la línea
+        const metaLbl = polarToXY(anguloMeta, R + 22);
+        const anchorMeta = anguloMeta > 90 ? "end" : anguloMeta < 90 ? "start" : "middle";
+        const metaTxt = mk("text", {
+            x: metaLbl.x, y: metaLbl.y,
+            "text-anchor": anchorMeta,
+            "font-size": "10", fill: "#b45309", "font-weight": "600",
+        });
+        metaTxt.textContent = `Meta: ${meta}`;
+        svg.appendChild(metaTxt);
+
+        // ── Aguja ──
+        const agujaFin = polarToXY(anguloActual, R - 8);
+        const agujaBase1 = polarToXY(anguloActual + 90, 6);
+        const agujaBase2 = polarToXY(anguloActual - 90, 6);
+        svg.appendChild(mk("polygon", {
+            points: `${agujaFin.x},${agujaFin.y} ${agujaBase1.x},${agujaBase1.y} ${agujaBase2.x},${agujaBase2.y}`,
+            fill: "#0369a1",
+        }));
+        svg.appendChild(mk("circle", { cx, cy, r: "7", fill: "#0369a1" }));
+
+        // ── Etiquetas min / max ──
+        const lblMin = mk("text", { x: cx - R - 2, y: cy + 14, "text-anchor": "end", "font-size": "10", fill: "#94a3b8" });
+        lblMin.textContent = "0";
+        svg.appendChild(lblMin);
+
+        const lblMax = mk("text", { x: cx + R + 2, y: cy + 14, "text-anchor": "start", "font-size": "10", fill: "#94a3b8" });
+        lblMax.textContent = maxValor;
+        svg.appendChild(lblMax);
+
+        // ── Valor central ──
+        const colorValor = {
+            "en-tendencia": "#16a34a",
+            "fuera": "#0369a1",
+            "alerta": "#dc2626",
+            "neutro-ok": "#0369a1",
+            "neutro-pend": "#0369a1",
+        }[interpretacion.estado];
+
+        const valTxt = mk("text", {
+            x: cx, y: cy - 18,
+            "text-anchor": "middle", "font-size": "26", "font-weight": "700",
+            fill: colorValor,
+        });
+        valTxt.textContent = total;
+        svg.appendChild(valTxt);
+
+        const valSub = mk("text", {
+            x: cx, y: cy - 4,
+            "text-anchor": "middle", "font-size": "10", fill: "#94a3b8",
+        });
+        valSub.textContent = "registros";
+        svg.appendChild(valSub);
+
+    }, [total, meta, filtroClasif]);
+
+    return (
+        <div className="gauge-wrap">
+            <svg ref={svgRef} className="gauge-svg" />
+            <div className="gauge-footer">
+                <span className={`gauge-badge ${COLORES_BADGE[interpretacion.estado]}`}>
+                    <span style={{ marginRight: 5, display: "inline-flex", alignItems: "center" }}>
+                        {interpretacion.icono}
+                    </span>
+                    {interpretacion.badge}
+                </span>
+            </div>
+        </div>
+    );
+}
+
 function DonaEmociones({ historial }) {
     const canvasRef = useRef(null);
     const chartRef = useRef(null);
@@ -59,6 +256,35 @@ function DonaEmociones({ historial }) {
     const [filtroAnio, setFiltroAnio] = useState("");
     const [filtroNivel, setFiltroNivel] = useState("");
     const [filtroClasif, setFiltroClasif] = useState("");
+
+    const META_KEY = "dona_meta";
+    const [metaInput, setMetaInput] = useState("");
+    const [metaGuardada, setMetaGuardada] = useState(null);
+    const [editandoMeta, setEditandoMeta] = useState(false);
+
+    useEffect(() => {
+        const guardada = localStorage.getItem(META_KEY);
+        if (guardada !== null) {
+            const num = parseInt(guardada, 10);
+            if (!isNaN(num) && num > 0) setMetaGuardada(num);
+        }
+    }, []);
+
+    const guardarMeta = () => {
+        const num = parseInt(metaInput, 10);
+        if (isNaN(num) || num <= 0) return;
+        localStorage.setItem(META_KEY, String(num));
+        setMetaGuardada(num);
+        setMetaInput("");
+        setEditandoMeta(false);
+    };
+
+    const eliminarMeta = () => {
+        localStorage.removeItem(META_KEY);
+        setMetaGuardada(null);
+        setEditandoMeta(false);
+        setMetaInput("");
+    };
 
     const aniosDisponibles = [...new Set(historial.map(h => new Date(h.fecha).getFullYear()))].sort();
     const emocionesDisponibles = [...new Set(historial.map(h => h.emo))].sort();
@@ -126,6 +352,54 @@ function DonaEmociones({ historial }) {
 
     return (
         <div className="dona-card">
+
+            {/* ── KPI GAUGE ── */}
+            <div className="dona-gauge-section">
+                <div className="dona-gauge-header">
+                    <span className="dona-gauge-titulo">
+                        <IoTrendingUpOutline size={14} style={{ marginRight: 5 }} />
+                        KPI de tendencia
+                    </span>
+                    {metaGuardada && !editandoMeta && (
+                        <div style={{ display: "flex", gap: 10 }}>
+                            <button className="dona-meta-btn-link" onClick={() => { setMetaInput(String(metaGuardada)); setEditandoMeta(true); }}>Editar meta</button>
+                            <button className="dona-meta-btn-link dona-meta-btn-link--danger" onClick={eliminarMeta}>Quitar</button>
+                        </div>
+                    )}
+                </div>
+
+                {!metaGuardada && !editandoMeta && (
+                    <div className="dona-gauge-empty">
+                        <p>Define una meta de registros para ver el indicador de tendencia.</p>
+                        <button className="dona-meta-set-btn" onClick={() => setEditandoMeta(true)}>
+                            + Establecer meta
+                        </button>
+                    </div>
+                )}
+
+                {editandoMeta && (
+                    <div className="dona-meta-form" style={{ marginTop: 8 }}>
+                        <input
+                            type="number"
+                            min="1"
+                            placeholder="Ej. 20"
+                            value={metaInput}
+                            onChange={e => setMetaInput(e.target.value)}
+                            onKeyDown={e => e.key === "Enter" && guardarMeta()}
+                            className="dona-meta-input"
+                            autoFocus
+                        />
+                        <span className="dona-meta-form-label">registros</span>
+                        <button className="dona-meta-confirm-btn" onClick={guardarMeta}>Guardar</button>
+                        <button className="dona-meta-cancel-btn" onClick={() => { setEditandoMeta(false); setMetaInput(""); }}>Cancelar</button>
+                    </div>
+                )}
+
+                {metaGuardada && !editandoMeta && (
+                    <GaugeKPI total={total} meta={metaGuardada} filtroClasif={filtroClasif} />
+                )}
+            </div>
+
             <div className="dona-header">
                 <div>
                     <h3 className="sec-title">Registro emocional</h3>
@@ -140,14 +414,12 @@ function DonaEmociones({ historial }) {
                         <option key={emo} value={emo}>{emo}</option>
                     ))}
                 </select>
-
                 <select value={filtroClasif} onChange={e => setFiltroClasif(e.target.value)}>
                     <option value="">Todas las categorías</option>
                     <option value="positiva">Positiva</option>
                     <option value="neutra">Neutra</option>
                     <option value="negativa">Negativa</option>
                 </select>
-
                 <select value={filtroNivel} onChange={e => setFiltroNivel(e.target.value)}>
                     <option value="">Todos los niveles</option>
                     <option value="bajo">Bajo</option>
@@ -155,14 +427,12 @@ function DonaEmociones({ historial }) {
                     <option value="alto">Alto</option>
                     <option value="critico">Crítico</option>
                 </select>
-
                 <select value={filtroMes} onChange={e => setFiltroMes(e.target.value)}>
                     <option value="">Todos los meses</option>
                     {MESES.map((m, i) => (
                         <option key={i} value={i}>{m}</option>
                     ))}
                 </select>
-
                 <select value={filtroAnio} onChange={e => setFiltroAnio(e.target.value)}>
                     <option value="">Todos los años</option>
                     {aniosDisponibles.map(a => (
@@ -193,20 +463,11 @@ function DonaEmociones({ historial }) {
                             const pct = Math.round(e[1] / total * 100);
                             return (
                                 <div className="dona-leg-row" key={e[0]}>
-                                    <span
-                                        className="dona-leg-dot"
-                                        style={{ background: DONA_COLORES[i % DONA_COLORES.length] }}
-                                    />
+                                    <span className="dona-leg-dot" style={{ background: DONA_COLORES[i % DONA_COLORES.length] }} />
                                     <div className="dona-leg-info">
                                         <span className="dona-leg-name">{e[0]}</span>
                                         <div className="dona-leg-track">
-                                            <div
-                                                className="dona-leg-fill"
-                                                style={{
-                                                    width: `${pct}%`,
-                                                    background: DONA_COLORES[i % DONA_COLORES.length],
-                                                }}
-                                            />
+                                            <div className="dona-leg-fill" style={{ width: `${pct}%`, background: DONA_COLORES[i % DONA_COLORES.length] }} />
                                         </div>
                                     </div>
                                     <span className="dona-leg-count">{e[1]} <span className="dona-leg-pct">({pct}%)</span></span>
@@ -227,7 +488,7 @@ function DonaEmociones({ historial }) {
                     <span className="dona-kpi-val dona-kpi-val--sm">{dominante}</span>
                 </div>
                 <div className="dona-kpi-item">
-                    <span className="dona-kpi-label">Positivas / Neutras / Difíciles</span>
+                    <span className="dona-kpi-label">Positivas / Neutras / Negativas</span>
                     <span className="dona-kpi-val dona-kpi-val--sm">
                         {positivas} ({total ? Math.round(positivas / total * 100) : 0}%)
                         {" · "}
@@ -237,9 +498,12 @@ function DonaEmociones({ historial }) {
                     </span>
                 </div>
             </div>
+
+
         </div>
     );
 }
+
 
 /* ══════════════════════════════════════════════════════════════
    VISTA SEMANAL
@@ -358,6 +622,7 @@ function VistaSemanal({ historial }) {
         </div>
     );
 }
+
 
 /* ══════════════════════════════════════════════════════════════
    DASHBOARD PRINCIPAL
@@ -829,6 +1094,7 @@ export function Dashboard() {
                 </section>
             )}
 
+
             {/* ── RESULTADOS DE TESTS ── */}
             <section className="card">
                 <h3 className="sec-title">
@@ -875,7 +1141,7 @@ export function Dashboard() {
                         <div className="test-card">
                             <div className="test-card-header">
                                 <IoSchoolOutline size={14} color="#0ea5e9" />
-                                <span>Puntaje por curso</span>
+                                <span>Último untaje por curso</span>
                             </div>
                             <div className="cursos-list">
                                 {cursosEstudiante.length === 0 ? (
