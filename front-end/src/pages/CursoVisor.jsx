@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import { 
+import {
     IoArrowBackOutline, IoCheckmarkCircleOutline,
     IoChevronBackOutline, IoChevronForwardOutline,
     IoDocumentTextOutline, IoTrophyOutline,
@@ -147,6 +147,7 @@ export function CursoVisor() {
         preguntasActuales,
         hayAnterior, haysSiguiente,
         respuestas, resultadoTest,
+        marcadoEnSesion,
         testPendiente, siguienteBloqueado,
         mostrarModalSalir, setMostrarModalSalir,
         seleccionarRespuesta, enviarTest,
@@ -160,7 +161,6 @@ export function CursoVisor() {
 
     const completado = progreso.completado;
 
-    // Dispara el modal solo la primera vez que se completa en esta sesión
     useEffect(() => {
         if (completado && !soloLectura && !completadoPrevio.current) {
             completadoPrevio.current = true;
@@ -178,6 +178,18 @@ export function CursoVisor() {
         (s.contenidos || []).map((c, ci) => ({ si, ci, id: c.id_contenido }))
     );
     const idxPlano = todosLosContenidos.findIndex(x => x.si === seccionIdx && x.ci === contenidoIdx);
+
+    // ── Helpers para bloqueo del sidebar ──
+    const toPlano = (si, ci) =>
+        secciones.slice(0, si).reduce((acc, s) => acc + (s.contenidos?.length || 0), 0) + ci;
+
+    const puedeIr = (si, ci) => {
+        if (soloLectura) return true;
+        const dest = toPlano(si, ci);
+        const actual = toPlano(seccionIdx, contenidoIdx);
+        if (dest <= actual) return true;
+        return marcadoEnSesion && !testPendiente && dest === actual + 1;
+    };
 
     return (
         <div className={`cv-app ${animado ? "cv-animated" : ""}`}>
@@ -244,20 +256,33 @@ export function CursoVisor() {
                                                     )}
                                                 </div>
                                             </div>
+
                                             {(seccion.contenidos || []).map((c, ci) => {
                                                 const visto = contenidosVistos.has(c.id_contenido);
                                                 const activo = si === seccionIdx && ci === contenidoIdx;
+                                                const bloqueado = !activo && !puedeIr(si, ci);
+
                                                 return (
-                                                    <div key={c.id_contenido}
-                                                        className={`cv-contenido-nav-item${activo ? " cv-contenido-nav-item--active" : ""}${visto && !activo ? " cv-contenido-nav-item--visto" : ""}`}
-                                                        onClick={() => irAContenido(si, ci)}>
-                                                        {visto
-                                                            ? <IoCheckmarkCircleOutline size={14} className="cv-nav-check" />
-                                                            : <span className="cv-nav-dot" />}
+                                                    <div
+                                                        key={c.id_contenido}
+                                                        className={`cv-contenido-nav-item${activo ? " cv-contenido-nav-item--active" : ""}${visto && !activo ? " cv-contenido-nav-item--visto" : ""}${bloqueado ? " cv-contenido-nav-item--bloqueado" : ""}`}
+                                                        onClick={() => irAContenido(si, ci)}
+                                                        title={bloqueado
+                                                            ? testPendiente
+                                                                ? "Responde el cuestionario antes de continuar"
+                                                                : "Completa el contenido actual primero"
+                                                            : undefined}
+                                                    >
+                                                        {bloqueado
+                                                            ? <IoLockClosedOutline size={13} className="cv-nav-lock" />
+                                                            : visto
+                                                                ? <IoCheckmarkCircleOutline size={14} className="cv-nav-check" />
+                                                                : <span className="cv-nav-dot" />}
                                                         {c.titulo || `Contenido ${ci + 1}`}
                                                     </div>
                                                 );
                                             })}
+
                                             {seccion.preguntas?.length > 0 && (
                                                 <div className="cv-contenido-nav-item cv-contenido-nav-item--test"
                                                     onClick={() => irAContenido(si, 0)}>
@@ -315,8 +340,6 @@ export function CursoVisor() {
                                             onEnviar={enviarTest}
                                             soloLectura={soloLectura}
                                         />
-
-                                        {/* Banner verde eliminado — reemplazado por modal */}
 
                                         {soloLectura && (
                                             <BannerArchivado

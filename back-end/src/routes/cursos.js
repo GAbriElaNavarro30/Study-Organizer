@@ -39,7 +39,8 @@ import {
     estadisticasTutor,
     nivelesPorCurso,
     misCursosConResultados,
-    inscripcionesFiltradas
+    inscripcionesFiltradas,
+    obtenerRespuestasIntento,
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -55,7 +56,7 @@ router.get("/dimensiones", listarDimensiones);
 // ─── Detalle estudiante (ANTES de /cursos/:id) ─────────────
 router.get("/detalle", obtenerCursoEstudiante);
 
-// ─── Progreso e Intentos (ANTES de /cursos/:id) ────────────
+// ─── Progreso e Intentos ───────────────────────────────────
 router.post("/intentos", iniciarIntento);
 router.post("/progreso/:id_contenido", marcarContenidoVisto);
 router.post("/test/respuestas", guardarRespuestasTest);
@@ -63,7 +64,8 @@ router.post("/test/respuestas", guardarRespuestasTest);
 // ─── Cursos ────────────────────────────────────────────────
 router.get("/cursos", listarCursos);
 router.get("/recomendados/por-dimension", listarCursosPorDimension);
-router.get("/cursos/:id", obtenerCurso);           // ← al final
+router.get("/respuestas-intento", obtenerRespuestasIntento); // ← ANTES de /:id
+router.get("/cursos/:id", obtenerCurso);
 router.post("/cursos", upload.single("foto"), crearCurso);
 router.get("/cursos/:id/estudiantes", listarEstudiantesCurso);
 router.delete("/cursos/:id/estudiantes/:id_usuario", eliminarEstudianteCurso);
@@ -96,18 +98,16 @@ router.delete("/inscripciones", cancelarInscripcion);
 router.get("/resultado", obtenerResultadoCurso);
 router.get("/mi-historial", miHistorialResultados);
 
-
 router.get("/cursos/:id/resultados", listarResultadosCurso);
 router.get("/cursos/:id/estudiantes/:id_usuario/historial", historialResultadosEstudiante);
 router.get("/intentos/:id_intento/resultado", obtenerResultadoIntento);
- 
-// para el dahsboard del tutor
-router.get("/estadisticas-tutor/niveles", verificarToken, nivelesPorCurso);
-router.get("/estadisticas-tutor", verificarToken, estadisticasTutor);
-router.get("/estadisticas-tutor/inscripciones", verificarToken, inscripcionesFiltradas);
 
-// para el dashboard del estudiante
+// ─── Dashboard tutor ───────────────────────────────────────
+router.get("/estadisticas-tutor/niveles", nivelesPorCurso);
+router.get("/estadisticas-tutor", estadisticasTutor);
+router.get("/estadisticas-tutor/inscripciones", inscripcionesFiltradas);
+
+// ─── Dashboard estudiante ──────────────────────────────────
 router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
-
 
 export default router;

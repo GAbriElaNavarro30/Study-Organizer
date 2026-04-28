@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
- 
+
 export function useCursoVisor() {
     const { state } = useLocation();
     const id = state?.id_curso;
@@ -46,17 +46,89 @@ export function useCursoVisor() {
             }
 
             setCurso(data.curso);
-
             if (data.curso?.archivado) setSoloLectura(true);
 
             const vistosDelServidor = new Set(data.progreso?.contenidos_vistos || []);
             setContenidosVistosIniciales(vistosDelServidor);
             setContenidosVistos(new Set(vistosDelServidor));
 
+            // ── Restaurar respuestas del intento activo (si existe y no está completado) ──
+            if (!data.curso?.archivado) {
+                try {
+                    const { data: dataRespuestas } = await api.get(`/cursos/respuestas-intento?id_curso=${id}`);
+
+                    if (dataRespuestas?.respuestas?.length > 0) {
+                        // Agrupar respuestas por sección
+                        const respuestasPorSeccion = {};
+                        const resultadosPorSeccion = {};
+
+                        // Construir mapa de id_seccion -> índice de sección
+                        const mapaSeccion = {};
+                        (data.curso?.secciones || []).forEach((seccion, si) => {
+                            mapaSeccion[seccion.id_seccion] = si;
+                        });
+
+                        // Agrupar respuestas elegidas por sección
+                        dataRespuestas.respuestas.forEach(r => {
+                            const si = mapaSeccion[r.id_seccion];
+                            if (si === undefined) return;
+
+                            if (!respuestasPorSeccion[si]) respuestasPorSeccion[si] = {};
+                            respuestasPorSeccion[si][r.id_test] = r.id_opcion;
+                        });
+
+                        // Calcular resultado por sección
+                        (data.curso?.secciones || []).forEach((seccion, si) => {
+                            const respSec = respuestasPorSeccion[si];
+                            if (!respSec || !seccion.preguntas?.length) return;
+
+                            // Solo marcar como respondido si respondió todas las preguntas de esa sección
+                            const todasRespondidas = seccion.preguntas.every(p => respSec[p.id_test] !== undefined);
+                            if (!todasRespondidas) return;
+
+                            let correctas = 0;
+                            seccion.preguntas.forEach(p => {
+                                const opcionElegida = p.opciones?.find(o => o.id_opcion === respSec[p.id_test]);
+                                if (opcionElegida?.es_correcta) correctas++;
+                            });
+
+                            resultadosPorSeccion[si] = {
+                                correctas,
+                                total: seccion.preguntas.length,
+                            };
+                        });
+
+                        if (Object.keys(respuestasPorSeccion).length > 0) {
+                            setRespuestasPorSeccion(respuestasPorSeccion);
+                        }
+                        if (Object.keys(resultadosPorSeccion).length > 0) {
+                            setResultadosPorSeccion(resultadosPorSeccion);
+                        }
+
+                    } else if (dataRespuestas?.intento_completado) {
+                        // El intento ya está completado — marcar todos los tests como restaurados
+                        const resultadosRestaurados = {};
+                        (data.curso?.secciones || []).forEach((seccion, si) => {
+                            if (seccion.preguntas?.length > 0) {
+                                resultadosRestaurados[si] = {
+                                    correctas: null,
+                                    total: seccion.preguntas.length,
+                                    restaurado: true,
+                                };
+                            }
+                        });
+                        if (Object.keys(resultadosRestaurados).length > 0) {
+                            setResultadosPorSeccion(resultadosRestaurados);
+                        }
+                    }
+                } catch {
+                    // Si falla no es crítico
+                }
+            }
+
             if (data.curso?.secciones) {
                 let ultimoSi = 0;
                 let ultimoCi = 0;
-                let encontrado = false;
 
                 for (let si = 0; si < data.curso.secciones.length; si++) {
                     const seccContenidos = data.curso.secciones[si].contenidos || [];
@@ -64,7 +136,6 @@ export function useCursoVisor() {
                         if (vistosDelServidor.has(seccContenidos[ci].id_contenido)) {
                             ultimoSi = si;
                             ultimoCi = ci;
-                            encontrado = true;
                         }
                     }
                 }
@@ -200,6 +271,37 @@ export function useCursoVisor() {
     };
 
     const irAContenido = (si, ci) => {
+        if (soloLectura) {
+            setSeccionIdx(si);
+            setContenidoIdx(ci);
+            return;
+        }
+
+        // Calcular índice plano del destino y del actual
+        const secciones = curso?.secciones || [];
+
+        const toPlano = (si, ci) => {
+            let idx = 0;
+            for (let s = 0; s < si; s++) idx += secciones[s]?.contenidos?.length || 0;
+            return idx + ci;
+        };
+
+        const idxActual = toPlano(seccionIdx, contenidoIdx);
+        const idxDestino = toPlano(si, ci);
+
+        // Siempre puede ir hacia atrás
+        if (idxDestino <= idxActual) {
+            setSeccionIdx(si);
+            setContenidoIdx(ci);
+            return;
+        }
+
+        // Para ir hacia adelante: el actual debe estar visto y sin test pendiente
+        if (!marcadoEnSesion || testPendiente) return;
+
+        // Solo puede avanzar al inmediato siguiente, no saltar
+        if (idxDestino > idxActual + 1) return;
+
         setSeccionIdx(si);
         setContenidoIdx(ci);
     };

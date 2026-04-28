@@ -1344,7 +1344,11 @@
 }
 
 .cv-contenido-nav-item--bloqueado {
-    opacity: 0.45;
+    opacity: 0.4;
     cursor: not-allowed;
-    pointer-events: auto; /* mantener para mostrar el tooltip */
+}
+
+.cv-nav-lock {
+    color: var(--color-text-tertiary);
+    flex-shrink: 0;
 }

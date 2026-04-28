@@ -9,7 +9,7 @@ import { IntentoCurso } from "../models/IntentoCurso.js";
 import { Progreso } from "../models/Progreso.js";
 import { RespuestaTestCurso } from "../models/RespuestaTestCurso.js";
 import { ResultadoCurso } from "../models/ResultadoCurso.js";
- 
+
 import { db } from "../config/db.js";
 import cloudinary from "../config/cloudinary.js";
 import axios from "axios";
@@ -1521,5 +1521,37 @@ export const inscripcionesFiltradas = async (req, res) => {
     } catch (error) {
         console.error("inscripcionesFiltradas:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener inscripciones." });
+    }
+};
+
+export const obtenerRespuestasIntento = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.query;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (!inscripcion) {
+            return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+        }
+
+        const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
+        if (!intento || intento.completado) {
+            // No hay intento activo sin completar
+            return res.json({ ok: true, respuestas: [], intento_completado: !!intento?.completado });
+        }
+
+        const [respuestas] = await db.query(
+            `SELECT rtc.id_test, rtc.id_opcion, rtc.es_correcta,
+                    pt.id_seccion
+             FROM Respuesta_Test_Curso rtc
+             JOIN Pregunta_Test pt ON pt.id_test = rtc.id_test
+             WHERE rtc.id_intento = ?`,
+            [intento.id_intento]
+        );
+
+        res.json({ ok: true, respuestas, intento_completado: false });
+    } catch (error) {
+        console.error("obtenerRespuestasIntento:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener respuestas." });
     }
 };
