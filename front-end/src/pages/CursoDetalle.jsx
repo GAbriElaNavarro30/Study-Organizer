@@ -1,7 +1,7 @@
 // src/pages/Cursos/CursoDetalle.jsx
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
-import {
+import { 
     IoArrowBackOutline, IoBookOutline, IoLayersOutline,
     IoPersonOutline, IoCheckmarkCircleOutline,
     IoPlayCircleOutline, IoRefreshOutline,

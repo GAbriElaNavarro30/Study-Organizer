@@ -1,6 +1,6 @@
 import { IoTrophyOutline, IoCloseOutline, IoCheckmarkCircleOutline } from "react-icons/io5";
 import "../styles/modalCursoCompletado.css";
-
+ 
 export function ModalCursoCompletado({ titulo, onCerrar }) {
     return (
         <div className="mcc-overlay" onClick={onCerrar}>

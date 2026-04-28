@@ -1,6 +1,6 @@
 // src/models/Progreso.js
 import { db } from "../config/db.js";
-
+ 
 export class Progreso {
     constructor({ id_intento, id_contenido, visto = false }) {
         this.id_intento = id_intento;

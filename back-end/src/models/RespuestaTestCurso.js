@@ -1,6 +1,6 @@
 // src/models/RespuestaTestCurso.js
 import { db } from "../config/db.js";
-
+ 
 export class RespuestaTestCurso {
     constructor({ es_correcta, id_intento, id_test, id_opcion }) {
         this.es_correcta = es_correcta;

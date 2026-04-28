@@ -1,6 +1,6 @@
 // src/pages/CursoVisorTutor.jsx
 import { useState } from "react";
-import {
+import { 
     IoArrowBackOutline, IoBookOutline, IoChevronDownOutline,
     IoChevronUpOutline, IoCheckmarkCircle, IoEllipseOutline,
     IoHelpCircleOutline, IoSparkles,

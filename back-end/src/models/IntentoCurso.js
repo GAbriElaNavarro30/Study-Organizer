@@ -6,7 +6,7 @@ export class IntentoCurso {
         this.numero_intento = numero_intento;
         this.id_inscripcion = id_inscripcion;
     }
-
+ 
     async save() {
         return await db.query(
             `INSERT INTO Intento_Curso (numero_intento, id_inscripcion)

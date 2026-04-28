@@ -2,7 +2,7 @@
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
-
+ 
 const TABS = [
     { key: "contenido", label: "Contenido" },
     { key: "estudiantes", label: "Estudiantes" },

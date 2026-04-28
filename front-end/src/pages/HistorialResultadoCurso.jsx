@@ -5,7 +5,7 @@ import {
 } from "react-icons/io5";
 import { useHistorialResultadoCurso } from "../hooks/useHistorialResultadoCurso";
 import "../styles/HistorialResultadoCurso.css";
-
+ 
 const NIVEL_CLASS = {
     excelente: "n-excelente", "muy-bueno": "n-muy-bueno",
     bueno: "n-bueno", regular: "n-regular",

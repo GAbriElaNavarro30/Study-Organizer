@@ -1342,3 +1342,9 @@
     justify-content: center;
   }
 }
+
+.cv-contenido-nav-item--bloqueado {
+    opacity: 0.45;
+    cursor: not-allowed;
+    pointer-events: auto; /* mantener para mostrar el tooltip */
+}

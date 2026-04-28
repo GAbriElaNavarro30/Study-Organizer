@@ -1,5 +1,5 @@
 import { useState, useRef, useEffect } from "react";
-import {
+import { 
     IoArrowBackOutline, IoCheckmarkCircleOutline,
     IoChevronBackOutline, IoChevronForwardOutline,
     IoDocumentTextOutline, IoTrophyOutline,

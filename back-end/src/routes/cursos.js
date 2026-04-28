@@ -100,7 +100,7 @@ router.get("/mi-historial", miHistorialResultados);
 router.get("/cursos/:id/resultados", listarResultadosCurso);
 router.get("/cursos/:id/estudiantes/:id_usuario/historial", historialResultadosEstudiante);
 router.get("/intentos/:id_intento/resultado", obtenerResultadoIntento);
-
+ 
 // para el dahsboard del tutor
 router.get("/estadisticas-tutor/niveles", verificarToken, nivelesPorCurso);
 router.get("/estadisticas-tutor", verificarToken, estadisticasTutor);

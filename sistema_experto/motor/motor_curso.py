@@ -1,5 +1,5 @@
 # motor/motor_curso.py
-
+ 
 from hechos.hechos_curso import (
     ResultadoExamen,
     NivelDesempeno,

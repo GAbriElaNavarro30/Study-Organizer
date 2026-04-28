@@ -36,7 +36,7 @@ def evaluar_curso(data: ResultadoInput):
     Recibe el porcentaje obtenido y devuelve el nivel de
     desempeño determinado por el sistema experto.
     """
-    try:
+    try: 
         resultado = evaluar_resultado_curso(data.porcentaje)
         return resultado
     except RuntimeError as e:

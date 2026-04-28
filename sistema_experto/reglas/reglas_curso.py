@@ -95,4 +95,4 @@ class MotorResultadoCurso(KnowledgeEngine):
     )
     def generar_retroalimentacion(self, nivel):
         for texto in RETROALIMENTACION.get(nivel, []):
-            self.declare(Retroalimentacion(texto=texto))
+            self.declare(Retroalimentacion(texto=texto)) 

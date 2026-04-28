@@ -1,5 +1,5 @@
 // src/pages/CursoResultado.jsx
-import {
+import { 
     IoArrowBackOutline,
     IoTrophyOutline,
     IoTimeOutline,

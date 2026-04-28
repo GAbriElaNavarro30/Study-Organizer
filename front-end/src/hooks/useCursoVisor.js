@@ -1,7 +1,7 @@
 import { useState, useEffect, useCallback, useMemo } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
-
+ 
 export function useCursoVisor() {
     const { state } = useLocation();
     const id = state?.id_curso;

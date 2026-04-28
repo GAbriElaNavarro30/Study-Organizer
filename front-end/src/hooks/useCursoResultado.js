@@ -3,7 +3,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
-
+ 
 export function useCursoResultado() {
     const { state } = useLocation();
     const id_curso  = state?.id_curso;

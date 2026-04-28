@@ -2,7 +2,7 @@
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import api from "../services/api.js";
-
+ 
 export function useCursoDetalle() {
     const { state } = useLocation();
     const id_curso = state?.id_curso;

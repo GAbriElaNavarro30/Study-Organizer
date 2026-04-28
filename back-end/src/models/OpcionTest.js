@@ -1,6 +1,6 @@
 // src/models/OpcionTest.js
 import { db } from "../config/db.js";
-
+ 
 export class OpcionTest {
     constructor({ texto_opcion, es_correcta = false, id_test }) {
         this.texto_opcion = texto_opcion;

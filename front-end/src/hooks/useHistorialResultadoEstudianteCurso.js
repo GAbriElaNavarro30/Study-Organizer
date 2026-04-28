@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
-
+ 
 export function useHistorialResultadoEstudianteCurso() {
     const navigate = useNavigate();
     const { state } = useLocation();

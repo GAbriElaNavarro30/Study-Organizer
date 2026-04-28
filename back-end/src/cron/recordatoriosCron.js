@@ -117,4 +117,4 @@ async function enviarCorreo(recordatorio, asunto, tipoRecordatorio) {
   });
 }
 
-console.log("Cron de recordatorios iniciado");
+console.log("Cron de recordatorios iniciado"); 

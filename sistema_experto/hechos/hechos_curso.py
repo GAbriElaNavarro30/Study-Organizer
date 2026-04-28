@@ -74,4 +74,4 @@ RETROALIMENTACION = {
         "Te sugerimos retomar el curso desde el inicio.",
         "Repasa todos los contenidos y vuelve a intentarlo.",
     ],
-}
+} 

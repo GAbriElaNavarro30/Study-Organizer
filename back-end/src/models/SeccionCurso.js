@@ -1,6 +1,6 @@
 // src/models/SeccionCurso.js
 import { db } from "../config/db.js";
-
+ 
 export class SeccionCurso {
     constructor({ titulo_seccion, descripcion_seccion = null, orden, id_curso }) {
         this.titulo_seccion = titulo_seccion;

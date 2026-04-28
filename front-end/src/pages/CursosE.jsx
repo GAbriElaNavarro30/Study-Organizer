@@ -1,5 +1,5 @@
 // src/pages/Cursos/CursosE.jsx
-import {
+import { 
     IoSearchOutline, IoBookOutline, IoPersonOutline, IoLayersOutline,
     IoFilterOutline, IoCheckmarkCircleOutline, IoPlayCircleOutline,
     IoSchoolOutline, IoGridOutline, IoMenuOutline, IoListOutline,

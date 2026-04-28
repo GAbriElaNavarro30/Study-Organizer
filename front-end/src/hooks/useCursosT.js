@@ -3,7 +3,7 @@ import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { limpiarBorrador } from "./useEditorCurso";
-
+ 
 /* ─────────────────────────────────────────────────────────
    CONSTANTES
 ───────────────────────────────────────────────────────── */

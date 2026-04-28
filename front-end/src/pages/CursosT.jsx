@@ -1,6 +1,6 @@
 // src/pages/CursosT.jsx
 import { useState, useRef, useEffect } from "react";
-import {
+import { 
     IoAdd, IoSearch, IoGridOutline, IoListOutline, IoCreateOutline,
     IoEye, IoEyeOff, IoBookOutline,
     IoWarningOutline, IoChevronBackOutline, IoChevronForwardOutline,

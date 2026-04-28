@@ -308,4 +308,4 @@ export class Curso {
         );
         return rows[0];
     }
-}
+} 

@@ -1,6 +1,6 @@
 // src/components/ModalCancelarInscripcion.jsx
 import { createPortal } from "react-dom";
-import {
+import { 
     IoWarningOutline,
     IoCloseOutline,
     IoRemoveCircleOutline,

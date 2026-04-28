@@ -6,7 +6,7 @@ export class PreguntaTest {
         this.texto_pregunta = texto_pregunta;
         this.id_seccion = id_seccion;
     }
-
+ 
     async save() {
         return await db.query(
             `INSERT INTO Pregunta_Test (texto_pregunta, id_seccion)

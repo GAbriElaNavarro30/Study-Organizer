@@ -9,7 +9,7 @@ import { IntentoCurso } from "../models/IntentoCurso.js";
 import { Progreso } from "../models/Progreso.js";
 import { RespuestaTestCurso } from "../models/RespuestaTestCurso.js";
 import { ResultadoCurso } from "../models/ResultadoCurso.js";
-
+ 
 import { db } from "../config/db.js";
 import cloudinary from "../config/cloudinary.js";
 import axios from "axios";
