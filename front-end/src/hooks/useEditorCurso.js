@@ -2,7 +2,7 @@
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
- 
+
 /* ─────────────────────────────────────────────────────────
    CONSTANTS
 ───────────────────────────────────────────────────────── */
@@ -588,6 +588,39 @@ export function useEditorCurso() {
                         }
                     }
                 } else {
+                    // 1. Actualizar preguntas existentes que hayan cambiado
+                    for (const preg of sec.preguntas.filter((p) => p.id_test)) {
+                        const original = preguntasOriginales.find((p) => p.id_test === preg.id_test);
+                        const cambio = !original ||
+                            original.texto_pregunta !== preg.texto_pregunta ||
+                            JSON.stringify(
+                                original.opciones.map((o) => ({
+                                    id_opcion: o.id_opcion,
+                                    texto_opcion: o.texto_opcion,
+                                    es_correcta: Boolean(o.es_correcta),
+                                }))
+                            ) !==
+                            JSON.stringify(
+                                preg.opciones.map((o) => ({
+                                    id_opcion: o.id_opcion,
+                                    texto_opcion: o.texto_opcion,
+                                    es_correcta: Boolean(o.es_correcta),
+                                }))
+                            );
+
+                        if (cambio) {
+                            await api.put(`/cursos/preguntas/${preg.id_test}`, {
+                                texto_pregunta: preg.texto_pregunta,
+                                opciones: preg.opciones.map((o) => ({
+                                    id_opcion: o.id_opcion,   // ← necesario para que el backend detecte cambio de correcta
+                                    texto_opcion: o.texto_opcion,
+                                    es_correcta: o.es_correcta,
+                                })),
+                            });
+                        }
+                    }
+
+                    // 2. Agregar preguntas nuevas (sin id_test)
                     for (const preg of sec.preguntas.filter((p) => !p.id_test)) {
                         const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
                             texto_pregunta: preg.texto_pregunta,

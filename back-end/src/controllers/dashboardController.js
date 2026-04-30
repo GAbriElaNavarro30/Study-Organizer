@@ -338,4 +338,4 @@ export const marcarAlertaVista = async (req, res) => {
         console.error("Error al marcar alerta:", error);
         res.status(500).json({ mensaje: "Error al marcar la alerta." });
     }
-};
+}; 

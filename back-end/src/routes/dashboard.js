@@ -1,7 +1,7 @@
 // ============================== DASHBOARD ROUTES ==============================
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
-import {
+import { 
     obtenerEmociones,
     crearEmocion,
     verificarRegistroHoy,

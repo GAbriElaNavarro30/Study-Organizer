@@ -37,6 +37,69 @@ const cursoEstaArchivado = async (id_curso) => {
     return Boolean(curso?.archivado);
 };
 
+const recalcularResultadosPorPregunta = async (intentosIds) => {
+    if (!intentosIds?.length) return;
+
+    for (const id_intento of intentosIds) {
+        try {
+            const [[intento]] = await db.query(
+                `SELECT ic.completado
+                 FROM Intento_Curso ic
+                 WHERE ic.id_intento = ?`,
+                [id_intento]
+            );
+
+            if (!intento?.completado) continue;
+
+            const [[{ promedio }]] = await db.query(
+                `SELECT AVG(sub.pct) AS promedio
+                 FROM (
+                     SELECT pt.id_seccion,
+                            (SUM(ot.es_correcta) / COUNT(*)) * 100 AS pct
+                     FROM Respuesta_Test_Curso rtc
+                     JOIN Pregunta_Test pt ON rtc.id_test = pt.id_test
+                     JOIN Opcion_Test ot ON rtc.id_opcion = ot.id_opcion
+                     WHERE rtc.id_intento = ?
+                     GROUP BY pt.id_seccion
+                 ) sub`,
+                [id_intento]
+            );
+
+            const [[totales]] = await db.query(
+                `SELECT COUNT(*) AS total, SUM(ot.es_correcta) AS correctas
+                 FROM Respuesta_Test_Curso rtc
+                 JOIN Opcion_Test ot ON rtc.id_opcion = ot.id_opcion
+                 WHERE rtc.id_intento = ?`,
+                [id_intento]
+            );
+
+            const porcentaje_final = parseFloat((Number(promedio) || 0).toFixed(2));
+            const resultadoActual = await ResultadoCurso.getByIntento(id_intento);
+            let nivel = resultadoActual?.nivel ?? "Deficiente";
+
+            try {
+                const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
+                    porcentaje: porcentaje_final,
+                });
+                nivel = pythonRes.data.nombre_nivel ?? nivel;
+            } catch (e) {
+                console.error("sistema experto no disponible:", e.message);
+            }
+
+            await ResultadoCurso.updateByIntento(id_intento, {
+                total_preguntas: totales.total || 0,
+                respuestas_correctas: totales.correctas || 0,
+                porcentaje: porcentaje_final,
+                nivel,
+            });
+
+            console.log(`✅ Recalculado intento ${id_intento}: ${porcentaje_final}% → ${nivel}`);
+        } catch (err) {
+            console.error(`❌ Error en intento ${id_intento}:`, err.message);
+        }
+    }
+};
+
 // ─────────────────────────────────────────────────────────────
 // CURSOS
 // ─────────────────────────────────────────────────────────────
@@ -476,18 +539,6 @@ export const actualizarPregunta = async (req, res) => {
         const { id } = req.params;
         const { texto_pregunta, opciones = [] } = req.body;
 
-        const id_curso = await PreguntaTest.getIdCursoPorPregunta(id);
-
-        if (id_curso) {
-            const tieneInscritos = await Curso.tieneInscritos(id_curso);
-            if (tieneInscritos) {
-                return res.status(403).json({
-                    ok: false,
-                    mensaje: "No puedes modificar el cuestionario de un curso con estudiantes inscritos.",
-                });
-            }
-        }
-
         if (texto_pregunta !== undefined && !texto_pregunta.trim()) {
             return res.status(400).json({ ok: false, mensaje: "El texto de la pregunta no puede estar vacío." });
         }
@@ -508,14 +559,59 @@ export const actualizarPregunta = async (req, res) => {
         }
 
         if (opciones.length > 0) {
-            await OpcionTest.deleteByPregunta(id);
+            const opcionesActuales = await OpcionTest.getByPregunta(id);
+            let hubo_cambio_correcta = false;
+
+            for (const opNueva of opciones) {
+                const opActual = opNueva.id_opcion
+                    ? opcionesActuales.find(o => o.id_opcion === opNueva.id_opcion)
+                    : opcionesActuales.find(o => o.texto_opcion.trim() === opNueva.texto_opcion.trim());
+                if (!opActual) continue;
+                if (Boolean(opActual.es_correcta) !== Boolean(opNueva.es_correcta)) {
+                    hubo_cambio_correcta = true;
+                    break;
+                }
+            }
+
+            // ── Capturar intentos ANTES de tocar las opciones ──
+            let intentosAfectados = [];
+            if (hubo_cambio_correcta) {
+                const [rows] = await db.query(
+                    `SELECT DISTINCT id_intento FROM Respuesta_Test_Curso WHERE id_test = ?`,
+                    [id]
+                );
+                intentosAfectados = rows.map(r => r.id_intento);
+                console.log("👥 Intentos capturados:", intentosAfectados);
+            }
+
+            // ── UPDATE en vez de delete+insert para preservar los id_opcion ──
+            const idsEnviados = opciones.filter(o => o.id_opcion).map(o => o.id_opcion);
+
+            // Borrar solo las opciones que el frontend ya no mandó
+            for (const opActual of opcionesActuales) {
+                if (!idsEnviados.includes(opActual.id_opcion)) {
+                    await db.query(`DELETE FROM Opcion_Test WHERE id_opcion = ?`, [opActual.id_opcion]);
+                }
+            }
+
+            // Actualizar existentes / insertar nuevas
             for (const op of opciones) {
-                const opcion = new OpcionTest({
-                    texto_opcion: op.texto_opcion.trim(),
-                    es_correcta: Boolean(op.es_correcta),
-                    id_test: id,
-                });
-                await opcion.save();
+                if (op.id_opcion) {
+                    await db.query(
+                        `UPDATE Opcion_Test SET texto_opcion = ?, es_correcta = ? WHERE id_opcion = ?`,
+                        [op.texto_opcion.trim(), Boolean(op.es_correcta) ? 1 : 0, op.id_opcion]
+                    );
+                } else {
+                    await db.query(
+                        `INSERT INTO Opcion_Test (texto_opcion, es_correcta, id_test) VALUES (?, ?, ?)`,
+                        [op.texto_opcion.trim(), Boolean(op.es_correcta) ? 1 : 0, id]
+                    );
+                }
+            }
+
+            // ── Ahora sí recalcular — los id_opcion siguen existiendo ──
+            if (hubo_cambio_correcta) {
+                await recalcularResultadosPorPregunta(intentosAfectados);
             }
         }
 
@@ -798,26 +894,27 @@ export const marcarContenidoVisto = async (req, res) => {
                 // ── Promedio de puntajes por sección ──
                 const [[{ promedio }]] = await db.query(
                     `SELECT AVG(sub.pct) AS promedio
-                     FROM (
-                         SELECT 
-                             pt.id_seccion,
-                             (SUM(rtc.es_correcta) / COUNT(*)) * 100 AS pct
-                         FROM Respuesta_Test_Curso rtc
-                         JOIN Pregunta_Test pt ON rtc.id_test = pt.id_test
-                         WHERE rtc.id_intento = ?
-                         GROUP BY pt.id_seccion
-                     ) sub`,
+                    FROM (
+                        SELECT 
+                            pt.id_seccion,
+                            (SUM(ot.es_correcta) / COUNT(*)) * 100 AS pct
+                        FROM Respuesta_Test_Curso rtc
+                        JOIN Pregunta_Test pt ON rtc.id_test = pt.id_test
+                        JOIN Opcion_Test ot ON rtc.id_opcion = ot.id_opcion
+                        WHERE rtc.id_intento = ?
+                        GROUP BY pt.id_seccion
+                    ) sub`,
                     [intento.id_intento]
                 );
 
                 // ── Totales globales ──
                 const [[totales]] = await db.query(
-                    `SELECT COUNT(*) AS total, SUM(es_correcta) AS correctas
-                     FROM Respuesta_Test_Curso
-                     WHERE id_intento = ?`,
+                    `SELECT COUNT(*) AS total, SUM(ot.es_correcta) AS correctas
+                    FROM Respuesta_Test_Curso rtc
+                    JOIN Opcion_Test ot ON rtc.id_opcion = ot.id_opcion
+                    WHERE rtc.id_intento = ?`,
                     [intento.id_intento]
                 );
-
                 porcentaje_final = parseFloat((Number(promedio) || 0).toFixed(2));
                 total_preguntas_global = totales.total || 0;
                 correctas_global = totales.correctas || 0;
@@ -901,7 +998,7 @@ export const guardarRespuestasTest = async (req, res) => {
             );
             const es_correcta = opcion?.es_correcta ? 1 : 0;
             if (es_correcta) correctas++;
-            filas.push({ es_correcta, id_test: r.id_test, id_opcion: r.id_opcion });
+            filas.push({ id_test: r.id_test, id_opcion: r.id_opcion });
         }
 
         // ── Guardar respuestas acumulando las de todos los cuestionarios ──
@@ -1541,11 +1638,11 @@ export const obtenerRespuestasIntento = async (req, res) => {
         }
 
         const [respuestas] = await db.query(
-            `SELECT rtc.id_test, rtc.id_opcion, rtc.es_correcta,
+            `SELECT rtc.id_test, rtc.id_opcion,
                     pt.id_seccion
-             FROM Respuesta_Test_Curso rtc
-             JOIN Pregunta_Test pt ON pt.id_test = rtc.id_test
-             WHERE rtc.id_intento = ?`,
+            FROM Respuesta_Test_Curso rtc
+            JOIN Pregunta_Test pt ON pt.id_test = rtc.id_test
+            WHERE rtc.id_intento = ?`,
             [intento.id_intento]
         );
 
@@ -1554,4 +1651,4 @@ export const obtenerRespuestasIntento = async (req, res) => {
         console.error("obtenerRespuestasIntento:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener respuestas." });
     }
-};
+}; 

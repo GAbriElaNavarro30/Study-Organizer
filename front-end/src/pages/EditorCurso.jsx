@@ -435,7 +435,7 @@ const ContentBlock = ({ con, index, onUpdate, onRequestDelete, onRequestDeleteIm
 /* ─────────────────────────────────────────────────────────
    QUESTION CARD
 ───────────────────────────────────────────────────────── */
-const QuestionCard = ({ preg, index, onUpdate, onRequestDelete, showErrors }) => {
+const QuestionCard = ({ preg, index, onUpdate, onRequestDelete, showErrors, bloqueadoEliminar }) => {
     const preguntaVacia = showErrors && !preg.texto_pregunta.trim();
     const sinCorrecta = showErrors && !preg.opciones.some((o) => o.es_correcta);
 
@@ -445,9 +445,16 @@ const QuestionCard = ({ preg, index, onUpdate, onRequestDelete, showErrors }) =>
                 <div className="question-num-badge">
                     <IoHelpCircleOutline size={11} /> P{index + 1}
                 </div>
-                <button className="btn-icon-sm danger" onClick={onRequestDelete}>
-                    <IoTrashOutline size={12} />
-                </button>
+                {/* ── Solo mostrar el botón eliminar si no está bloqueado ── */}
+                {!bloqueadoEliminar ? (
+                    <button className="btn-icon-sm danger" onClick={onRequestDelete}>
+                        <IoTrashOutline size={12} />
+                    </button>
+                ) : (
+                    <span style={{ fontSize: 11, color: "#94A3B8", display: "flex", alignItems: "center", gap: 3 }}>
+                        <IoLockClosedOutline size={11} /> No eliminable
+                    </span>
+                )}
             </div>
             <div className="ec-field">
                 <input
@@ -526,7 +533,12 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
     const cerrarModalElim = () => setModalElim((m) => ({ ...m, open: false }));
 
     const tituloSeccionVacio = showErrors && !sec.titulo_seccion.trim();
-    const hayPreguntasBloqueadas = tieneInscritos && sec.preguntas.some((p) => p.id_test);
+
+    // Una pregunta está bloqueada para eliminar si tiene id_test (existe en BD) y hay inscritos
+    const preguntaBloqueadaParaEliminar = (preg) => tieneInscritos && Boolean(preg.id_test);
+
+    // Hay preguntas en BD con inscritos → no se pueden agregar nuevas
+    const bloqueadoAgregarPregunta = tieneInscritos && sec.preguntas.some((p) => p.id_test);
 
     const preguntasNuevasConError = showErrors && sec.mostrarTest && sec.preguntas
         .filter((p) => !p.id_test)
@@ -629,14 +641,15 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                         <div className="quiz-toggle-info">
                             <IoHelpCircleOutline size={14} />
                             <p className="subgroup-label">Cuestionario</p>
-                            {hayPreguntasBloqueadas && sec.mostrarTest && (
+                            {/* CAMBIO 1: badge actualizado — solo indica que no se pueden agregar preguntas */}
+                            {bloqueadoAgregarPregunta && sec.mostrarTest && (
                                 <span style={{
                                     display: "inline-flex", alignItems: "center", gap: 4,
                                     fontSize: 11, color: "#64748B",
                                     background: "#F1F5F9", border: "1px solid #E2E8F0",
                                     borderRadius: 6, padding: "2px 7px", marginLeft: 6,
                                 }}>
-                                    <IoLockClosedOutline size={11} /> Solo lectura
+                                    <IoLockClosedOutline size={11} /> No se pueden agregar preguntas
                                 </span>
                             )}
                         </div>
@@ -661,16 +674,19 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                         </label>
                     </div>
 
-                    {hayPreguntasBloqueadas && sec.mostrarTest && (
+                    {/* CAMBIO 2: banner eliminado — ya no se muestra el aviso de "solo lectura".
+                        En su lugar, un aviso más preciso solo sobre agregar preguntas nuevas. */}
+                    {bloqueadoAgregarPregunta && sec.mostrarTest && (
                         <div style={{
                             display: "flex", alignItems: "flex-start", gap: 8,
-                            background: "#FFF7ED", border: "1px solid #FED7AA",
+                            background: "#F0F9FF", border: "1px solid #BAE6FD",
                             borderRadius: 8, padding: "10px 12px", marginTop: 10,
                         }}>
-                            <IoAlertCircleOutline size={15} style={{ color: "#EA580C", flexShrink: 0, marginTop: 1 }} />
-                            <p style={{ fontSize: 12, color: "#9A3412", margin: 0, lineHeight: 1.5 }}>
-                                Las preguntas existentes no pueden editarse ni eliminarse individualmente porque hay estudiantes inscritos.
-                                Puedes agregar nuevas preguntas o eliminar el cuestionario completo desactivando el interruptor.
+                            <IoLockClosedOutline size={15} style={{ color: "#0284C7", flexShrink: 0, marginTop: 1 }} />
+                            <p style={{ fontSize: 12, color: "#0C4A6E", margin: 0, lineHeight: 1.5 }}>
+                                Hay estudiantes inscritos: puedes editar el texto de las preguntas y opciones, y cambiar la opción correcta,
+                                pero no puedes agregar ni eliminar preguntas existentes.
+                                Sí puedes eliminar el cuestionario completo desactivando el interruptor.
                             </p>
                         </div>
                     )}
@@ -681,76 +697,49 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                                 <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>
                             )}
                             <div className="preguntas-grid">
+                                {/* CAMBIO 3: todas las preguntas usan QuestionCard (editable).
+                                    Solo se bloquea el botón eliminar en preguntas que ya existen en BD. */}
                                 {sec.preguntas.map((preg, pi) => (
-                                    hayPreguntasBloqueadas && preg.id_test ? (
-                                        <div key={preg._id} className="question-card" style={{ opacity: 0.72 }}>
-                                            <div className="question-header">
-                                                <div className="question-num-badge">
-                                                    <IoHelpCircleOutline size={11} /> P{pi + 1}
-                                                </div>
-                                                <span style={{ fontSize: 11, color: "#64748B", display: "flex", alignItems: "center", gap: 4 }}>
-                                                    <IoLockClosedOutline size={11} /> Solo lectura
-                                                </span>
-                                            </div>
-                                            <p style={{ fontSize: 13, color: "#334155", margin: "4px 0 10px", fontWeight: 500 }}>
-                                                {preg.texto_pregunta}
-                                            </p>
-                                            <div className="options-list" style={{ pointerEvents: "none" }}>
-                                                {preg.opciones.map((op) => (
-                                                    <div key={op._id} className="option-row">
-                                                        <span className={`option-radio ${op.es_correcta ? "correct" : ""}`}>
-                                                            {op.es_correcta ? <IoCheckmarkCircle size={18} /> : <IoEllipseOutline size={18} />}
-                                                        </span>
-                                                        <span style={{ fontSize: 13, color: "#475569" }}>{op.texto_opcion}</span>
-                                                    </div>
-                                                ))}
-                                            </div>
-                                        </div>
-                                    ) : (
-                                        <QuestionCard
-                                            key={preg._id} preg={preg} index={pi}
-                                            showErrors={showErrors}
-                                            onUpdate={(upd) => updPreg(preg._id, upd)}
-                                            onRequestDelete={() =>
-                                                abrirModalElim(
-                                                    "pregunta",
-                                                    preg.texto_pregunta.trim()
-                                                        ? (preg.texto_pregunta.length > 60
-                                                            ? preg.texto_pregunta.slice(0, 60) + "…"
-                                                            : preg.texto_pregunta)
-                                                        : `Pregunta ${pi + 1}`,
-                                                    () => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })
-                                                )
-                                            }
-                                        />
-                                    )
+                                    <QuestionCard
+                                        key={preg._id}
+                                        preg={preg}
+                                        index={pi}
+                                        showErrors={showErrors}
+                                        bloqueadoEliminar={preguntaBloqueadaParaEliminar(preg)}
+                                        onUpdate={(upd) => updPreg(preg._id, upd)}
+                                        onRequestDelete={() =>
+                                            abrirModalElim(
+                                                "pregunta",
+                                                preg.texto_pregunta.trim()
+                                                    ? (preg.texto_pregunta.length > 60
+                                                        ? preg.texto_pregunta.slice(0, 60) + "…"
+                                                        : preg.texto_pregunta)
+                                                    : `Pregunta ${pi + 1}`,
+                                                () => onUpdate({ ...sec, preguntas: sec.preguntas.filter((p) => p._id !== preg._id) })
+                                            )
+                                        }
+                                    />
                                 ))}
                             </div>
 
-                            {(() => {
-                                const tieneEnBD = sec.preguntas.some((p) => p.id_test);
-                                const bloqueado = tieneInscritos && tieneEnBD;
-
-                                if (bloqueado) return (
-                                    <div style={{
-                                        display: "flex", alignItems: "center", gap: 6,
-                                        fontSize: 12, color: "#64748B",
-                                        background: "#F8FAFC", border: "1px solid #E2E8F0",
-                                        borderRadius: 8, padding: "8px 12px",
-                                        alignSelf: "flex-start",
-                                    }}>
-                                        <IoLockClosedOutline size={13} />
-                                        No se pueden agregar preguntas a un cuestionario con estudiantes inscritos
-                                    </div>
-                                );
-
-                                return (
-                                    <button className="btn-add-secondary"
-                                        onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
-                                        <IoAddOutline size={13} /> Nueva pregunta
-                                    </button>
-                                );
-                            })()}
+                            {/* Botón agregar pregunta — bloqueado si hay inscritos y ya hay preguntas en BD */}
+                            {bloqueadoAgregarPregunta ? (
+                                <div style={{
+                                    display: "flex", alignItems: "center", gap: 6,
+                                    fontSize: 12, color: "#64748B",
+                                    background: "#F8FAFC", border: "1px solid #E2E8F0",
+                                    borderRadius: 8, padding: "8px 12px",
+                                    alignSelf: "flex-start",
+                                }}>
+                                    <IoLockClosedOutline size={13} />
+                                    No se pueden agregar preguntas con estudiantes inscritos
+                                </div>
+                            ) : (
+                                <button className="btn-add-secondary"
+                                    onClick={() => onUpdate({ ...sec, preguntas: [...sec.preguntas, crearPreguntaVacia()] })}>
+                                    <IoAddOutline size={13} /> Nueva pregunta
+                                </button>
+                            )}
                         </div>
                     )}
                 </div>

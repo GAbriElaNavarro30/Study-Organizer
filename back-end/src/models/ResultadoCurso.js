@@ -143,6 +143,14 @@ export class ResultadoCurso {
         );
         return rows[0] || null;
     }
+
+    static async updateByIntento(id_intento, campos) {
+        const keys = Object.keys(campos).map(k => `${k} = ?`).join(", ");
+        const values = [...Object.values(campos), id_intento];
+        return await db.query(
+            `UPDATE Resultado_Curso SET ${keys} WHERE id_intento = ?`,
+            values
+        );
+    }
 }
 
- 
