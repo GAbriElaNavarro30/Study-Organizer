@@ -41,6 +41,7 @@ import {
     misCursosConResultados,
     inscripcionesFiltradas,
     obtenerRespuestasIntento,
+    obtenerRespuestasDetalle
 } from "../controllers/cursosController.js";
 
 const storage = multer.memoryStorage();
@@ -109,5 +110,7 @@ router.get("/estadisticas-tutor/inscripciones", inscripcionesFiltradas);
 
 // ─── Dashboard estudiante ──────────────────────────────────
 router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
+
+router.get("/resultado/respuestas", obtenerRespuestasDetalle);
 
 export default router;

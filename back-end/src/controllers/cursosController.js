@@ -1652,3 +1652,85 @@ export const obtenerRespuestasIntento = async (req, res) => {
         res.status(500).json({ ok: false, mensaje: "Error al obtener respuestas." });
     }
 }; 
+
+export const obtenerRespuestasDetalle = async (req, res) => {
+    try {
+        const id_usuario = req.usuario.id;
+        const { id_curso } = req.query;
+
+        const inscripcion = await Inscripcion.getByUsuarioYCurso(id_usuario, id_curso);
+        if (!inscripcion) return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
+
+        // Buscar el último intento completado con resultado
+        const [[intentoRow]] = await db.query(
+            `SELECT ic.id_intento
+             FROM Intento_Curso ic
+             INNER JOIN Resultado_Curso rc ON rc.id_intento = ic.id_intento
+             WHERE ic.id_inscripcion = ?
+             ORDER BY ic.numero_intento DESC
+             LIMIT 1`,
+            [inscripcion.id_inscripcion]
+        );
+
+        if (!intentoRow) return res.json({ ok: true, secciones: [] });
+
+        // Traer preguntas, opciones y la respuesta del estudiante
+        const [rows] = await db.query(
+            `SELECT
+                sc.id_seccion,
+                sc.titulo_seccion,
+                pt.id_test,
+                pt.texto_pregunta,
+                ot.id_opcion,
+                ot.texto_opcion,
+                ot.es_correcta,
+                CASE WHEN rtc.id_opcion = ot.id_opcion THEN 1 ELSE 0 END AS fue_seleccionada
+             FROM Seccion_Curso sc
+             JOIN Pregunta_Test pt ON pt.id_seccion = sc.id_seccion
+             JOIN Opcion_Test ot ON ot.id_test = pt.id_test
+             LEFT JOIN Respuesta_Test_Curso rtc
+                ON rtc.id_test = pt.id_test
+               AND rtc.id_intento = ?
+               AND rtc.id_opcion = ot.id_opcion
+             WHERE sc.id_curso = ?
+             ORDER BY sc.orden, pt.id_test, ot.id_opcion`,
+            [intentoRow.id_intento, id_curso]
+        );
+
+        // Agrupar por sección → pregunta → opciones
+        const seccionesMap = {};
+        for (const row of rows) {
+            if (!seccionesMap[row.id_seccion]) {
+                seccionesMap[row.id_seccion] = {
+                    id_seccion: row.id_seccion,
+                    titulo_seccion: row.titulo_seccion,
+                    preguntas: {},
+                };
+            }
+            const sec = seccionesMap[row.id_seccion];
+            if (!sec.preguntas[row.id_test]) {
+                sec.preguntas[row.id_test] = {
+                    id_test: row.id_test,
+                    texto_pregunta: row.texto_pregunta,
+                    opciones: [],
+                };
+            }
+            sec.preguntas[row.id_test].opciones.push({
+                id_opcion: row.id_opcion,
+                texto_opcion: row.texto_opcion,
+                es_correcta: Boolean(row.es_correcta),
+                fue_seleccionada: Boolean(row.fue_seleccionada),
+            });
+        }
+
+        const secciones = Object.values(seccionesMap).map(s => ({
+            ...s,
+            preguntas: Object.values(s.preguntas),
+        }));
+
+        res.json({ ok: true, secciones });
+    } catch (error) {
+        console.error("obtenerRespuestasDetalle:", error);
+        res.status(500).json({ ok: false, mensaje: "Error al obtener las respuestas." });
+    }
+};

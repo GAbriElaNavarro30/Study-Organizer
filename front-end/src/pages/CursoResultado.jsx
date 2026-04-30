@@ -1,5 +1,5 @@
 // src/pages/CursoResultado.jsx
-import { 
+import {
     IoArrowBackOutline,
     IoTrophyOutline,
     IoTimeOutline,
@@ -9,6 +9,7 @@ import {
     IoHomeOutline,
     IoRefreshOutline,
     IoBookOutline,
+    IoCheckmarkCircle, IoCloseCircle, IoRemoveCircle, IoHelpCircleOutline
 } from "react-icons/io5";
 import { useCursoResultado } from "../hooks/useCursoResultado.js";
 import "../styles/cursoResultado.css";
@@ -23,6 +24,7 @@ export function CursoResultado() {
         error,
         navigate,
         retroalimentacion,
+        respuestasDetalle,
     } = useCursoResultado();
 
     /* ── Loading ── */
@@ -45,21 +47,21 @@ export function CursoResultado() {
     );
 
     /* ── Datos ── */
-    const pct             = progreso?.porcentaje ?? 100;
+    const pct = progreso?.porcentaje ?? 100;
     const totalContenidos = progreso?.total ?? 0;
-    const vistos          = progreso?.vistos ?? 0;
+    const vistos = progreso?.vistos ?? 0;
 
-    const puntaje     = Number(resultado?.porcentaje ?? 0);
-    const correctas   = resultado?.respuestas_correctas ?? 0;
-    const total       = resultado?.total_preguntas ?? 0;
+    const puntaje = Number(resultado?.porcentaje ?? 0);
+    const correctas = resultado?.respuestas_correctas ?? 0;
+    const total = resultado?.total_preguntas ?? 0;
     const incorrectas = total - correctas;
-    const aprobado    = puntaje >= 70;
+    const aprobado = puntaje >= 70;
 
     const tutor = curso?.tutor ?? null;
 
     /* ── Anillo SVG ── */
     const CIRCUNFERENCIA = 219.9;
-    const ringValue  = resultado ? puntaje : pct;
+    const ringValue = resultado ? puntaje : pct;
     const ringOffset = CIRCUNFERENCIA - (ringValue / 100) * CIRCUNFERENCIA;
 
     /* ── Formato de fechas ── */
@@ -229,8 +231,75 @@ export function CursoResultado() {
                                 </div>
                             </>
                         )}
+
+
                     </div>
                 </div>
+
+                {/* Revisión de respuestas */}
+                {respuestasDetalle.length > 0 && (
+                    <div className="cr-section">
+                        <div className="cr-section-head">
+                            <div className="cr-section-icon">
+                                <IoHelpCircleOutline size={14} />
+                            </div>
+                            <span className="cr-section-title">Revisión de respuestas</span>
+                        </div>
+                        <div className="cr-review-body">
+                            {respuestasDetalle.map((sec) => (
+                                <div key={sec.id_seccion} className="cr-review-section">
+                                    <p className="cr-review-sec-title">{sec.titulo_seccion}</p>
+                                    {sec.preguntas.map((preg, pi) => {
+                                        const respondida = preg.opciones.some(o => o.fue_seleccionada);
+                                        const acerto = preg.opciones.some(o => o.fue_seleccionada && o.es_correcta);
+                                        return (
+                                            <div key={preg.id_test} className={`cr-review-card ${acerto ? "cr-review-card--ok" : respondida ? "cr-review-card--fail" : "cr-review-card--skip"}`}>
+                                                <div className="cr-review-q-header">
+                                                    <span className="cr-review-q-num">P{pi + 1}</span>
+                                                    <p className="cr-review-q-text">{preg.texto_pregunta}</p>
+                                                    {acerto
+                                                        ? <IoCheckmarkCircle size={18} className="cr-review-icon cr-review-icon--ok" />
+                                                        : respondida
+                                                            ? <IoCloseCircle size={18} className="cr-review-icon cr-review-icon--fail" />
+                                                            : <IoRemoveCircle size={18} className="cr-review-icon cr-review-icon--skip" />
+                                                    }
+                                                </div>
+                                                <div className="cr-review-options">
+                                                    {preg.opciones.map((op) => {
+                                                        let cls = "cr-review-opt";
+                                                        if (op.es_correcta) cls += " cr-review-opt--correct";
+                                                        if (op.fue_seleccionada && !op.es_correcta) cls += " cr-review-opt--wrong";
+                                                        if (op.fue_seleccionada && op.es_correcta) cls += " cr-review-opt--correct-selected";
+                                                        return (
+                                                            <div key={op.id_opcion} className={cls}>
+                                                                <span className="cr-review-opt-marker">
+                                                                    {op.fue_seleccionada
+                                                                        ? op.es_correcta ? "✓" : "✗"
+                                                                        : op.es_correcta ? "✓" : ""}
+                                                                </span>
+                                                                <span className="cr-review-opt-text">{op.texto_opcion}</span>
+                                                                {op.fue_seleccionada && (
+                                                                    <span className="cr-review-opt-tag">
+                                                                        {op.es_correcta ? "Tu respuesta · Correcta" : "Tu respuesta"}
+                                                                    </span>
+                                                                )}
+                                                                {!op.fue_seleccionada && op.es_correcta && (
+                                                                    <span className="cr-review-opt-tag cr-review-opt-tag--correct">
+                                                                        Respuesta correcta
+                                                                    </span>
+                                                                )}
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Retroalimentación + Tutor en la misma fila */}
                 {(retroalimentacion.length > 0 || (tutor && (tutor.nombre || tutor.foto))) && (
