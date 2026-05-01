@@ -33,7 +33,7 @@ export function useCursoVisor() {
 
     useEffect(() => {
         setMarcadoEnSesion(false);
-    }, [seccionIdx, contenidoIdx]);
+    }, [seccionIdx]);
 
     const cargar = async () => {
         setCargando(true);
@@ -167,35 +167,52 @@ export function useCursoVisor() {
     const resultadoTest = resultadosPorSeccion[seccionIdx] ?? null;
 
     const secciones = curso?.secciones || [];
-    const hayAnterior = seccionIdx > 0 || contenidoIdx > 0;
-    const haysSiguiente =
-        seccionIdx < secciones.length - 1 ||
-        contenidoIdx < (secciones[seccionIdx]?.contenidos?.length || 1) - 1;
+    const hayAnterior = seccionIdx > 0;
+    const haysSiguiente = seccionIdx < secciones.length - 1;
 
     const tieneTest = preguntasActuales.length > 0;
     const testPendiente = tieneTest && resultadoTest === null;
     const siguienteBloqueado = !soloLectura && (!marcadoEnSesion || testPendiente);
 
     useEffect(() => {
-        if (!contenidoActual?.id_contenido || soloLectura) return;
-        if (contenidosVistosIniciales.has(contenidoActual.id_contenido)) {
+        if (!seccionActual || soloLectura) return;
+        const contenidos = seccionActual.contenidos || [];
+
+        // Si todos ya estaban vistos desde el servidor, marcar inmediatamente
+        const todosVistosInicialmente = contenidos.every(c => contenidosVistosIniciales.has(c.id_contenido));
+        if (todosVistosInicialmente) {
             setMarcadoEnSesion(true);
             return;
         }
+
+        // Si hay test pendiente, esperar a que lo complete
         if (preguntasActuales.length > 0 && resultadoTest === null) return;
 
+        // Marcar todos los contenidos de la sección como vistos
         const timer = setTimeout(() => {
-            marcarVisto(contenidoActual.id_contenido);
+            contenidos.forEach(con => {
+                if (!contenidosVistos.has(con.id_contenido)) {
+                    setContenidosVistos(prev => new Set([...prev, con.id_contenido]));
+                    api.post(`/cursos/progreso/${con.id_contenido}`, { id_curso: id })
+                        .then(({ data }) => {
+                            if (data.completado && data.resultado?.retroalimentacion?.length) {
+                                setRetroalimentacion(data.resultado.retroalimentacion);
+                            }
+                        })
+                        .catch(() => { });
+                }
+            });
             setMarcadoEnSesion(true);
         }, 1000);
         return () => clearTimeout(timer);
-    }, [contenidoActual?.id_contenido, soloLectura, preguntasActuales.length, resultadoTest]);
+    }, [seccionIdx, soloLectura, preguntasActuales.length, resultadoTest, contenidosVistosIniciales]);
 
     useEffect(() => {
-        if (contenidoActual?.id_contenido && contenidosVistos.has(contenidoActual.id_contenido)) {
-            setMarcadoEnSesion(true);
-        }
-    }, [contenidosVistos, contenidoActual?.id_contenido]);
+        if (!seccionActual) return;
+        const contenidos = seccionActual.contenidos || [];
+        const todosVistos = contenidos.every(c => contenidosVistos.has(c.id_contenido));
+        if (todosVistos) setMarcadoEnSesion(true);
+    }, [contenidosVistos, seccionActual]);
 
     const marcarVisto = useCallback((id_contenido) => {
         if (!id_contenido || contenidosVistos.has(id_contenido)) return;
@@ -251,59 +268,39 @@ export function useCursoVisor() {
     };
 
     const irASiguiente = () => {
-        const contenidos = secciones[seccionIdx]?.contenidos || [];
-        if (contenidoIdx < contenidos.length - 1) {
-            setContenidoIdx(ci => ci + 1);
-        } else if (seccionIdx < secciones.length - 1) {
+        if (seccionIdx < secciones.length - 1) {
             setSeccionIdx(si => si + 1);
             setContenidoIdx(0);
         }
     };
 
     const irAAnterior = () => {
-        if (contenidoIdx > 0) {
-            setContenidoIdx(ci => ci - 1);
-        } else if (seccionIdx > 0) {
-            const prevSec = curso.secciones[seccionIdx - 1];
+        if (seccionIdx > 0) {
             setSeccionIdx(si => si - 1);
-            setContenidoIdx((prevSec?.contenidos?.length || 1) - 1);
+            setContenidoIdx(0);
         }
     };
 
     const irAContenido = (si, ci) => {
         if (soloLectura) {
             setSeccionIdx(si);
-            setContenidoIdx(ci);
+            setContenidoIdx(0);
             return;
         }
 
-        // Calcular índice plano del destino y del actual
-        const secciones = curso?.secciones || [];
-
-        const toPlano = (si, ci) => {
-            let idx = 0;
-            for (let s = 0; s < si; s++) idx += secciones[s]?.contenidos?.length || 0;
-            return idx + ci;
-        };
-
-        const idxActual = toPlano(seccionIdx, contenidoIdx);
-        const idxDestino = toPlano(si, ci);
-
-        // Siempre puede ir hacia atrás
-        if (idxDestino <= idxActual) {
+        // Ir hacia atrás siempre permitido
+        if (si <= seccionIdx) {
             setSeccionIdx(si);
-            setContenidoIdx(ci);
+            setContenidoIdx(0);
             return;
         }
 
-        // Para ir hacia adelante: el actual debe estar visto y sin test pendiente
+        // Ir hacia adelante: solo a la siguiente inmediata y si está desbloqueada
         if (!marcadoEnSesion || testPendiente) return;
-
-        // Solo puede avanzar al inmediato siguiente, no saltar
-        if (idxDestino > idxActual + 1) return;
+        if (si > seccionIdx + 1) return;
 
         setSeccionIdx(si);
-        setContenidoIdx(ci);
+        setContenidoIdx(0);
     };
 
     const handleSiguiente = () => {

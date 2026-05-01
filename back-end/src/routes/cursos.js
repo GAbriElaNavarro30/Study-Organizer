@@ -97,6 +97,7 @@ router.post("/inscripciones", inscribirseACurso);
 router.delete("/inscripciones", cancelarInscripcion);
 
 router.get("/resultado", obtenerResultadoCurso);
+router.get("/resultado/respuestas", obtenerRespuestasDetalle);
 router.get("/mi-historial", miHistorialResultados);
 
 router.get("/cursos/:id/resultados", listarResultadosCurso);
@@ -111,6 +112,4 @@ router.get("/estadisticas-tutor/inscripciones", inscripcionesFiltradas);
 // ─── Dashboard estudiante ──────────────────────────────────
 router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
 
-router.get("/resultado/respuestas", obtenerRespuestasDetalle);
-
-export default router;
+export default router; 

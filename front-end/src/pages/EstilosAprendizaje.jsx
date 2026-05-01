@@ -1,5 +1,5 @@
 import "../styles/estilosaprendizaje.css";
-import {
+import { 
     IoListOutline,
     IoTimeOutline,
     IoFlashOutline,

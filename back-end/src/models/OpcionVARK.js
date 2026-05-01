@@ -1,6 +1,6 @@
 // estilos de aprendiaje
 import { db } from "../config/db.js";
- 
+
 export class OpcionVARK {
     
     // todas las opciones

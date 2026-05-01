@@ -1,6 +1,6 @@
 // estilos de aprendizaje - preguntas
 import { db } from "../config/db.js";
- 
+
 export class PreguntaEA {
 
     // todas

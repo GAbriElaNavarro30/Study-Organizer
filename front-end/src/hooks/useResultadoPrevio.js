@@ -32,4 +32,4 @@ export function useResultadoPrevio() {
         cargando,
         verResultados,
     };
-}
+} 

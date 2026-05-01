@@ -4,7 +4,7 @@ import { verificarToken } from "../middlewares/auth.js";
 import {
     obtenerPreguntas,
     responder,
-    obtenerResultado,
+    obtenerResultado, 
     obtenerResultadoGuardado,
     obtenerHistorial, // funciones
 } from "../controllers/estilosAprendizajeController.js";

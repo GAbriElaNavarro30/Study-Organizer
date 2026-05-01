@@ -1,5 +1,5 @@
 import { db } from "../config/db.js";
- 
+
 export class RespuestasTestVARK {
  
     // Guardar todas respuestas de todas las preguntas de un intento en una sola consulta

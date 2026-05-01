@@ -113,7 +113,7 @@ export async function obtenerResultado(req, res) {
         // 2. Guarda resultado en BD
         await new ResultadoTestEA({
             puntaje_v, puntaje_a, puntaje_r, puntaje_k,
-            perfil_dominante, nombre_perfil, id_intento,
+            perfil_dominante, id_intento,
         }).save();
 
         // 3. Python ya decidió los criterios
@@ -247,4 +247,4 @@ export async function obtenerHistorial(req, res) {
         console.error("Error al obtener historial:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
-} 
+}  

@@ -243,47 +243,44 @@ export function CursoVisor() {
                             <div className="cv-sidebar-nav">
                                 {secciones.map((seccion, si) => {
                                     const seccionActiva = si === seccionIdx;
+                                    // Una sección está vista si todos sus contenidos están vistos
+                                    const seccionVista = (seccion.contenidos || []).every(c => contenidosVistos.has(c.id_contenido));
+                                    // Está bloqueada si es futura y la actual aún no está lista
+                                    const bloqueada = si > seccionIdx && (!marcadoEnSesion || testPendiente);
+                                    // Solo puede ir a la siguiente inmediata
+                                    const muyBloqueada = si > seccionIdx + 1 || (si === seccionIdx + 1 && (!marcadoEnSesion || testPendiente));
+
                                     return (
                                         <div key={seccion.id_seccion} className={`cv-seccion-nav ${seccionActiva ? "cv-seccion-nav--active" : ""}`}>
-                                            <div className="cv-seccion-nav-header">
-                                                <span className="cv-seccion-nav-num">{si + 1}</span>
+                                            <div
+                                                className="cv-seccion-nav-header"
+                                                onClick={() => irAContenido(si, 0)}
+                                                style={{
+                                                    cursor: muyBloqueada ? "not-allowed" : "pointer",
+                                                    opacity: muyBloqueada ? 0.45 : 1,
+                                                }}
+                                            >
+                                                <span className="cv-seccion-nav-num">
+                                                    {seccionVista && !seccionActiva
+                                                        ? <IoCheckmarkCircleOutline size={13} style={{ color: "var(--cv-success)" }} />
+                                                        : muyBloqueada
+                                                            ? <IoLockClosedOutline size={11} />
+                                                            : si + 1}
+                                                </span>
                                                 <div className="cv-seccion-nav-info">
                                                     <span className={`cv-seccion-nav-label ${seccionActiva ? "cv-seccion-nav-label--active" : ""}`}>
                                                         {seccion.titulo_seccion || `Sección ${si + 1}`}
                                                     </span>
-                                                    {seccion.preguntas?.length > 0 && (
-                                                        <span className="cv-seccion-nav-pregs">{seccion.preguntas.length} preg.</span>
-                                                    )}
+                                                    {muyBloqueada
+                                                        ? <span className="cv-seccion-nav-pregs">Completa la sección anterior</span>
+                                                        : seccion.preguntas?.length > 0 && (
+                                                            <span className="cv-seccion-nav-pregs">{seccion.preguntas.length} preg.</span>
+                                                        )
+                                                    }
                                                 </div>
                                             </div>
 
-                                            {(seccion.contenidos || []).map((c, ci) => {
-                                                const visto = contenidosVistos.has(c.id_contenido);
-                                                const activo = si === seccionIdx && ci === contenidoIdx;
-                                                const bloqueado = !activo && !puedeIr(si, ci);
-
-                                                return (
-                                                    <div
-                                                        key={c.id_contenido}
-                                                        className={`cv-contenido-nav-item${activo ? " cv-contenido-nav-item--active" : ""}${visto && !activo ? " cv-contenido-nav-item--visto" : ""}${bloqueado ? " cv-contenido-nav-item--bloqueado" : ""}`}
-                                                        onClick={() => irAContenido(si, ci)}
-                                                        title={bloqueado
-                                                            ? testPendiente
-                                                                ? "Responde el cuestionario antes de continuar"
-                                                                : "Completa el contenido actual primero"
-                                                            : undefined}
-                                                    >
-                                                        {bloqueado
-                                                            ? <IoLockClosedOutline size={13} className="cv-nav-lock" />
-                                                            : visto
-                                                                ? <IoCheckmarkCircleOutline size={14} className="cv-nav-check" />
-                                                                : <span className="cv-nav-dot" />}
-                                                        {c.titulo || `Contenido ${ci + 1}`}
-                                                    </div>
-                                                );
-                                            })}
-
-                                            {seccion.preguntas?.length > 0 && (
+                                            {seccion.preguntas?.length > 0 && !muyBloqueada && (
                                                 <div className="cv-contenido-nav-item cv-contenido-nav-item--test"
                                                     onClick={() => irAContenido(si, 0)}>
                                                     <IoHelpCircleOutline size={14} />
@@ -299,7 +296,7 @@ export function CursoVisor() {
                         {/* ── CONTENIDO PRINCIPAL ── */}
                         <div className="cv-content-wrapper">
                             <div className="cv-content-area">
-                                {contenidoActual ? (
+                                {seccionActual ? (
                                     <>
                                         <div className="cv-seccion-bloque">
                                             <div className="cv-seccion-bloque__etiqueta">
@@ -316,22 +313,25 @@ export function CursoVisor() {
                                             )}
                                         </div>
 
-                                        <div className="cv-content-titulo">
-                                            {contenidoActual.titulo || `Contenido ${contenidoIdx + 1}`}
+                                        <div className="cv-bloque-contenido">
+                                            {(seccionActual.contenidos || []).map((con) => (
+                                                <div key={con.id_contenido}>
+                                                    {con.titulo && (
+                                                        <div className="cv-content-titulo">{con.titulo}</div>
+                                                    )}
+                                                    {con.contenido && (
+                                                        <div className="cv-content-texto">{con.contenido}</div>
+                                                    )}
+                                                    {con.imagen_url && (
+                                                        <img
+                                                            src={con.imagen_url}
+                                                            alt={con.titulo}
+                                                            className="cv-content-imagen"
+                                                        />
+                                                    )}
+                                                </div>
+                                            ))}
                                         </div>
-
-                                        {contenidoActual.contenido && (
-                                            <div className="cv-content-texto">{contenidoActual.contenido}</div>
-                                        )}
-
-                                        {contenidoActual.imagen_url && (
-                                            <img
-                                                src={contenidoActual.imagen_url}
-                                                alt={contenidoActual.titulo}
-                                                className="cv-content-imagen"
-                                            />
-                                        )}
-
                                         <BloqueTest
                                             preguntas={preguntasActuales}
                                             respuestas={respuestas}
@@ -364,14 +364,14 @@ export function CursoVisor() {
 
                                 <div className="cv-nav-dots">
                                     <div className="cv-nav-dots-list">
-                                        {todosLosContenidos.map((item, i) => (
+                                        {secciones.map((s, i) => (
                                             <div key={i}
-                                                className={`cv-nav-dot-item${i === idxPlano ? " active" : contenidosVistos.has(item.id) ? " done" : ""}`}
-                                                onClick={() => irAContenido(item.si, item.ci)}
+                                                className={`cv-nav-dot-item${i === seccionIdx ? " active" : (s.contenidos || []).every(c => contenidosVistos.has(c.id_contenido)) ? " done" : ""}`}
+                                                onClick={() => irAContenido(i, 0)}
                                             />
                                         ))}
                                     </div>
-                                    <span>Contenido {idxPlano + 1} de {todosLosContenidos.length}</span>
+                                    <span>Sección {seccionIdx + 1} de {secciones.length}</span>
                                 </div>
 
                                 {soloLectura ? (

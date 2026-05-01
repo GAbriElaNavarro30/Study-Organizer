@@ -1,5 +1,5 @@
 // useCursoResultado.js
-
+ 
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";

@@ -47,7 +47,7 @@ export function CursoResultado() {
     );
 
     /* ── Datos ── */
-    const pct = progreso?.porcentaje ?? 100;
+    const pct = resultado ? 100 : (progreso?.porcentaje ?? 0);
     const totalContenidos = progreso?.total ?? 0;
     const vistos = progreso?.vistos ?? 0;
 
@@ -257,19 +257,16 @@ export function CursoResultado() {
                                                 <div className="cr-review-q-header">
                                                     <span className="cr-review-q-num">P{pi + 1}</span>
                                                     <p className="cr-review-q-text">{preg.texto_pregunta}</p>
-                                                    {acerto
-                                                        ? <IoCheckmarkCircle size={18} className="cr-review-icon cr-review-icon--ok" />
-                                                        : respondida
-                                                            ? <IoCloseCircle size={18} className="cr-review-icon cr-review-icon--fail" />
-                                                            : <IoRemoveCircle size={18} className="cr-review-icon cr-review-icon--skip" />
-                                                    }
+                                                    <span className={`cr-review-opt-tag ${acerto ? "cr-review-opt-tag--correct" : respondida ? "cr-review-opt-tag--wrong" : ""}`}>
+                                                        {acerto ? "✓ Correcta" : respondida ? "✗ Incorrecta" : "—"}
+                                                    </span>
                                                 </div>
                                                 <div className="cr-review-options">
                                                     {preg.opciones.map((op) => {
                                                         let cls = "cr-review-opt";
-                                                        if (op.es_correcta) cls += " cr-review-opt--correct";
-                                                        if (op.fue_seleccionada && !op.es_correcta) cls += " cr-review-opt--wrong";
                                                         if (op.fue_seleccionada && op.es_correcta) cls += " cr-review-opt--correct-selected";
+                                                        else if (op.fue_seleccionada && !op.es_correcta) cls += " cr-review-opt--wrong";
+                                                        else if (!op.fue_seleccionada && op.es_correcta) cls += " cr-review-opt--correct";
                                                         return (
                                                             <div key={op.id_opcion} className={cls}>
                                                                 <span className="cr-review-opt-marker">
@@ -278,16 +275,6 @@ export function CursoResultado() {
                                                                         : op.es_correcta ? "✓" : ""}
                                                                 </span>
                                                                 <span className="cr-review-opt-text">{op.texto_opcion}</span>
-                                                                {op.fue_seleccionada && (
-                                                                    <span className="cr-review-opt-tag">
-                                                                        {op.es_correcta ? "Tu respuesta · Correcta" : "Tu respuesta"}
-                                                                    </span>
-                                                                )}
-                                                                {!op.fue_seleccionada && op.es_correcta && (
-                                                                    <span className="cr-review-opt-tag cr-review-opt-tag--correct">
-                                                                        Respuesta correcta
-                                                                    </span>
-                                                                )}
                                                             </div>
                                                         );
                                                     })}
@@ -380,4 +367,4 @@ export function CursoResultado() {
             </div>
         </div>
     );
-}
+} 

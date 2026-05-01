@@ -141,7 +141,7 @@ export function useResultadosTestEA() {
         const porcentajesFormateados = Object.fromEntries(
             Object.entries(porcentajes).map(([k, v]) => [
                 k,
-                Number(v).toFixed(2)
+                Number(v)
             ])
         );
         const letras = getLetras(perfil_dominante);
@@ -174,4 +174,4 @@ export function useResultadosTestEA() {
         navigate,
         irA,
     };
-} 
+}  

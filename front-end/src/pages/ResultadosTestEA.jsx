@@ -1,5 +1,5 @@
 import "../styles/resultadosTestEA.css";
-import {
+import { 
     IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline, IoArrowBackOutline,
     IoRefreshOutline, IoHomeOutline, IoCheckmarkCircleOutline,
     IoStarOutline, IoRibbonOutline, IoTrophyOutline, IoTimeOutline,

@@ -1352,3 +1352,20 @@
     color: var(--color-text-tertiary);
     flex-shrink: 0;
 }
+
+.cv-bloque-contenido {
+    padding-bottom: 0;
+    margin-bottom: 0;
+}
+
+.cv-bloque-contenido:last-child {
+    margin-bottom: 0;
+}
+
+.cv-bloque-contenido > div {
+    margin-bottom: 32px;
+}
+
+.cv-bloque-contenido > div:last-child {
+    margin-bottom: 0;
+}

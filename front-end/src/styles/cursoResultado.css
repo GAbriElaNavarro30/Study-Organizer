@@ -642,9 +642,17 @@
     margin-bottom: 10px;
 }
 
-.cr-review-card--ok    { border-color: #a7f3d0; }
-.cr-review-card--fail  { border-color: #fca5a5; }
-.cr-review-card--skip  { border-color: var(--cr-border); }
+.cr-review-card--ok {
+    border-color: #a7f3d0;
+}
+
+.cr-review-card--fail {
+    border-color: #fca5a5;
+}
+
+.cr-review-card--skip {
+    border-color: var(--cr-border);
+}
 
 .cr-review-q-header {
     display: flex;
@@ -655,8 +663,13 @@
     border-bottom: 1px solid var(--cr-border-soft);
 }
 
-.cr-review-card--ok   .cr-review-q-header { background: #f0fdf4; }
-.cr-review-card--fail .cr-review-q-header { background: #fff5f5; }
+.cr-review-card--ok .cr-review-q-header {
+    background: #f0fdf4;
+}
+
+.cr-review-card--fail .cr-review-q-header {
+    background: #fff5f5;
+}
 
 .cr-review-q-num {
     font-size: 10px;
@@ -677,10 +690,22 @@
     line-height: 1.5;
 }
 
-.cr-review-icon { flex-shrink: 0; margin-top: 1px; }
-.cr-review-icon--ok   { color: #059669; }
-.cr-review-icon--fail { color: #dc2626; }
-.cr-review-icon--skip { color: #9ca3af; }
+.cr-review-icon {
+    flex-shrink: 0;
+    margin-top: 1px;
+}
+
+.cr-review-icon--ok {
+    color: #059669;
+}
+
+.cr-review-icon--fail {
+    color: #dc2626;
+}
+
+.cr-review-icon--skip {
+    color: #9ca3af;
+}
 
 .cr-review-options {
     padding: 10px 14px;
@@ -701,6 +726,7 @@
     color: var(--cr-ink-soft);
 }
 
+/* DESPUÉS */
 .cr-review-opt--correct {
     border-color: #a7f3d0;
     background: #f0fdf4;
@@ -720,6 +746,13 @@
     color: #991b1b;
 }
 
+/* Sin estilo especial — opciones no seleccionadas e incorrectas */
+.cr-review-opt:not(.cr-review-opt--correct):not(.cr-review-opt--correct-selected):not(.cr-review-opt--wrong) {
+    border-color: var(--cr-border-soft);
+    background: #fff;
+    color: var(--cr-ink-soft);
+}
+
 .cr-review-opt-marker {
     width: 16px;
     font-size: 12px;
@@ -728,7 +761,10 @@
     text-align: center;
 }
 
-.cr-review-opt-text { flex: 1; line-height: 1.4; }
+.cr-review-opt-text {
+    flex: 1;
+    line-height: 1.4;
+}
 
 .cr-review-opt-tag {
     font-size: 10px;
@@ -743,4 +779,9 @@
 .cr-review-opt-tag--correct {
     background: #a7f3d0;
     color: #065f46;
+}
+
+.cr-review-opt-tag--wrong {
+    background: #fecaca;
+    color: #991b1b;
 }

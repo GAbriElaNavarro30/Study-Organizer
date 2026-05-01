@@ -7,6 +7,7 @@ import {
     IoReloadOutline,
     IoChevronForwardOutline,
     IoPersonOutline,
+    IoHelpCircleOutline,
 } from "react-icons/io5";
 import { useResultadoIntento } from "../hooks/useResultadoIntento";
 import "../styles/resultadoIntento.css";
@@ -21,6 +22,7 @@ export function ResultadoIntento() {
         cargando,
         error,
         aprobado,
+        respuestasDetalle,
     } = useResultadoIntento();
 
     if (cargando) return (
@@ -171,6 +173,58 @@ export function ResultadoIntento() {
                         </div>
                     </div>
                 </div>
+
+                {/* Revisión de respuestas */}
+                {respuestasDetalle.length > 0 && (
+                    <div className="cr-section">
+                        <div className="cr-section-head">
+                            <div className="cr-section-icon">
+                                <IoHelpCircleOutline size={14} />
+                            </div>
+                            <span className="cr-section-title">Revisión de respuestas</span>
+                        </div>
+                        <div className="cr-review-body">
+                            {respuestasDetalle.map((sec) => (
+                                <div key={sec.id_seccion} className="cr-review-section">
+                                    <p className="cr-review-sec-title">{sec.titulo_seccion}</p>
+                                    {sec.preguntas.map((preg, pi) => {
+                                        const respondida = preg.opciones.some(o => o.fue_seleccionada);
+                                        const acerto = preg.opciones.some(o => o.fue_seleccionada && o.es_correcta);
+                                        return (
+                                            <div key={preg.id_test} className={`cr-review-card ${acerto ? "cr-review-card--ok" : respondida ? "cr-review-card--fail" : "cr-review-card--skip"}`}>
+                                                <div className="cr-review-q-header">
+                                                    <span className="cr-review-q-num">P{pi + 1}</span>
+                                                    <p className="cr-review-q-text">{preg.texto_pregunta}</p>
+                                                    <span className={`cr-review-opt-tag ${acerto ? "cr-review-opt-tag--correct" : respondida ? "cr-review-opt-tag--wrong" : ""}`}>
+                                                        {acerto ? "✓ Correcta" : respondida ? "✗ Incorrecta" : "—"}
+                                                    </span>
+                                                </div>
+                                                <div className="cr-review-options">
+                                                    {preg.opciones.map((op) => {
+                                                        let cls = "cr-review-opt";
+                                                        if (op.fue_seleccionada && op.es_correcta) cls += " cr-review-opt--correct-selected";
+                                                        else if (op.fue_seleccionada && !op.es_correcta) cls += " cr-review-opt--wrong";
+                                                        else if (!op.fue_seleccionada && op.es_correcta) cls += " cr-review-opt--correct";
+                                                        return (
+                                                            <div key={op.id_opcion} className={cls}>
+                                                                <span className="cr-review-opt-marker">
+                                                                    {op.fue_seleccionada
+                                                                        ? op.es_correcta ? "✓" : "✗"
+                                                                        : op.es_correcta ? "✓" : ""}
+                                                                </span>
+                                                                <span className="cr-review-opt-text">{op.texto_opcion}</span>
+                                                            </div>
+                                                        );
+                                                    })}
+                                                </div>
+                                            </div>
+                                        );
+                                    })}
+                                </div>
+                            ))}
+                        </div>
+                    </div>
+                )}
 
                 {/* Retroalimentación + Tutor en la misma fila */}
                 {(retroalimentacion.length > 0 || (tutor && (tutor.nombre || tutor.foto))) && (

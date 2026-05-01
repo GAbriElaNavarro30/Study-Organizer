@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
-
+ 
 export function useResultadoIntento() {
     const navigate = useNavigate();
     const { state } = useLocation();
@@ -13,6 +13,7 @@ export function useResultadoIntento() {
     const [retroalimentacion, setRetro] = useState([]);
     const [cargando, setCargando] = useState(true);
     const [error, setError] = useState(null);
+    const [respuestasDetalle, setRespuestasDetalle] = useState([]);
 
     useEffect(() => {
         if (!state?.id_intento) {
@@ -28,6 +29,7 @@ export function useResultadoIntento() {
                 setResultado(data.resultado);
                 setCurso(data.curso);
                 setRetro(data.retroalimentacion || []);
+                setRespuestasDetalle(data.respuestasDetalle || []);
             } catch (err) {
                 setError(err.response?.data?.mensaje || "No se pudo cargar el resultado.");
             } finally {
@@ -51,5 +53,6 @@ export function useResultadoIntento() {
         cargando,
         error,
         aprobado,
+        respuestasDetalle,
     };
 } 
