@@ -98,7 +98,7 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         const R = 110, r = 78;
         const DEG_MIN = 180, DEG_MAX = 0;
 
-        const maxValor = Math.ceil(Math.max(meta * 1.5, total + 2, 10));
+        const maxValor = Math.ceil(Math.max((meta ?? 0) * 1.5, total + 2, 10));
 
         const degToRad = d => (d * Math.PI) / 180;
         const valorAAngulo = val => DEG_MIN - Math.min(val / maxValor, 1) * 180;
@@ -116,27 +116,27 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         while (svg.firstChild) svg.removeChild(svg.firstChild);
         svg.setAttribute("viewBox", `0 0 ${W} ${H}`);
 
-        const anguloMeta = valorAAngulo(meta);
+        const anguloMeta = valorAAngulo(meta ?? 0);
         const anguloActual = valorAAngulo(total);
 
         const bgPath = (() => {
             const s = degToRad(DEG_MIN), e = degToRad(DEG_MAX);
             return `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                    A ${R} ${R} 0 0 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                    A ${r} ${r} 0 0 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`;
+                A ${R} ${R} 0 0 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                A ${r} ${r} 0 0 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`;
         })();
         svg.appendChild(mk("path", { d: bgPath, fill: "#e2e8f0" }));
 
-        const anguloHastaMenor = valorAAngulo(Math.min(total, meta));
-        if (Math.min(total, meta) > 0) {
+        const anguloHastaMenor = valorAAngulo(Math.min(total, meta ?? 0));
+        if (Math.min(total, meta ?? 0) > 0) {
             const s = degToRad(DEG_MIN), e = degToRad(anguloHastaMenor);
             const largeArc = Math.abs(DEG_MIN - anguloHastaMenor) > 180 ? 1 : 0;
             svg.appendChild(mk("path", {
                 d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                    A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                    A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+                A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
                 fill: coloresArco.principal,
             }));
         }
@@ -146,29 +146,30 @@ function GaugeKPI({ total, meta, filtroClasif }) {
             const largeArc = Math.abs(anguloMeta - anguloActual) > 180 ? 1 : 0;
             svg.appendChild(mk("path", {
                 d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                    A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                    L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                    A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+                A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+                A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
                 fill: coloresArco.exceso,
             }));
         }
 
-        const mp1 = polarToXY(anguloMeta, r - 6);
-        const mp2 = polarToXY(anguloMeta, R + 6);
-        svg.appendChild(mk("line", {
-            x1: mp1.x, y1: mp1.y, x2: mp2.x, y2: mp2.y,
-            stroke: "#f59e0b", "stroke-width": "2.5", "stroke-dasharray": "4 3",
-        }));
-
-        const metaLbl = polarToXY(anguloMeta, R + 22);
-        const anchorMeta = anguloMeta > 90 ? "end" : anguloMeta < 90 ? "start" : "middle";
-        const metaTxt = mk("text", {
-            x: metaLbl.x, y: metaLbl.y,
-            "text-anchor": anchorMeta,
-            "font-size": "10", fill: "#b45309", "font-weight": "600",
-        });
-        metaTxt.textContent = `Meta: ${meta}`;
-        svg.appendChild(metaTxt);
+        if (meta) {
+            const mp1 = polarToXY(anguloMeta, r - 6);
+            const mp2 = polarToXY(anguloMeta, R + 6);
+            svg.appendChild(mk("line", {
+                x1: mp1.x, y1: mp1.y, x2: mp2.x, y2: mp2.y,
+                stroke: "#f59e0b", "stroke-width": "2.5", "stroke-dasharray": "4 3",
+            }));
+            const metaLbl = polarToXY(anguloMeta, R + 22);
+            const anchorMeta = anguloMeta > 90 ? "end" : anguloMeta < 90 ? "start" : "middle";
+            const metaTxt = mk("text", {
+                x: metaLbl.x, y: metaLbl.y,
+                "text-anchor": anchorMeta,
+                "font-size": "10", fill: "#b45309", "font-weight": "600",
+            });
+            metaTxt.textContent = `Meta: ${meta}`;
+            svg.appendChild(metaTxt);
+        }
 
         const agujaFin = polarToXY(anguloActual, R - 8);
         const agujaBase1 = polarToXY(anguloActual + 90, 6);
@@ -204,10 +205,10 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         svg.appendChild(valTxt);
 
         const valSub = mk("text", {
-            x: cx, y: cy - 4,
-            "text-anchor": "middle", "font-size": "10", fill: "#94a3b8",
+            x: cx, y: cy + 20,
+            "text-anchor": "middle", "font-size": "10", fill: "#000000",
         });
-        valSub.textContent = "registros";
+        valSub.textContent = "Registros";
         svg.appendChild(valSub);
 
     }, [total, meta, filtroClasif]);
@@ -216,12 +217,18 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         <div className="gauge-wrap">
             <svg ref={svgRef} className="gauge-svg" />
             <div className="gauge-footer">
-                <span className={`gauge-badge ${COLORES_BADGE[interpretacion.estado]}`}>
-                    <span style={{ marginRight: 5, display: "inline-flex", alignItems: "center" }}>
-                        {interpretacion.icono}
+                {meta ? (
+                    <span className={`gauge-badge ${COLORES_BADGE[interpretacion.estado]}`}>
+                        <span style={{ marginRight: 5, display: "inline-flex", alignItems: "center" }}>
+                            {interpretacion.icono}
+                        </span>
+                        {interpretacion.badge}
                     </span>
-                    {interpretacion.badge}
-                </span>
+                ) : (
+                    <span className="gauge-badge gauge-badge--pend">
+                        Define una meta para activar el indicador
+                    </span>
+                )}
             </div>
         </div>
     );
@@ -246,6 +253,8 @@ function DonaEmociones({ historial }) {
     const [metaGuardada, setMetaGuardada] = useState(null);
     const [editandoMeta, setEditandoMeta] = useState(false);
 
+    const [metaError, setMetaError] = useState("");
+
     useEffect(() => {
         const guardada = localStorage.getItem(META_KEY);
         if (guardada !== null) {
@@ -256,7 +265,11 @@ function DonaEmociones({ historial }) {
 
     const guardarMeta = () => {
         const num = parseInt(metaInput, 10);
-        if (isNaN(num) || num <= 0) return;
+        if (isNaN(num) || num <= 0) {
+            setMetaError("La meta debe ser mayor a 0");
+            return;
+        }
+        setMetaError("");
         localStorage.setItem(META_KEY, String(num));
         setMetaGuardada(num);
         setMetaInput("");
@@ -331,6 +344,12 @@ function DonaEmociones({ historial }) {
             },
         });
 
+        const colorBarra = (pct) => {
+            if (pct >= 80) return "#16a34a"; // verde
+            if (pct >= 60) return "#f59e0b"; // amarillo
+            return "#dc2626";                // rojo
+        };
+
         return () => { if (chartRef.current) chartRef.current.destroy(); };
     }, [filtroEmo, filtroMes, filtroAnio, filtroNivel, filtroClasif, historial]);
 
@@ -351,13 +370,10 @@ function DonaEmociones({ historial }) {
                     )}
                 </div>
 
-                {!metaGuardada && !editandoMeta && (
-                    <div className="dona-gauge-empty">
-                        <p>Define una meta de registros para ver el indicador de tendencia.</p>
-                        <button className="dona-meta-set-btn" onClick={() => setEditandoMeta(true)}>
-                            + Establecer meta
-                        </button>
-                    </div>
+                {metaGuardada === null && !editandoMeta && (
+                    <button className="dona-meta-set-btn-sm" onClick={() => setEditandoMeta(true)}>
+                        + Establecer meta
+                    </button>
                 )}
 
                 {editandoMeta && (
@@ -372,15 +388,42 @@ function DonaEmociones({ historial }) {
                             className="dona-meta-input"
                             autoFocus
                         />
+                        {metaError && <span style={{ fontSize: 11, color: "#dc2626" }}>{metaError}</span>}
                         <span className="dona-meta-form-label">registros</span>
                         <button className="dona-meta-confirm-btn" onClick={guardarMeta}>Guardar</button>
                         <button className="dona-meta-cancel-btn" onClick={() => { setEditandoMeta(false); setMetaInput(""); }}>Cancelar</button>
                     </div>
                 )}
 
-                {metaGuardada && !editandoMeta && (
-                    <GaugeKPI total={total} meta={metaGuardada} filtroClasif={filtroClasif} />
-                )}
+                <GaugeKPI total={total} meta={metaGuardada} filtroClasif={filtroClasif} />
+            </div>
+
+            {/* ── Totales ── */}
+            <div className="dona-totales">
+                <div className="dona-tot-item" style={{ "--tot-color": "#38bdf8" }}>
+                    <span className="dona-tot-val">{total}</span>
+                    <span className="dona-tot-lbl">Total filtrado</span>
+                </div>
+                <div className="dona-tot-item" style={{ "--tot-color": "#b39ddb" }}>
+                    <span className="dona-tot-val">{metaGuardada ?? "—"}</span>
+                    <span className="dona-tot-lbl">Meta</span>
+                </div>
+                <div className="dona-tot-item" style={{
+                    "--tot-color": metaGuardada != null
+                        ? (total - metaGuardada >= 0 ? "#38bdf8" : "#f48fb1")
+                        : "#e2e8f0"
+                }}>
+                    <span className="dona-tot-val" style={{
+                        color: metaGuardada != null
+                            ? (total - metaGuardada >= 0 ? "#075985" : "#991b1b")
+                            : undefined
+                    }}>
+                        {metaGuardada != null
+                            ? (total - metaGuardada >= 0 ? `+${total - metaGuardada}` : total - metaGuardada)
+                            : "—"}
+                    </span>
+                    <span className="dona-tot-lbl">Diferencia</span>
+                </div>
             </div>
 
             <div className="dona-header">

@@ -1397,7 +1397,7 @@
     flex-direction: column;
     align-items: center;
     gap: 10px;
-    
+
 }
 
 .gauge-svg {
@@ -1541,4 +1541,80 @@
 .gauge-badge--neutro {
     background: var(--sky-100);
     color: var(--sky-700);
+}
+
+.dona-meta-set-btn-sm {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sky-600);
+    background: var(--sky-50);
+    border: 1px dashed var(--sky-300);
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.dona-meta-set-btn-sm {
+    font-size: 12px;
+    font-weight: 600;
+    color: var(--sky-600);
+    background: var(--sky-50);
+    border: 1px dashed var(--sky-300);
+    border-radius: 8px;
+    padding: 5px 12px;
+    cursor: pointer;
+    font-family: inherit;
+    width: fit-content;
+    transition: background 0.15s, border-color 0.15s;
+}
+
+.test-barras {
+    display: flex;
+    flex-direction: column;
+    gap: 20px;
+    margin-top: 2px;
+}
+
+.barra-indicador {
+    width: 8px;
+    height: 8px;
+    border-radius: 50%;
+    flex-shrink: 0;
+    display: inline-block;
+}
+
+.dona-totales {
+    display: grid;
+    grid-template-columns: repeat(3, 1fr);
+    gap: 8px;
+    margin-bottom: 20px;
+}
+
+.dona-tot-item {
+    background: #f8faff;
+    border: 1px solid #e2e8f0;
+    border-left: 3px solid var(--tot-color, #38bdf8);
+    border-radius: 10px;
+    padding: 10px 14px;
+    display: flex;
+    flex-direction: column;
+    gap: 3px;
+}
+
+.dona-tot-val {
+    font-size: 22px;
+    font-weight: 600;
+    color: #0f172a;
+    line-height: 1;
+}
+
+.dona-tot-lbl {
+    font-size: 10px;
+    font-weight: 600;
+    text-transform: uppercase;
+    letter-spacing: 0.5px;
+    color: #94a3b8;
+    white-space: nowrap;
 }
