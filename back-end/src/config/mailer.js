@@ -12,6 +12,6 @@ transporter.verify((error, success) => {
   if (error) {
     console.error("Error al configurar el mailer:", error);
   } else {
-    console.log("Mailer listo para enviar correos");
+    //console.log("Mailer listo para enviar correos");
   }
 });

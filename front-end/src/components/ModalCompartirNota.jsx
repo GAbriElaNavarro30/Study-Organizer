@@ -1,7 +1,7 @@
 import "../styles/modalCompartir.css";
 import { Mail, Send, Share2, Info, MessageCircle, Clock, Pencil } from "lucide-react";
 import { useModalCompartirNota } from "../hooks/useModalCompartirNota";
-
+ 
 export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
     const {
         modo, cambiarModo,

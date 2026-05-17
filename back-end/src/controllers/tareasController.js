@@ -352,4 +352,4 @@ export const buscarTarea = async (req, res) => {
         console.error("Error al buscar tareas:", error);
         res.status(500).json({ mensaje: "Error al buscar tareas" });
     }
-};
+}; 

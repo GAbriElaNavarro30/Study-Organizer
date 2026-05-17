@@ -33,7 +33,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         onClose();
     };
 
-    // ✅ COMBINAR ERRORES CORRECTAMENTE - Mostrar ambos si existen
+    // COMBINAR ERRORES CORRECTAMENTE - Mostrar ambos si existen
     const erroresCombinados = {};
 
     // Primero agregar errores del frontend
@@ -54,10 +54,8 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
     // SOLO MOSTRAR ERRORES DEL FRONTEND
     const handleSubmit = async (e) => {
         e.preventDefault();
-
         const esValido = await validarFormulario();
         if (!esValido) return;
-
         const dataEnviar = prepararDataParaEnviar();
         onSubmit(dataEnviar);
     };

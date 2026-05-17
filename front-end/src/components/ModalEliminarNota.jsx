@@ -1,5 +1,5 @@
 import "../styles/modalEliminar.css";
-
+ 
 export function ModalEliminarNota({ isOpen, onClose, onConfirm, nombreNota }) {
     if (!isOpen) return null;
 

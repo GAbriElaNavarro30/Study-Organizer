@@ -1,7 +1,7 @@
 // ejecutar bot de telegram con: node src/bot/telegram-bot.js
 import { config } from "dotenv";
 config(); // carga el .env
-
+ 
 process.on("unhandledRejection", (err) => {
     console.error("Unhandled Rejection:", err);
 });

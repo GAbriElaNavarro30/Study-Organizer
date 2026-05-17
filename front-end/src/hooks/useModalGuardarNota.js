@@ -1,5 +1,5 @@
 import { useState, useEffect } from "react";
-
+ 
 export function useModalGuardarNota({ isOpen, modo, notas = [], onConfirm }) {
     const [titulo, setTitulo] = useState("");
     const [errores, setErrores] = useState([]);

@@ -6,7 +6,7 @@ import { RegistroEmocion } from "../models/RegistroEmocion.js";
 import { AlertaEspecialista } from "../models/AlertaEspecialista.js";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
-
+ 
 function normalizarTexto(texto) {
     return texto
         .toLowerCase()
@@ -338,4 +338,4 @@ export const marcarAlertaVista = async (req, res) => {
         console.error("Error al marcar alerta:", error);
         res.status(500).json({ mensaje: "Error al marcar la alerta." });
     }
-}; 
+};

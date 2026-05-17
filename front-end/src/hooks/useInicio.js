@@ -6,7 +6,7 @@ export const modules = [
     num: "01", title: "Estilos de Aprendizaje", tag: "Test VARK", ruta: "/estilos-aprendizaje",
     desc: "Identifica tu estilo de aprendizaje visual, auditivo, lector o kinestésico y obtén recomendaciones de estudio basadas a tu perfil dominante con en el modelo VARK.",
     detail: "16 preguntas · Perfil radial · Recomendaciones personalizadas",
-    img: "https://www.coldelvalle.edu.mx/wp-content/uploads/2022/04/4.-min-scaled.jpg",
+    img: "https://images.unsplash.com/photo-1434030216411-0b793f4b4173?w=900&q=80",
   },
   {
     num: "02", title: "Métodos de Estudio", tag: "Diagnóstico", ruta: "/metodos-estudio",

@@ -1,6 +1,6 @@
 // metodos de estudio
 import { db } from "../config/db.js";
-
+ 
 export class DimensionEvaluar {
     constructor({ nombre_dimension }) {
         this.nombre_dimension = nombre_dimension;

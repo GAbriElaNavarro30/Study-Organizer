@@ -1,7 +1,7 @@
 // ============================== MÓDULO EMOCIONES ==============================
 // model/Emocion.js
 import { db } from "../config/db.js";
-
+ 
 export class Emocion {
     constructor({ nombre_emocion, categoria, fecha_creacion = null, id_usuario = null }) {
         this.nombre_emocion = nombre_emocion;

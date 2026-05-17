@@ -697,4 +697,4 @@ export async function exportarPDF(req, res) {
         console.error("Error al exportar PDF:", error);
         res.status(500).json({ error: "Error al exportar PDF", detalles: error.message });
     }
-}
+} 

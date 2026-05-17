@@ -2,7 +2,7 @@
 
 //para llamar al sisitema experto
 import axios from "axios";
-
+ 
 // modelos 
 import { db } from "../config/db.js";
 import { PreguntaEA } from "../models/PreguntaEA.js";
@@ -109,7 +109,7 @@ export async function obtenerResultado(req, res) {
             nombre_perfil,
             recomendaciones,
         } = pythonRes.data;
-
+ 
         // 2. Guarda resultado en BD
         await new ResultadoTestEA({
             puntaje_v, puntaje_a, puntaje_r, puntaje_k,
@@ -247,4 +247,4 @@ export async function obtenerHistorial(req, res) {
         console.error("Error al obtener historial:", error);
         res.status(500).json({ error: "Error interno del servidor" });
     }
-}  
+} 

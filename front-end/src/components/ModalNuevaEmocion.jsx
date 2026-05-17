@@ -1,4 +1,4 @@
-import {
+import { 
     IoCloseOutline,
     IoCheckmarkCircleOutline,
     IoSparklesOutline,
@@ -10,7 +10,7 @@ const CLASIFS = [
     { value: "positiva", label: "Positiva", color: "#22c55e", bg: "#f0fdf4", border: "#bbf7d0" },
     { value: "neutra",   label: "Neutra",   color: "#64748b", bg: "#f8fafc", border: "#cbd5e1" },
     { value: "negativa", label: "Negativa", color: "#f97316", bg: "#fff7ed", border: "#fed7aa" },
-];
+]; 
 
 export function ModalNuevaEmocion({ visible, onClose, onGuardar }) {
     const {

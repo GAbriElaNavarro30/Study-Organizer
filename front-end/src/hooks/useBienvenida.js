@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
-
+ 
 export function useBienvenida() {
     const { usuario, refrescarUsuario } = useContext(AuthContext);
 
@@ -10,7 +10,7 @@ export function useBienvenida() {
     const [mesSeleccionado, setMesSeleccionado] = useState(0);
     const [anioSeleccionado, setAnioSeleccionado] = useState(0);
     const [aniosDisponibles, setAniosDisponibles] = useState([]);
-
+ 
     useEffect(() => {
         refrescarUsuario();
         window.scrollTo(0, 0);

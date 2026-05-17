@@ -8,7 +8,7 @@ import { ModalConfirmarCancelar } from "../components/ModalConfirmarCancelar";
 import { CustomAlert } from "../components/CustomAlert";
 import logo from "../assets/imagenes/logotipo.png";
 import { usePerfil } from "../hooks/usePerfil";
-
+  
 export function Perfil() {
 
     const {

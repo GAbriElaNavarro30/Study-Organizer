@@ -196,7 +196,7 @@ export function useCrudAdmin() {
         setTipoAlert("success");
         setMostrarAlert(true);
 
-        // SI EL USUARIO EDITADO ES EL USUARIO AUTENTICADO, ACTUALIZAR EL CONTEXTO
+        // Si el usuario editado es el usuario autenticado, actualizar el contexto en tiempo real
         if (usuarioAutenticado && usuarioSeleccionado.id === usuarioAutenticado.id) {
           const resActualizado = await api.get("/usuarios/me");
           setUsuarioAutenticado(resActualizado.data.usuario);

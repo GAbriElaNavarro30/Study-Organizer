@@ -1,6 +1,6 @@
 // metodos de estudio
 import { db } from "../config/db.js";
-
+ 
 export class RespuestaTestMe {
     constructor({ id_intento, id_pregunta, id_opcion }) {
         this.id_intento  = id_intento;

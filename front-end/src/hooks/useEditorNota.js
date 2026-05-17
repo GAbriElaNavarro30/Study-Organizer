@@ -568,4 +568,4 @@ export function useEditorNota() {
         handleConfirmarSalir,
         handleTextColor,
     };
-}
+} 

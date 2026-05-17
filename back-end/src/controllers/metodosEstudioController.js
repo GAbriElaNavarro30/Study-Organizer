@@ -5,7 +5,7 @@ import { IntentoTest } from "../models/IntentoTest.js";
 import { RespuestaTestMe } from "../models/RespuestaTestMe.js";
 import { ResultadoME } from "../models/ResultadoME.js";
 import { db } from "../config/db.js";
-
+ 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
 // ── Helper compartido: calcula nivel y puntaje con truncado ──
@@ -313,4 +313,4 @@ export async function obtenerUltimoResultado(req, res) {
     console.error("Error al obtener último resultado ME:", err);
     res.status(500).json({ error: "Error al obtener último resultado" });
   }
-}
+} 

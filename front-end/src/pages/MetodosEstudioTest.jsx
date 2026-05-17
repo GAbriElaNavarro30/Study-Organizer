@@ -1,5 +1,5 @@
 // src/pages/MetodosEstudio/MetodosEstudioTest.jsx
-import {
+import {    
   IoCheckmarkOutline, IoArrowForwardOutline, IoArrowBackOutline,
   IoTimeOutline, IoListOutline, IoArrowBackCircleOutline,
   IoVolumeMuteOutline, IoMusicalNotesOutline,

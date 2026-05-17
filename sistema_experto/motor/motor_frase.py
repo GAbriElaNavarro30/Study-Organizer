@@ -1,11 +1,11 @@
 # motor/motor_frase.py
-
+  
 import random
 
 from hechos.hechos_frase import EstadoEmocional, TipoFrase, FRASES
 from reglas.reglas_frase import MotorFrase
 
-
+ 
 def obtener_frase(clasificacion: str, nivel: str) -> dict:
     """
     Dado el estado emocional del día, devuelve una frase
@@ -51,4 +51,4 @@ def obtener_frase(clasificacion: str, nivel: str) -> dict:
     return {
         "frase": frase,
         "tipo":  tipo,
-    }
+    } 

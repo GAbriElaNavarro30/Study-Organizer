@@ -3,7 +3,7 @@ from hechos.hechos_me import (
     ErrorDetectado, RecomendacionME,
     DIMENSIONES_INFO, ERRORES_POR_PREGUNTA,
     CriteriosCurso,
-)
+)  
 from reglas.reglas_me import MotorMetodosEstudio
 
 
@@ -136,4 +136,4 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
         "errores_detectados":       errores,
         "recomendaciones":          recomendaciones,
         "criterios_cursos":          criterios_cursos,
-    }
+    }  

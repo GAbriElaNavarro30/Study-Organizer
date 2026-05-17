@@ -6,12 +6,7 @@ from hechos.hechos_ea import (
     CriteriosCurso, PERFILES,
 )
 
-# reglas
 from reglas.reglas_ea import MotorVARK
-
-# =================================================================
-# Estilos de aprendizaje
-# =================================================================
 
 # recibe una lista de categorias y devuelve un diccionario de puntajes
 def procesar_respuestas(categorias: list[str]) -> dict:
@@ -21,19 +16,10 @@ def procesar_respuestas(categorias: list[str]) -> dict:
     for cat in categorias:  # recorre la lista hasta n final
         if cat in puntajes:
             puntajes[cat] += 1
-
-    
-    '''
-    total = len(categorias) # 16
-    porcentajes = {
-        k: round((v / total) * 100) if total > 0 else 0 
-        for k, v in puntajes.items()
-    }
-    '''
     
     # calcula porcentajes
-    total = len(categorias)  # 16
-    porcentajes = {} # -> {"V" : 25% , "A" : 10% , ... } 
+    total = len(categorias)
+    porcentajes = {}
 
     for k, v in puntajes.items():
         if total > 0:
@@ -57,12 +43,12 @@ def procesar_respuestas(categorias: list[str]) -> dict:
     )
 
     # 3. Ejecutar inferencias (forward chaining) - lee hechos hasta el momento y aplica reglas
-    motor.run() # va a las reglas
+    motor.run()
 
     # 4. Recorre resultados de la Working Memory de lo que tiene hasta ahora el motor: PuntajesVARK,  PerfilDominante y Recomendacion
     perfil_hecho = None
     for fact in motor.facts.values():
-        if isinstance(fact, PerfilDominante): #1. fact = PuntajesVARK (No, lo ignora) 2. fact = PerfilDominante(perfil="AR", nombre="Auditivo-Lector") (SI)
+        if isinstance(fact, PerfilDominante):
             perfil_hecho = fact
             break
 
@@ -72,14 +58,14 @@ def procesar_respuestas(categorias: list[str]) -> dict:
     perfil = perfil_hecho["perfil"] 
     nombre = perfil_hecho["nombre"]
 
-    # recorrer recomendaciones por estilo
+    # recorrer recomendaciones por estilo generadas por el motor
     recomendaciones: dict[str, list[str]] = {}
     for fact in motor.facts.values():
         if isinstance(fact, Recomendacion):
             estilo = fact["estilo"]
             recomendaciones.setdefault(estilo, []).append(fact["texto"])
     
-    # Después de recoger recomendaciones, antes del return:
+    # Recoger criterios de cursos compatibles con el perfil
     criterios_cursos = None
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
@@ -90,7 +76,7 @@ def procesar_respuestas(categorias: list[str]) -> dict:
             }
             break
     
-    # 5. Construir y devolver el resultado
+    # 5. Construir y devolver el resultado al router
     return {
         "puntaje_v":      puntajes["V"],
         "puntaje_a":      puntajes["A"],
@@ -108,10 +94,6 @@ def procesar_respuestas(categorias: list[str]) -> dict:
 
 
 def obtener_recomendaciones_perfil(perfil: str) -> dict[str, list[str]]:
-    """
-    Consulta las recomendaciones de la base de conocimiento por perfil.
-    No requiere disparar el motor de inferencia.
-    """
     perfil = perfil.upper()
     resultado: dict[str, list[str]] = {}
     for letra in perfil:
@@ -121,16 +103,12 @@ def obtener_recomendaciones_perfil(perfil: str) -> dict[str, list[str]]:
 
 
 def obtener_criterios_perfil(perfil: str) -> dict:
-    """
-    Dispara el motor con el perfil ya conocido para obtener
-    los criterios de cursos sin necesidad de procesar respuestas.
-    """
     perfil = perfil.upper()
 
     motor = MotorVARK()
     motor.reset()
 
-    # Declaramos directamente el PerfilDominante — saltamos el bloque de puntajes
+    # Declaramos directamente el PerfilDominante, salta el bloque de puntajes
     motor.declare(PerfilDominante(
         perfil=perfil,
         nombre=PERFILES.get(perfil, perfil)
@@ -147,5 +125,5 @@ def obtener_criterios_perfil(perfil: str) -> dict:
                 "dimensiones":     fact["dimensiones"],
             }
 
-    # Fallback por si algo falla
-    return {"perfil_exacto": perfil, "perfiles_afines": [], "dimensiones": []}
+    # Fallback por si algo falla, no genera criterios
+    return {"perfil_exacto": perfil, "perfiles_afines": [], "dimensiones": []}  

@@ -1,7 +1,7 @@
 // ============================== DASHBOARD ROUTES ==============================
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
-import { 
+import {
     obtenerEmociones,
     crearEmocion,
     verificarRegistroHoy,
@@ -11,7 +11,7 @@ import {
     obtenerAlertasEspecialista,
     marcarAlertaVista,
 } from "../controllers/dashboardController.js";
-
+ 
 const router = Router();
 
 router.get("/obtener-emociones", verificarToken, obtenerEmociones);
@@ -23,4 +23,4 @@ router.get("/emociones/historial", verificarToken, obtenerHistorialEmocional);
 router.get("/alertas", verificarToken, obtenerAlertasEspecialista);  // ← nuevo
 router.patch("/alertas/:id/vista", verificarToken, marcarAlertaVista);
 
-export default router;
+export default router;  

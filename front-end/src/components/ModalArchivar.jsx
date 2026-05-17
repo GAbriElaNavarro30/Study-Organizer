@@ -1,7 +1,7 @@
 // src/components/ModalArchivar.jsx
 import { IoPeopleOutline } from "react-icons/io5";
 import "../styles/ModalArchivar.css";
-
+  
 /**
  * ModalArchivar
  *

@@ -1,6 +1,6 @@
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import api from "../services/api";
-
+  
 const META_KEY = "ikpi_inscripciones_meta";
 
 const VARK_ORDER = ['V','A','R','K','VA','VR','VK','AR','AK','RK','VAR','VAK','VRK','ARK','VARK'];

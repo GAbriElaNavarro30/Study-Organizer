@@ -2,19 +2,21 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
-
+ 
+# Importación de routers de cada módulo del sistema experto
 from routers.estilos_aprendizaje import router as router_ea
 from routers.metodos_estudio import router as router_me
 from routers.resultados_curso import router as router_cursos
 from routers.frases import router as router_frases
-
+ 
+# Carga de variables de entorno
 load_dotenv()
 
-FRONTEND_URL = os.getenv("FRONTEND_URL", "http://localhost:5173")
+BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:3000")
 PYTHON_ENV   = os.getenv("PYTHON_ENV", "development")
 PYTHON_PORT  = int(os.getenv("PYTHON_PORT", 8000))
 
-ALLOWED_ORIGINS = ["*"] if PYTHON_ENV == "development" else [FRONTEND_URL]
+ALLOWED_ORIGINS = ["*"] if PYTHON_ENV == "development" else [BACKEND_URL]
 
 app = FastAPI(
     title="Sistema Experto",
@@ -22,6 +24,7 @@ app = FastAPI(
     redoc_url="/redoc" if PYTHON_ENV == "development" else None,
 )
 
+# Configuración de CORS para permitir comunicación con el back-end de Node.js
 app.add_middleware(
     CORSMiddleware,
     allow_origins=ALLOWED_ORIGINS,
@@ -29,6 +32,7 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
+# Registro de routers por módulo
 app.include_router(router_ea)
 app.include_router(router_me)
 app.include_router(router_cursos)
@@ -40,5 +44,4 @@ def health_check():
 
 if __name__ == "__main__":
     import uvicorn
-    #uvicorn.run("main:app", host="0.0.0.0", port=PYTHON_PORT, reload=True) 
     uvicorn.run("main:app", host="0.0.0.0", port=PYTHON_PORT, reload=PYTHON_ENV == "development")

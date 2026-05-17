@@ -6,7 +6,7 @@ from motor.motor_curso import evaluar_resultado_curso
 
 router = APIRouter(prefix="/cursos", tags=["Resultados de Cursos"])
 
-
+ 
 # ─────────────────────────────────────────────────────────────
 # Esquemas
 # ─────────────────────────────────────────────────────────────
@@ -40,4 +40,4 @@ def evaluar_curso(data: ResultadoInput):
         resultado = evaluar_resultado_curso(data.porcentaje)
         return resultado
     except RuntimeError as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e))  

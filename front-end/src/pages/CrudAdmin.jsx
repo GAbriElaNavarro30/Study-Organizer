@@ -137,12 +137,14 @@ export function CrudAdmin() {
                       >
                         <IoPencilOutline />
                       </button>
+
                       <button
                         className="btn-icono eliminar"
                         onClick={() => abrirModalEliminar(usuario)}
                       >
                         <IoTrashOutline />
                       </button>
+                      
                     </td>
                   </tr>
                 ))

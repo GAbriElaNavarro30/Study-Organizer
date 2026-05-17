@@ -1,7 +1,7 @@
 // src/components/ModalPublicar.jsx
 import { IoCheckmarkCircle, IoEyeOff, IoPeopleOutline } from "react-icons/io5";
 import "../styles/ModalPublicar.css";
-
+  
 /**
  * ModalPublicar
  *

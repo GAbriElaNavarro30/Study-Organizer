@@ -3,7 +3,7 @@ import inspiracion from "../assets/imagenes/fondo-frases.jpeg";
 import { useState } from "react";
 import { useBienvenida } from "../hooks/useBienvenida";
 import { Doughnut, Line } from "react-chartjs-2";
-import {
+import { 
     Chart as ChartJS,
     ArcElement,
     Tooltip,
@@ -14,7 +14,7 @@ import {
     LineElement,
     Filler,
 } from "chart.js";
-
+ 
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 const MESES_NOMBRES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];

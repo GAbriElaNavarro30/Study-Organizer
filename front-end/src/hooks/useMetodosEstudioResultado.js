@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api.js";
-
+   
 // ── Normalizar: array → objeto keyed por id_dimension ──
 const normalizarResultados = (data) => {
   if (!data) return null;

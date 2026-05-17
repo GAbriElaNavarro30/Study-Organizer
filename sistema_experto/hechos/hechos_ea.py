@@ -3,10 +3,10 @@
 from experta import Fact, Field
 
 # ===========================================================================
-# Hechos derivados - se calcularon en la WM
+# Hechos de entrada — se declaran antes de iniciar la inferencia
 # ===========================================================================
 
-# hecho 1. puntajes de cada categoria
+# hecho 1. puntajes de cada categoria vark
 class PuntajesVARK(Fact):
     """
     Lo calcula el motor antes de iniciar la inferencia.
@@ -17,8 +17,11 @@ class PuntajesVARK(Fact):
     k = Field(int, mandatory=True)
     total = Field(int, mandatory=True)
 
+# ===========================================================================
+# Hechos derivados — declarados por el motor durante la inferencia
+# ===========================================================================
 
-# hecho 2. perfil dominante (el que tiene más puntaje)
+# hecho 2. perfil dominante (el que tiene más puntaje) determinado por las reglas
 class PerfilDominante(Fact):
     """
     Ejemplo: PerfilDominante(perfil="VK", nombre="Visual — Kinestésico"), se calcula en reglas
@@ -27,7 +30,7 @@ class PerfilDominante(Fact):
     nombre = Field(str, mandatory=True)
 
 
-# hecho 3. recomendacion (solamente 1)
+# hecho 3. recomendacion generada por el perfil
 class Recomendacion(Fact):
     """
     Ejemplo: Recomendacion(estilo="V", texto="Usa mapas mentales...")
@@ -35,6 +38,12 @@ class Recomendacion(Fact):
     estilo  = Field(str, mandatory=True)
     texto   = Field(str, mandatory=True)
 
+# hecho 4. Criterios para recomendar cursos compatibles con el perfil
+class CriteriosCurso(Fact):
+    """Criterios que el motor determinó para recomendar cursos."""
+    perfil_exacto   = Field(str,  mandatory=True)
+    perfiles_afines = Field(list, mandatory=True)  # perfiles que contienen al menos una letra del perfil
+    dimensiones = Field(list, mandatory=False)  # dimensiones débiles, None = sin filtro por dimensión  
 
 # ===========================================================================
 # Hechos estáticos
@@ -118,8 +127,4 @@ TODOS_LOS_PERFILES = [
     "VAR", "VAK", "VRK", "ARK", "VARK"
 ]
 
-class CriteriosCurso(Fact):
-    """Criterios que el motor determinó para recomendar cursos."""
-    perfil_exacto   = Field(str,  mandatory=True)
-    perfiles_afines = Field(list, mandatory=True)  # perfiles que contienen al menos una letra del perfil
-    dimensiones = Field(list, mandatory=False)  # None = sin filtro por dimensión  
+  

@@ -8,7 +8,7 @@ export function useModalNuevaEmocion({ visible, onClose, onGuardar }) {
     const [error, setError] = useState("");
     const [exito, setExito] = useState(false);
     const inputRef = useRef(null);
-
+ 
     useEffect(() => {
         if (visible) {
             setTimeout(() => inputRef.current?.focus(), 120);

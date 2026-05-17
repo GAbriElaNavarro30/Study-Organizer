@@ -63,4 +63,4 @@ export class IntentoTest {
         );
         return rows[0];
     }
-}
+} 

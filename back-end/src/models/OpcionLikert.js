@@ -1,6 +1,6 @@
 // metodos estudio
 import { db } from "../config/db.js";
-
+ 
 export class OpcionLikert {
     constructor({ categoria, valor }) {
         this.categoria = categoria;

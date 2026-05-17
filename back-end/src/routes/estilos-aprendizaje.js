@@ -2,13 +2,13 @@
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
 import {
-    obtenerPreguntas,
+    obtenerPreguntas, 
     responder,
     obtenerResultado, 
     obtenerResultadoGuardado,
     obtenerHistorial, // funciones
 } from "../controllers/estilosAprendizajeController.js";
-
+ 
 const router = Router(); // se crea el router donde estaran todas las rutas
 
 router.get("/preguntas", verificarToken, obtenerPreguntas); // si existe token accede a la ruta

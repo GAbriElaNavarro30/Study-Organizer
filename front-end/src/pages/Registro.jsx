@@ -59,7 +59,7 @@ export function Registro() {
     if (result.success) {
       showAlert("success", "¡Registro exitoso!", "Tu cuenta ha sido creada correctamente.");
     } else {
-      showAlert("error", "Error", result.message || "Ocurrió un problema al registrar la cuenta.");
+      //showAlert("error", "No se ha completado el registro", result.message || "Los campos son obligatorios.");
     }
   };
 

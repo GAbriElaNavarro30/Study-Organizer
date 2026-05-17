@@ -2,7 +2,7 @@
 
 from experta import Fact, Field
  
- 
+
 # ─────────────────────────────────────────────────────────────
 # Hechos de entrada
 # ─────────────────────────────────────────────────────────────
@@ -11,7 +11,7 @@ class EstadoEmocional(Fact):
     clasificacion = Field(str, mandatory=True)   # positiva | neutra | negativa
     nivel         = Field(str, mandatory=True)   # bajo | medio | alto
  
- 
+  
 # ─────────────────────────────────────────────────────────────
 # Hechos derivados (declarados por el motor)
 # ─────────────────────────────────────────────────────────────
@@ -564,4 +564,4 @@ FRASES: dict[str, list[str]] = {
         "No estás solo/a en esto, aunque así se sienta. Hay personas que pueden y quieren ayudarte.",
         "Hoy tu bienestar es lo más urgente que existe. Trátalo así y busca apoyo sin demora.",
     ],
-}
+}  

@@ -10,7 +10,7 @@ import {
   verificarCorreoAlternativo, recuperarConAlternativo,
   registrosDashboard
 } from "../controllers/usuarioController.js";
-
+ 
 const storage = multer.memoryStorage();
 const upload = multer({ storage });
 const router = Router();
@@ -26,11 +26,11 @@ router.get("/me", verificarToken, me);
 router.post("/logout", logout);
 
 // CRUD Admin
-router.get("/obtener-usuarios", obtenerUsuarios);
-router.post("/alta-usuario", altaUsuario);
-router.put("/editar-usuario/:id", editarUsuario);
-router.get("/buscar-informacion", buscarUsuarios);
-router.delete("/eliminar-usuario/:id", eliminarUsuario);
+router.get("/obtener-usuarios", verificarToken, obtenerUsuarios);
+router.get("/buscar-informacion", verificarToken, buscarUsuarios);
+router.post("/alta-usuario", verificarToken, altaUsuario);
+router.put("/editar-usuario/:id", verificarToken, editarUsuario);
+router.delete("/eliminar-usuario/:id", verificarToken, eliminarUsuario);
 
 // Perfil
 router.put("/actualizar-perfil", verificarToken,
@@ -47,4 +47,4 @@ router.post("/recuperar-con-alternativo", recuperarConAlternativo);
 // dashboard del administrador
 router.get("/registros-dashboard", verificarToken, registrosDashboard);
 
-export default router;
+export default router; 

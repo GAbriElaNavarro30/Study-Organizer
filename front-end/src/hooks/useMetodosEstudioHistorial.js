@@ -2,7 +2,7 @@
 import { useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
-
+   
 // ── Helpers de nivel (por puntaje numérico) ──
 export const nivelColor = (p) =>
     p >= 95 ? "#1A6E3C" : p >= 80 ? "#2E8B57" : p >= 65 ? "#2B7AB8" : p >= 50 ? "#A05A00" : "#B03030";

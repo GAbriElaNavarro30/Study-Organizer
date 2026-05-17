@@ -1,7 +1,7 @@
 // src/routes/metodosEstudio.js
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
-import {
+import { 
   obtenerTest,
   responder,
   obtenerResultado,
@@ -17,4 +17,4 @@ router.get("/ultimo-resultado",   verificarToken, obtenerUltimoResultado);
 router.get("/resultado/:id_intento", verificarToken, obtenerResultado);
 router.get("/historial", verificarToken, obtenerHistorial);
 
-export default router; 
+export default router;

@@ -1,5 +1,5 @@
 # motor/motor_curso.py
- 
+  
 from hechos.hechos_curso import (
     ResultadoExamen,
     NivelDesempeno,
@@ -64,4 +64,4 @@ def evaluar_resultado_curso(porcentaje: float) -> dict:
         "nivel":             nivel,
         "nombre_nivel":      nombre,
         "retroalimentacion": retroalimentacion,
-    }
+    }  

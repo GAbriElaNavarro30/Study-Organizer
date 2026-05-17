@@ -134,7 +134,7 @@ export function useResultadosTestEA() {
         setActiveSection(i);
         document.getElementById(NAV_SECTIONS[i].id)?.scrollIntoView({ behavior: "smooth", block: "start" });
     };
-
+ 
     // ── Derivados calculados a partir de datos ──
     const derivados = datos ? (() => {
         const { perfil_dominante, nombre_perfil, puntajes, porcentajes = {}, recomendaciones } = datos;

@@ -205,4 +205,4 @@ export function HistorialResultadoCurso() {
             </main>
         </div>
     );
-}
+} 

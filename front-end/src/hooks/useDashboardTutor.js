@@ -1,11 +1,11 @@
 import { useContext, useState, useEffect } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
-
+ 
 export function useDashboardTutor(tutor, estadisticas) {
     const [animado, setAnimado] = useState(false);
     const [fotoError, setFotoError] = useState(false);
-
+ 
     useEffect(() => {
         const t = setTimeout(() => setAnimado(true), 100);
         return () => clearTimeout(t);

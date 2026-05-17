@@ -2,7 +2,7 @@ import { useState, useRef, useEffect, useContext, useCallback } from "react";
 import { AuthContext } from "../context/AuthContext";
 import fotoPredeterminada from "../assets/imagenes/perfil-usuario.png";
 import api from "../services/api";
-
+  
 export function usePerfil() {
   const { usuario, setUsuario } = useContext(AuthContext);
 

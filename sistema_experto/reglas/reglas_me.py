@@ -1,5 +1,5 @@
 from experta import KnowledgeEngine, Rule, MATCH, TEST, NOT
-
+ 
 from hechos.hechos_me import (
     PuntajeDimension, PreguntaConError, PerfilVARK,
     ErrorDetectado, RecomendacionME,
@@ -9,7 +9,7 @@ from hechos.hechos_me import (
 
 NIVELES_A_MEJORAR = ("deficiente", "regular", "bueno")
 NIVELES_POSITIVOS = ("muy_bueno", "excelente")
-
+ 
  
 class MotorMetodosEstudio(KnowledgeEngine):
 
@@ -140,4 +140,4 @@ class MotorMetodosEstudio(KnowledgeEngine):
             perfil_exacto="",
             perfiles_afines=[],
             dimensiones=[],
-        ))
+        ))  

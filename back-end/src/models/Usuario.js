@@ -71,6 +71,48 @@ export class Usuario {
         return rows;
     }
 
+    static async search(q) {
+        let sql = `
+            SELECT u.id_usuario, u.nombre, u.apellido, u.correo_electronico,
+                u.telefono, u.genero, u.fecha_nacimiento, u.id_rol,
+                r.tipo_rol AS rol
+            FROM Usuario u
+            JOIN Rol r ON u.id_rol = r.id_rol
+        `;
+        const params = [];
+        if (q) {
+            sql += ` WHERE CAST(u.id_usuario AS CHAR) LIKE ? OR u.nombre LIKE ? OR u.apellido LIKE ?
+                OR u.correo_electronico LIKE ? OR u.telefono LIKE ? OR u.genero LIKE ?
+                OR DATE_FORMAT(u.fecha_nacimiento, '%d/%m/%Y') LIKE ? OR r.tipo_rol LIKE ?`;
+            const like = `%${q}%`;
+            params.push(like, like, like, like, like, like, like, like);
+        }
+        const [rows] = await db.query(sql, params);
+        return rows;
+    }
+
+    static async update(id, data) {
+        let query = `UPDATE Usuario SET nombre=?, apellido=?, correo_electronico=?, telefono=?, genero=?, fecha_nacimiento=?, id_rol=?`;
+        const params = [data.nombre, data.apellido, data.correo_electronico, data.telefono, data.genero, data.fecha_nacimiento, data.id_rol];
+
+        if (data.contrasena && data.contrasena.trim() !== "") {
+            const salt = await bcrypt.genSalt(10);
+            params.push(await bcrypt.hash(data.contrasena, salt));
+            query += `, contrasena=?`;
+        }
+        query += ` WHERE id_usuario=?`;
+        params.push(id);
+        return await db.query(query, params);
+    }
+
+    static async delete(id) {
+        const [resultado] = await db.query(
+            "DELETE FROM Usuario WHERE id_usuario = ?",
+            [id]
+        );
+        return resultado;
+    }
+
     static async getById(id) {
         const [rows] = await db.query(
             "SELECT * FROM Usuario WHERE id_usuario = ?",
@@ -102,4 +144,4 @@ export class Usuario {
         );
         return rows[0];
     }
-}
+} 

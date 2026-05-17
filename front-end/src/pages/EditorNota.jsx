@@ -261,4 +261,4 @@ export function EditorNota() {
             )}
         </main>
     );
-}
+} 

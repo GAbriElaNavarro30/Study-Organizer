@@ -1,10 +1,10 @@
-import {
+import { 
     IoSchool, IoEye, IoArchive, IoPeople, IoTrendingUp, IoStar,
     IoBarChart, IoPieChart, IoCalendar, IoMedal, IoBookmarks,
     IoStatsChart, IoCheckmarkCircle, IoHandRight, IoTrophy,
     IoPersonAdd, IoCheckmarkDone, IoTimeOutline,
 } from "react-icons/io5";
-import {
+import { 
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
     Area, AreaChart,
@@ -174,7 +174,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                     </div>
                     <div className="welcome-stat-mini">
                         <IoStatsChart size={18} />
-                        <span>Promedio general: <strong>{promedio_general}%</strong></span>
+                        <span>Promedio general: <strong>{promedio_general}</strong></span>
                     </div>
                     <div className="welcome-stat-mini">
                         <IoCheckmarkDone size={18} />
@@ -191,7 +191,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                     <KPICard icon={IoEye} label="Cursos publicados" value={stats.cursos_publicados} color="#B39DDB" />
                     <KPICard icon={IoArchive} label="Cursos archivados" value={stats.cursos_archivados} color="#F48FB1" />
                     <KPICard icon={IoPeople} label="Total estudiantes" value={stats.total_estudiantes} color="#80CBC4" trend={8} />
-                    <KPICard icon={IoStar} label="Promedio general" value={`${promedio_general}%`} color="#B39DDB" />
+                    <KPICard icon={IoStar} label="Promedio general" value={`${promedio_general}`} color="#B39DDB" />
                     <KPICard icon={IoCheckmarkDone} label="Tasa finalización" value={`${tasa_global}%`} color="#4A90D9" />
                 </div>
             </section>

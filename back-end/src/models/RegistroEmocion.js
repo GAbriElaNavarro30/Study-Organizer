@@ -1,6 +1,6 @@
 // model/Registro_Emocion.js
 import { db } from "../config/db.js";
-
+ 
 export class RegistroEmocion {
     constructor({ nivel = "medio", fecha_registro, frase_dia = null, id_emocion, id_usuario }) {
         this.nivel = nivel;

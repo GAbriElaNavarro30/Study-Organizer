@@ -2,7 +2,7 @@
 import { IoBarChartOutline, IoArrowForwardOutline } from "react-icons/io5";
 import "../styles/ResultadoPrevio.css";
 import { useResultadoPrevioME } from "../hooks/useResultadoPrevioME";
-
+ 
 export function ResultadoPrevioME() {
     const { resultado, cargando, verResultados } = useResultadoPrevioME();
 

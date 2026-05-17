@@ -2,7 +2,7 @@
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
-
+   
 export function useResultadoPrevioME() {
     const navigate = useNavigate();
     const [resultado, setResultado] = useState(null);

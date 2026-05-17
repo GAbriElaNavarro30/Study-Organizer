@@ -1,6 +1,6 @@
 // ============================== MÓDULO ALERTA ESPECIALISTA ==============================
 import { db } from "../config/db.js";
-
+ 
 export class AlertaEspecialista {
     constructor({
         fecha_alerta,

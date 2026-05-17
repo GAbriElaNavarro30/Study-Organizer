@@ -43,4 +43,4 @@ router.patch("/correo-destinatario/:id",        verificarToken, renombrarDestina
 router.get("/telegram-destinatarios",           verificarToken, obtenerDestinatariosTelegram);
 router.patch("/telegram-destinatario/:id",      verificarToken, renombrarDestinatarioTelegram);
 
-export default router;
+export default router; 

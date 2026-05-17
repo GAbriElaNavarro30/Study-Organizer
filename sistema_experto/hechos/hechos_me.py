@@ -6,7 +6,7 @@ class PuntajeDimension(Fact):
     puntaje       = Field(float, mandatory=True)
     nivel         = Field(str,   mandatory=True)
     tiene_errores = Field(bool,  mandatory=True)
-
+ 
 class PreguntaConError(Fact):
     """Pregunta específica donde se detectó un hábito negativo."""
     id_pregunta  = Field(int, mandatory=True)
@@ -222,4 +222,4 @@ class CriteriosCurso(Fact):
     """Criterios que el motor determinó para recomendar cursos."""
     perfil_exacto   = Field(str,  mandatory=True)
     perfiles_afines = Field(list, mandatory=True)
-    dimensiones = Field(list, mandatory=False)
+    dimensiones = Field(list, mandatory=False) 

@@ -4,7 +4,7 @@ from pydantic import BaseModel
 from motor.motor_me import procesar_test_me
 
 router = APIRouter(prefix="/me", tags=["Métodos de Estudio"])
-
+ 
 
 class RespuestaItem(BaseModel):
     id_pregunta:  int
@@ -12,7 +12,7 @@ class RespuestaItem(BaseModel):
     valor:        int   # 1-4
     es_negativa:  bool
 
-
+ 
 class TestMEInput(BaseModel):
     respuestas:  list[RespuestaItem]
     perfil_vark: str = "VARK"
@@ -35,4 +35,4 @@ def analizar_me(data: TestMEInput):
     return procesar_test_me(
         [r.model_dump() for r in data.respuestas],
         data.perfil_vark,
-    )
+    )  

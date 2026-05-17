@@ -1,5 +1,5 @@
 // src/pages/MetodosEstudio/MetodosEstudio.jsx
-import {
+import {  
   IoBookOutline, IoHardwareChipOutline, IoTimeOutline,
   IoCheckmarkCircleOutline, IoArrowForwardOutline,
   IoListOutline, IoFlashOutline,

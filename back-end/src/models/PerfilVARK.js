@@ -19,4 +19,4 @@ export class PerfilVARK {
         );
         return rows[0];
     }
-}
+} 

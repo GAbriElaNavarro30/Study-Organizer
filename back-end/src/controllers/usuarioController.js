@@ -213,7 +213,10 @@ export const verificarTelefono = async (req, res) => {
 // ============== CREAR USUARIO (REGISTRO) ==============
 export const crearUsuario = async (req, res) => {
     try {
+        // Convertir id_rol a número
         const data = { ...req.body, id_rol: Number(req.body.id_rol) };
+
+        // Validar cada campo antes de procesar la solicitud
         const errores = [];
         errores.push(...validarNombre(data.nombre));
         errores.push(...validarApellido(data.apellido));
@@ -227,9 +230,15 @@ export const crearUsuario = async (req, res) => {
             errores.push(...validarContrasena(data.contrasena));
         }
         errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
+
+        // Si hay errores, se devuelven al cliente sin continuar
         if (errores.length > 0) return res.status(400).json({ errors: errores });
+
+        // Cifrar la contraseña antes de guardarla en la base de datos
         const salt = await bcrypt.genSalt(10);
         data.contrasena = await bcrypt.hash(data.contrasena, salt);
+
+        // Crear instancia del modelo y guardar en la base de datos
         const usuario = new Usuario(data);
         await usuario.save();
         res.status(201).json({ mensaje: "Usuario creado correctamente" });
@@ -355,15 +364,7 @@ export const logout = (req, res) => {
     res.json({ mensaje: "Sesión cerrada" });
 };
 
-// ============== OBTENER USUARIOS ==============
-export const obtenerUsuarios = async (req, res) => {
-    try {
-        const usuarios = await Usuario.getAll();
-        res.json(usuarios);
-    } catch (error) {
-        res.status(500).json({ mensaje: "Error al obtener usuarios" });
-    }
-};
+
 
 // ============== ALTA USUARIO (admin) ==============
 export const altaUsuario = async (req, res) => {
@@ -411,18 +412,7 @@ export const editarUsuario = async (req, res) => {
             errores.push(...validarContrasena(data.contrasena));
         }
         if (errores.length > 0) return res.status(400).json({ errors: errores });
-
-        let query = `UPDATE Usuario SET nombre=?, apellido=?, correo_electronico=?, telefono=?, genero=?, fecha_nacimiento=?, id_rol=?`;
-        const params = [data.nombre, data.apellido, data.correo_electronico, data.telefono, data.genero, data.fecha_nacimiento, data.id_rol];
-
-        if (data.contrasena && data.contrasena.trim() !== "") {
-            const salt = await bcrypt.genSalt(10);
-            params.push(await bcrypt.hash(data.contrasena, salt));
-            query += `, contrasena=?`;
-        }
-        query += ` WHERE id_usuario=?`;
-        params.push(id);
-        await db.query(query, params);
+        await Usuario.update(id, data);
         res.json({ mensaje: "Usuario actualizado correctamente" });
     } catch (error) {
         console.error(error);
@@ -430,26 +420,21 @@ export const editarUsuario = async (req, res) => {
     }
 };
 
+// ============== OBTENER USUARIOS ==============
+export const obtenerUsuarios = async (req, res) => {
+    try {
+        const usuarios = await Usuario.getAll();
+        res.json(usuarios);
+    } catch (error) {
+        res.status(500).json({ mensaje: "Error al obtener usuarios" });
+    }
+};
+
 // ============== BUSCAR USUARIOS ==============
 export const buscarUsuarios = async (req, res) => {
     try {
         const { q } = req.query;
-        let sql = `
-      SELECT u.id_usuario, u.nombre, u.apellido, u.correo_electronico,
-             u.telefono, u.genero, u.fecha_nacimiento, u.id_rol,
-             r.tipo_rol AS rol
-      FROM Usuario u
-      JOIN Rol r ON u.id_rol = r.id_rol
-    `;
-        const params = [];
-        if (q) {
-            sql += ` WHERE CAST(u.id_usuario AS CHAR) LIKE ? OR u.nombre LIKE ? OR u.apellido LIKE ?
-               OR u.correo_electronico LIKE ? OR u.telefono LIKE ? OR u.genero LIKE ?
-               OR DATE_FORMAT(u.fecha_nacimiento, '%d/%m/%Y') LIKE ? OR r.tipo_rol LIKE ?`;
-            const like = `%${q}%`;
-            params.push(like, like, like, like, like, like, like, like);
-        }
-        const [rows] = await db.query(sql, params);
+        const rows = await Usuario.search(q);
         res.json(rows);
     } catch (error) {
         console.error("Error al buscar usuarios:", error);
@@ -461,7 +446,7 @@ export const buscarUsuarios = async (req, res) => {
 export const eliminarUsuario = async (req, res) => {
     try {
         const { id } = req.params;
-        const [resultado] = await db.query("DELETE FROM Usuario WHERE id_usuario = ?", [id]);
+        const resultado = await Usuario.delete(id);
         if (resultado.affectedRows === 0) return res.status(404).json({ message: "Usuario no encontrado" });
         res.status(200).json({ message: "Usuario eliminado correctamente" });
     } catch (error) {
@@ -723,4 +708,4 @@ export const registrosDashboard = async (req, res) => {
         console.error("Error en registrosDashboard:", error);
         res.status(500).json({ mensaje: "Error al obtener registros del dashboard" });
     }
-};
+}; 

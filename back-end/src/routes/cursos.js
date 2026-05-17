@@ -112,4 +112,4 @@ router.get("/estadisticas-tutor/inscripciones", inscripcionesFiltradas);
 // ─── Dashboard estudiante ──────────────────────────────────
 router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
 
-export default router; 
+export default router;  

@@ -15,7 +15,7 @@ import cloudinary from "../config/cloudinary.js";
 import axios from "axios";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
-
+ 
 // ─────────────────────────────────────────────────────────────
 // Helpers
 // ─────────────────────────────────────────────────────────────
@@ -1795,4 +1795,4 @@ export const obtenerRespuestasDetalle = async (req, res) => {
         console.error("obtenerRespuestasDetalle:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener las respuestas." });
     }
-};
+}; 

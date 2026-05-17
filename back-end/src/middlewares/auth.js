@@ -1,19 +1,20 @@
 import jwt from "jsonwebtoken";
 
 export const verificarToken = (req, res, next) => {
-  const token = req.cookies.token; // busca el token en la cookies de la peticion y la lee
+  // Busca el token en las cookies de la petición
+  const token = req.cookies.token;
 
-  // ¿existe token?
+  // Si no existe token, rechaza la petición antes de llegar al controlador
   if (!token) {
-    return res.status(401).json({ mensaje: "No autenticado" }); // no ha iniiado sesion
+    return res.status(401).json({ mensaje: "No autenticado" });
   }
 
-  // si existe, pero, ¿es valido?
+  // Si existe, verifica que sea válido y no haya expirado
   try {
-    const decoded = jwt.verify(token, process.env.JWT_SECRET); // verifica qie es valido y fue creado
-    req.usuario = decoded; // guarda datos del usuario para usarse en las rutas
-    next();
+    const decoded = jwt.verify(token, process.env.JWT_SECRET); 
+    req.usuario = decoded; // Guarda los datos del usuario para usarse en el controlador
+    next(); // Token válido, pasa la petición 
   } catch (error) {
     return res.status(403).json({ mensaje: "Token inválido o expirado" });
   }
-};
+}; 

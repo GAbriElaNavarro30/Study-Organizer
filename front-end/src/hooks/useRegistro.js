@@ -2,7 +2,7 @@ import { useState, useEffect } from "react";
 import api from "../services/api";
 
 export function useRegistro() {
-  // ================== UI ==================
+
   const [mostrarPassword, setMostrarPassword] = useState(false);
   const [mostrarConfirmPassword, setMostrarConfirmPassword] = useState(false);
   const [errores, setErrores] = useState({});

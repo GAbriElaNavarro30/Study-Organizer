@@ -1,6 +1,6 @@
 // src/pages/MetodosEstudio/MetodosEstudioHistorial.jsx
 import { useNavigate } from "react-router-dom";
-import {
+import {   
   IoCalendarOutline, IoArrowForwardOutline, IoRefreshOutline,
   IoHomeOutline, IoBarChartOutline, IoTimeOutline,
   IoTrophyOutline, IoAlertCircleOutline,

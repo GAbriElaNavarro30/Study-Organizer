@@ -9,8 +9,6 @@ from hechos.hechos_ea import (
 )
 
 class MotorVARK(KnowledgeEngine):
-    # Ej : v = 4, a = 5, r = 5, k = 2, total = 16
-    
     # -----------------------------------------------------------------------
     # 1 – Reglas de perfil (un solo estilo dominante)
     # -----------------------------------------------------------------------
@@ -179,14 +177,15 @@ class MotorVARK(KnowledgeEngine):
         PerfilDominante(perfil=MATCH.perfil),
         salience=1,
     )
-    def generar_recomendaciones(self, perfil): # perfil = AR
+    def generar_recomendaciones(self, perfil): 
         for letra in perfil:
-            if letra in RECOMENDACIONES: # letra = A, letra = R ¿existe?
+            if letra in RECOMENDACIONES: 
                 for texto in RECOMENDACIONES[letra]: 
-                    self.declare(Recomendacion(estilo=letra, texto=texto))  # delcara 20 hechos en total en la WM del motor 
+                    self.declare(Recomendacion(estilo=letra, texto=texto))  
         
-    # ── BLOQUE 6: Criterios de cursos recomendados ──
- 
+    # -----------------------------------------------------------------------
+    #  BLOQUE 6: Criterios de cursos recomendados
+    # -----------------------------------------------------------------------
     @Rule(
         PerfilDominante(perfil=MATCH.perfil_usuario),
         salience=1,
@@ -203,4 +202,4 @@ class MotorVARK(KnowledgeEngine):
             perfil_exacto=perfil_usuario,
             perfiles_afines=afines,
             dimensiones=[],
-        ))
+        ))  

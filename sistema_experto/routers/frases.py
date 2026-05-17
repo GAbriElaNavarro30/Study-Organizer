@@ -5,7 +5,6 @@ from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/frases", tags=["Frases Emocionales"])
 
-
 # ─────────────────────────────────────────────────────────────
 # Esquemas
 # ─────────────────────────────────────────────────────────────
@@ -57,4 +56,4 @@ def obtener_frase_emocional(data: FraseInput):
             nivel=data.nivel,
         )
     except Exception as e:
-        raise HTTPException(status_code=500, detail=str(e))
+        raise HTTPException(status_code=500, detail=str(e)) 

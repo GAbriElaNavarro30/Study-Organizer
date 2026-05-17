@@ -1,9 +1,9 @@
 // src/hooks/useModalCancelarInscripcion.js
 import { useEffect, useRef } from "react";
- 
+
 export function useModalCancelarInscripcion({ abierto, onCerrar }) {
     const dialogRef = useRef(null);
-
+ 
     /* Cierra con Escape */
     useEffect(() => {
         if (!abierto) return;

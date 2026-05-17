@@ -1,5 +1,5 @@
 # reglas/reglas_curso.py
-
+   
 from experta import KnowledgeEngine, Rule, MATCH, TEST
 from hechos.hechos_curso import (
     ResultadoExamen,
@@ -95,4 +95,4 @@ class MotorResultadoCurso(KnowledgeEngine):
     )
     def generar_retroalimentacion(self, nivel):
         for texto in RETROALIMENTACION.get(nivel, []):
-            self.declare(Retroalimentacion(texto=texto)) 
+            self.declare(Retroalimentacion(texto=texto))   

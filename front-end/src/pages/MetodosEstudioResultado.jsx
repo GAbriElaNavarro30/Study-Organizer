@@ -1,6 +1,6 @@
 // src/pages/MetodosEstudio/MetodosEstudioResultado.jsx
 import { useState } from "react";
-import {
+import {   
   IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline,
   IoArrowBackOutline, IoRefreshOutline, IoHomeOutline,
   IoAlertCircleOutline, IoCheckmarkCircleOutline,

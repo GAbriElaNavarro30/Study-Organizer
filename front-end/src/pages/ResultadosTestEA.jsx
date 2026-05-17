@@ -1,5 +1,5 @@
 import "../styles/resultadosTestEA.css";
-import { 
+import {
     IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline, IoArrowBackOutline,
     IoRefreshOutline, IoHomeOutline, IoCheckmarkCircleOutline,
     IoStarOutline, IoRibbonOutline, IoTrophyOutline, IoTimeOutline,
@@ -22,7 +22,7 @@ function formatearFecha(fechaISO) {
         hour: "2-digit", minute: "2-digit",
     });
 }
-
+ 
 // ─── BARRA ────────────────────────────────────────────────────────────────────
 
 function BarraSimple({ cfg, value, pct, animado }) {

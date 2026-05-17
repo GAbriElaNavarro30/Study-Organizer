@@ -3,10 +3,10 @@
 from experta import KnowledgeEngine, Rule, MATCH, TEST
 
 from hechos.hechos_frase import EstadoEmocional, TipoFrase
-
+ 
 CLASIFICACIONES_VALIDAS = {"positiva", "neutra", "negativa"}
 NIVELES_VALIDOS_GENERAL = {"bajo", "medio", "alto"}
-
+ 
 class MotorFrase(KnowledgeEngine):
 
     # Regla general: positiva/neutra/negativa × bajo/medio/alto
@@ -31,4 +31,4 @@ class MotorFrase(KnowledgeEngine):
         ),
     )
     def seleccionar_tipo_critico(self):
-        self.declare(TipoFrase(tipo="negativa_critico"))
+        self.declare(TipoFrase(tipo="negativa_critico")) 
