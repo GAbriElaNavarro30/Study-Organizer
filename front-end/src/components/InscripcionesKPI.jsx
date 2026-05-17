@@ -1,16 +1,17 @@
 import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react";
 import api from "../services/api";
-  
+import "../styles/InscripcionesKPI.css";
+
 const META_KEY = "ikpi_inscripciones_meta";
 
-const VARK_ORDER = ['V','A','R','K','VA','VR','VK','AR','AK','RK','VAR','VAK','VRK','ARK','VARK'];
+const VARK_ORDER = ['V', 'A', 'R', 'K', 'VA', 'VR', 'VK', 'AR', 'AK', 'RK', 'VAR', 'VAK', 'VRK', 'ARK', 'VARK'];
 const MESES = [
-    { valor: "1", label: "Enero" },    { valor: "2", label: "Febrero" },
-    { valor: "3", label: "Marzo" },    { valor: "4", label: "Abril" },
-    { valor: "5", label: "Mayo" },     { valor: "6", label: "Junio" },
-    { valor: "7", label: "Julio" },    { valor: "8", label: "Agosto" },
-    { valor: "9", label: "Septiembre" },{ valor: "10", label: "Octubre" },
-    { valor: "11", label: "Noviembre" },{ valor: "12", label: "Diciembre" },
+    { valor: "1", label: "Enero" }, { valor: "2", label: "Febrero" },
+    { valor: "3", label: "Marzo" }, { valor: "4", label: "Abril" },
+    { valor: "5", label: "Mayo" }, { valor: "6", label: "Junio" },
+    { valor: "7", label: "Julio" }, { valor: "8", label: "Agosto" },
+    { valor: "9", label: "Septiembre" }, { valor: "10", label: "Octubre" },
+    { valor: "11", label: "Noviembre" }, { valor: "12", label: "Diciembre" },
 ];
 
 function dibujarGauge(svgEl, total, meta) {
@@ -68,7 +69,7 @@ function dibujarGauge(svgEl, total, meta) {
             x1: mp1.x, y1: mp1.y, x2: mp2.x, y2: mp2.y,
             stroke: "#f59e0b", "stroke-width": "2.5", "stroke-dasharray": "4 3",
         }));
-        const ml = pt(angM, R + 20);
+        const ml = pt(angM, R + 10);
         const anchor = angM > 92 ? "end" : angM < 88 ? "start" : "middle";
         const mt = mk("text", {
             x: ml.x, y: ml.y,
@@ -101,10 +102,10 @@ function dibujarGauge(svgEl, total, meta) {
     vt.textContent = total;
     svgEl.appendChild(vt);
     const vs = mk("text", {
-        x: cx, y: cy - 5,
-        "text-anchor": "middle", "font-size": "10", fill: "#94a3b8",
+        x: cx, y: cy + 20,
+        "text-anchor": "middle", "font-size": "11", fill: "#000000",
     });
-    vs.textContent = "inscripciones";
+    vs.textContent = "Inscripciones";
     svgEl.appendChild(vs);
 }
 
@@ -273,8 +274,7 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                         </>
                     ) : (
                         <button
-                            className="filtros-limpiar-btn"
-                            style={{ marginTop: 0 }}
+                            className="ikpi-btn-meta"
                             onClick={() => { setMetaInput(""); setEditando(true); }}
                         >
                             + Establecer meta

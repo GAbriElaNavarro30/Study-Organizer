@@ -164,7 +164,7 @@ export function Perfil() {
                     <button type="button" className="btn-cambiar-portada"
                         onClick={handleCambiarFotoPortada} title="Cambiar foto de portada">
                         <MdCameraAlt />
-                        <span>Cambiar portada</span>
+                        
                     </button>
                 )}
 

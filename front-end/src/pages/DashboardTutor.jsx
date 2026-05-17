@@ -1,4 +1,4 @@
-import { 
+import {
     IoSchool, IoEye, IoArchive, IoPeople, IoTrendingUp, IoStar,
     IoBarChart, IoPieChart, IoCalendar, IoMedal, IoBookmarks,
     IoStatsChart, IoCheckmarkCircle, IoHandRight, IoTrophy,
@@ -498,7 +498,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                                     <span className="rank-titulo">{c.titulo}</span>
                                     <span className="rank-alumnos"><IoPeople size={12} /> {c.estudiantes}</span>
                                     <span className="rank-score rank-score--dynamic" style={{ color: c.promedio >= 85 ? "#3A7BD5" : c.promedio >= 70 ? "#4A90D9" : "#87CEEB" }}>
-                                        {c.promedio}%
+                                        {c.promedio}
                                         <div className="score-bar">
                                             <div className="score-fill" style={{ width: `${c.promedio}%`, background: c.promedio >= 85 ? "#4A90D9" : "#B39DDB" }} />
                                         </div>
@@ -520,7 +520,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                             <h3 className="best-titulo">{mejor_curso.titulo}</h3>
                             <p className="best-meta">
                                 <IoPeople size={13} /> {mejor_curso.estudiantes} estudiantes &nbsp;·&nbsp;
-                                <IoStar size={13} /> Promedio: <strong>{mejor_curso.promedio}%</strong>
+                                <IoStar size={13} /> Promedio: <strong>{mejor_curso.promedio}</strong>
                             </p>
                         </div>
                     </div>
