@@ -122,6 +122,8 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
     const [total, setTotal] = useState(0);
     const [cargando, setCargando] = useState(false);
 
+    const [metaError, setMetaError] = useState("");
+
     const [filtros, setFiltros] = useState({
         id_curso: "todos",
         perfil_vark: "todos",
@@ -160,12 +162,15 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
 
     const guardarMeta = () => {
         const n = parseInt(metaInput, 10);
-        if (!isNaN(n) && n > 0) {
-            localStorage.setItem(META_KEY, String(n));
-            setMeta(n);
-            setEditando(false);
-            setMetaInput("");
+        if (isNaN(n) || n <= 0) {
+            setMetaError("La meta debe ser mayor a 0");
+            return;
         }
+        setMetaError("");
+        localStorage.setItem(META_KEY, String(n));
+        setMeta(n);
+        setEditando(false);
+        setMetaInput("");
     };
 
     const eliminarMeta = () => {
@@ -288,11 +293,12 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                         min="1"
                         placeholder="Ej. 50"
                         value={metaInput}
-                        onChange={e => setMetaInput(e.target.value)}
+                        onChange={e => { setMetaInput(e.target.value); setMetaError(""); }}
                         onKeyDown={e => e.key === "Enter" && guardarMeta()}
                         className="dona-meta-input"
                         autoFocus
                     />
+                    {metaError && <span style={{ fontSize: 11, color: "#dc2626" }}>{metaError}</span>}
                     <span style={{ fontSize: 12, color: "#64748B", whiteSpace: "nowrap" }}>
                         inscripciones
                     </span>
