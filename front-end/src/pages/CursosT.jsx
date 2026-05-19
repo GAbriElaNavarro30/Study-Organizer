@@ -494,7 +494,7 @@ export function CursosT() {
                                     className="search-input"
                                     value={busqueda}
                                     onChange={(e) => handleBusqueda(e.target.value)}
-                                    placeholder="Buscar por título, descripción o perfil VARK…"
+                                    placeholder="Buscar por título…"
                                 />
                                 {busqueda && (
                                     <button className="search-clear" onClick={() => handleBusqueda("")}>✕</button>

@@ -15,7 +15,7 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
         destinatariosCorreo, cargandoDestinatariosCorreo, seleccionarDestinatarioCorreo,
         editandoIdCorreo, editandoNombreCorreo, editandoNombreCorreoError, guardandoNombreCorreo,
         iniciarEdicionCorreo, cancelarEdicionCorreo, handleChangeNombreCorreo, guardarNombreDestinatarioCorreo,
-    } = useModalCompartirNota(isOpen);
+    } = useModalCompartirNota(isOpen); 
 
     if (!isOpen) return null;
 
@@ -66,12 +66,12 @@ export function ModalCompartirNota({ isOpen, onClose, onConfirm, nombreNota }) {
                         >
                             <Send size={20} /><span>Telegram</span>
                         </button>
-                        <button
+                        {/*<button
                             className={`opcion-compartir whatsapp ${modo === "whatsapp" ? "activa" : ""}`}
                             onClick={() => cambiarModo("whatsapp")}
                         >
                             <MessageCircle size={20} /><span>WhatsApp</span>
-                        </button>
+                        </button>*/}
                     </div>
 
                     {/* ── CORREO ── */}

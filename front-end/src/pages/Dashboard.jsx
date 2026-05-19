@@ -122,9 +122,9 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         const bgPath = (() => {
             const s = degToRad(DEG_MIN), e = degToRad(DEG_MAX);
             return `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                A ${R} ${R} 0 0 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                A ${r} ${r} 0 0 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`;
+            A ${R} ${R} 0 0 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+            L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+            A ${r} ${r} 0 0 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`;
         })();
         svg.appendChild(mk("path", { d: bgPath, fill: "#e2e8f0" }));
 
@@ -134,9 +134,9 @@ function GaugeKPI({ total, meta, filtroClasif }) {
             const largeArc = Math.abs(DEG_MIN - anguloHastaMenor) > 180 ? 1 : 0;
             svg.appendChild(mk("path", {
                 d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+            A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+            L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+            A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
                 fill: coloresArco.principal,
             }));
         }
@@ -146,9 +146,9 @@ function GaugeKPI({ total, meta, filtroClasif }) {
             const largeArc = Math.abs(anguloMeta - anguloActual) > 180 ? 1 : 0;
             svg.appendChild(mk("path", {
                 d: `M ${cx + R * Math.cos(s)} ${cy - R * Math.sin(s)}
-                A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
-                L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
-                A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
+            A ${R} ${R} 0 ${largeArc} 1 ${cx + R * Math.cos(e)} ${cy - R * Math.sin(e)}
+            L ${cx + r * Math.cos(e)} ${cy - r * Math.sin(e)}
+            A ${r} ${r} 0 ${largeArc} 0 ${cx + r * Math.cos(s)} ${cy - r * Math.sin(s)} Z`,
                 fill: coloresArco.exceso,
             }));
         }
@@ -171,6 +171,7 @@ function GaugeKPI({ total, meta, filtroClasif }) {
             svg.appendChild(metaTxt);
         }
 
+        // Primero la aguja
         const agujaFin = polarToXY(anguloActual, R - 8);
         const agujaBase1 = polarToXY(anguloActual + 90, 6);
         const agujaBase2 = polarToXY(anguloActual - 90, 6);
@@ -183,11 +184,11 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         const lblMin = mk("text", { x: cx - R - 2, y: cy + 14, "text-anchor": "end", "font-size": "10", fill: "#94a3b8" });
         lblMin.textContent = "0";
         svg.appendChild(lblMin);
-
         const lblMax = mk("text", { x: cx + R + 2, y: cy + 14, "text-anchor": "start", "font-size": "10", fill: "#94a3b8" });
         lblMax.textContent = maxValor;
         svg.appendChild(lblMax);
 
+        // Luego el número (queda encima de la aguja)
         const colorValor = {
             "en-tendencia": "#16a34a",
             "fuera": "#0369a1",
@@ -199,7 +200,8 @@ function GaugeKPI({ total, meta, filtroClasif }) {
         const valTxt = mk("text", {
             x: cx, y: cy - 18,
             "text-anchor": "middle", "font-size": "26", "font-weight": "700",
-            fill: colorValor,
+            fill: "#0F172A",
+            stroke: "#ffffff", "stroke-width": "3", "paint-order": "stroke",
         });
         valTxt.textContent = total;
         svg.appendChild(valTxt);

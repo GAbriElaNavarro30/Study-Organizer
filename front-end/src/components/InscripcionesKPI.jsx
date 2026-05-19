@@ -80,6 +80,7 @@ function dibujarGauge(svgEl, total, meta) {
         svgEl.appendChild(mt);
     }
 
+    // 👇 Primero la aguja
     const af = pt(angAct, R - 8), ab1 = pt(angAct + 90, 6), ab2 = pt(angAct - 90, 6);
     svgEl.appendChild(mk("polygon", {
         points: `${af.x},${af.y} ${ab1.x},${ab1.y} ${ab2.x},${ab2.y}`,
@@ -94,10 +95,12 @@ function dibujarGauge(svgEl, total, meta) {
     lMax.textContent = Math.round(maxVal);
     svgEl.appendChild(lMax);
 
+    // Luego el número (queda encima de la aguja)
     const vColor = meta ? (total >= meta ? "#16a34a" : "#0369a1") : "#0369a1";
     const vt = mk("text", {
         x: cx, y: cy - 20,
-        "text-anchor": "middle", "font-size": "28", "font-weight": "500", fill: vColor,
+        "text-anchor": "middle", "font-size": "28", "font-weight": "700", fill: "#0F172A",
+        stroke: "#ffffff", "stroke-width": "3", "paint-order": "stroke",
     });
     vt.textContent = total;
     svgEl.appendChild(vt);
