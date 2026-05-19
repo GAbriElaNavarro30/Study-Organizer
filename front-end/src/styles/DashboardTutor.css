@@ -956,3 +956,55 @@
     background: var(--blue-100);
     border-color: var(--blue-400);
 }
+
+/* Scrollbar sutil para la gráfica */
+.chart-card div::-webkit-scrollbar {
+    height: 4px;
+}
+
+.chart-card div::-webkit-scrollbar-track {
+    background: #F0F7FF;
+    border-radius: 2px;
+}
+
+.chart-card div::-webkit-scrollbar-thumb {
+    background: #B39DDB;
+    border-radius: 2px;
+}
+
+/* ── Scroll horizontal para gráficas ──────────────────────── */
+.chart-scroll-wrapper {
+    overflow-x: auto;
+    overflow-y: hidden;
+    padding-bottom: 4px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar {
+    height: 1px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar-track {
+    background: #F0F7FF;
+    border-radius: 4px;
+}
+
+.chart-scroll-wrapper::-webkit-scrollbar-thumb {
+    background: #B39DDB;
+    border-radius: 2px;
+}
+
+.charts-row {
+    overflow: visible;
+}
+
+.chart-card.medium {
+    overflow: hidden;
+}
+
+.chart-card.medium > div::-webkit-scrollbar-thumb {
+    background: white;
+}
+
+.chart-card.medium > div::-webkit-scrollbar {
+    width: 0px;
+}

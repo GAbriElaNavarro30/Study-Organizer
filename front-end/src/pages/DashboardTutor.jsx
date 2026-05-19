@@ -4,7 +4,7 @@ import {
     IoStatsChart, IoCheckmarkCircle, IoHandRight, IoTrophy,
     IoPersonAdd, IoCheckmarkDone, IoTimeOutline,
 } from "react-icons/io5";
-import { 
+import {
     BarChart, Bar, XAxis, YAxis, CartesianGrid, Tooltip,
     ResponsiveContainer, PieChart, Pie, Cell, Legend,
     Area, AreaChart,
@@ -469,19 +469,33 @@ export function DashboardTutor({ tutor, estadisticas }) {
                 <div className="charts-row">
                     <div className="chart-card medium">
                         <h3 className="chart-subtitle">Puntaje promedio</h3>
-                        <ResponsiveContainer width="100%" height={240}>
-                            <BarChart data={stats.promedios_cursos} margin={{ top: 5, right: 10, left: -20, bottom: 40 }} barSize={22}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" vertical={false} />
-                                <XAxis dataKey="titulo" tick={{ fill: "#6B8BAF", fontSize: 10, angle: -25, textAnchor: "end" }} axisLine={false} tickLine={false} interval={0} />
-                                <YAxis domain={[0, 100]} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
-                                <Bar dataKey="promedio" name="Promedio %" radius={[6, 6, 0, 0]}>
-                                    {stats.promedios_cursos.map((c, i) => (
-                                        <Cell key={i} fill={c.promedio >= 85 ? "#4A90D9" : c.promedio >= 70 ? "#B39DDB" : "#F48FB1"} />
-                                    ))}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <div style={{ overflowY: "auto", maxHeight: "320px", paddingRight: "4px" }}>
+                            <ResponsiveContainer width="100%" height={Math.max(stats.promedios_cursos.length * 60, 240)}>
+                                <BarChart
+                                    data={stats.promedios_cursos}
+                                    layout="vertical"
+                                    margin={{ top: 5, right: 20, left: 0, bottom: 5 }}
+                                    barSize={22}
+                                >
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
+                                    <XAxis type="number" domain={[0, 100]} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <YAxis
+                                        type="category"
+                                        dataKey="titulo"
+                                        width={160}
+                                        tick={{ fill: "#6B8BAF", fontSize: 11 }}
+                                        axisLine={false}
+                                        tickLine={false}
+                                    />
+                                    <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
+                                    <Bar dataKey="promedio" name="Promedio %" radius={[0, 6, 6, 0]}>
+                                        {stats.promedios_cursos.map((c, i) => (
+                                            <Cell key={i} fill={c.promedio >= 85 ? "#4A90D9" : c.promedio >= 70 ? "#B39DDB" : "#F48FB1"} />
+                                        ))}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
 
                     <div className="chart-card medium">
