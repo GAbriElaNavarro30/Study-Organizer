@@ -1,6 +1,6 @@
 // src/pages/MetodosEstudio/MetodosEstudioResultado.jsx
 import { useState } from "react";
-import {   
+import {
   IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline,
   IoArrowBackOutline, IoRefreshOutline, IoHomeOutline,
   IoAlertCircleOutline, IoCheckmarkCircleOutline,
@@ -43,7 +43,7 @@ const formatPuntaje = (p) => (Math.floor(Number(p) * 100) / 100).toFixed(2);
 
 // ── Radar SVG ──
 function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
-  const cx = 160, cy = 160, r = 110;
+  const cx = 260, cy = 260, r = 140;
   const dims = Object.entries(resultados);
   const n = dims.length;
   if (n === 0) return null;
@@ -60,7 +60,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
   }).join(" ");
 
   return (
-    <svg viewBox="0 0 320 320" className="mer-radar">
+    <svg viewBox="0 0 520 520" className="mer-radar">
       {[25, 50, 75, 100].map((pct) => (
         <polygon
           key={pct}
@@ -78,13 +78,51 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
         return <circle key={i} cx={p.x} cy={p.y} r="5" fill={primaryColor} />;
       })}
       {dims.map(([, info], i) => {
-        const p = punto(i, r + 22);
-        const anchor = p.x < cx - 5 ? "end" : p.x > cx + 5 ? "start" : "middle";
-        const nombre = info.nombre?.length > 14 ? info.nombre.slice(0, 14) + "…" : info.nombre;
+        const ang = angulo(i);
+        const labelR = r + 52;
+        const lx = cx + labelR * Math.cos(ang);
+        const ly = cy + labelR * Math.sin(ang);
+
+        // Anchor según posición horizontal
+        const anchor = lx < cx - 10 ? "end" : lx > cx + 10 ? "start" : "middle";
+
+        // Partir nombre en dos líneas si es largo
+        const nombre = info.nombre || "";
+        const words = nombre.split(" ");
+        let linea1 = "", linea2 = "";
+        if (nombre.length <= 16) {
+          linea1 = nombre;
+        } else {
+          const mid = Math.ceil(words.length / 2);
+          linea1 = words.slice(0, mid).join(" ");
+          linea2 = words.slice(mid).join(" ");
+        }
+
         return (
-          <text key={i} x={p.x} y={p.y} textAnchor={anchor} fontSize="9" fill="#2E3D52" fontFamily="DM Sans, sans-serif">
-            {nombre}
-          </text>
+          <g key={i}>
+            <text
+              x={lx} y={linea2 ? ly - 7 : ly}
+              textAnchor={anchor}
+              fontSize="10"
+              fill="#2E3D52"
+              fontFamily="DM Sans, sans-serif"
+              dominantBaseline="middle"
+            >
+              {linea1}
+            </text>
+            {linea2 && (
+              <text
+                x={lx} y={ly + 7}
+                textAnchor={anchor}
+                fontSize="10"
+                fill="#2E3D52"
+                fontFamily="DM Sans, sans-serif"
+                dominantBaseline="middle"
+              >
+                {linea2}
+              </text>
+            )}
+          </g>
         );
       })}
     </svg>
@@ -490,4 +528,4 @@ export function MetodosEstudioResultado() {
       </div>
     </div>
   );
-}
+} 
