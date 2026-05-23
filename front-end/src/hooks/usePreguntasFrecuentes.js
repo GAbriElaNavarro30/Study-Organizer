@@ -1,5 +1,5 @@
 import { useState } from "react";
- 
+
 // ================================================================
 //  DATOS — preguntas y respuestas por categoría
 // ================================================================
@@ -114,7 +114,7 @@ const CATEGORIAS = [
                 id: "n3",
                 pregunta: "¿Cómo usar el dictado por voz?",
                 respuesta:
-                    "En el editor de notas encontrarás el botón 'Dictar texto'. Al activarlo, puedes hablar y el sistema transcribirá tu voz al contenido de la nota. Funciona mejor en navegadores como Chrome o Edge.",
+                    "En el editor de notas encontrarás el botón 'Dictar texto'. Al activarlo, puedes hablar y el sistema transcribirá tu voz al contenido de la nota. Funciona mejor en navegadores como Chrome o Edge. No compatible con navegadores como Firefox o Opera.",
             },
             {
                 id: "n4",

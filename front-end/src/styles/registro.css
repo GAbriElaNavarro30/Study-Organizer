@@ -108,11 +108,13 @@
     color: #374151;
 }
 
+
 .campo input {
     padding: 10px;
     border-radius: 6px;
     border: 1px solid #d1d5db;
     font-size: 0.9rem;
+    width: 100%; 
 }
 
 .campo input:focus {
@@ -150,12 +152,23 @@
 .radio-opcion-registro {
     flex: 1;
     display: flex;
-    gap: 20px;
+    gap: 20px;                    
+    justify-content: flex-start;
+    align-items: center;
     border: 1px solid #d1d5db;
     border-radius: 6px;
     padding: 10px;
     font-size: 0.85rem;
     cursor: pointer;
+}
+
+
+.radio-opcion-registro input[type="radio"] {
+    margin: 0;
+    padding: 0;
+    flex-shrink: 0;
+    width: 16px;
+    height: 16px;
 }
 
 .opciones-genero-registro span {

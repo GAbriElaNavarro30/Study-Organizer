@@ -26,7 +26,7 @@ export function ManualUsuario() {
                     <div className="area-video manual-video-block">
                         <div className="manual-video-wrap">
                             <iframe
-                                src="https://www.youtube.com/embed/GsV1i0QHi-o"
+                                src="https://www.youtube.com/embed/v8fSNYIksMs"
                                 title="Video Manual de Usuario"
                                 allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
                                 allowFullScreen
