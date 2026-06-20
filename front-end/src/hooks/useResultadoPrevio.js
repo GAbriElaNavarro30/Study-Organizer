@@ -1,4 +1,3 @@
-// src/hooks/useResultadoPrevio.js
 import { useEffect, useState } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
@@ -32,4 +31,4 @@ export function useResultadoPrevio() {
         cargando,
         verResultados,
     };
-} 
+}

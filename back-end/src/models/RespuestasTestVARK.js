@@ -1,8 +1,8 @@
+// ====================== Módulo de Estilos de Aprendizaje ========================
 import { db } from "../config/db.js";
 
 export class RespuestasTestVARK {
- 
-    // Guardar todas respuestas de todas las preguntas de un intento en una sola consulta
+
     static async saveMany(id_intento, ids_opciones) {
         const valores = ids_opciones.map(id_opcion => [id_intento, id_opcion]);
         const [result] = await db.query(
@@ -12,7 +12,6 @@ export class RespuestasTestVARK {
         return result;
     }
 
-    // ver respuestar de un intento
     static async getByIntento(id_intento) {
         const [rows] = await db.query(
             `SELECT 

@@ -6,9 +6,10 @@ import { ModalEliminarNota } from "../components/ModalEliminarNota";
 import { ModalCompartirNota } from "../components/ModalCompartirNota";
 import { ModalRenombrarNota } from "../components/ModalRenombrarNota";
 import { CustomAlert } from "../components/CustomAlert";
+import { CustomAlertPDF } from "../components/CustomAlertPDF";
 import logo from "../assets/imagenes/logotipo.png";
 import { useNotas } from "../hooks/useNotas";
- 
+
 export function Notas() {
     const {
         // Estado de notas
@@ -58,6 +59,7 @@ export function Notas() {
         descargarPDF,
         editarNota,
         crearNuevaNota,
+        generandoPDF,
     } = useNotas();
 
     return (
@@ -273,6 +275,8 @@ export function Notas() {
                     onClose={() => setMostrarAlert(false)}
                 />
             )}
+
+            {generandoPDF && <CustomAlertPDF />}
         </main>
     );
-}
+} 

@@ -1,4 +1,4 @@
-// src/models/SeccionCurso.js
+// ========================= Módulo de Cursos ===========================
 import { db } from "../config/db.js";
 
 export class SeccionCurso {
@@ -51,7 +51,7 @@ export class SeccionCurso {
         return row?.id_curso ?? null;
     }
 
-    /* ── Recalcula total_contenidos contando desde la tabla Contenido ── */
+    // Recalcula total_contenidos contando desde la tabla Contenido
     static async recalcularTotalContenidos(id_seccion) {
         await db.query(
             `UPDATE Seccion_Curso

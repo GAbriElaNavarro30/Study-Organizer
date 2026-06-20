@@ -1,4 +1,3 @@
-// src/routes/metodosEstudio.js
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
 import { 

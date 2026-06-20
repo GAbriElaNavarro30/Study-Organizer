@@ -1,22 +1,19 @@
-# routers/metodos_estudio.py
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel
 from motor.motor_me import procesar_test_me
 
 router = APIRouter(prefix="/me", tags=["Métodos de Estudio"])
- 
 
 class RespuestaItem(BaseModel):
     id_pregunta:  int
     id_dimension: int
-    valor:        int   # 1-4
+    valor:        int
     es_negativa:  bool
 
  
 class TestMEInput(BaseModel):
     respuestas:  list[RespuestaItem]
     perfil_vark: str = "VARK"
-
 
 @router.post("/analizar-me")
 def analizar_me(data: TestMEInput):

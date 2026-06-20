@@ -1,16 +1,6 @@
-// src/components/ModalPublicar.jsx
 import { IoCheckmarkCircle, IoEyeOff, IoPeopleOutline } from "react-icons/io5";
 import "../styles/ModalPublicar.css";
-  
-/**
- * ModalPublicar
- *
- * Props:
- *  - isOpen      {boolean}  — controla visibilidad
- *  - curso       {object}   — objeto del curso ({ titulo, es_publicado, total_estudiantes })
- *  - onConfirm   {function} — acción al confirmar
- *  - onClose     {function} — acción al cancelar / cerrar
- */
+
 export function ModalPublicar({ isOpen, curso, onConfirm, onClose }) {
     if (!isOpen || !curso) return null;
 
@@ -23,7 +13,6 @@ export function ModalPublicar({ isOpen, curso, onConfirm, onClose }) {
         >
             <div className="mp-card">
 
-                {/* Acento superior */}
                 <div className={`mp-accent ${esPublicar ? "mp-accent--pub" : "mp-accent--unp"}`} />
 
                 <div className="mp-inner">
@@ -59,7 +48,6 @@ export function ModalPublicar({ isOpen, curso, onConfirm, onClose }) {
                         )}
                     </p>
 
-                    {/* Pills de contexto */}
                     <div className="mp-pill-row">
                         {esPublicar ? (
                             <span className="mp-pill mp-pill--pub">

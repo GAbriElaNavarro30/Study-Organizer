@@ -23,9 +23,6 @@ def _calcular_nivel(puntaje: float) -> str:
 def _calcular_puntaje_dimension(respuestas_dim: list[dict]) -> tuple[float, bool, list[int]]:
     """
     Retorna (puntaje, tiene_errores, ids_preguntas_con_error).
-
-    - Pregunta POSITIVA con valor <= 2 (Nunca/Rara vez) → error
-    - Pregunta NEGATIVA con valor >= 3 (Frecuentemente/Siempre) → error
     """
     total               = 0
     max_posible         = len(respuestas_dim) * 4
@@ -58,9 +55,6 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
         dims.setdefault(r["id_dimension"], []).append(r)
 
     # 2. Motor + perfil VARK
-    # Si el perfil es "VARK" significa que el usuario no ha realizado el test
-    # de estilos de aprendizaje, por lo que no se declara PerfilVARK y el motor
-    # no generará recomendaciones personalizadas por estilo de aprendizaje.
     motor = MotorMetodosEstudio()
     motor.reset()
 
@@ -68,7 +62,7 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
     if perfil_real:
         motor.declare(PerfilVARK(perfil=perfil_real))
 
-    # 3. Calcular puntajes y declarar hechos
+    # Calcular puntajes y declarar hechos
     resultados_por_dimension = []
     for id_dim, resp_dim in dims.items():
         puntaje, tiene_errores, preguntas_con_error = _calcular_puntaje_dimension(resp_dim)
@@ -98,10 +92,10 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
             "nivel":        nivel,
         })
 
-    # 4. Ejecutar inferencias
+    # Ejecutar inferencias
     motor.run()
 
-    # 5. Recoger errores y recomendaciones
+    # Recoger errores y recomendaciones
     errores: list[dict] = []
     recomendaciones: dict[str, list[dict]] = {}
 
@@ -118,7 +112,6 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
                 "texto":       fact["texto"],
             })
     
-    # Después de recoger errores y recomendaciones, antes del return:
     criterios_cursos = None
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
@@ -131,7 +124,7 @@ def procesar_test_me(respuestas: list[dict], perfil_vark: str = "VARK") -> dict:
     
     return {
         "perfil_vark":              perfil_vark,
-        "tiene_perfil_vark":        perfil_real is not None,  # ← indica al frontend si hay perfil real
+        "tiene_perfil_vark":        perfil_real is not None,
         "resultados_por_dimension": resultados_por_dimension,
         "errores_detectados":       errores,
         "recomendaciones":          recomendaciones,

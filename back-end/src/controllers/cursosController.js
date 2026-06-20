@@ -1,4 +1,3 @@
-// src/controllers/cursosController.js
 import { Curso } from "../models/Curso.js";
 import { SeccionCurso } from "../models/SeccionCurso.js";
 import { Contenido } from "../models/Contenido.js";
@@ -15,10 +14,6 @@ import cloudinary from "../config/cloudinary.js";
 import axios from "axios";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
- 
-// ─────────────────────────────────────────────────────────────
-// Helpers
-// ─────────────────────────────────────────────────────────────
 
 const subirImagenCloudinary = (buffer, carpeta = "cursos") =>
     new Promise((resolve, reject) => {
@@ -92,17 +87,15 @@ const recalcularResultadosPorPregunta = async (intentosIds) => {
                 porcentaje: porcentaje_final,
                 nivel,
             });
-
-            console.log(`✅ Recalculado intento ${id_intento}: ${porcentaje_final}% → ${nivel}`);
         } catch (err) {
-            console.error(`❌ Error en intento ${id_intento}:`, err.message);
+            console.error(`Error en intento ${id_intento}:`, err.message);
         }
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// CURSOS
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                            CURSOS
+============================================================= */
 
 export const listarCursos = async (req, res) => {
     try {
@@ -315,9 +308,9 @@ export const archivarCurso = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// SECCIONES
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                            SECCIONES
+============================================================= */
 
 export const crearSeccion = async (req, res) => {
     try {
@@ -392,13 +385,13 @@ export const eliminarSeccion = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// CONTENIDO
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                            CONTENIDO
+============================================================= */
 
 export const crearContenido = async (req, res) => {
     try {
-        const { id } = req.params; // id_seccion
+        const { id } = req.params;
         const { titulo, contenido, orden } = req.body;
 
         let ordenFinal = orden;
@@ -477,9 +470,9 @@ export const eliminarContenido = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// TEST (preguntas + opciones)
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                    TEST (preguntas + opciones)
+============================================================= */
 
 export const crearPregunta = async (req, res) => {
     try {
@@ -573,7 +566,7 @@ export const actualizarPregunta = async (req, res) => {
                 }
             }
 
-            // ── Capturar intentos ANTES de tocar las opciones ──
+            // Capturar intentos ANTES de tocar las opciones
             let intentosAfectados = [];
             if (hubo_cambio_correcta) {
                 const [rows] = await db.query(
@@ -581,20 +574,17 @@ export const actualizarPregunta = async (req, res) => {
                     [id]
                 );
                 intentosAfectados = rows.map(r => r.id_intento);
-                console.log("👥 Intentos capturados:", intentosAfectados);
             }
 
-            // ── UPDATE en vez de delete+insert para preservar los id_opcion ──
+            // UPDATE en vez de delete+insert para preservar los id_opcion
             const idsEnviados = opciones.filter(o => o.id_opcion).map(o => o.id_opcion);
 
-            // Borrar solo las opciones que el frontend ya no mandó
             for (const opActual of opcionesActuales) {
                 if (!idsEnviados.includes(opActual.id_opcion)) {
                     await db.query(`DELETE FROM Opcion_Test WHERE id_opcion = ?`, [opActual.id_opcion]);
                 }
             }
 
-            // Actualizar existentes / insertar nuevas
             for (const op of opciones) {
                 if (op.id_opcion) {
                     await db.query(
@@ -609,7 +599,7 @@ export const actualizarPregunta = async (req, res) => {
                 }
             }
 
-            // ── Ahora sí recalcular — los id_opcion siguen existiendo ──
+            // Ahora sí recalcular los id_opcion siguen existiendo
             if (hubo_cambio_correcta) {
                 await recalcularResultadosPorPregunta(intentosAfectados);
             }
@@ -657,9 +647,9 @@ export const eliminarCuestionarioSeccion = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// DIMENSIONES
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                            DIMENSIONES
+============================================================= */
 
 export const listarDimensiones = async (req, res) => {
     try {
@@ -673,9 +663,10 @@ export const listarDimensiones = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// CATÁLOGO ESTUDIANTE
-// ─────────────────────────────────────────────────────────────
+
+/* =============================================================
+                        CATÁLOGO ESTUDIANTE
+============================================================= */
 
 export const listarCursosRecomendados = async (req, res) => {
     try {
@@ -715,9 +706,9 @@ export const listarCursosPorDimension = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// INSCRIPCIONES + PROGRESO
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                INSCRIPCIONES + PROGRESO DEL CURSO
+============================================================= */
 
 export const misCursos = async (req, res) => {
     try {
@@ -875,7 +866,7 @@ export const marcarContenidoVisto = async (req, res) => {
         if (pct === 100 && !intento.completado) {
             await IntentoCurso.completar(intento.id_intento);
 
-            // ── Verificar si el curso tiene cuestionarios ──
+            // Verificar si el curso tiene cuestionarios
             const [[{ total_cuestionarios }]] = await db.query(
                 `SELECT COUNT(DISTINCT pt.id_seccion) AS total_cuestionarios
                  FROM Pregunta_Test pt
@@ -891,7 +882,7 @@ export const marcarContenidoVisto = async (req, res) => {
             let retroalimentacion = [];
 
             if (total_cuestionarios > 0) {
-                // ── Promedio de puntajes por sección ──
+                // Promedio de puntajes por sección
                 const [[{ promedio }]] = await db.query(
                     `SELECT AVG(sub.pct) AS promedio
                     FROM (
@@ -907,7 +898,7 @@ export const marcarContenidoVisto = async (req, res) => {
                     [intento.id_intento]
                 );
 
-                // ── Totales globales ──
+                // Totales globales
                 const [[totales]] = await db.query(
                     `SELECT COUNT(*) AS total, SUM(ot.es_correcta) AS correctas
                     FROM Respuesta_Test_Curso rtc
@@ -919,7 +910,7 @@ export const marcarContenidoVisto = async (req, res) => {
                 total_preguntas_global = totales.total || 0;
                 correctas_global = totales.correctas || 0;
 
-                // ── Llamar al Sistema Experto ──
+                // Llamada al Sistema Experto
                 try {
                     const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
                         porcentaje: porcentaje_final
@@ -930,7 +921,7 @@ export const marcarContenidoVisto = async (req, res) => {
                     console.error("marcarContenidoVisto — sistema experto no disponible:", errPython.message);
                 }
 
-                // ── Guardar resultado final en BD ──
+                // Guardar resultado final en la BD
                 const resultado = new ResultadoCurso({
                     total_preguntas: total_preguntas_global,
                     respuestas_correctas: correctas_global,
@@ -960,9 +951,9 @@ export const marcarContenidoVisto = async (req, res) => {
     }
 };
 
-// ─────────────────────────────────────────────────────────────
-// RESPUESTAS TEST + SISTEMA EXPERTO
-// ─────────────────────────────────────────────────────────────
+/* =============================================================
+                RESPUESTAS TEST + SISTEMA EXPERTO
+============================================================= */
 
 export const guardarRespuestasTest = async (req, res) => {
     try {
@@ -988,7 +979,7 @@ export const guardarRespuestasTest = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "No hay intento activo." });
         }
 
-        // ── Calcular correctas de este cuestionario ──
+        // Calcular correctas de este cuestionario
         let correctas = 0;
         const filas = [];
         for (const r of respuestas) {
@@ -1001,7 +992,7 @@ export const guardarRespuestasTest = async (req, res) => {
             filas.push({ id_test: r.id_test, id_opcion: r.id_opcion });
         }
 
-        // ── Guardar respuestas acumulando las de todos los cuestionarios ──
+        // Guardar respuestas acumulando las de todos los cuestionarios
         await RespuestaTestCurso.saveMany(intento.id_intento, filas);
 
         const total = respuestas.length;
@@ -1009,7 +1000,7 @@ export const guardarRespuestasTest = async (req, res) => {
             ? parseFloat(((correctas / total) * 100).toFixed(2))
             : 0;
 
-        // ── Solo devolver resultado parcial de este cuestionario al front ──
+        // Solo devolver resultado parcial de este cuestionario al front
         res.json({
             ok: true,
             correctas,
@@ -1032,7 +1023,7 @@ export const obtenerResultadoCurso = async (req, res) => {
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
         }
 
-        // ── Buscar el último intento que tenga resultado guardado ──
+        // Buscar el último intento que tenga resultado guardado
         const [[intentoConResultado]] = await db.query(
             `SELECT ic.id_intento
              FROM Intento_Curso ic
@@ -1049,7 +1040,7 @@ export const obtenerResultadoCurso = async (req, res) => {
 
         const resultado = await ResultadoCurso.getByIntento(intentoConResultado.id_intento);
 
-        // ── Agregar fechas del intento al resultado ──
+        // Agregar fechas del intento al resultado
         const [[intentoDetalle]] = await db.query(
             `SELECT fecha_inicio, fecha_fin FROM Intento_Curso WHERE id_intento = ?`,
             [intentoConResultado.id_intento]
@@ -1059,7 +1050,7 @@ export const obtenerResultadoCurso = async (req, res) => {
             resultado.fecha_fin = intentoDetalle.fecha_fin;
         }
 
-        // ── Recalcular retroalimentación desde el sistema experto ──
+        // Recalcular retroalimentación desde el sistema experto
         let retroalimentacion = [];
         if (resultado?.porcentaje !== undefined) {
             try {
@@ -1183,7 +1174,6 @@ export const miHistorialResultados = async (req, res) => {
             return res.status(403).json({ ok: false, mensaje: "No estás inscrito." });
         }
 
-        // Obtener datos del propio estudiante
         const [[estudiante]] = await db.query(
             `SELECT u.id_usuario, u.nombre, u.apellido, u.correo_electronico,
                     u.foto_perfil, i.fecha_inscripcion
@@ -1231,7 +1221,7 @@ export const obtenerResultadoIntento = async (req, res) => {
             return res.status(404).json({ ok: false, mensaje: "Resultado no encontrado." });
         }
 
-        // ── Datos del tutor ──
+        // Datos del tutor
         const [[tutorData]] = await db.query(
             `SELECT u.nombre, u.apellido, u.foto_perfil, u.descripcion, u.correo_electronico
              FROM Usuario u
@@ -1246,7 +1236,7 @@ export const obtenerResultadoIntento = async (req, res) => {
             correo: tutorData.correo_electronico || null,
         } : null;
 
-        // ── Retroalimentación del sistema experto ──
+        // Retroalimentación del sistema experto
         let retroalimentacion = [];
         try {
             const pythonRes = await axios.post(`${PYTHON_URL}/cursos/evaluar`, {
@@ -1257,7 +1247,7 @@ export const obtenerResultadoIntento = async (req, res) => {
             console.error("obtenerResultadoIntento — sistema experto no disponible:", errPython.message);
         }
 
-        // ── Respuestas detalladas ──
+        // Respuestas detalladas
         const [rows] = await db.query(
             `SELECT
                 sc.id_seccion,
@@ -1330,12 +1320,15 @@ export const obtenerResultadoIntento = async (req, res) => {
     }
 };
 
-// para el dashboard del tutor
+/* =======================================================
+                Para el Dashboard del Tutor
+======================================================= */
+
 export const estadisticasTutor = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
 
-        // ── Conteos básicos + total estudiantes ──
+        // Conteos básicos + total estudiantes
         const [[conteos]] = await db.query(
             `SELECT
                 COUNT(*)                                 AS total_cursos,
@@ -1352,13 +1345,13 @@ export const estadisticasTutor = async (req, res) => {
             [id_usuario, id_usuario]
         );
 
-        // ── Lista de cursos del tutor (para el filtro del frontend) ──
+        // Lista de cursos del tutor (para el filtro del frontend)
         const [cursos_tutor] = await db.query(
             `SELECT id_curso, titulo FROM Curso WHERE id_usuario = ? ORDER BY titulo`,
             [id_usuario]
         );
 
-        // ── Cursos y alumnos por perfil VARK ──
+        // Cursos y alumnos por perfil VARK
         const [vark] = await db.query(
             `SELECT
                 p.perfil,
@@ -1389,7 +1382,7 @@ export const estadisticasTutor = async (req, res) => {
             [id_usuario]
         );
 
-        // ── Cursos y alumnos por dimensión ──
+        // Cursos y alumnos por dimensión
         const [dimensiones] = await db.query(
             `SELECT
                 d.id_dimension,
@@ -1405,48 +1398,50 @@ export const estadisticasTutor = async (req, res) => {
             [id_usuario]
         );
 
-        // ── Inscripciones por mes (últimos 12 meses) ──
+        // Inscripciones por mes (últimos 12 meses)
         const [inscripciones_mes] = await db.query(
             `SELECT
                 DATE_FORMAT(i.fecha_inscripcion, '%b %Y') AS mes,
-                COUNT(*)                                   AS total
-             FROM Inscripcion i
-             INNER JOIN Curso c ON c.id_curso = i.id_curso
-             WHERE c.id_usuario = ?
-               AND i.fecha_inscripcion >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
-             GROUP BY YEAR(i.fecha_inscripcion), MONTH(i.fecha_inscripcion)
-             ORDER BY YEAR(i.fecha_inscripcion), MONTH(i.fecha_inscripcion)`,
+                COUNT(*) AS total
+            FROM Inscripcion i
+            INNER JOIN Curso c ON c.id_curso = i.id_curso
+            WHERE c.id_usuario = ?
+            AND i.fecha_inscripcion >= DATE_SUB(NOW(), INTERVAL 12 MONTH)
+            GROUP BY DATE_FORMAT(i.fecha_inscripcion, '%b %Y'),
+                    YEAR(i.fecha_inscripcion),
+                    MONTH(i.fecha_inscripcion)
+            ORDER BY YEAR(i.fecha_inscripcion), MONTH(i.fecha_inscripcion)`,
             [id_usuario]
         );
 
-        // ── Promedio de alumnos por curso ──
+        // Promedio de alumnos por curso
         const [promedios_cursos] = await db.query(
             `SELECT
-        c.titulo,
-        COUNT(DISTINCT i.id_usuario)          AS estudiantes,
-        COALESCE(ROUND(AVG(ultimo.porcentaje), 1), 0) AS promedio
-     FROM Curso c
-     LEFT JOIN Inscripcion i ON i.id_curso = c.id_curso
-     LEFT JOIN (
-         SELECT rc.porcentaje, it.id_inscripcion
-         FROM Resultado_Curso rc
-         JOIN Intento_Curso it ON rc.id_intento = it.id_intento
-         WHERE rc.id_resultado = (
-             SELECT rc2.id_resultado
-             FROM Resultado_Curso rc2
-             JOIN Intento_Curso it2 ON rc2.id_intento = it2.id_intento
-             WHERE it2.id_inscripcion = it.id_inscripcion
-             ORDER BY rc2.id_resultado DESC
-             LIMIT 1
-         )
-     ) ultimo ON ultimo.id_inscripcion = i.id_inscripcion
-     WHERE c.id_usuario = ?
-     GROUP BY c.id_curso, c.titulo
-     ORDER BY promedio DESC`,
+                c.titulo,
+                COUNT(DISTINCT i.id_usuario)          AS estudiantes,
+                ROUND(AVG(ultimo.porcentaje), 1)      AS promedio
+            FROM Curso c
+            INNER JOIN Inscripcion i ON i.id_curso = c.id_curso
+            INNER JOIN (                                          -- ← cambio aquí
+                SELECT rc.porcentaje, it.id_inscripcion
+                FROM Resultado_Curso rc
+                JOIN Intento_Curso it ON rc.id_intento = it.id_intento
+                WHERE rc.id_resultado = (
+                    SELECT rc2.id_resultado
+                    FROM Resultado_Curso rc2
+                    JOIN Intento_Curso it2 ON rc2.id_intento = it2.id_intento
+                    WHERE it2.id_inscripcion = it.id_inscripcion
+                    ORDER BY rc2.id_resultado DESC
+                    LIMIT 1
+                )
+            ) ultimo ON ultimo.id_inscripcion = i.id_inscripcion
+            WHERE c.id_usuario = ?
+            GROUP BY c.id_curso, c.titulo
+            ORDER BY promedio DESC`,
             [id_usuario]
         );
 
-        // ── Distribución de niveles — solo el último intento por alumno ──
+        // Distribución de niveles de desempeño — solo el último intento por alumno
         const [distribucion_niveles] = await db.query(
             `SELECT rc.nivel, COUNT(*) AS total
              FROM Resultado_Curso rc
@@ -1468,8 +1463,7 @@ export const estadisticasTutor = async (req, res) => {
             [id_usuario]
         );
 
-        // ── Tasa de finalización por curso ──
-        // ── Tasa de finalización por curso ──
+        // Tasa de finalización por curso
         const [finalizacion_cursos] = await db.query(
             `SELECT
                 c.titulo,
@@ -1502,31 +1496,31 @@ export const estadisticasTutor = async (req, res) => {
             [id_usuario]
         );
 
-        // ── Actividad reciente (últimas 10 acciones) ──
+        // Actividad reciente (últimas 10 acciones)
         const [actividad_reciente] = await db.query(
             `(SELECT
-        'inscripcion' AS tipo,
-        CONCAT(u.nombre, ' ', u.apellido) AS actor,
-        c.titulo AS recurso,
-        i.fecha_inscripcion AS fecha
-      FROM Inscripcion i
-      JOIN Usuario u ON u.id_usuario = i.id_usuario
-      JOIN Curso c   ON c.id_curso   = i.id_curso
-      WHERE c.id_usuario = ?)
-     UNION ALL
-     (SELECT
-        'completado' AS tipo,
-        CONCAT(u.nombre, ' ', u.apellido) AS actor,
-        c.titulo AS recurso,
-        ic.fecha_fin AS fecha
-      FROM Intento_Curso ic
-      JOIN Inscripcion i  ON ic.id_inscripcion = i.id_inscripcion
-      JOIN Usuario u      ON u.id_usuario = i.id_usuario
-      JOIN Curso c        ON c.id_curso   = i.id_curso
-      JOIN Resultado_Curso rc ON rc.id_intento = ic.id_intento
-      WHERE c.id_usuario = ?)
-     ORDER BY fecha DESC
-     LIMIT 10`,
+                'inscripcion' AS tipo,
+                CONCAT(u.nombre, ' ', u.apellido) AS actor,
+                c.titulo AS recurso,
+                i.fecha_inscripcion AS fecha
+            FROM Inscripcion i
+            JOIN Usuario u ON u.id_usuario = i.id_usuario
+            JOIN Curso c   ON c.id_curso   = i.id_curso
+            WHERE c.id_usuario = ?)
+            UNION ALL
+            (SELECT
+                'completado' AS tipo,
+                CONCAT(u.nombre, ' ', u.apellido) AS actor,
+                c.titulo AS recurso,
+                ic.fecha_fin AS fecha
+            FROM Intento_Curso ic
+            JOIN Inscripcion i  ON ic.id_inscripcion = i.id_inscripcion
+            JOIN Usuario u      ON u.id_usuario = i.id_usuario
+            JOIN Curso c        ON c.id_curso   = i.id_curso
+            JOIN Resultado_Curso rc ON rc.id_intento = ic.id_intento
+            WHERE c.id_usuario = ?)
+            ORDER BY fecha DESC
+            LIMIT 10`,
             [id_usuario, id_usuario]
         );
 
@@ -1543,7 +1537,7 @@ export const estadisticasTutor = async (req, res) => {
             distribucion_niveles,
             finalizacion_cursos,
             actividad_reciente,
-            cursos_tutor,          // ← nuevo: lista para el select del filtro
+            cursos_tutor,
         });
     } catch (error) {
         console.error("estadisticasTutor:", error);
@@ -1551,7 +1545,7 @@ export const estadisticasTutor = async (req, res) => {
     }
 };
 
-// ── Niveles filtrados por curso específico ──────────────────────────────────
+// Niveles filtrados por curso específico
 export const nivelesPorCurso = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -1690,7 +1684,6 @@ export const obtenerRespuestasIntento = async (req, res) => {
 
         const intento = await IntentoCurso.getUltimoPorInscripcion(inscripcion.id_inscripcion);
         if (!intento || intento.completado) {
-            // No hay intento activo sin completar
             return res.json({ ok: true, respuestas: [], intento_completado: !!intento?.completado });
         }
 
@@ -1731,9 +1724,9 @@ export const obtenerRespuestasDetalle = async (req, res) => {
 
         if (!intentoRow) return res.json({ ok: true, secciones: [] });
 
-        // ── Consultar desde las RESPUESTAS GUARDADAS del intento ──
-        // Si el tutor borró preguntas/secciones después, igual aparecen
-        // porque partimos de rtc (lo que respondió el estudiante)
+        /* Consultar desde las RESPUESTAS GUARDADAS del intento 
+           Si el tutor borró preguntas/secciones después, igual aparecen
+           porque partimos de rtc (lo que respondió el estudiante) */
         const [rows] = await db.query(
             `SELECT
                 sc.id_seccion,
@@ -1759,7 +1752,6 @@ export const obtenerRespuestasDetalle = async (req, res) => {
             [intentoRow.id_intento]
         );
 
-        // Agrupar por sección → pregunta → opciones
         const seccionesMap = {};
         for (const row of rows) {
             if (!seccionesMap[row.id_seccion]) {
@@ -1795,4 +1787,4 @@ export const obtenerRespuestasDetalle = async (req, res) => {
         console.error("obtenerRespuestasDetalle:", error);
         res.status(500).json({ ok: false, mensaje: "Error al obtener las respuestas." });
     }
-}; 
+};

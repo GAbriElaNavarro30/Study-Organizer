@@ -1,5 +1,3 @@
-// useCursoResultado.js
-  
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api.js";
@@ -13,7 +11,7 @@ export function useCursoResultado() {
     const [curso, setCurso] = useState(null);
     const [progreso, setProgreso] = useState(null);
     const [retroalimentacion, setRetro] = useState(
-        state?.retroalimentacion ?? []        // si viene del visor, úsala de inmediato
+        state?.retroalimentacion ?? []
     );
     const [cargando, setCargando] = useState(true);
     const [animado, setAnimado] = useState(false);
@@ -40,8 +38,8 @@ export function useCursoResultado() {
             const { data: respData } = await api.get(`/cursos/resultado/respuestas?id_curso=${id_curso}`);
             if (respData.ok) setRespuestasDetalle(respData.secciones);
 
-            // ← Usar la retroalimentación del backend siempre que llegue,
-            //   así funciona tanto desde el visor como desde "Ver resultado"
+            // Usar la retroalimentación del backend siempre que llegue,
+            // así funciona tanto desde el visor como desde "Ver resultado"
             if (resData.retroalimentacion?.length > 0) {
                 setRetro(resData.retroalimentacion);
             }

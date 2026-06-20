@@ -16,7 +16,7 @@ export function useEditorNota() {
     const [fontFamily, setFontFamily] = useState("Arial");
     const [fontSize, setFontSize] = useState("16");
     const [editorBackgroundColor, setEditorBackgroundColor] = useState("#ffffff");
-    
+
     // ── Modales ──
     const [mostrarModalSalir, setMostrarModalSalir] = useState(false);
     const [mostrarModalGuardar, setMostrarModalGuardar] = useState(false);
@@ -29,8 +29,8 @@ export function useEditorNota() {
 
     // ── Voz ──
     const [isRecording, setIsRecording] = useState(false);
-    const [recognition, setRecognition] = useState(null);
-    const recognitionTimeoutRef = useRef(null);
+    const recognitionRef = useRef(null);
+    const isRecordingRef = useRef(false);
 
     // ── Detección de cambios ──
     const [contenidoInicial, setContenidoInicial] = useState("");
@@ -104,74 +104,63 @@ export function useEditorNota() {
        RECONOCIMIENTO DE VOZ
     ============================================ */
     useEffect(() => {
-        if ("webkitSpeechRecognition" in window || "SpeechRecognition" in window) {
-            const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
-            const recognitionInstance = new SpeechRecognition();
+        if (!("webkitSpeechRecognition" in window || "SpeechRecognition" in window)) return;
 
-            recognitionInstance.continuous = true;
-            recognitionInstance.interimResults = true;
-            recognitionInstance.lang = "es-ES";
-            recognitionInstance.maxAlternatives = 1;
+        const SpeechRecognition = window.SpeechRecognition || window.webkitSpeechRecognition;
+        const instance = new SpeechRecognition();
 
-            recognitionInstance.onstart = () => {
-                console.log("🎤 Reconocimiento de voz iniciado");
-            };
+        instance.continuous = false;
+        instance.interimResults = false;
+        instance.lang = "es-MX";
+        instance.maxAlternatives = 1;
 
-            recognitionInstance.onresult = (event) => {
-                if (!editorRef.current) return;
-                let finalTranscript = "";
+        instance.onresult = (event) => {
+            if (!editorRef.current) return;
+            const transcript = event.results[0][0].transcript;
+            if (!transcript.trim()) return;
+            editorRef.current.focus();
+            const selection = window.getSelection();
+            const range = document.createRange();
+            range.selectNodeContents(editorRef.current);
+            range.collapse(false);
+            selection.removeAllRanges();
+            selection.addRange(range);
+            document.execCommand("insertText", false, transcript + " ");
+        };
 
-                for (let i = event.resultIndex; i < event.results.length; i++) {
-                    const transcript = event.results[i][0].transcript;
-                    if (event.results[i].isFinal) finalTranscript += transcript + " ";
+        instance.onerror = (event) => {
+            if (event.error === "no-speech") {
+                if (isRecordingRef.current) {
+                    try { instance.start(); } catch (e) { }
                 }
+                return;
+            }
+            if (event.error === "aborted") return;
+            if (event.error === "network") {
+                mostrarAlerta("error", "Error de red", "Verifica tu conexión a internet.");
+            }
+            isRecordingRef.current = false;
+            setIsRecording(false);
+        };
 
-                if (finalTranscript) {
-                    editorRef.current.focus();
-                    const selection = window.getSelection();
-                    const range = document.createRange();
-                    range.selectNodeContents(editorRef.current);
-                    range.collapse(false);
-                    selection.removeAllRanges();
-                    selection.addRange(range);
-                    document.execCommand("insertText", false, finalTranscript);
-                }
-
-                if (recognitionTimeoutRef.current) clearTimeout(recognitionTimeoutRef.current);
-            };
-
-            recognitionInstance.onerror = (event) => {
-                console.error("Error en reconocimiento de voz:", event.error);
-                if (event.error === "no-speech") return;
-                if (event.error === "aborted") { setIsRecording(false); return; }
-                if (event.error === "network") {
-                    mostrarAlerta("error", "Error de red", "Verifica tu conexión a internet.");
+        instance.onend = () => {
+            if (isRecordingRef.current) {
+                try { instance.start(); } catch (e) {
+                    isRecordingRef.current = false;
                     setIsRecording(false);
                 }
-            };
+            } else {
+                setIsRecording(false);
+            }
+        };
 
-            recognitionInstance.onend = () => {
-                if (isRecording) {
-                    try {
-                        recognitionInstance.start();
-                    } catch (e) {
-                        setIsRecording(false);
-                    }
-                } else {
-                    setIsRecording(false);
-                }
-            };
-
-            setRecognition(recognitionInstance);
-        }
+        recognitionRef.current = instance;
 
         return () => {
-            if (recognition) {
-                try { recognition.stop(); } catch (e) { }
-            }
-            if (recognitionTimeoutRef.current) clearTimeout(recognitionTimeoutRef.current);
+            isRecordingRef.current = false;
+            try { instance.stop(); } catch (e) { }
         };
-    }, [isRecording]);
+    }, []);
 
     /* ============================================
        CARGAR NOTAS
@@ -402,25 +391,21 @@ export function useEditorNota() {
        VOZ
     ============================================ */
     const handleVoiceInput = () => {
-        if (!recognition) {
+        if (!recognitionRef.current) {
             mostrarAlerta("error", "No disponible", "Tu navegador no soporta reconocimiento de voz. Prueba con Chrome o Edge.");
             return;
         }
-        if (isRecording) {
-            try {
-                recognition.stop();
-                setIsRecording(false);
-            } catch (e) {
-                console.error("Error al detener:", e);
-                setIsRecording(false);
-            }
+        if (isRecordingRef.current) {
+            isRecordingRef.current = false;
+            try { recognitionRef.current.stop(); } catch (e) { }
+            setIsRecording(false);
         } else {
-            try {
-                recognition.start();
-                setIsRecording(true);
-                editorRef.current?.focus();
-            } catch (e) {
-                console.error("Error al iniciar:", e);
+            isRecordingRef.current = true;
+            setIsRecording(true);
+            editorRef.current?.focus();
+            try { recognitionRef.current.start(); } catch (e) {
+                isRecordingRef.current = false;
+                setIsRecording(false);
                 mostrarAlerta("error", "Error al iniciar", "No se pudo iniciar el dictado. Intenta nuevamente.");
             }
         }
@@ -465,6 +450,7 @@ export function useEditorNota() {
                     ? "Tu nota ha sido creada exitosamente."
                     : "Los cambios han sido guardados exitosamente."
             );
+            // Redirige a /notas solo después de cerrar la alerta, no inmediatamente al guardar
             setShouldRedirectOnAlertClose(true);
 
         } catch (error) {
@@ -489,15 +475,23 @@ export function useEditorNota() {
         if (hayaCambios()) {
             setMostrarModalSalir(true);
         } else {
-            if (isRecording && recognition) { recognition.stop(); setIsRecording(false); }
-            navigate(-1);
+            if (isRecording && recognitionRef.current) {
+                isRecordingRef.current = false;
+                recognitionRef.current.stop();
+                setIsRecording(false);
+            }
+            navigate("/notas");
         }
     };
 
     const handleConfirmarSalir = () => {
-        if (isRecording && recognition) { recognition.stop(); setIsRecording(false); }
+        if (isRecording && recognitionRef.current) {
+            isRecordingRef.current = false;
+            recognitionRef.current.stop();
+            setIsRecording(false);
+        }
         setMostrarModalSalir(false);
-        navigate(-1);
+        navigate("/notas");
     };
 
     /* ============================================
@@ -568,4 +562,4 @@ export function useEditorNota() {
         handleConfirmarSalir,
         handleTextColor,
     };
-} 
+}

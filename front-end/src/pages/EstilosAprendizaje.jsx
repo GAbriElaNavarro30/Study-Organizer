@@ -10,7 +10,7 @@ import {
     IoVolumeMuteOutline,
     IoMusicalNotesOutline,
 } from "react-icons/io5";
- 
+
 import neilFleming from "../assets/imagenes/neil-fleming.jpg";
 import { ResultadoPrevio } from "../components/Resultadoprevio";
 import { useEstilosAprendizaje, VARK_DATA, NAV_SECTIONS } from "../hooks/useEstilosAprendizaje";

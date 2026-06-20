@@ -1,9 +1,8 @@
 import { useState, useRef, useEffect, useCallback } from "react";
 
-/* ─── utilidad: clampar ──────────────────────────────── */
 const clamp = (v, lo, hi) => Math.min(hi, Math.max(lo, v));
 
-/* ─── aplicar recorte con rotación ──────────────────── */
+/* ─── aplicar recorte con rotación ─── */
 export const applyFreeCrop = (src, state, asFile = false) =>
     new Promise((resolve, reject) => {
         const img = new Image();
@@ -47,6 +46,7 @@ export const applyFreeCrop = (src, state, asFile = false) =>
         img.src = src;
     });
 
+// Coordenadas del recorte en porcentaje relativo a la imagen rotada
 export const INITIAL_CROP = { cropX: 5, cropY: 5, cropW: 90, cropH: 90, rotation: 0 };
 
 export function useContentImageUpload(src, initialState) {
@@ -303,12 +303,14 @@ export function useContentImageUpload(src, initialState) {
     const onTouchMove = useCallback((e) => { if (e.touches.length >= 2) return; onPointerMove(e); }, [onPointerMove]);
     const onTouchEnd = useCallback(() => { onPointerUp(); }, [onPointerUp]);
 
+    // Al rotar se resetea el recorte para evitar coordenadas fuera de límites
     const rotate = () => setCs((c) => ({ ...c, rotation: (c.rotation + 90) % 360, cropX: 5, cropY: 5, cropW: 90, cropH: 90 }));
     const reset = () => setCs({ ...INITIAL_CROP });
 
     const handleApply = async (onApply) => {
         setApplying(true);
         try {
+            // Genera dataURL y File en paralelo para no aplicar el recorte dos veces por separado
             const [dataURL, file] = await Promise.all([
                 applyFreeCrop(src, cs, false),
                 applyFreeCrop(src, cs, true),

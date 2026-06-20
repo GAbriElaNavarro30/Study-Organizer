@@ -1,6 +1,7 @@
 import { useEffect, useState, useContext } from "react";
 import api from "../services/api";
 import { AuthContext } from "../context/AuthContext";
+import { PdfUsuarios } from "../components/PdfUsuarios";
 
 export function useCrudAdmin() {
   const [modalOpen, setModalOpen] = useState(false);
@@ -87,7 +88,7 @@ export function useCrudAdmin() {
         }));
 
         setUsuarios(usuariosFormateados);
-        setPaginaActual(1); // Resetear a página 1 cuando cambia la búsqueda
+        setPaginaActual(1);
       } catch (error) {
         console.error("Error al cargar usuarios:", error);
       }
@@ -248,9 +249,26 @@ export function useCrudAdmin() {
     setPaginaActual(1);
   };
 
+
+  // ==================== PDF ====================
+  const exportarPdf = async () => {
+    try {
+      await PdfUsuarios(usuarios);
+      setTituloAlert("Éxito");
+      setMensajeAlert("El PDF se exportó correctamente");
+      setTipoAlert("success");
+      setMostrarAlert(true);
+    } catch (error) {
+      console.error("Error exacto al exportar PDF:", error); // ← agrega esto
+      setTituloAlert("Error");
+      setMensajeAlert("No se pudo exportar el PDF");
+      setTipoAlert("error");
+      setMostrarAlert(true);
+    }
+  };
+
   // ==================== EXPORTAR ====================
   return {
-    // Estados
     modalOpen,
     modalUsuarioOpen,
     tipoModal,
@@ -266,26 +284,19 @@ export function useCrudAdmin() {
     paginaActual,
     registrosPorPagina,
     totalPaginas,
-
-    // Funciones Modal Eliminar
     abrirModalEliminar,
     cerrarModalEliminar,
     confirmarEliminacion,
-
-    // Funciones Modal Usuario
     abrirModalUsuario,
     cerrarModalUsuario,
     limpiarErrorBackend,
     guardarUsuario,
-
-    // Funciones de búsqueda y paginación
     setBusqueda,
     cambiarPagina,
     paginaAnterior,
     paginaSiguiente,
     cambiarRegistrosPorPagina,
-
-    // Funciones de alerta
     setMostrarAlert,
+    exportarPdf,
   };
 }

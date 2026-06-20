@@ -13,10 +13,10 @@
     background: white;
     padding: 22px 16px;
     border-radius: 14px;
-    width: 100%;        
-    max-width: 400px;   
-    max-height: 90vh;   
-    overflow-y: auto;   /* scroll si el contenido es muy alto */
+    width: 100%;
+    max-width: 400px;
+    max-height: 90vh;
+    overflow-y: auto;
     animation: fadeIn 0.25s ease;
 }
 
@@ -102,7 +102,7 @@
 }
 
 .modal-guardar-guardar-nota::-webkit-scrollbar-thumb {
-    background: rgba(0,0,0,0.2);
+    background: rgba(0, 0, 0, 0.2);
     border-radius: 3px;
 }
 
@@ -112,6 +112,7 @@
         opacity: 0;
         transform: scale(0.97);
     }
+
     to {
         opacity: 1;
         transform: scale(1);
@@ -119,6 +120,7 @@
 }
 
 /* ================= RESPONSIVIDAD ================= */
+/* Los botones van en columna en móvil y se vuelven fila desde 500px */
 @media (min-width: 500px) {
     .modal-acciones-guardar-nota {
         flex-direction: row;

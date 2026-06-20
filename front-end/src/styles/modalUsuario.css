@@ -101,7 +101,6 @@
 .fila {
     display: flex;
     gap: 12px;
-    /* de los lados entre filas con 2 campos */
     margin-bottom: 12px;
     width: 100%;
 }
@@ -199,6 +198,7 @@
     color: rgb(0, 0, 0);
 }
 
+/* El segundo margin-top sobreescribe al primero; el !important fuerza el valor final */
 .fecha-nacimiento {
     margin-top: 12px;
     margin-top: -2px !important;

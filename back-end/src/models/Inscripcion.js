@@ -1,4 +1,4 @@
-// src/models/Inscripcion.js
+// ========================== Módulo de cursos =============================
 import { db } from "../config/db.js";
 
 export class Inscripcion {
@@ -79,8 +79,6 @@ export class Inscripcion {
     static async delete(id) {
         return await db.query("DELETE FROM Inscripcion WHERE id_inscripcion = ?", [id]);
     }
-
-    // ========== MÉTODOS NUEVOS ==========
 
     static async getProgresoEstudiante(id_usuario, id_curso) {
         const inscripcion = await this.getByUsuarioYCurso(id_usuario, id_curso);

@@ -1,4 +1,4 @@
-// src/models/Curso.js
+// ========================== Módulo de Cursos =============================
 import { db } from "../config/db.js";
 
 export class Curso {
@@ -199,12 +199,10 @@ export class Curso {
         return rows;
     }
 
-    /* ─────────────────────────────────────────────────────────
+    /* =========================================================
        getCursosEstudiante
        Usa SUM(sc.total_contenidos) en lugar del subquery lento.
-       Devuelve contenidos_vistos, total_contenidos, completado
-       para que el hook pueda calcular porcentaje = vistos/total.
-    ───────────────────────────────────────────────────────── */
+    ========================================================= */
     static async getCursosEstudiante(id_usuario) {
         const [rows] = await db.query(
             `SELECT
@@ -251,9 +249,9 @@ export class Curso {
         return rows;
     }
 
-    /* ─────────────────────────────────────────────────────────
-       getCursosEstudianteArchivados — misma lógica, archivado = 1
-    ───────────────────────────────────────────────────────── */
+    /* =======================================================
+                    getCursosEstudianteArchivados
+    ======================================================= */
     static async getCursosEstudianteArchivados(id_usuario) {
         const [rows] = await db.query(
             `SELECT

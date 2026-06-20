@@ -1,10 +1,3 @@
-/* ================================================================
-   PREGUNTAS FRECUENTES — preguntasFrecuentes.css
-   Layout: sidebar fijo izquierda + contenido derecha
-   Paleta: #FFF2E0 · #C0C9EE · #A2AADB · #898AC4
-           #89A8B2 · #B3C8CF · #E5E1DA · #F1F0E8
-================================================================ */
-
 @import url('https://fonts.googleapis.com/css2?family=Lora:ital,wght@0,400;0,600;1,400&family=Outfit:wght@300;400;500;600;700&display=swap');
 
 :root {
@@ -32,7 +25,7 @@
   padding: 48px 48px 72px;
   font-family: 'Outfit', sans-serif;
   color: var(--ink);
-  box-sizing: border-box;  /* FIX: evita overflow horizontal */
+  box-sizing: border-box;
 }
 
 /* ================================================================
@@ -90,8 +83,8 @@
 .faq-sidebar {
   position: sticky;
   top: 24px;
-  max-height: calc(100vh - 48px); /* FIX: evita que la sidebar se desborde en pantallas cortas */
-  overflow-x: auto;               /* FIX: scroll interno si el contenido es largo */
+  max-height: calc(100vh - 48px);
+  overflow-x: auto;
   background: linear-gradient(145deg, var(--crema-md), var(--crema));
   border: 1.5px solid var(--lav-lt);
   border-radius: var(--r-lg);
@@ -99,7 +92,6 @@
   box-shadow:
     0 4px 20px rgba(137,138,196,0.10),
     inset 0 1px 0 rgba(255,255,255,0.7);
-  /* FIX: scrollbar invisible en sidebar desktop */
   scrollbar-width: none;
   
 }
@@ -281,10 +273,7 @@
 }
 
 /* ================================================================
-   ACCORDION — FIX CRÍTICO
-   El hijo directo del wrapper DEBE tener overflow: hidden
-   para que grid-template-rows: 0fr colapse correctamente
-   en todos los navegadores.
+   ACORDION
 ================================================================ */
 .faq-respuesta-wrapper {
   display: grid;
@@ -296,7 +285,6 @@
   grid-template-rows: 1fr;
 }
 
-/* FIX: overflow: hidden en el hijo directo del grid */
 .faq-respuesta-wrapper > * {
   overflow: hidden;
 }
@@ -404,14 +392,11 @@
 /* ================================================================
    RESPONSIVE
 ================================================================ */
-
-/* ─── 1200px: sidebar un poco más estrecho ─── */
 @media (max-width: 1200px) {
   .faq-page { padding: 40px 36px 64px; }
   .faq-layout { grid-template-columns: 220px 1fr; gap: 28px; }
 }
 
-/* ─── 1024px ─── */
 @media (max-width: 1024px) {
   .faq-page { padding: 36px 28px 56px; }
   .faq-layout { grid-template-columns: 200px 1fr; gap: 24px; }
@@ -419,7 +404,6 @@
   .faq-sidebar-item { font-size: 0.84rem; padding: 8px 10px; }
 }
 
-/* ─── 768px: sidebar colapsa a chips horizontales ─── */
 @media (max-width: 768px) {
   .faq-page   { padding: 28px 20px 48px; }
   .faq-titulo { font-size: 1.75rem; }
@@ -429,10 +413,9 @@
     gap: 20px;
   }
 
-  /* Sidebar → scroll horizontal de chips */
   .faq-sidebar {
     position: static;
-    max-height: none;   /* FIX: anulamos el max-height de desktop */
+    max-height: none;
     overflow-y: visible;
     padding: 14px 16px;
   }
@@ -446,7 +429,6 @@
     flex-wrap: nowrap;
     overflow-x: auto;
     gap: 8px;
-    /* FIX: padding lateral para que el último chip no quede cortado */
     padding: 0 2px 4px;
     scrollbar-width: none;
   }
@@ -472,7 +454,6 @@
   .faq-item.abierta .faq-respuesta { padding-bottom: 16px; }
   .faq-footer    { padding: 28px 20px; margin-top: 40px; }
 
-  /* Secciones con menos gap */
   .faq-contenido { gap: 32px; }
 }
 
@@ -504,7 +485,6 @@
 /* ─── 360px ─── */
 @media (max-width: 360px) {
   .faq-page {
-    /* FIX: previene scroll horizontal en dispositivos muy pequeños */
     overflow-x: hidden;
     width: 100%;
     padding: 16px 12px 36px;

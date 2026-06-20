@@ -5,7 +5,7 @@ import api from "../services/api";
 export function useDashboardTutor(tutor, estadisticas) {
     const [animado, setAnimado] = useState(false);
     const [fotoError, setFotoError] = useState(false);
- 
+
     useEffect(() => {
         const t = setTimeout(() => setAnimado(true), 100);
         return () => clearTimeout(t);
@@ -53,17 +53,16 @@ export function useDashboardTutor(tutor, estadisticas) {
     };
 
     // ── Filtro de niveles por curso ────────────────────────────
-    // ── Filtro de niveles ──────────────────────────────────────
     const [cursoFiltroNivel, setCursoFiltroNivel] = useState("todos");
     const [mesFiltroNivel, setMesFiltroNivel] = useState("todos");
     const [anioFiltroNivel, setAnioFiltroNivel] = useState("todos");
     const [nivelesFiltrados, setNivelesFiltrados] = useState(null);
     const [cargandoNiveles, setCargandoNiveles] = useState(false);
 
-    // Años disponibles: desde 2023 hasta el año actual
+    // Años disponibles: desde 2026 hasta el año actual
     const aniosDisponibles = Array.from(
-        { length: new Date().getFullYear() - 2022 },
-        (_, i) => 2023 + i
+        { length: new Date().getFullYear() - 2025 },
+        (_, i) => 2026 + i
     );
 
     const mesesDisponibles = [
@@ -105,6 +104,7 @@ export function useDashboardTutor(tutor, estadisticas) {
 
     }, [cursoFiltroNivel, mesFiltroNivel, anioFiltroNivel]);
 
+    // Si no hay filtro activo usa los datos globales; si hay filtro hace fetch al backend
     const dataNiveles = nivelesFiltrados ?? stats.distribucion_niveles;
 
     // ── Métricas derivadas ─────────────────────────────────────
@@ -129,17 +129,13 @@ export function useDashboardTutor(tutor, estadisticas) {
         && !fotoError;
 
     return {
-        // UI state
         animado,
         fotoError,
         setFotoError,
-        // Usuario
         usuario,
         initials,
         mostrarFoto,
-        // Stats
         stats,
-        // Niveles
         cursoFiltroNivel, setCursoFiltroNivel,
         mesFiltroNivel, setMesFiltroNivel,
         anioFiltroNivel, setAnioFiltroNivel,
@@ -147,7 +143,6 @@ export function useDashboardTutor(tutor, estadisticas) {
         aniosDisponibles,
         dataNiveles,
         cargandoNiveles,
-        // Métricas derivadas
         promedio_general,
         mejor_curso,
         tasa_global,

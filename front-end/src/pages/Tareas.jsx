@@ -7,7 +7,7 @@ import { ModalFinalizarTarea } from "../components/ModalFinalizarTarea";
 import { ModalCrearActualizarTarea } from "../components/ModalCrearActualizarTarea";
 import { CustomAlert } from "../components/CustomAlert";
 import { useTareas } from "../hooks/useTareas";
-
+ 
 export function Tareas() {
     const {
         // Estados

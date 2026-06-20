@@ -34,11 +34,11 @@ export const obtenerTareas = async (req, res) => {
 
         await db.query(
             `UPDATE Tarea
-             SET estado_tarea = 'vencida'
-             WHERE estado_tarea = 'pendiente'
-               AND TIMESTAMP(fecha_tarea, hora_tarea) < NOW()
-               AND id_usuario = ?`,
-            [idUsuario]
+            SET estado_tarea = 'vencida'
+            WHERE estado_tarea = 'pendiente'
+            AND TIMESTAMP(fecha_tarea, hora_tarea) < ?
+            AND id_usuario = ?`,
+            [dayjs().tz(ZONA).format("YYYY-MM-DD HH:mm:ss"), idUsuario]
         );
 
         const [tareas] = await db.query(
@@ -130,12 +130,11 @@ export const crearTarea = async (req, res) => {
         if (!fecha || fecha.trim() === "") {
             errores.fecha = "La fecha es obligatoria";
         } else {
-            const fechaSeleccionada = new Date(fecha + "T00:00:00");
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-            if (isNaN(fechaSeleccionada.getTime())) {
+            const fechaSeleccionada = dayjs.tz(fecha + " 00:00:00", ZONA).startOf("day");
+            const hoyEnMexico = dayjs().tz(ZONA).startOf("day");
+            if (!fechaSeleccionada.isValid()) {
                 errores.fecha = "Formato de fecha inválido";
-            } else if (fechaSeleccionada < hoy) {
+            } else if (fechaSeleccionada.isBefore(hoyEnMexico)) {
                 errores.fecha = "La fecha no puede ser anterior a hoy";
             }
         }
@@ -145,8 +144,9 @@ export const crearTarea = async (req, res) => {
         } else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(hora)) {
             errores.hora = "Formato de hora inválido";
         } else if (fecha) {
-            const fechaHoraSeleccionada = new Date(`${fecha}T${hora}:00`);
-            if (fechaHoraSeleccionada < new Date()) {
+            const fechaHoraSeleccionada = dayjs.tz(`${fecha} ${hora}:00`, ZONA).toDate();
+            const ahoraEnMexico = dayjs().tz(ZONA).toDate();
+            if (fechaHoraSeleccionada < ahoraEnMexico) {
                 errores.hora = "La fecha y hora no pueden ser anteriores a la actual";
             }
         }
@@ -224,12 +224,11 @@ export const actualizarTarea = async (req, res) => {
         if (!fecha || fecha.trim() === "") {
             errores.fecha = "La fecha es obligatoria";
         } else {
-            const fechaSeleccionada = new Date(fecha + "T00:00:00");
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
-            if (isNaN(fechaSeleccionada.getTime())) {
+            const fechaSeleccionada = dayjs.tz(fecha + " 00:00:00", ZONA).startOf("day");
+            const hoyEnMexico = dayjs().tz(ZONA).startOf("day");
+            if (!fechaSeleccionada.isValid()) {
                 errores.fecha = "Formato de fecha inválido";
-            } else if (fechaSeleccionada < hoy) {
+            } else if (fechaSeleccionada.isBefore(hoyEnMexico)) {
                 errores.fecha = "La fecha no puede ser anterior a hoy";
             }
         }
@@ -239,8 +238,9 @@ export const actualizarTarea = async (req, res) => {
         } else if (!/^([01]?[0-9]|2[0-3]):([0-5][0-9])$/.test(hora)) {
             errores.hora = "Formato de hora inválido";
         } else if (fecha) {
-            const fechaHoraSeleccionada = new Date(`${fecha}T${hora}:00`);
-            if (fechaHoraSeleccionada < new Date()) {
+            const fechaHoraSeleccionada = dayjs.tz(`${fecha} ${hora}:00`, ZONA).toDate();
+            const ahoraEnMexico = dayjs().tz(ZONA).toDate();
+            if (fechaHoraSeleccionada < ahoraEnMexico) {
                 errores.hora = "La fecha y hora no pueden ser anteriores a la actual";
             }
         }

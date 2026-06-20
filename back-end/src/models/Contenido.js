@@ -1,6 +1,6 @@
-// src/models/Contenido.js
+// Modulo de Cursos
 import { db } from "../config/db.js";
- 
+
 export class Contenido {
     constructor({ titulo, contenido = null, orden, id_seccion, imagen_url = null }) {
         this.titulo = titulo;

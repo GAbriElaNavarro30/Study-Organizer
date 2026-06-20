@@ -1,4 +1,4 @@
-// metodos de estudio
+// ====================== Módulo de Métodos de Estudio ======================
 import { db } from "../config/db.js";
  
 export class RespuestaTestMe {

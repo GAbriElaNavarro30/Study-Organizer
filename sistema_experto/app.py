@@ -2,14 +2,12 @@ import os
 from dotenv import load_dotenv
 from fastapi import FastAPI
 from fastapi.middleware.cors import CORSMiddleware
- 
-# Importación de routers de cada módulo del sistema experto
+
 from routers.estilos_aprendizaje import router as router_ea
 from routers.metodos_estudio import router as router_me
 from routers.resultados_curso import router as router_cursos
 from routers.frases import router as router_frases
- 
-# Carga de variables de entorno
+
 load_dotenv()
 
 BACKEND_URL = os.getenv("BACKEND_URL", "http://localhost:3000")
@@ -32,7 +30,6 @@ app.add_middleware(
     allow_headers=["*"],
 )
 
-# Registro de routers por módulo
 app.include_router(router_ea)
 app.include_router(router_me)
 app.include_router(router_cursos)

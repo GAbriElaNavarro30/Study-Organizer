@@ -132,7 +132,7 @@
     background: linear-gradient(to bottom, transparent 40%, rgba(0, 0, 0, .45));
 }
 
-/* ── Placeholder con color dinámico via CSS custom property ── */
+/* ── Placeholder con color dinámico ── */
 .vct-hero__cover--placeholder {
     display: flex;
     align-items: center;
@@ -144,7 +144,7 @@
     padding: 24px 28px 28px;
 }
 
-/* ── Badge VARK con colores dinámicos via CSS custom properties ── */
+/* ── Badge VARK con colores dinámicos ── */
 .vct-vark-badge {
     display: inline-flex;
     align-items: center;
@@ -350,7 +350,7 @@
     color: #B91C1C;
 }
 
-/* ─── Tabla compartida (resultados) ─────────────────────── */
+/* ─── Tabla resultados ─────────────────────── */
 .vct-table-wrap {
     border: 1px solid #E2E8F0;
     border-radius: 12px;
@@ -470,7 +470,7 @@
     min-width: 40px;
 }
 
-/* ── Ancho dinámico via CSS custom property ── */
+/* ── Ancho dinámico ── */
 .vct-puntaje-fill {
     width: var(--puntaje-pct, 0%);
     height: 100%;
@@ -922,7 +922,8 @@
 /* ─── Búsqueda ──────────────────────────────────────────── */
 .vct-est-search-wrap {
     position: relative;
-    flex: 0 0 800px;
+    flex: 1 1 200px;
+    min-width: 0;
     max-width: 800px;
 }
 
@@ -1531,6 +1532,11 @@
     .vct-est-search {
         font-size: 13px;
         padding: 9px 34px;
+    }
+
+    .vct-est-search-wrap {
+        flex: 1 1 100%;
+        order: 2;
     }
 }
 

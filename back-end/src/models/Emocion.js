@@ -1,5 +1,4 @@
 // ============================== MÓDULO EMOCIONES ==============================
-// model/Emocion.js
 import { db } from "../config/db.js";
  
 export class Emocion {

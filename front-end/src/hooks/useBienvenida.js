@@ -1,7 +1,7 @@
 import { useState, useEffect, useContext } from "react";
 import { AuthContext } from "../context/AuthContext";
 import api from "../services/api";
- 
+
 export function useBienvenida() {
     const { usuario, refrescarUsuario } = useContext(AuthContext);
 

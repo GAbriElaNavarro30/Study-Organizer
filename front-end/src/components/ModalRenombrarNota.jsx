@@ -2,7 +2,7 @@ import "../styles/modalRenombrar.css";
 import { Type } from "lucide-react";
 import { ModalConfirmarCancelar } from "./ModalConfirmarCancelar";
 import { useModalRenombrarNota } from "../hooks/useModalRenombrarNota";
-  
+
 export function ModalRenombrarNota({ isOpen, onClose, onConfirm, nombreActual, notas = [], notaActualId }) {
     const {
         nuevoNombre,

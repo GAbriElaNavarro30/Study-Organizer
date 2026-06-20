@@ -1,4 +1,3 @@
-// src/components/ModalEliminarCurso.jsx
 import "../styles/ModalEliminarCurso.css";
 
 export function ModalEliminarCurso({ isOpen, onClose, onConfirm, curso }) {

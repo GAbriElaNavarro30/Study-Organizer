@@ -1,4 +1,3 @@
-// src/pages/Cursos/CursoDetalle.jsx
 import { useNavigate } from "react-router-dom";
 import { useState } from "react";
 import {
@@ -379,9 +378,6 @@ function EnrollCard({
 
         if (completado) return (
             <>
-                {/*<button className="cd-action-primary cd-action-primary--blue" onClick={onVerResultados}>
-                    <IoAnalyticsOutline size={14} /> Ver último resultado
-                </button>*/}
                 <button className="cd-action-secondary" onClick={onIniciar}>
                     <IoRefreshOutline size={13} /> Tomar de nuevo el curso
                 </button>
@@ -595,9 +591,18 @@ export function CursoDetalle() {
             {/* ── CTA móvil ── */}
             <div className="cd-mobile-cta">
                 {inscrito && !completado && pct > 0 && (
-                    <div className="cd-mobile-prog-bar">
-                        <div className="cd-mobile-prog-fill" style={{ width: `${pct}%` }} />
-                    </div>
+                    <>
+                        <div className="cd-mobile-prog-info">
+                            <span>Progreso del curso</span>
+                            <span className="cd-mobile-prog-pct">{pct}%</span>
+                        </div>
+                        <div className="cd-mobile-prog-bar">
+                            <div className="cd-mobile-prog-fill" style={{ width: `${pct}%` }} />
+                        </div>
+                        <p style={{ fontSize: "11px", color: "var(--cd-ink-faint)", margin: 0 }}>
+                            {progreso?.vistos ?? 0} de {progreso?.total ?? totalContenidos} contenidos vistos
+                        </p>
+                    </>
                 )}
                 {!inscrito && !curso?.archivado && (
                     <button
@@ -610,7 +615,31 @@ export function CursoDetalle() {
                     </button>
                 )}
                 {inscrito && (
-                    completado ? (
+                    curso?.archivado ? (
+                        <>
+                            <div className="cd-archived-notice">
+                                <IoAlertCircleOutline size={13} />
+                                No se pueden realizar nuevos intentos
+                            </div>
+                            {completado && (
+                                <button
+                                    className="cd-action-primary cd-action-primary--blue cd-action-primary--full"
+                                    onClick={handleVerResultados}
+                                >
+                                    <IoAnalyticsOutline size={14} /> Ver último resultado
+                                </button>
+                            )}
+                            <button
+                                className="cd-action-secondary cd-action-primary--full"
+                                onClick={handleRetomarCurso}
+                            >
+                                <IoBookOutline size={13} /> Ver contenido
+                            </button>
+                            <button className="cd-action-cancel" onClick={handleCancelarInscripcion}>
+                                Cancelar inscripción
+                            </button>
+                        </>
+                    ) : completado ? (
                         <>
                             <button
                                 className="cd-action-secondary cd-action-primary--full"
@@ -639,7 +668,6 @@ export function CursoDetalle() {
                 )}
             </div>
 
-            {/* ═══════════  BODY  ═══════════ */}
             <div className="cd-body">
                 <div className="cd-main">
                     <CourseContent secciones={curso.secciones ?? []} />

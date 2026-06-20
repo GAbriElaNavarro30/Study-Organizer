@@ -1,6 +1,6 @@
 import { useState, useEffect } from "react";
 import api from "../services/api.js";
- 
+
 export function useModalCompartirNota(isOpen) {
 
     const [modo, setModo] = useState(null);
@@ -250,4 +250,4 @@ export function useModalCompartirNota(isOpen) {
         editandoIdCorreo, editandoNombreCorreo, editandoNombreCorreoError, guardandoNombreCorreo,
         iniciarEdicionCorreo, cancelarEdicionCorreo, handleChangeNombreCorreo, guardarNombreDestinatarioCorreo,
     };
-}
+} 

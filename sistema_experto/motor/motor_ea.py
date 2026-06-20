@@ -1,6 +1,3 @@
-# motor_ea.py - cerebro del sistema experto
-
-# hechos
 from hechos.hechos_ea import (
     PuntajesVARK, PerfilDominante, Recomendacion, RECOMENDACIONES,
     CriteriosCurso, PERFILES,
@@ -8,30 +5,28 @@ from hechos.hechos_ea import (
 
 from reglas.reglas_ea import MotorVARK
 
-# recibe una lista de categorias y devuelve un diccionario de puntajes
+
 def procesar_respuestas(categorias: list[str]) -> dict:
 
-    # 1. Calcular conteo de categorias
     puntajes = {"V": 0, "A": 0, "R": 0, "K": 0}
-    for cat in categorias:  # recorre la lista hasta n final
+    for cat in categorias:
         if cat in puntajes:
             puntajes[cat] += 1
     
-    # calcula porcentajes
+    
     total = len(categorias)
     porcentajes = {}
 
     for k, v in puntajes.items():
         if total > 0:
-            porcentajes[k] = ((v / total) * 100) # Ej V: (2 / 8 * 100 ) = 25%
+            porcentajes[k] = ((v / total) * 100)
         else:
             porcentajes[k] = 0
 
-    # 2. Crear el motor de inferencia
+    # Crear el motor de inferencia
     motor = MotorVARK() 
     motor.reset()
 
-    # guarda puntajes en la WM del motor
     motor.declare(
         PuntajesVARK(
             v=puntajes["V"],
@@ -42,10 +37,8 @@ def procesar_respuestas(categorias: list[str]) -> dict:
         )
     )
 
-    # 3. Ejecutar inferencias (forward chaining) - lee hechos hasta el momento y aplica reglas
     motor.run()
 
-    # 4. Recorre resultados de la Working Memory de lo que tiene hasta ahora el motor: PuntajesVARK,  PerfilDominante y Recomendacion
     perfil_hecho = None
     for fact in motor.facts.values():
         if isinstance(fact, PerfilDominante):
@@ -58,14 +51,12 @@ def procesar_respuestas(categorias: list[str]) -> dict:
     perfil = perfil_hecho["perfil"] 
     nombre = perfil_hecho["nombre"]
 
-    # recorrer recomendaciones por estilo generadas por el motor
     recomendaciones: dict[str, list[str]] = {}
     for fact in motor.facts.values():
         if isinstance(fact, Recomendacion):
             estilo = fact["estilo"]
             recomendaciones.setdefault(estilo, []).append(fact["texto"])
     
-    # Recoger criterios de cursos compatibles con el perfil
     criterios_cursos = None
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
@@ -76,7 +67,6 @@ def procesar_respuestas(categorias: list[str]) -> dict:
             }
             break
     
-    # 5. Construir y devolver el resultado al router
     return {
         "puntaje_v":      puntajes["V"],
         "puntaje_a":      puntajes["A"],
@@ -108,7 +98,6 @@ def obtener_criterios_perfil(perfil: str) -> dict:
     motor = MotorVARK()
     motor.reset()
 
-    # Declaramos directamente el PerfilDominante, salta el bloque de puntajes
     motor.declare(PerfilDominante(
         perfil=perfil,
         nombre=PERFILES.get(perfil, perfil)
@@ -116,7 +105,6 @@ def obtener_criterios_perfil(perfil: str) -> dict:
 
     motor.run()
 
-    # Recoger el CriteriosCurso que generaron las reglas
     for fact in motor.facts.values():
         if isinstance(fact, CriteriosCurso):
             return {
@@ -125,5 +113,4 @@ def obtener_criterios_perfil(perfil: str) -> dict:
                 "dimensiones":     fact["dimensiones"],
             }
 
-    # Fallback por si algo falla, no genera criterios
     return {"perfil_exacto": perfil, "perfiles_afines": [], "dimensiones": []}  

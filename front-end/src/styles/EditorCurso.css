@@ -1718,10 +1718,6 @@
     color: black;
     line-height: 1.7;
     white-space: pre-wrap;
-    /*padding: 14px 18px;*/
-    /*background: var(--surface);
-    border-radius: 10px;
-    border-left: 3px solid var(--blue-200);*/
 }
 
 .preview-block-empty {
@@ -1736,17 +1732,11 @@
 .preview-block-img {
     max-width: 100%;
     max-height: 200px;
-    /* ← tamaño adecuado, no enorme */
     width: auto;
     height: auto;
     object-fit: contain;
-    /* ← respeta el recorte exacto */
-
-
     display: block;
-    /* ← para que margin: auto funcione */
     margin: 0;
-    /* alineado a la izquierda */
     align-self: flex-start;
 }
 
@@ -1872,7 +1862,7 @@
 .preview-nav-btn:hover:not(:disabled) {
     background: var(--surface-2);
     border-color: var(--border-md);
-    color: gray;
+    /*color: gray;*/
 }
 
 .preview-nav-btn:disabled {
@@ -2792,6 +2782,16 @@
 
     .course-preview-nav {
         padding: 12px 16px;
+    }
+}
+
+@media (max-width: 640px) {
+    .course-preview-nav {
+        padding: 12px 16px;
+    }
+
+    .preview-nav-progress > span {
+        display: none;
     }
 }
 

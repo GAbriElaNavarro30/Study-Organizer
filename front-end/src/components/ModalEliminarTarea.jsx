@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/modalEliminar.css"; // puedes usar el mismo CSS que tu modal de usuario
+import "../styles/modalEliminar.css";
 
 export function ModalEliminarTarea({ isOpen, onClose, onConfirm, nombreTarea }) {
     if (!isOpen) return null;

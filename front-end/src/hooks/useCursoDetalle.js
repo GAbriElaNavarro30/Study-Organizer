@@ -1,4 +1,3 @@
-// src/hooks/useCursoDetalle.js
 import { useState, useEffect, useCallback } from "react";
 import { useLocation } from "react-router-dom";
 import api from "../services/api.js";
@@ -16,7 +15,6 @@ export function useCursoDetalle() {
     const [error, setError] = useState(null);
     const [ultimoResultado, setUltimoResultado] = useState(null);
 
-    /* ── Carga inicial ── */
     const cargar = useCallback(async () => {
         setCargando(true);
         setError(null);
@@ -43,10 +41,6 @@ export function useCursoDetalle() {
         cargar();
     }, [cargar, id_curso]);
 
-    /* ── Acciones ──
-       Devuelven Promises resueltas/rechazadas para que el componente
-       pueda decidir qué hacer (navegar, mostrar alertas, etc.)        */
-
     const inscribirse = useCallback(async () => {
         setInscribiendo(true);
         try {
@@ -64,9 +58,9 @@ export function useCursoDetalle() {
         setProgreso(null);
     }, [id_curso]);
 
-    /**
-     * Crea un intento si el curso NO está archivado.
-     * Resuelve sin valor; el componente navega tras llamarla.
+    /*
+    Crea un intento si el curso NO está archivado.
+    Resuelve sin valor; el componente navega tras llamarla.
      */
     const iniciarIntento = useCallback(async () => {
         if (!curso?.archivado) {
@@ -79,7 +73,6 @@ export function useCursoDetalle() {
     }, [curso?.archivado, id_curso]);
 
     return {
-        /* estado */
         curso,
         inscrito,
         progreso,
@@ -89,8 +82,6 @@ export function useCursoDetalle() {
         error,
         ultimoResultado,
         id_curso,
-
-        /* acciones puras (sin navegación) */
         inscribirse,
         cancelarInscripcion,
         iniciarIntento,

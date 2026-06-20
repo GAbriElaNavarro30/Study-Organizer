@@ -1,10 +1,5 @@
-/* ─── metodos-estudio-test.css ──────────────────────────────────────────────
-   Paleta: azul cielo · crema · blanco cálido · sin morados
-   Prefijo exclusivo: met-*   (no comparte nombres con mei-* ni mer-*)
-─────────────────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ── Variables exclusivas de esta página ── */
 .met-app,
 .met-loading {
   --met-blue: #1277dd;
@@ -209,6 +204,7 @@
   box-sizing: border-box;
 }
 
+/* Línea de acento azul degradada en el borde inferior del header */
 .met-header::after {
   content: '';
   position: absolute;
@@ -695,6 +691,7 @@
   background: var(--met-blue-mid);
 }
 
+/* Deshabilitado visualmente hasta que todas las preguntas estén respondidas */
 .met-submit {
   background: var(--met-cream-mid);
   color: var(--met-ink-faint);
@@ -841,6 +838,7 @@
     grid-template-columns: 1fr;
   }
 
+  /* En móvil el sidebar se convierte en carrusel horizontal de números */
   .met-sidebar {
     position: static;
     height: auto;

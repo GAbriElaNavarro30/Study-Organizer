@@ -1,4 +1,3 @@
-// src/hooks/useResultadosTestEA.js
 import { useEffect, useState } from "react";
 import { useLocation, useNavigate } from "react-router-dom";
 import api from "../services/api.js";

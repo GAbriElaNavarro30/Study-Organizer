@@ -4,11 +4,9 @@ from motor.motor_ea import procesar_respuestas, obtener_recomendaciones_perfil, 
 
 router = APIRouter(prefix="/ea", tags=["Estilos de Aprendizaje"])
 
-# Entrada: lista de categorias VARK respondidas por el estudiante
 class RespuestasInput(BaseModel):
     categorias: list[str]
  
-# Analiza las respuestas del test y devuelve el perfil dominante
 @router.post("/analizar")
 def analizar_vark(data: RespuestasInput):
     if len(data.categorias) < 16:
@@ -21,14 +19,12 @@ def analizar_vark(data: RespuestasInput):
     
     return procesar_respuestas(data.categorias)
 
-# Consulta recomendaciones de un perfil ya conocido
 @router.get("/recomendaciones/{perfil}")
 def obtener_recomendaciones(perfil: str):
     resultado = obtener_recomendaciones_perfil(perfil)
     if not resultado:
         raise HTTPException(status_code=404, detail=f"Perfil '{perfil.upper()}' no reconocido")
 
-    # El motor decide los criterios de cursos compatibles con el perfil
     criterios = obtener_criterios_perfil(perfil)
 
     return {

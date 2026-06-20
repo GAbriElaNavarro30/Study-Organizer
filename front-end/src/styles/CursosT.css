@@ -638,7 +638,6 @@
     border-radius: 5px;
     font-size: 11px;
     font-weight: 500;
-    /* Elimina margin-bottom: 4px; */
     width: fit-content;
 }
 
@@ -675,7 +674,7 @@
     color: #5B21B6;
 }
 
-/* ══ MENÚ ⋯ ════════════════════════════════════════════════ */
+/* ══ MENÚ ════════════════════════════════════════════════ */
 .menu-opciones {
     position: relative;
     display: inline-flex;
@@ -1114,7 +1113,6 @@
         padding: 10px 16px 12px;
         position: static;
         flex-direction: column;
-        /* ← columna, no fila */
         align-items: stretch;
         gap: 8px;
     }
@@ -1251,7 +1249,6 @@
         padding: 10px 16px 12px;
         position: static;
         flex-direction: column;
-        /* ← columna, no fila */
         align-items: stretch;
         gap: 8px;
     }
@@ -1441,7 +1438,6 @@
     background-repeat: no-repeat;
     background-position: right 8px center;
     transition: border-color 0.15s, box-shadow 0.15s;
-    /* Evita que el texto del option desborde */
     overflow: hidden;
     text-overflow: ellipsis;
     white-space: nowrap;
@@ -1612,7 +1608,7 @@
 
 /* ── Responsive KPI ──────────────────────────────────────── */
 
-/* Tablet: 1024px → 2 columnas en filtros, año + mes juntos */
+/* Tablet: 1024px -> 2 columnas en filtros, año + mes juntos */
 @media (max-width: 1024px) {
     .ikpi-filters {
         grid-template-columns: repeat(2, 1fr);
@@ -1649,7 +1645,7 @@
     }
 }
 
-/* Móvil: 480px → filtros en 1 columna, totales apilados de a 2 */
+/* Móvil: 480px -> filtros en 1 columna, totales apilados de a 2 */
 @media (max-width: 480px) {
     .ikpi-card {
         padding: 14px 14px;

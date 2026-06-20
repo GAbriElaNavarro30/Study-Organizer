@@ -1,4 +1,4 @@
-// model/Registro_Emocion.js
+// ===================== Dashboard del Estudiante ======================
 import { db } from "../config/db.js";
  
 export class RegistroEmocion {

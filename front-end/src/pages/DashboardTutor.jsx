@@ -240,7 +240,7 @@ export function DashboardTutor({ tutor, estadisticas }) {
                 <h2 className="section-title"><IoPieChart size={18} /> Niveles de desempeño y actividad</h2>
                 <div className="charts-row">
 
-                    {/* Pie — distribución de niveles con filtro por curso */}
+                    {/* Distribución de niveles con filtro por curso */}
                     <div className="chart-card">
 
                         {/* Cabecera con select */}
@@ -275,7 +275,8 @@ export function DashboardTutor({ tutor, estadisticas }) {
                                     value={mesFiltroNivel}
                                     onChange={e => setMesFiltroNivel(e.target.value)}
                                     className="niveles-select"
-                                    disabled={anioFiltroNivel === "todos"}  // mes solo tiene sentido con año
+                                    // mes solo tiene sentido si hay un año seleccionado
+                                    disabled={anioFiltroNivel === "todos"}
                                 >
                                     <option value="todos">Todos los meses</option>
                                     {mesesDisponibles.map(m => (
@@ -419,7 +420,11 @@ export function DashboardTutor({ tutor, estadisticas }) {
                                     allowDecimals={false}
                                     tickFormatter={(v) => Number.isInteger(v) ? v : ""}
                                 />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
+                                <Tooltip
+                                    content={<CustomTooltip />}
+                                    cursor={{ fill: "#F0F7FF" }}
+                                    allowEscapeViewBox={{ x: false, y: true }}
+                                />
                                 <Bar dataKey="estudiantes" name="Estudiantes" radius={[6, 6, 0, 0]}>
                                     {[...stats.vark]
                                         .sort((a, b) => VARK_ORDER.indexOf(a.perfil) - VARK_ORDER.indexOf(b.perfil))
@@ -433,32 +438,46 @@ export function DashboardTutor({ tutor, estadisticas }) {
                 <div className="charts-row">
                     <div className="chart-card">
                         <h3 className="chart-subtitle">Cursos por dimensión</h3>
-                        <ResponsiveContainer width="100%" height={280}>
-                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
-                                <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
-                                <Bar dataKey="cursos" name="Cursos" radius={[0, 6, 6, 0]}>
-                                    {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <div style={{ overflowX: "auto" }}>
+                            <ResponsiveContainer width="100%" height={280}>
+                                <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
+                                    <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
+                                    <Tooltip
+                                        content={<CustomTooltip />}
+                                        cursor={{ fill: "#F0F7FF" }}
+                                        allowEscapeViewBox={{ x: false, y: true }}
+                                        position={{ x: 200 }}
+                                    />
+                                    <Bar dataKey="cursos" name="Cursos" radius={[0, 6, 6, 0]}>
+                                        {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
 
                     <div className="chart-card">
                         <h3 className="chart-subtitle">Estudiantes por dimensión</h3>
-                        <ResponsiveContainer width="100%" height={280}>
-                            <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
-                                <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
-                                <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
-                                <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
-                                <Tooltip content={<CustomTooltip />} cursor={{ fill: "#F0F7FF" }} />
-                                <Bar dataKey="estudiantes" name="Estudiantes" radius={[0, 6, 6, 0]}>
-                                    {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
-                                </Bar>
-                            </BarChart>
-                        </ResponsiveContainer>
+                        <div style={{ overflowX: "auto" }}>
+                            <ResponsiveContainer width="100%" height={280}>
+                                <BarChart data={stats.dimensiones} layout="vertical" margin={{ top: 5, right: 20, left: 8, bottom: 5 }} barSize={16}>
+                                    <CartesianGrid strokeDasharray="3 3" stroke="#E8F1FB" horizontal={false} />
+                                    <XAxis type="number" allowDecimals={false} tick={{ fill: "#6B8BAF", fontSize: 11 }} axisLine={false} tickLine={false} />
+                                    <YAxis type="category" dataKey="nombre" width={190} tick={{ fill: "#6B8BAF", fontSize: 11, textAnchor: "end" }} axisLine={false} tickLine={false} />
+                                    <Tooltip
+                                        content={<CustomTooltip />}
+                                        cursor={{ fill: "#F0F7FF" }}
+                                        allowEscapeViewBox={{ x: false, y: true }}
+                                        position={{ x: 200 }}
+                                    />
+                                    <Bar dataKey="estudiantes" name="Estudiantes" radius={[0, 6, 6, 0]}>
+                                        {stats.dimensiones.map((_, i) => <Cell key={i} fill={COLORS_DIM[i % COLORS_DIM.length]} />)}
+                                    </Bar>
+                                </BarChart>
+                            </ResponsiveContainer>
+                        </div>
                     </div>
                 </div>
             </section>
@@ -500,25 +519,27 @@ export function DashboardTutor({ tutor, estadisticas }) {
 
                     <div className="chart-card medium">
                         <h3 className="chart-subtitle">Ranking de cursos</h3>
-                        <div className="ranking-table">
-                            <div className="ranking-head">
-                                <span>#</span><span>Curso</span><span>Alumnos</span><span>Promedio</span>
-                            </div>
-                            {[...stats.promedios_cursos].sort((a, b) => b.promedio - a.promedio).map((c, i) => (
-                                <div key={i} className={`ranking-row ${i === 0 ? "best" : ""}`}>
-                                    <span className="rank-pos">
-                                        {i === 0 ? <IoMedal size={16} color="#F0A500" /> : i + 1}
-                                    </span>
-                                    <span className="rank-titulo">{c.titulo}</span>
-                                    <span className="rank-alumnos"><IoPeople size={12} /> {c.estudiantes}</span>
-                                    <span className="rank-score rank-score--dynamic" style={{ color: c.promedio >= 85 ? "#3A7BD5" : c.promedio >= 70 ? "#4A90D9" : "#87CEEB" }}>
-                                        {c.promedio}
-                                        <div className="score-bar">
-                                            <div className="score-fill" style={{ width: `${c.promedio}%`, background: c.promedio >= 85 ? "#4A90D9" : "#B39DDB" }} />
-                                        </div>
-                                    </span>
+                        <div className="ranking-scroll">
+                            <div className="ranking-table">
+                                <div className="ranking-head">
+                                    <span>#</span><span>Curso</span><span>Alumnos</span><span>Promedio</span>
                                 </div>
-                            ))}
+                                {[...stats.promedios_cursos].sort((a, b) => b.promedio - a.promedio).map((c, i) => (
+                                    <div key={i} className={`ranking-row ${i === 0 ? "best" : ""}`}>
+                                        <span className="rank-pos">
+                                            {i === 0 ? <IoMedal size={16} color="#F0A500" /> : i + 1}
+                                        </span>
+                                        <span className="rank-titulo">{c.titulo}</span>
+                                        <span className="rank-alumnos"><IoPeople size={12} /> {c.estudiantes}</span>
+                                        <span className="rank-score rank-score--dynamic" style={{ color: c.promedio >= 85 ? "#3A7BD5" : c.promedio >= 70 ? "#4A90D9" : "#87CEEB" }}>
+                                            {c.promedio}
+                                            <div className="score-bar">
+                                                <div className="score-fill" style={{ width: `${c.promedio}%`, background: c.promedio >= 85 ? "#4A90D9" : "#B39DDB" }} />
+                                            </div>
+                                        </span>
+                                    </div>
+                                ))}
+                            </div>
                         </div>
                     </div>
                 </div>

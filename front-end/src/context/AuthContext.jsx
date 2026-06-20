@@ -4,6 +4,7 @@ import perfilPredeterminado from "../assets/imagenes/perfil-usuario.png";
 
 export const AuthContext = createContext();
 
+// Filtra URLs inválidas que el backend puede devolver como strings "null" o "undefined"
 const esFotoValida = (foto) => {
   if (!foto) return false;
   const invalidas = ["null", "undefined", "/uploads/null", "/uploads/undefined"];
@@ -34,6 +35,7 @@ export function AuthProvider({ children }) {
   const normalizarUsuario = (user) => {
     if (!user) return null;
 
+    // Si la foto ya es URL absoluta no se le agrega el API_URL
     const esUrlCompleta = (url) => {
       if (!url) return false;
       return url.startsWith('http://') || url.startsWith('https://');

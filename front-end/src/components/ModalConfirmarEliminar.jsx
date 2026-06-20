@@ -11,6 +11,7 @@ import {
 } from "react-icons/io5";
 import "../styles/ModalConfirmarEliminar.css";
 
+// Configuración visual y mensaje de advertencia por tipo de elemento a eliminar
 const TIPOS = {
     seccion: {
         label: "Sección",

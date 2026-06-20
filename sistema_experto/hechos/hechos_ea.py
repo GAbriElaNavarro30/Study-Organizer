@@ -1,12 +1,5 @@
-# hechos_ea.py
-
 from experta import Fact, Field
 
-# ===========================================================================
-# Hechos de entrada — se declaran antes de iniciar la inferencia
-# ===========================================================================
-
-# hecho 1. puntajes de cada categoria vark
 class PuntajesVARK(Fact):
     """
     Lo calcula el motor antes de iniciar la inferencia.
@@ -17,11 +10,6 @@ class PuntajesVARK(Fact):
     k = Field(int, mandatory=True)
     total = Field(int, mandatory=True)
 
-# ===========================================================================
-# Hechos derivados — declarados por el motor durante la inferencia
-# ===========================================================================
-
-# hecho 2. perfil dominante (el que tiene más puntaje) determinado por las reglas
 class PerfilDominante(Fact):
     """
     Ejemplo: PerfilDominante(perfil="VK", nombre="Visual — Kinestésico"), se calcula en reglas
@@ -30,7 +18,6 @@ class PerfilDominante(Fact):
     nombre = Field(str, mandatory=True)
 
 
-# hecho 3. recomendacion generada por el perfil
 class Recomendacion(Fact):
     """
     Ejemplo: Recomendacion(estilo="V", texto="Usa mapas mentales...")
@@ -38,18 +25,14 @@ class Recomendacion(Fact):
     estilo  = Field(str, mandatory=True)
     texto   = Field(str, mandatory=True)
 
-# hecho 4. Criterios para recomendar cursos compatibles con el perfil
+
 class CriteriosCurso(Fact):
     """Criterios que el motor determinó para recomendar cursos."""
     perfil_exacto   = Field(str,  mandatory=True)
-    perfiles_afines = Field(list, mandatory=True)  # perfiles que contienen al menos una letra del perfil
-    dimensiones = Field(list, mandatory=False)  # dimensiones débiles, None = sin filtro por dimensión  
+    perfiles_afines = Field(list, mandatory=True) 
+    dimensiones = Field(list, mandatory=False) 
 
-# ===========================================================================
-# Hechos estáticos
-# ===========================================================================
 
-# hecho 4. diccionario de perfil : nombre
 PERFILES = {
     "V":    "Visual",
     "A":    "Auditivo",
@@ -68,7 +51,6 @@ PERFILES = {
     "VARK": "Multimodal",
 }
 
-# hecho 5. diccionario de recomendaciones por perfil
 RECOMENDACIONES = {
     "V": [
         "Usa mapas mentales, esquemas y diagramas para organizar la información",
@@ -120,7 +102,6 @@ RECOMENDACIONES = {
     ],
 } 
 
-# hecho 6. lista de todos los perfiles posibles del dominio VARK
 TODOS_LOS_PERFILES = [
     "V", "A", "R", "K",
     "VA", "VR", "VK", "AR", "AK", "RK",

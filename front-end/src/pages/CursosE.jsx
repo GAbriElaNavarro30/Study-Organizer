@@ -1,5 +1,4 @@
-// src/pages/Cursos/CursosE.jsx
-import {    
+import {
     IoSearchOutline, IoBookOutline, IoPersonOutline, IoLayersOutline,
     IoFilterOutline, IoCheckmarkCircleOutline, IoPlayCircleOutline,
     IoSchoolOutline, IoGridOutline, IoMenuOutline, IoListOutline,
@@ -67,6 +66,7 @@ function DropdownPortal({ triggerRef, onClose, children }) {
     }, [triggerRef]);
 
     useEffect(() => {
+        // Mantener la posición del dropdown sincronizada al hacer scroll
         const loop = () => {
             calcCoords();
             rafRef.current = requestAnimationFrame(loop);
@@ -367,7 +367,7 @@ function TablaCursos({ cursos, inscritosIds, misCursos, irADetalle, inscribirse,
 }
 
 /* ─────────────────────────────────────────────────────────
-   TABLA ARCHIVADOS (CORREGIDA)
+   TABLA ARCHIVADOS
 ───────────────────────────────────────────────────────── */
 function TablaArchivados({ cursos, desarchivar, irADetalle, misCursos }) {
     return (
@@ -442,7 +442,7 @@ function TablaArchivados({ cursos, desarchivar, irADetalle, misCursos }) {
 }
 
 /* ─────────────────────────────────────────────────────────
-   CARD ARCHIVADO — mosaico (CORREGIDA)
+   CARD ARCHIVADO — mosaico
 ───────────────────────────────────────────────────────── */
 function CardArchivado({ curso, onDeArchivar, onVer, progreso }) {
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;

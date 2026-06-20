@@ -1,5 +1,3 @@
-# reglas/reglas_curso.py
-   
 from experta import KnowledgeEngine, Rule, MATCH, TEST
 from hechos.hechos_curso import (
     ResultadoExamen,
@@ -9,24 +7,16 @@ from hechos.hechos_curso import (
     RETROALIMENTACION,
 )
 
-
 class MotorResultadoCurso(KnowledgeEngine):
     """
     Motor de inferencia para evaluar el resultado de un curso.
-
-    Escala de niveles:
-        100          → Excelente
-        90  – 99.99  → Muy bueno
-        80  – 89.99  → Bueno
-        70  – 79.99  → Regular
-        < 70         → Deficiente
     """
 
-    # ───────────────────────────────────────────────────────────
+    # ===========================================================
     # BLOQUE 1 – Reglas de clasificación de nivel
     # salience=20 para que se disparen antes que las de
     # retroalimentación (salience=1)
-    # ───────────────────────────────────────────────────────────
+    # ===========================================================
 
     @Rule(
         ResultadoExamen(porcentaje=MATCH.pct),
@@ -83,11 +73,11 @@ class MotorResultadoCurso(KnowledgeEngine):
             nombre=NIVELES["deficiente"],
         ))
 
-    # ───────────────────────────────────────────────────────────
+    # ==============================================================
     # BLOQUE 2 – Regla de retroalimentación
     # Se dispara cuando ya existe un NivelDesempeno en la WM.
     # Declara un hecho Retroalimentacion por cada mensaje del nivel.
-    # ───────────────────────────────────────────────────────────
+    # ==============================================================
 
     @Rule(
         NivelDesempeno(nivel=MATCH.nivel),

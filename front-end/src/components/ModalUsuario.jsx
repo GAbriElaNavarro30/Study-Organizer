@@ -33,25 +33,22 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
         onClose();
     };
 
-    // COMBINAR ERRORES CORRECTAMENTE - Mostrar ambos si existen
+    // Los errores del backend se concatenan con los del frontend si coinciden en el mismo campo
     const erroresCombinados = {};
 
-    // Primero agregar errores del frontend
     Object.keys(errors).forEach(key => {
         erroresCombinados[key] = errors[key];
     });
 
-    // Luego agregar/combinar errores del backend
     Object.keys(erroresBackend).forEach(key => {
         if (erroresCombinados[key]) {
-            // Si ya existe error del frontend, concatenar
             erroresCombinados[key] = `${erroresCombinados[key]}. ${erroresBackend[key]}`;
         } else {
             erroresCombinados[key] = erroresBackend[key];
         }
     });
 
-    // SOLO MOSTRAR ERRORES DEL FRONTEND
+    // Solo valida frontend antes de enviar — los errores backend los maneja el padre via erroresBackend
     const handleSubmit = async (e) => {
         e.preventDefault();
         const esValido = await validarFormulario();
@@ -80,7 +77,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                         <hr className="linea-separadora-create-update" />
 
                         <form onSubmit={handleSubmit} className="modal-form-create-update">
-                            {/* 1ra fila: Nombre */}
+                            {/* Nombre */}
                             <div className="fila">
                                 <label>
                                     Nombre
@@ -95,7 +92,7 @@ export function ModalUsuario({ isOpen, onClose, onSubmit, tipo, usuario, errores
                                         <span className="error-text">{errors.nombre}</span>
                                     )}
                                 </label>
-                            
+
                                 <label>
                                     Apellido
                                     <input

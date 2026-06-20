@@ -1,4 +1,3 @@
-/* ─── resultadoIntento.css ─────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Nunito:wght@400;500;600;700;800;900&display=swap');
  
 /* ── Tokens ── */
@@ -452,16 +451,12 @@
     align-items: stretch;
 }
 
-/* ✅ CORRECCIÓN: las secciones dentro del grid se vuelven flex
-   para que su contenido pueda estirarse verticalmente */
 .cr-row-2col>.cr-section {
     display: flex;
     flex-direction: column;
 }
 
 /* ── Tutor ── */
-/* ✅ CORRECCIÓN: flex: 1 reemplaza min-height: 100% para que
-   el body ocupe el espacio sobrante y centre el contenido */
 .cr-tutor-body {
     display: flex;
     flex-direction: column;

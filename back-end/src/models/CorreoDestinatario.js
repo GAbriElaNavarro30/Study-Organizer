@@ -1,4 +1,4 @@
-// ====================== MÓDULO CORREO DESTINATARIO =========================
+// ====================== MÓDULO NOTAS =========================
 import { db } from "../config/db.js";
 
 export class CorreoDestinatario {

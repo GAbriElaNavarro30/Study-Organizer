@@ -50,27 +50,27 @@ export const enviarMensaje = async (req, res) => {
             to: process.env.MAIL_USER,
             subject: `Nuevo mensaje de contacto - ${nombre.trim()}`,
             html: `
-<!DOCTYPE html><html><head><meta charset="UTF-8"></head>
-<body style="font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5;">
-    <div style="max-width:600px;margin:0 auto;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
-        <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:24px;text-align:center;">
-            <h1 style="color:white;margin:0;font-size:20px;">📬 Nuevo mensaje de contacto</h1>
-        </div>
-        <div style="padding:24px;">
-            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Nombre:</p>
-            <p style="margin:0 0 16px;font-size:15px;font-weight:600;color:#111827;">${nombre.trim()}</p>
-            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Correo:</p>
-            <p style="margin:0 0 16px;font-size:15px;color:#2563eb;">${correo.trim()}</p>
-            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Mensaje:</p>
-            <div style="background:#f9fafb;border-left:4px solid #2563eb;padding:14px 16px;border-radius:0 8px 8px 0;font-size:14px;color:#374151;line-height:1.7;">
-                ${mensaje.trim().replace(/\n/g, "<br>")}
-            </div>
-        </div>
-        <div style="padding:16px 24px;background:#f9fafb;text-align:center;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;">
-            Study Organizer — Formulario de contacto
-        </div>
-    </div>
-</body></html>`,
+                <!DOCTYPE html><html><head><meta charset="UTF-8"></head>
+                <body style="font-family:Arial,sans-serif;margin:0;padding:20px;background:#f5f5f5;">
+                    <div style="max-width:600px;margin:0 auto;background:white;border-radius:10px;overflow:hidden;box-shadow:0 2px 10px rgba(0,0,0,.1);">
+                        <div style="background:linear-gradient(135deg,#1e3a5f,#2563eb);padding:24px;text-align:center;">
+                            <h1 style="color:white;margin:0;font-size:20px;">📬 Nuevo mensaje de contacto</h1>
+                        </div>
+                        <div style="padding:24px;">
+                            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Nombre:</p>
+                            <p style="margin:0 0 16px;font-size:15px;font-weight:600;color:#111827;">${nombre.trim()}</p>
+                            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Correo:</p>
+                            <p style="margin:0 0 16px;font-size:15px;color:#2563eb;">${correo.trim()}</p>
+                            <p style="margin:0 0 8px;font-size:14px;color:#6b7280;">Mensaje:</p>
+                            <div style="background:#f9fafb;border-left:4px solid #2563eb;padding:14px 16px;border-radius:0 8px 8px 0;font-size:14px;color:#374151;line-height:1.7;">
+                                ${mensaje.trim().replace(/\n/g, "<br>")}
+                            </div>
+                        </div>
+                        <div style="padding:16px 24px;background:#f9fafb;text-align:center;font-size:12px;color:#9ca3af;border-top:1px solid #e5e7eb;">
+                            Study Organizer — Formulario de contacto
+                        </div>
+                    </div>
+                </body></html>`,
         });
 
         res.json({ mensaje: "Mensaje enviado correctamente" });

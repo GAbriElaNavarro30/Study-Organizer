@@ -1,4 +1,3 @@
-// src/hooks/useCursosE.js
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
@@ -26,13 +25,7 @@ export function useCursosE() {
         cargarDatos();
     }, []);
 
-    /* ── Helper: concatena nombre + apellido sin importar cuántos campos vengan ──
-       Cubre 3 casos:
-         1. El backend ya manda el nombre completo en nombre_tutor (apellido_tutor undefined)
-         2. El backend manda nombre y apellido separados
-         3. El apellido ya está incluido dentro de nombre_tutor (evita duplicarlo)
-    ── */
-    // useCursosE.js — reemplaza normalizarTutor
+    // concatena nombre + apellido sin importar cuántos campos vengan
     const normalizarTutor = (c) => {
         const nombre = (c.nombre_tutor || "").trim();
         const apellido = (c.apellido_tutor || "").trim();
@@ -44,11 +37,10 @@ export function useCursosE() {
             return `${nombre} ${apellido}`.trim();
         }
 
-        // nombre ya viene completo (ej: "Juan García" de CONCAT_WS)
         return nombre;
     };
 
-    /* ── Helper: calcula porcentaje y normaliza un curso inscrito ── */
+    /* ── calcula porcentaje y normaliza un curso inscrito ── */
     const normalizarCurso = (c) => {
         const vistos = c.contenidos_vistos ?? 0;
         const total = c.total_contenidos ?? 0;
@@ -83,9 +75,6 @@ export function useCursosE() {
                 prioridad: c.perfil_vark === perfil ? 0 : 1,
             }));
 
-            console.log("RAW cursos_recomendados:", perfilData.cursos_recomendados?.slice(0, 2));
-            console.log("DESPUÉS de normalizarTutor:", cursosVark.slice(0, 2).map(c => c.nombre_tutor));
-
             let cursosDimension = [];
             try {
                 const { data: historialData } = await api.get("/metodosestudio/historial");
@@ -107,15 +96,9 @@ export function useCursosE() {
                 console.info("Sin historial de métodos de estudio:", e?.response?.status);
             }
 
+            // Combina cursos VARK y cursos por dimensión de métodos de estudio, sin duplicados
             setCursos([...cursosVark, ...cursosDimension]);
 
-            console.log("perfilData completo:", perfilData);
-            console.log("cursosDimension:", cursosDimension);
-            console.log("cursos final:", [...cursosVark, ...cursosDimension]);
-
-            console.log("curso RAW de dimensión:", cursosDimension[0]);
-
-            // ── DEBUG: ver exactamente qué manda el backend para mis-cursos ──
             const rawCursos = misData.cursos || [];
             if (rawCursos.length > 0) {
 
@@ -221,8 +204,6 @@ export function useCursosE() {
     const irADetalle = (id_curso) => {
         navigate("/cursos-detalle", { state: { id_curso } });
     };
-
-
 
     return {
         cursos,

@@ -1,4 +1,4 @@
-// metodos estudio
+// Módulo de Métodos estudio
 import { db } from "../config/db.js";
 
 export class PreguntaME {

@@ -7,7 +7,6 @@ export function MenuExt() {
 
     return (
         <nav className="menu-exterior">
-            {/* HAMBURGUESA */}
             <button
                 className={`hamburger ${open ? "open" : ""}`}
                 onClick={() => setOpen(!open)}
@@ -18,7 +17,6 @@ export function MenuExt() {
                 <span></span>
             </button>
 
-            {/* ITEMS */}
             <div className={`menu-items ${open ? "show" : ""}`}>
                 <NavLink to="/" onClick={() => setOpen(false)} className={({ isActive }) => isActive ? "menu-item active" : "menu-item"}>
                     Inicio

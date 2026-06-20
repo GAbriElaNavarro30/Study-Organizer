@@ -1,4 +1,3 @@
-// src/hooks/useHistorialResultadoEstudianteCurso.js
 import { useState, useEffect } from "react";
 import { useNavigate, useLocation } from "react-router-dom";
 import api from "../services/api";
@@ -21,6 +20,7 @@ export function useHistorialResultadoEstudianteCurso() {
         (async () => {
             try {
                 let url;
+                // Si hay idUsuario es tutor viendo al estudiante; si no, es el propio estudiante
                 if (state.idUsuario) {
                     url = `/cursos/cursos/${state.idCurso}/estudiantes/${state.idUsuario}/historial`;
                 } else {

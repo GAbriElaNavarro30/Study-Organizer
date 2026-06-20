@@ -1,7 +1,6 @@
-// ejecutar bot de telegram con: node src/bot/telegram-bot.js
 import { config } from "dotenv";
-config(); // carga el .env
- 
+config();
+
 process.on("unhandledRejection", (err) => {
     console.error("Unhandled Rejection:", err);
 });
@@ -45,8 +44,6 @@ async function sendMessage(chatId, text) {
         }),
     });
 }
-
-console.log("Bot de telegram iniciado, esperando mensajes...");
 
 async function loop() {
     try {

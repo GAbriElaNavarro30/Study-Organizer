@@ -1,13 +1,7 @@
-# routers/frases.py
-
 from fastapi import APIRouter, HTTPException
 from pydantic import BaseModel, Field, field_validator
 
 router = APIRouter(prefix="/frases", tags=["Frases Emocionales"])
-
-# ─────────────────────────────────────────────────────────────
-# Esquemas
-# ─────────────────────────────────────────────────────────────
 
 CLASIFICACIONES_VALIDAS = {"positiva", "neutra", "negativa"}
 NIVELES_VALIDOS         = {"bajo", "medio", "alto", "critico"}
@@ -38,10 +32,6 @@ class FraseOutput(BaseModel):
     frase: str
     tipo:  str
 
-
-# ─────────────────────────────────────────────────────────────
-# Endpoint
-# ─────────────────────────────────────────────────────────────
 
 @router.post("/obtener", response_model=FraseOutput)
 def obtener_frase_emocional(data: FraseInput):

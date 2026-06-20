@@ -1,4 +1,3 @@
-// src/pages/HistorialResultadoCurso.jsx
 import {
     IoArrowBackOutline, IoPersonOutline,
     IoBarChartOutline, IoTimeOutline,

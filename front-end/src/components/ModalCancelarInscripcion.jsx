@@ -1,4 +1,3 @@
-// src/components/ModalCancelarInscripcion.jsx
 import { createPortal } from "react-dom";
 import {
     IoWarningOutline,
@@ -26,7 +25,7 @@ export function ModalCancelarInscripcion({ abierto, curso, onConfirmar, onCerrar
         >
             <div className="mci-dialog" ref={dialogRef}>
 
-                {/* Botón cerrar ─── esquina */}
+                {/* Botón cerrar */}
                 <button className="mci-close" onClick={onCerrar} aria-label="Cerrar">
                     <IoCloseOutline size={18} />
                 </button>

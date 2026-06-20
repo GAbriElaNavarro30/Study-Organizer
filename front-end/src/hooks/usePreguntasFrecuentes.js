@@ -59,7 +59,7 @@ const CATEGORIAS = [
             {
                 id: "c5",
                 pregunta: "¿Puedo eliminar mi cuenta?",
-                respuesta: "c5_jsx", // renderizado especial en PreguntasFrecuentes.jsx
+                respuesta: "c5_jsx", // renderizado especial
                 jsx: true,
             },
         ],
@@ -245,7 +245,7 @@ const CATEGORIAS = [
             {
                 id: "s1",
                 pregunta: "¿Cómo puedo reportar un problema técnico?",
-                respuesta: "s1_jsx", // renderizado especial en PreguntasFrecuentes.jsx
+                respuesta: "s1_jsx", // renderizado especial
                 jsx: true,
             },
             {
@@ -257,7 +257,7 @@ const CATEGORIAS = [
             {
                 id: "s3",
                 pregunta: "¿Tienen redes sociales donde pueda hacer preguntas?",
-                respuesta: "s3_jsx", // renderizado especial en PreguntasFrecuentes.jsx
+                respuesta: "s3_jsx", // renderizado especial
                 jsx: true,
             },
         ],

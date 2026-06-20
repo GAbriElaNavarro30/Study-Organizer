@@ -1,5 +1,5 @@
 import "../styles/editor-nota.css";
-import {
+import { 
     ArrowLeft, Save, Bold, Italic, Underline,
     AlignLeft, AlignCenter, AlignRight, AlignJustify,
     List, ListOrdered, Mic, PaintBucket, Palette, Highlighter, Eraser,
@@ -261,4 +261,4 @@ export function EditorNota() {
             )}
         </main>
     );
-} 
+}  

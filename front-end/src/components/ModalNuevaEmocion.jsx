@@ -6,6 +6,7 @@ import {
 import { useModalNuevaEmocion } from "../hooks/useModalNuevaEmocion";
 import "../styles/ModalNuevaEmocion.css";
 
+// Configuración visual de cada clasificación de emoción
 const CLASIFS = [
     { value: "positiva", label: "Positiva", color: "#22c55e", bg: "#f0fdf4", border: "#bbf7d0" },
     { value: "neutra",   label: "Neutra",   color: "#64748b", bg: "#f8fafc", border: "#cbd5e1" },

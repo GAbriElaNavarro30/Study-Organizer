@@ -1,12 +1,8 @@
-// src/hooks/useCursosT.js
 import { useState, useMemo, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api";
 import { limpiarBorrador } from "./useEditorCurso";
 
-/* ─────────────────────────────────────────────────────────
-   CONSTANTES
-───────────────────────────────────────────────────────── */
 export const VARK_COLORS = {
     V: { bg: "#DBEAFE", text: "#1E40AF", label: "Visual" },
     A: { bg: "#FEF9C3", text: "#854D0E", label: "Auditivo" },
@@ -46,9 +42,6 @@ export const PLACEHOLDER_PALETTES = [
 // Fuente de verdad única para todos los perfiles VARK
 const TODOS_PERFILES_VARK = Object.keys(VARK_COLORS);
 
-/* ─────────────────────────────────────────────────────────
-   HELPERS
-───────────────────────────────────────────────────────── */
 export const fmtDate = (iso) => {
     if (!iso) return "—";
     return new Date(iso).toLocaleDateString("es-MX", {
@@ -61,9 +54,6 @@ export const getPlaceholderPalette = (titulo = "") => {
     return PLACEHOLDER_PALETTES[idx];
 };
 
-/* ─────────────────────────────────────────────────────────
-   HOOK
-───────────────────────────────────────────────────────── */
 export function useCursosT() {
     const navigate = useNavigate();
 
@@ -85,7 +75,6 @@ export function useCursosT() {
 
     const cerrarAlert = () => setAlert(null);
 
-    /* ── Fetch ──────────────────────────────────────────── */
     const fetchCursos = async () => {
         try {
             setCargando(true);
@@ -130,6 +119,7 @@ export function useCursosT() {
     /* ── Datos derivados ────────────────────────────────── */
     const varkDisponibles = TODOS_PERFILES_VARK;
 
+    // Si el endpoint de dimensiones falla, se derivan de los cursos cargados
     const dimensionesDisponibles = useMemo(() => {
         if (todasLasDimensiones.length > 0) {
             return todasLasDimensiones.map((d) => d.nombre_dimension).sort();
@@ -143,8 +133,6 @@ export function useCursosT() {
         return cursos.filter((c) => {
             const okBusqueda =
                 c.titulo.toLowerCase().includes(q)
-                //|| c.descripcion?.toLowerCase().includes(q)
-                //|| c.perfil_vark?.toLowerCase().includes(q)
                 ;
 
             const okEstado =

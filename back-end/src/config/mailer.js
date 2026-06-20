@@ -8,10 +8,8 @@ export const transporter = nodemailer.createTransport({
   },
 });
 
-transporter.verify((error, success) => {
+transporter.verify((error) => {
   if (error) {
     console.error("Error al configurar el mailer:", error);
-  } else {
-    //console.log("Mailer listo para enviar correos");
   }
 });

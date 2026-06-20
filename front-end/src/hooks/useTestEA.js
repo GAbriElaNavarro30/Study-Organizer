@@ -1,4 +1,3 @@
-// src/hooks/useTestEA.js
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js"; // axios 
@@ -248,7 +247,7 @@ export function useTestEA() {
                 }));
             });
 
-            // 1. Guardar respuestas en BDredponder
+            // 1. Guardar respuestas en BD
             const { data: saveData } = await api.post(
                 "/estilosaprendizaje/responder",
                 { respuestas: respuestasArray }

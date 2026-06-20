@@ -1,3 +1,4 @@
+// ============================ Módulo de Estilos de Aprendizaje =============================
 import { db } from "../config/db.js";
 
 export class ResultadoTestEA {
@@ -9,15 +10,14 @@ export class ResultadoTestEA {
         perfil_dominante,
         id_intento,
     }) {
-        this.puntaje_v        = puntaje_v;
-        this.puntaje_a        = puntaje_a;
-        this.puntaje_r        = puntaje_r;
-        this.puntaje_k        = puntaje_k;
+        this.puntaje_v = puntaje_v;
+        this.puntaje_a = puntaje_a;
+        this.puntaje_r = puntaje_r;
+        this.puntaje_k = puntaje_k;
         this.perfil_dominante = perfil_dominante;
-        this.id_intento       = id_intento;
+        this.id_intento = id_intento;
     }
 
-    // guarda el resultado 1 vez, cuando el usuario termina el test
     async save() {
         const [result] = await db.query(
             `INSERT INTO Resultado_Test_EA
@@ -35,7 +35,6 @@ export class ResultadoTestEA {
         return result;
     }
 
-    // obtiene todos los resultados de todos los usuarios en todos los intentos
     static async getAll() {
         const [rows] = await db.query(
             `SELECT 
@@ -53,7 +52,6 @@ export class ResultadoTestEA {
         return rows;
     }
 
-    // obtiene un resultado en especifico
     static async getById(id_resultado) {
         const [rows] = await db.query(
             `SELECT 
@@ -73,7 +71,6 @@ export class ResultadoTestEA {
         return rows[0];
     }
 
-    // obtiene resultado de un intento en especifico
     static async getByIntento(id_intento) {
         const [rows] = await db.query(
             `SELECT 
@@ -93,7 +90,6 @@ export class ResultadoTestEA {
         return rows[0];
     }
 
-    // obtener el último resultado de un usuario con todos los detalles del intento
     static async getUltimoByUsuario(id_usuario) {
         const [rows] = await db.query(
             `SELECT 
@@ -117,7 +113,6 @@ export class ResultadoTestEA {
         return rows[0];
     }
 
-    // historial completo de resultados de un usuario
     static async getHistorialByUsuario(id_usuario) {
         const [rows] = await db.query(
             `SELECT 

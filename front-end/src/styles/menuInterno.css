@@ -7,7 +7,6 @@
     box-shadow: 0 2px 8px rgba(0, 0, 0, 0.08);
 }
 
-/* ===== ITEMS ===== */
 .menu-items-interno {
     display: flex;
     gap: 54px;
@@ -23,7 +22,7 @@
     transition: color 0.25s ease;
 }
 
-/* Línea inferior animada */
+/* La línea crece desde el centro hacia los lados al hacer hover */
 .menu-item-interno::after {
     content: "";
     position: absolute;

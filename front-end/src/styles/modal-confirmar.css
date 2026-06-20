@@ -58,7 +58,7 @@
 /* ================= BUTTONS ================= */
 .btn-cancelar-volver,
 .btn-confirmar-volver {
-    flex: 1;                /* 🔥 OCUPA TODO EL ANCHO DISPONIBLE */
+    flex: 1;
     padding: 10px 0;
     border-radius: 10px;
     cursor: pointer;
@@ -99,6 +99,6 @@
 
     .btn-confirmar-volver,
     .btn-cancelar-volver {
-        width: 100%; /* extra seguridad */
+        width: 100%;
     }
 }

@@ -6,7 +6,6 @@ import { IoSearchOutline } from "react-icons/io5";
 import { ModalEliminar } from "../components/ModalEliminar";
 import { ModalUsuario } from "../components/ModalUsuario";
 import { CustomAlert } from "../components/CustomAlert";
-import { PdfUsuarios } from "../components/PdfUsuarios";
 
 import logo from "../assets/imagenes/logotipo.png";
 import { useCrudAdmin } from "../hooks/useCrudAdmin";
@@ -50,6 +49,7 @@ export function CrudAdmin() {
 
     // Funciones de alerta
     setMostrarAlert,
+    exportarPdf,
   } = useCrudAdmin();
 
   return (
@@ -63,7 +63,11 @@ export function CrudAdmin() {
               <IoAddCircleOutline /> Nuevo
             </button>
 
-            <button className="btn btn-pdf-admin" onClick={() => PdfUsuarios(usuarios)}>
+            {/*<button className="btn btn-pdf-admin" onClick={() => PdfUsuarios(usuarios)}>
+              <IoDocumentTextOutline /> Exportar PDF
+            </button>*/}
+
+            <button className="btn btn-pdf-admin" onClick={exportarPdf}>
               <IoDocumentTextOutline /> Exportar PDF
             </button>
           </div>
@@ -123,11 +127,11 @@ export function CrudAdmin() {
                     <td>{usuario.genero}</td>
                     <td>
                       {usuario.fecha_nacimiento
-                        ? new Date(usuario.fecha_nacimiento).toLocaleDateString("es-MX", {
-                            day: "2-digit",
-                            month: "2-digit",
-                            year: "numeric",
-                          })
+                        ? new Date(usuario.fecha_nacimiento + "T12:00:00").toLocaleDateString("es-MX", {
+                          day: "2-digit",
+                          month: "2-digit",
+                          year: "numeric",
+                        })
                         : "-"}
                     </td>
                     <td className="acciones-tabla">
@@ -144,7 +148,7 @@ export function CrudAdmin() {
                       >
                         <IoTrashOutline />
                       </button>
-                      
+
                     </td>
                   </tr>
                 ))

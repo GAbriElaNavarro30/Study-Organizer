@@ -1,4 +1,3 @@
-// src/pages/MetodosEstudio/MetodosEstudioResultado.jsx
 import { useState } from "react";
 import {
   IoAnalyticsOutline, IoBulbOutline, IoBarChartOutline,
@@ -83,7 +82,7 @@ function RadarChart({ resultados, primaryColor = "#2B7AB8" }) {
         const lx = cx + labelR * Math.cos(ang);
         const ly = cy + labelR * Math.sin(ang);
 
-        // Anchor según posición horizontal
+        // Anchor según posición horizontal del label en el radar
         const anchor = lx < cx - 10 ? "end" : lx > cx + 10 ? "start" : "middle";
 
         // Partir nombre en dos líneas si es largo

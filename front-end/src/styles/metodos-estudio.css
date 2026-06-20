@@ -1,10 +1,5 @@
-/* ─── metodos-estudio.css ─────────────────────────────────────────────────
-   Paleta crema · blanco cálido · azul cielo suave
-   Prefijo exclusivo: mei-*   (no comparte nombres con mer-*)
-──────────────────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;0,600;1,300;1,400;1,500&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ── Variables exclusivas de esta página ── */
 .mei-app {
   --mei-cream: #F9F5EF;
   --mei-cream-mid: #F2EDE4;
@@ -55,6 +50,7 @@
   box-sizing: border-box;
 }
 
+/* Textura de puntos decorativa que no interfiere con el contenido */
 .mei-header::before {
   content: '';
   position: absolute;
@@ -64,6 +60,7 @@
   pointer-events: none;
 }
 
+/* Línea de acento azul degradada en el borde inferior del header */
 .mei-header::after {
   content: '';
   position: absolute;
@@ -958,6 +955,7 @@
     display: flex;
   }
 
+  /* En móvil el sidebar se oculta y lo sustituye mei-mobile-nav */
   .mei-sidebar {
     display: none;
   }

@@ -1,7 +1,6 @@
-// src/hooks/useMetodosEstudio.js
 import { useRef, useState, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
- 
+
 const NAV_SECTIONS = [
     { label: "Introducción", id: "mei-intro" },
     { label: "¿Qué se evalúa?", id: "mei-evalua" },

@@ -1,7 +1,6 @@
 import { db } from "../config/db.js";
 import sanitizeHtml from "sanitize-html";
 import nodemailer from "nodemailer";
-import puppeteer from "puppeteer";
 import twilio from "twilio";
 
 /* ====================================================
@@ -39,46 +38,6 @@ const sanitizeOpciones = {
         }
     }
 };
-
-/* ====================================================
----------- Singleton: Navegador compartido ------------
-=====================================================*/
-let browserInstance = null;
-
-export async function getBrowser() {
-    if (!browserInstance || !browserInstance.connected) {
-        browserInstance = await puppeteer.launch({
-            headless: "new",
-            executablePath: process.env.PUPPETEER_EXECUTABLE_PATH || undefined,
-            args: [
-                "--no-sandbox",
-                "--disable-setuid-sandbox",
-                "--disable-dev-shm-usage",
-                "--disable-gpu",
-            ],
-        });
-    }
-    return browserInstance;
-}
-
-/* ====================================================
------------------- Generar PDF Buffer -----------------
-=====================================================*/
-export async function generarPDFBuffer(html) {
-    const browser = await getBrowser();
-    const page = await browser.newPage();
-    try {
-        await page.setContent(html, { waitUntil: "domcontentloaded" });
-        const pdfBuffer = await page.pdf({
-            format: "Letter",
-            printBackground: true,
-            margin: { top: "0", bottom: "0", left: "0", right: "0" },
-        });
-        return Buffer.from(pdfBuffer);
-    } finally {
-        await page.close();
-    }
-}
 
 /* ====================================================
 -------------------- Obtener Notas --------------------
@@ -326,14 +285,14 @@ export async function buscarNotas(req, res) {
 export async function compartirNotaCorreo(req, res) {
     try {
         const { id } = req.params;
-        const { email, html } = req.body;
+        const { email, pdfBase64 } = req.body;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         if (!email || !/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(email))
             return res.status(400).json({ error: "El correo electrónico no es válido" });
 
-        if (!html)
-            return res.status(400).json({ error: "HTML no recibido" });
+        if (!pdfBase64)
+            return res.status(400).json({ error: "PDF no recibido" });
 
         const [resultado] = await db.query(
             `SELECT n.titulo, 
@@ -348,7 +307,7 @@ export async function compartirNotaCorreo(req, res) {
             return res.status(404).json({ error: "Nota no encontrada" });
 
         const { titulo: nombreNota, nombre_usuario: nombreRemite, correo_electronico: correoRemite } = resultado[0];
-        const pdfBuffer = await generarPDFBuffer(html);
+        const pdfBuffer = Buffer.from(pdfBase64, "base64");
 
         const transporter = nodemailer.createTransport({
             service: "gmail",
@@ -387,8 +346,8 @@ export async function compartirNotaCorreo(req, res) {
 
         // Guardar destinatario (sin sobreescribir nombre si ya existe)
         await db.query(
-            `INSERT INTO CorreoDestinatario (id_usuario, correo_electronico)
-             VALUES (?, ?)
+            `INSERT INTO CorreoDestinatario (id_usuario, correo_electronico, nombre)
+             VALUES (?, ?, '')
              ON DUPLICATE KEY UPDATE correo_electronico = VALUES(correo_electronico)`,
             [id_usuario, email.trim().toLowerCase()]
         );
@@ -473,14 +432,14 @@ export async function renombrarDestinatarioCorreo(req, res) {
 export async function compartirNotaTelegram(req, res) {
     try {
         const { id } = req.params;
-        const { chatId, html } = req.body;
+        const { chatId, pdfBase64 } = req.body;
         const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
 
         if (!chatId || chatId.trim() === "")
             return res.status(400).json({ error: "El Chat ID de Telegram es obligatorio" });
 
-        if (!html)
-            return res.status(400).json({ error: "HTML no recibido" });
+        if (!pdfBase64)
+            return res.status(400).json({ error: "PDF no recibido" });
 
         const [resultado] = await db.query(
             `SELECT n.titulo, CONCAT(u.nombre, ' ', u.apellido) AS nombre_usuario
@@ -493,7 +452,7 @@ export async function compartirNotaTelegram(req, res) {
             return res.status(404).json({ error: "Nota no encontrada" });
 
         const { titulo: nombreNota, nombre_usuario: nombreRemite } = resultado[0];
-        const pdfBuffer = await generarPDFBuffer(html);
+        const pdfBuffer = Buffer.from(pdfBase64, "base64");
         const telegramToken = process.env.TELEGRAM_BOT_TOKEN;
 
         // 1. Enviar mensaje de texto
@@ -651,11 +610,6 @@ export async function compartirNotaWhatsApp(req, res) {
             to: `whatsapp:${telefono.trim()}`,
             body: `📝 *${nombreNota}*\n\n${nombreRemite} te compartió esta nota desde Study Organizer.\n\nEncuentra el PDF adjunto 👇`,
             mediaUrl: [uploadResult.secure_url],
-        });
-
-        console.log("Twilio WhatsApp response:", {
-            sid: mensaje.sid, status: mensaje.status, to: mensaje.to,
-            from: mensaje.from, errorCode: mensaje.errorCode, errorMessage: mensaje.errorMessage,
         });
 
         res.json({ mensaje: "Nota compartida exitosamente por WhatsApp" });

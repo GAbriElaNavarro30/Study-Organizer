@@ -1,4 +1,4 @@
-// metodos de estudio
+// Módulo de Métodos de estudio
 import { db } from "../config/db.js";
  
 export class DimensionEvaluar {

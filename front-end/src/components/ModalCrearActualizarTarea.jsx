@@ -4,10 +4,9 @@ import logo from "../assets/imagenes/logotipo.png";
 import { CustomAlert } from "./CustomAlert";
 import { ModalConfirmarCancelar } from "./ModalConfirmarCancelar";
 import { useModalCrearActualizarTarea } from "../hooks/useModalCrearActualizarTarea";
- 
+
 export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
     const {
-        // Estados
         title,
         description,
         fecha,
@@ -16,15 +15,12 @@ export function ModalCrearActualizarTarea({ isOpen, onClose, onSave, task }) {
         alert,
         showCancelModal,
         activo,
-
-        // Listas
         days,
         months,
         years,
         hours,
         minutes,
 
-        // Funciones
         closeAlert,
         handleClose,
         handleConfirmCancel,

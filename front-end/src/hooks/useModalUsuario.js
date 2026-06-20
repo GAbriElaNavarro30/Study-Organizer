@@ -308,8 +308,8 @@ export function useModalUsuario(tipo, usuario, isOpen, limpiarErrorBackend) {
                 return nuevosErrores;
             });
         }
-
-        // limpiar error de rol si esta ecribiendo
+        
+        // limpiar error de rol si está escribiendo
         if (name === "rol") {
             setErrors(prev => {
                 const nuevosErrores = { ...prev };

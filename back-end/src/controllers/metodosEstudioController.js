@@ -1,14 +1,13 @@
-/// src/controllers/metodosEstudioController.js
 import axios from "axios";
 import { PreguntaME } from "../models/PreguntaME.js";
 import { IntentoTest } from "../models/IntentoTest.js";
 import { RespuestaTestMe } from "../models/RespuestaTestMe.js";
 import { ResultadoME } from "../models/ResultadoME.js";
 import { db } from "../config/db.js";
- 
+
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
 
-// ── Helper compartido: calcula nivel y puntaje con truncado ──
+// Helper compartido: calcula nivel y puntaje
 function calcularGlobal(resultados) {
   const puntaje = resultados.reduce((sum, d) => sum + d.puntaje, 0) / resultados.length;
   const truncado = Math.floor(puntaje * 100) / 100;
@@ -21,9 +20,9 @@ function calcularGlobal(resultados) {
   return { puntaje_global: truncado, nivel_global: nivel };
 }
 
-/* ══════════════════════════════════════════════════════
-   Obtener preguntas del test
-══════════════════════════════════════════════════════ */
+/* ======================================================
+                Obtener preguntas del test
+====================================================== */
 export async function obtenerTest(req, res) {
   try {
     const preguntas = await PreguntaME.getAllWithOpciones();
@@ -67,9 +66,9 @@ export async function obtenerTest(req, res) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   Guardar respuestas + llamar al sistema experto
-══════════════════════════════════════════════════════ */
+/* ======================================================
+                    Guardar respuestas
+====================================================== */
 export async function responder(req, res) {
   const conn = await db.getConnection();
   try {
@@ -80,7 +79,6 @@ export async function responder(req, res) {
       return res.status(400).json({ error: "Se requieren exactamente 36 respuestas" });
     }
 
-    // Obtener perfil VARK dominante
     const [varkRows] = await conn.query(`
       SELECT r.perfil_dominante
       FROM Resultado_Test_EA r
@@ -103,7 +101,7 @@ export async function responder(req, res) {
     // Guardar respuestas
     await RespuestaTestMe.saveMany(id_intento, respuestas);
 
-    // Llamar al sistema experto
+    // Llamada al sistema experto
     const { data: analisis } = await axios.post(`${PYTHON_URL}/me/analizar-me`, {
       respuestas: respuestas.map(r => ({
         id_pregunta: r.id_pregunta,
@@ -121,7 +119,7 @@ export async function responder(req, res) {
 
     const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
 
-    // ── Python ya decidió los criterios ──
+    // Python ya decidió los criterios
     const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
@@ -170,9 +168,9 @@ export async function responder(req, res) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   Obtener resultado de un intento específico
-══════════════════════════════════════════════════════ */
+/* ======================================================
+        Obtener resultado de un intento específico
+====================================================== */
 export async function obtenerResultado(req, res) {
   try {
     const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
@@ -210,7 +208,7 @@ export async function obtenerResultado(req, res) {
 
     const { puntaje_global, nivel_global } = calcularGlobal(analisis.resultados_por_dimension);
 
-    // ── Python ya decidió los criterios ──
+    // Python ya decidió los criterios
     const criterios = analisis.criterios_cursos;
     let cursos_recomendados = [];
 
@@ -220,23 +218,23 @@ export async function obtenerResultado(req, res) {
       const dimPlaceholders = criterios.dimensiones.map(() => "?").join(",");
 
       const [cursos] = await db.query(
-        `SELECT
-            c.id_curso, c.titulo, c.descripcion, c.foto,
-            c.perfil_vark, c.fecha_creacion,
-            d.nombre_dimension,
-            CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
-            (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
-            CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
-         FROM Curso c
-         LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
-         LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
-         WHERE c.es_publicado  = 1
-           AND c.archivado     = 0
-           AND c.id_usuario   != ?
-           AND c.perfil_vark   IN (${placeholders})
-           AND c.id_dimension  IN (${dimPlaceholders})
-         ORDER BY prioridad ASC, c.fecha_creacion DESC
-         LIMIT 12`,
+          `SELECT
+              c.id_curso, c.titulo, c.descripcion, c.foto,
+              c.perfil_vark, c.fecha_creacion,
+              d.nombre_dimension,
+              CONCAT_WS(' ', u.nombre, u.apellido) AS nombre_tutor,
+              (SELECT COUNT(*) FROM Seccion_Curso sc WHERE sc.id_curso = c.id_curso) AS total_secciones,
+              CASE WHEN c.perfil_vark = ? THEN 0 ELSE 1 END AS prioridad
+          FROM Curso c
+          LEFT JOIN Dimension_Evaluar d ON c.id_dimension = d.id_dimension
+          LEFT JOIN Usuario u ON c.id_usuario = u.id_usuario
+          WHERE c.es_publicado  = 1
+            AND c.archivado     = 0
+            AND c.id_usuario   != ?
+            AND c.perfil_vark   IN (${placeholders})
+            AND c.id_dimension  IN (${dimPlaceholders})
+          ORDER BY prioridad ASC, c.fecha_creacion DESC
+          LIMIT 12`,
         [criterios.perfil_exacto, id_usuario, ...todosPerfiles, ...criterios.dimensiones]
       );
       cursos_recomendados = cursos;
@@ -256,9 +254,9 @@ export async function obtenerResultado(req, res) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   Obtener historial de intentos del usuario
-══════════════════════════════════════════════════════ */
+/* ======================================================
+        Obtener historial de intentos del usuario
+====================================================== */
 export async function obtenerHistorial(req, res) {
   try {
     const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
@@ -270,9 +268,9 @@ export async function obtenerHistorial(req, res) {
   }
 }
 
-/* ══════════════════════════════════════════════════════
-   Obtener el último resultado del usuario
-══════════════════════════════════════════════════════ */
+/* ======================================================
+          Obtener el último resultado del usuario
+====================================================== */
 export async function obtenerUltimoResultado(req, res) {
   try {
     const id_usuario = req.usuario.id_usuario || req.usuario.id || req.usuario.usuario_id;
@@ -313,4 +311,4 @@ export async function obtenerUltimoResultado(req, res) {
     console.error("Error al obtener último resultado ME:", err);
     res.status(500).json({ error: "Error al obtener último resultado" });
   }
-} 
+}

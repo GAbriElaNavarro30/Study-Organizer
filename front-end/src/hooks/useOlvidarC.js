@@ -98,14 +98,13 @@ export function useOlvidarC() {
         correo_electronico: email.trim().toLowerCase(),
       });
 
-      // ✅ ÉXITO
+      // ÉXITO
       setAlertData({
         type: "success",
         title: "Correo enviado",
         message: response.data.mensaje,
       });
       setMostrarAlert(true);
-      //setEmail(""); // Limpiar campo
 
     } catch (err) {
       const status = err.response?.status;

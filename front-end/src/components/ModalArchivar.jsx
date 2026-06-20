@@ -1,16 +1,6 @@
-// src/components/ModalArchivar.jsx
 import { IoPeopleOutline } from "react-icons/io5";
 import "../styles/ModalArchivar.css";
-  
-/**
- * ModalArchivar
- *
- * Props:
- *  - isOpen      {boolean}  — controla visibilidad
- *  - curso       {object}   — objeto del curso ({ titulo, archivado, total_estudiantes })
- *  - onConfirm   {function} — acción al confirmar
- *  - onClose     {function} — acción al cancelar / cerrar
- */
+
 export function ModalArchivar({ isOpen, curso, onConfirm, onClose }) {
     if (!isOpen || !curso) return null;
 
@@ -23,7 +13,6 @@ export function ModalArchivar({ isOpen, curso, onConfirm, onClose }) {
         >
             <div className="marc-card">
 
-                {/* Acento superior */}
                 <div className={`marc-accent ${esArchivar ? "marc-accent--arch" : "marc-accent--unarch"}`} />
 
                 <div className="marc-inner">
@@ -67,7 +56,6 @@ export function ModalArchivar({ isOpen, curso, onConfirm, onClose }) {
                         }
                     </p>
 
-                    {/* Pills */}
                     <div className="marc-pill-row">
                         {esArchivar ? (
                             <>

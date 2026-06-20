@@ -14,7 +14,7 @@ import {
     LineElement,
     Filler,
 } from "chart.js";
- 
+
 ChartJS.register(ArcElement, Tooltip, Legend, CategoryScale, LinearScale, PointElement, LineElement, Filler);
 
 const MESES_NOMBRES = ["Ene", "Feb", "Mar", "Abr", "May", "Jun", "Jul", "Ago", "Sep", "Oct", "Nov", "Dic"];
@@ -96,6 +96,7 @@ export function Bienvenida() {
     const tutores    = cnt("rol", "Tutor");
     const estudiantes= cnt("rol", "Estudiante");
 
+    // Lógica de eje X: varía según si hay mes, año, o ninguno seleccionado
     const calcularLinea = () => {
         if (mesSeleccionado !== 0) {
             const years = anioSeleccionado === 0 ? aniosDisponibles : [anioSeleccionado];
@@ -130,7 +131,7 @@ export function Bienvenida() {
     };
 
     const donutRolData = {
-        labels: ["Administrador", "Tutor", "Estudiante"],
+        labels: ["Admin", "Tutor", "Estudiante"],
         datasets: [{ data: [admins, tutores, estudiantes], backgroundColor: [COLORES_ROL.Administrador, COLORES_ROL.Tutor, COLORES_ROL.Estudiante], borderWidth: 0, hoverOffset: 0 }],
     };
 
@@ -151,7 +152,6 @@ export function Bienvenida() {
 
     const pct = (n) => (total ? Math.round((n / total) * 100) : 0);
 
-    /* ---- render ---- */
     return (
         <main className="bienvenida-container">
 
@@ -223,7 +223,7 @@ export function Bienvenida() {
                                 {[
                                     { color: COLORES_GENERO.hombre, label: "Hombres",     val: hombres,     p: pct(hombres) },
                                     { color: COLORES_GENERO.mujer,  label: "Mujeres",     val: mujeres,     p: pct(mujeres) },
-                                    { color: COLORES_ROL.Administrador, label: "Admins",  val: admins,      p: pct(admins) },
+                                    { color: COLORES_ROL.Administrador, label: "Administradores",  val: admins,      p: pct(admins) },
                                     { color: COLORES_ROL.Tutor,     label: "Tutores",     val: tutores,     p: pct(tutores) },
                                     { color: COLORES_ROL.Estudiante,label: "Estudiantes", val: estudiantes, p: pct(estudiantes) },
                                 ].map((k) => (
@@ -238,7 +238,7 @@ export function Bienvenida() {
                                 ))}
                             </div>
 
-                            {/* Donas */}
+                            {/* Gráfico de Donas */}
                             <div className="adm-donuts-row">
 
                                 {/* Género */}
@@ -293,7 +293,7 @@ export function Bienvenida() {
                                         </div>
                                         <div className="adm-legend">
                                             {[
-                                                { color: COLORES_ROL.Administrador, label: "Admin",      val: admins },
+                                                { color: COLORES_ROL.Administrador, label: "Administrador",      val: admins },
                                                 { color: COLORES_ROL.Tutor,         label: "Tutor",      val: tutores },
                                                 { color: COLORES_ROL.Estudiante,    label: "Estudiante", val: estudiantes },
                                             ].map((item) => (

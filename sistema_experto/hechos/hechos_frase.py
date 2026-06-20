@@ -1,28 +1,25 @@
-# hechos/hechos_frase.py
-
 from experta import Fact, Field
  
-
-# ─────────────────────────────────────────────────────────────
-# Hechos de entrada
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#                      Hechos de entrada
+# =============================================================
  
 class EstadoEmocional(Fact):
-    clasificacion = Field(str, mandatory=True)   # positiva | neutra | negativa
-    nivel         = Field(str, mandatory=True)   # bajo | medio | alto
+    clasificacion = Field(str, mandatory=True)
+    nivel         = Field(str, mandatory=True)
  
   
-# ─────────────────────────────────────────────────────────────
-# Hechos derivados (declarados por el motor)
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#          Hechos derivados (declarados por el motor)
+# =============================================================
  
 class TipoFrase(Fact):
-    tipo = Field(str, mandatory=True)   # clave del pool en FRASES
+    tipo = Field(str, mandatory=True)
 
 
-# ─────────────────────────────────────────────────────────────
-# Base de conocimiento — pools de frases por tipo
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#               Base de conocimiento estática
+# =============================================================
 
 FRASES: dict[str, list[str]] = {
 

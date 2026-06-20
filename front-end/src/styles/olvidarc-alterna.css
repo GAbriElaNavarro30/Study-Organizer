@@ -1,5 +1,3 @@
-/* ===================================== CORREO ALTERNATIVO ======================================= */
-
 .contenedor-olvidar-alt {
     display: flex;
     justify-content: center;
@@ -299,7 +297,6 @@
         padding: 13px;
     }
 
-    /* Botones en columna en pantallas muy pequeñas */
     .fila-botones-alternativo-alt {
         flex-direction: column;
     }
@@ -386,7 +383,6 @@
     text-decoration: none;
 }
 
-/* ===== Recomendación ===== */
 .recomendacion-alt {
     background-color: #fffbeb;
     border: 1px solid #fde68a;

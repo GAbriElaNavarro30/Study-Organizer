@@ -28,7 +28,8 @@ export function ManualUsuario() {
                             <iframe
                                 src="https://www.youtube.com/embed/v8fSNYIksMs"
                                 title="Video Manual de Usuario"
-                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture"
+                                allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture; web-share"
+                                referrerPolicy="strict-origin-when-cross-origin"
                                 allowFullScreen
                             />
                         </div>
@@ -49,7 +50,6 @@ export function ManualUsuario() {
                         </div>
                     </div>
 
-                    {/* COLUMNA DERECHA: pdf + quote + logo juntos en flex */}
                     <div className="manual-right-col">
 
                         {/* PDF */}

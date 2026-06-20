@@ -3,7 +3,6 @@ import { FaChevronDown } from "react-icons/fa";
 import { usePreguntasFrecuentes } from "../hooks/usePreguntasFrecuentes";
 import { Link } from "react-router-dom";
 
-// ── Respuestas con JSX especial ────────────────────────────────
 const RESPUESTAS_JSX = {
     c5_jsx: (
         <p className="faq-respuesta">
@@ -40,7 +39,7 @@ const RESPUESTAS_JSX = {
     s3_jsx: (
         <p className="faq-respuesta">
             Sí, puedes encontrarnos en{" "}
-            {/* TODO: reemplaza "#" con la URL real de Facebook cuando esté disponible */}
+            {/* Reemplaza "#" con la URL real de Facebook cuando esté disponible */}
             <a
                 href="#"
                 className="faq-respuesta-link"
@@ -50,7 +49,7 @@ const RESPUESTAS_JSX = {
                 Facebook
             </a>
             {" "}e{" "}
-            {/* TODO: reemplaza "#" con la URL real de Instagram cuando esté disponible */}
+            {/* Reemplaza "#" con la URL real de Instagram cuando esté disponible */}
             <a
                 href="#"
                 className="faq-respuesta-link"

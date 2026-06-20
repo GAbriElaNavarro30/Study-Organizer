@@ -1,4 +1,3 @@
-// src/hooks/useEstilosAprendizaje.js
 import { useState, useRef, useEffect } from "react";
 import { useNavigate } from "react-router-dom";
 import { 
@@ -7,8 +6,6 @@ import {
     IoBookOutline,
     IoHandLeftOutline,
 } from "react-icons/io5";
-
-// ─── DATOS ────────────────────────────────────────────────────────────────────
 
 export const VARK_DATA = {
     V: {

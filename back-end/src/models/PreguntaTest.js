@@ -1,4 +1,4 @@
-// src/models/PreguntaTest.js
+// Módulo de Cursos
 import { db } from "../config/db.js";
 
 export class PreguntaTest {

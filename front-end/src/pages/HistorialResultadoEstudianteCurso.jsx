@@ -1,4 +1,3 @@
-// src/pages/HistorialResultadoCurso.jsx
 import {
     IoArrowBackOutline, IoPersonOutline,
     IoBarChartOutline, IoTimeOutline, IoCheckmarkCircleOutline,
@@ -173,6 +172,7 @@ export function HistorialResultadoEstudianteCurso() {
                                 const esMejor = i === mejorIdx;
                                 const esUltimo = i === historial.length - 1;
                                 const totalPreguntas = r.total_preguntas || r.totalPreguntas || null;
+                                // El campo de correctas puede venir con nombres distintos según el origen de los datos
                                 const correctas = r.respuestas_correctas ?? r.correctas ?? null;
 
                                 return (

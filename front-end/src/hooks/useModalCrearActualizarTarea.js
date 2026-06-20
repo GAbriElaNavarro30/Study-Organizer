@@ -1,4 +1,12 @@
 import { useState, useEffect } from "react";
+import dayjs from "dayjs";
+import timezone from "dayjs/plugin/timezone";
+import utc from "dayjs/plugin/utc";
+
+dayjs.extend(utc);
+dayjs.extend(timezone);
+
+const ZONA = "America/Mexico_City";
 
 export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) => {
     // ===== ESTADOS PRINCIPALES =====
@@ -157,13 +165,13 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
         if (!fecha.day || !fecha.month || !fecha.year) {
             newErrors.fecha = "La fecha completa es obligatoria";
         } else {
-            const fechaSeleccionada = new Date(`${fecha.year}-${fecha.month}-${fecha.day}T00:00:00`);
-            const hoy = new Date();
-            hoy.setHours(0, 0, 0, 0);
+            const fechaStr = `${fecha.year}-${fecha.month}-${fecha.day}`;
+            const fechaSeleccionada = dayjs.tz(fechaStr, ZONA).startOf("day");
+            const hoy = dayjs().tz(ZONA).startOf("day");
 
-            if (isNaN(fechaSeleccionada.getTime())) {
+            if (!fechaSeleccionada.isValid()) {
                 newErrors.fecha = "Formato de fecha inválido";
-            } else if (fechaSeleccionada < hoy) {
+            } else if (fechaSeleccionada.isBefore(hoy)) {
                 newErrors.fecha = "La fecha no puede ser anterior a hoy";
             }
         }
@@ -176,12 +184,11 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
             if (hora.period === "PM" && h < 12) h += 12;
             if (hora.period === "AM" && h === 12) h = 0;
 
-            const fechaHoraSeleccionada = new Date(
-                `${fecha.year}-${fecha.month}-${fecha.day}T${String(h).padStart(2, "0")}:${hora.minute}:00`
-            );
-            const ahora = new Date();
+            const fechaHoraStr = `${fecha.year}-${fecha.month}-${fecha.day} ${String(h).padStart(2, "0")}:${hora.minute}:00`;
+            const seleccionada = dayjs.tz(fechaHoraStr, ZONA);
+            const ahora = dayjs().tz(ZONA);
 
-            if (fechaHoraSeleccionada < ahora) {
+            if (seleccionada.isBefore(ahora)) {
                 newErrors.hora = "La fecha y hora no pueden ser anteriores a la actual";
             }
         }
@@ -237,7 +244,6 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
     // ===== EFECTO: CARGAR DATOS AL ABRIR/EDITAR =====
     useEffect(() => {
         if (task) {
-            // MODO EDICIÓN
             const taskTitle = task.title || "";
             const taskDescription = task.description || "";
 
@@ -303,7 +309,7 @@ export const useModalCrearActualizarTarea = ({ isOpen, onClose, onSave, task }) 
         } else {
             // MODO CREAR
             setTitle("");
-            setActivo(true); 
+            setActivo(true);
             setDescription("");
             setFecha({ day: "", month: "", year: "" });
             setHora({ hour: "", minute: "", period: "AM" });

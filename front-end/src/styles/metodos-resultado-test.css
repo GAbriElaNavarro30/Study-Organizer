@@ -1,10 +1,5 @@
-/* ─── metodos-resultado-test.css ───────────────────────────────────────────
-   Paleta: azules claros · blanco cálido · crema · beige
-   Prefijo exclusivo: mer-*   (no comparte nombres con mei-* ni met-*)
-─────────────────────────────────────────────────────────────────────────── */
 @import url('https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,600;1,300;1,400&family=DM+Sans:wght@300;400;500;600&display=swap');
 
-/* ── Variables exclusivas de esta página ── */
 .mer-app,
 .mer-loading {
   --mer-sky: #C8DCF0;
@@ -131,6 +126,7 @@
   overflow: hidden;
 }
 
+/* Línea de acento azul degradada en el borde inferior del header */
 .mer-header::after {
   content: '';
   position: absolute;
@@ -141,6 +137,7 @@
   background: linear-gradient(90deg, var(--mer-sky-mid), var(--mer-sky), transparent 80%);
 }
 
+/* Textura de puntos decorativa que no interfiere con el contenido */
 .mer-header::before {
   content: '';
   position: absolute;
@@ -408,7 +405,6 @@
   color: var(--mer-warn);
 }
 
-/* Chip colorizado según nivel (reemplaza style={{ color: nivelColor() }}) */
 .mer-chip--nivel-excelente {
   color: #1A6E3C;
 }
@@ -546,7 +542,6 @@
   justify-content: center;
 }
 
-/* Color del borde del score ring según nivel (reemplaza style={{ borderColor: nivelColor() }}) */
 .mer-score-ring--excelente {
   border-color: #1A6E3C;
 }
@@ -700,6 +695,7 @@
   margin-bottom: 3px;
 }
 
+/* Easing pronunciado para que la barra "rebote" al cargar el resultado */
 .mer-barra-fill {
   height: 100%;
   border-radius: 999px;
@@ -712,13 +708,12 @@
   font-weight: 500;
 }
 
-/* ── ÍCONO ÉXITO (sin mejoras) ── */
+/* ── ÍCONO ÉXITO ── */
 .mer-success-icon {
   color: #1A6E3C;
   margin-bottom: 12px;
 }
 
-/* ── POSIBLES MEJORAS ── */
 .mer-errores-grid {
   display: grid;
   grid-template-columns: repeat(auto-fill, minmax(260px, 1fr));
@@ -1099,6 +1094,7 @@
     display: none;
   }
 
+  /* En móvil el sidebar desaparece; la navegación pasa a ser por scroll de sección */
   .mer-sidebar {
     display: none;
   }

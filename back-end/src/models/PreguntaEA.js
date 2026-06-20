@@ -1,9 +1,8 @@
-// estilos de aprendizaje - preguntas
+// Módulo de Estilos de Aprendizaje
 import { db } from "../config/db.js";
 
 export class PreguntaEA {
 
-    // todas
     static async getAll() {
         const [rows] = await db.query(
             `SELECT * FROM Pregunta_EA`
@@ -11,7 +10,6 @@ export class PreguntaEA {
         return rows;
     }
 
-    // una pregunta especifica
     static async getById(id_pregunta) {
         const [rows] = await db.query(
             `SELECT * FROM Pregunta_EA WHERE id_pregunta = ?`,
@@ -20,7 +18,6 @@ export class PreguntaEA {
         return rows[0];
     }
  
-    // una sola pregunta con todas sus opciones VARK
     static async getWithOpciones(id_pregunta) {
         const [rows] = await db.query(
             `SELECT 
@@ -37,7 +34,6 @@ export class PreguntaEA {
         return rows;
     }
  
-    // cuestionario completo = todas las preguntas con sus opciones, para mostrar el test completo
     static async getAllWithOpciones() {
         const [rows] = await db.query(
             `SELECT 

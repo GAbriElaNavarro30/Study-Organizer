@@ -1,10 +1,8 @@
-# hechos/hechos_curso.py
-
 from experta import Fact, Field
 
-# ─────────────────────────────────────────────────────────────
-# Hechos de entrada
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#                       Hechos de entrada
+# =============================================================
 
 class ResultadoExamen(Fact):
     """
@@ -14,9 +12,9 @@ class ResultadoExamen(Fact):
     porcentaje = Field(float, mandatory=True)
 
 
-# ─────────────────────────────────────────────────────────────
-# Hechos derivados (declarados por el motor)
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#           Hechos derivados (declarados por el motor)
+# =============================================================
 
 class NivelDesempeno(Fact):
     """
@@ -36,9 +34,9 @@ class Retroalimentacion(Fact):
     texto = Field(str, mandatory=True)
 
 
-# ─────────────────────────────────────────────────────────────
-# Base de conocimiento estática
-# ─────────────────────────────────────────────────────────────
+# =============================================================
+#                  Base de conocimiento estática
+# =============================================================
 
 NIVELES = {
     "excelente":  "Excelente",

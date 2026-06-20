@@ -171,7 +171,7 @@ function GaugeKPI({ total, meta, filtroClasif }) {
             svg.appendChild(metaTxt);
         }
 
-        // Primero la aguja
+        // Primero la aguja, luego el número para que quede encima visualmente
         const agujaFin = polarToXY(anguloActual, R - 8);
         const agujaBase1 = polarToXY(anguloActual + 90, 6);
         const agujaBase2 = polarToXY(anguloActual - 90, 6);
@@ -250,6 +250,7 @@ function DonaEmociones({ historial }) {
     const [filtroNivel, setFiltroNivel] = useState("");
     const [filtroClasif, setFiltroClasif] = useState("");
 
+    // La meta persiste en localStorage entre sesiones
     const META_KEY = "dona_meta";
     const [metaInput, setMetaInput] = useState("");
     const [metaGuardada, setMetaGuardada] = useState(null);
@@ -806,9 +807,6 @@ export function Dashboard() {
                 <VistaSemanal historial={historial} />
             </section>
 
-            {/* ── KPI DONA ── */}
-            <DonaEmociones historial={historial} />
-
             {/* ── ALERTAS DE ESPECIALISTA ── */}
             {alertasEspecialista.length > 0 && (
                 <section className="card alertas-card">
@@ -846,6 +844,9 @@ export function Dashboard() {
                     </div>
                 </section>
             )}
+
+            {/* ── KPI DONA ── */}
+            <DonaEmociones historial={historial} />
 
             {/* ── RESULTADOS DE TESTS ── */}
             <section className="card">

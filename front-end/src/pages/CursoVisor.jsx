@@ -13,7 +13,6 @@ import { useCursoVisor } from "../hooks/useCursoVisor.js";
 import { ModalConfirmarSalirCurso } from "../components/ModalConfirmarSalirCurso.jsx";
 import { ModalCursoCompletado } from "../components/ModalCursoCompletado.jsx";
 
-/* ── Loading ── */
 function LoadingState() {
     return (
         <div className="cv-loading-root">
@@ -161,6 +160,7 @@ export function CursoVisor() {
 
     const completado = progreso.completado;
 
+    // Solo muestra el modal de completado una vez, aunque el progreso cambie varias veces
     useEffect(() => {
         if (completado && !soloLectura && !completadoPrevio.current) {
             completadoPrevio.current = true;

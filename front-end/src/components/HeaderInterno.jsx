@@ -17,8 +17,6 @@ export function HeaderInterno() {
 
     const { usuario, logout } = useContext(AuthContext);
 
-
-    /* Cerrar menú al hacer click fuera */
     useEffect(() => {
         const handleClickOutside = (e) => {
             if (menuRef.current && !menuRef.current.contains(e.target)) {
@@ -30,13 +28,11 @@ export function HeaderInterno() {
         return () => document.removeEventListener("mousedown", handleClickOutside);
     }, []);
 
-    /* Navegar y cerrar menú */
     const handleNavigate = (ruta) => {
         setMenuAbierto(false);
         navigate(ruta);
     };
 
-    /* Confirmar cierre de sesión */
     const handleConfirmLogout = async () => {
         setOpenLogout(false);
         setMenuAbierto(false);
@@ -96,7 +92,6 @@ export function HeaderInterno() {
                 )}
             </div>
 
-            {/* MODAL CERRAR SESIÓN */}
             <ModalCerrarSesion
                 isOpen={openLogout}
                 onClose={() => setOpenLogout(false)}
@@ -105,4 +100,3 @@ export function HeaderInterno() {
         </div>
     );
 }
-

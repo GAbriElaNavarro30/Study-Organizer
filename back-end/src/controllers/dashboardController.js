@@ -1,4 +1,3 @@
-// ============================== DASHBOARD CONTROLLER ==============================
 import axios from "axios";
 import { db } from "../config/db.js";
 import { Emocion } from "../models/Emocion.js";
@@ -6,7 +5,7 @@ import { RegistroEmocion } from "../models/RegistroEmocion.js";
 import { AlertaEspecialista } from "../models/AlertaEspecialista.js";
 
 const PYTHON_URL = process.env.PYTHON_URL || "http://localhost:8000";
- 
+
 function normalizarTexto(texto) {
     return texto
         .toLowerCase()
@@ -28,12 +27,39 @@ function sufijosEmociones(texto) {
         .replace(/o$/, "");
 }
 
-function getFechaHoy() {
+/*function getFechaHoy() {
     return new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" });
 }
 
 function getFechaHoraActual() {
     return new Date().toLocaleString("sv-SE", { timeZone: "America/Mexico_City" });
+}*/
+
+function getFechaHoy() {
+    const ahora = new Date();
+    const mes = ahora.getUTCMonth() + 1;
+    const esVerano = mes >= 4 && mes <= 10;
+    const offsetMs = (esVerano ? 5 : 6) * 60 * 60 * 1000;
+    const mexicoDate = new Date(ahora.getTime() - offsetMs);
+    const y = mexicoDate.getUTCFullYear();
+    const m = String(mexicoDate.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(mexicoDate.getUTCDate()).padStart(2, "0");
+    return `${y}-${m}-${d}`;
+}
+
+function getFechaHoraActual() {
+    const ahora = new Date();
+    const mes = ahora.getUTCMonth() + 1;
+    const esVerano = mes >= 4 && mes <= 10;
+    const offsetMs = (esVerano ? 5 : 6) * 60 * 60 * 1000;
+    const mexicoDate = new Date(ahora.getTime() - offsetMs);
+    const y = mexicoDate.getUTCFullYear();
+    const mo = String(mexicoDate.getUTCMonth() + 1).padStart(2, "0");
+    const d = String(mexicoDate.getUTCDate()).padStart(2, "0");
+    const h = String(mexicoDate.getUTCHours()).padStart(2, "0");
+    const mi = String(mexicoDate.getUTCMinutes()).padStart(2, "0");
+    const s = String(mexicoDate.getUTCSeconds()).padStart(2, "0");
+    return `${y}-${mo}-${d} ${h}:${mi}:${s}`;
 }
 
 // ================ obtener todas las emociones existentes =================
@@ -106,7 +132,7 @@ export const crearEmocion = async (req, res) => {
     }
 };
 
-// ===================== verificar si ya registró hoy =======================
+// ===================== verificar si ya registró emoción hoy =======================
 export const verificarRegistroHoy = async (req, res) => {
     try {
         const id_usuario = req.usuario.id;
@@ -170,7 +196,7 @@ export const registrarEmocionDia = async (req, res) => {
 
         const emocion = emocionExiste[0];
 
-        // ── Consultar sistema experto para obtener frase ──
+        // Consultar sistema experto para obtener frase
         let frase_dia = null;
         try {
             const respuesta = await axios.post(`${PYTHON_URL}/frases/obtener`, {
@@ -182,7 +208,7 @@ export const registrarEmocionDia = async (req, res) => {
             console.warn("Sistema experto no disponible, se omite la frase:", errorPython.message);
         }
 
-        // ── Guardar registro con la frase ──
+        // Guardar registro con la frase
         const registro = new RegistroEmocion({
             nivel,
             fecha_registro: getFechaHoraActual(),
@@ -193,8 +219,7 @@ export const registrarEmocionDia = async (req, res) => {
 
         await registro.save();
 
-        // ── Verificar racha de 14 días consecutivos de emoción negativa alta ──
-        // ── Verificar racha de 14 días consecutivos de emoción negativa crítica ──
+        // ── Verificar racha de 14 días consecutivos de emoción negativa crítica
         let mostrar_alerta_especialista = false;
         try {
             const [ultimos14] = await db.query(`
@@ -206,7 +231,6 @@ export const registrarEmocionDia = async (req, res) => {
         LIMIT 14
     `, [id_usuario]);
 
-            // Por esto:
             if (ultimos14.length >= 14) {
                 const esRachaCritica = ultimos14.every(
                     r => r.categoria === "negativa" && r.nivel === "critico"

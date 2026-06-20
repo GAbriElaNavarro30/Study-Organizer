@@ -51,21 +51,21 @@ const router = Router();
 
 router.use(verificarToken);
 
-// ─── Catálogo ──────────────────────────────────────────────
+// =============== Catálogo ==================
 router.get("/dimensiones", listarDimensiones);
 
-// ─── Detalle estudiante (ANTES de /cursos/:id) ─────────────
+// ============= Detalle estudiante ==============
 router.get("/detalle", obtenerCursoEstudiante);
 
-// ─── Progreso e Intentos ───────────────────────────────────
+// ================= Progreso e Intentos ====================
 router.post("/intentos", iniciarIntento);
 router.post("/progreso/:id_contenido", marcarContenidoVisto);
 router.post("/test/respuestas", guardarRespuestasTest);
 
-// ─── Cursos ────────────────────────────────────────────────
+// ============================ Cursos ==============================
 router.get("/cursos", listarCursos);
 router.get("/recomendados/por-dimension", listarCursosPorDimension);
-router.get("/respuestas-intento", obtenerRespuestasIntento); // ← ANTES de /:id
+router.get("/respuestas-intento", obtenerRespuestasIntento);
 router.get("/cursos/:id", obtenerCurso);
 router.post("/cursos", upload.single("foto"), crearCurso);
 router.get("/cursos/:id/estudiantes", listarEstudiantesCurso);
@@ -75,23 +75,23 @@ router.patch("/cursos/:id/publicar", togglePublicarCurso);
 router.patch("/cursos/:id/archivar", archivarCurso);
 router.delete("/cursos/:id", eliminarCurso);
 
-// ─── Secciones ─────────────────────────────────────────────
+// ======================== Secciones ===========================
 router.post("/cursos/:id/secciones", crearSeccion);
 router.put("/secciones/:id", actualizarSeccion);
 router.delete("/secciones/:id", eliminarSeccion);
 
-// ─── Contenido ─────────────────────────────────────────────
+// ============================== Contenido ==================================
 router.post("/secciones/:id/contenidos", upload.single("imagen"), crearContenido);
 router.put("/contenidos/:id", upload.single("imagen"), actualizarContenido);
 router.delete("/contenidos/:id", eliminarContenido);
 router.delete("/secciones/:id/cuestionario", eliminarCuestionarioSeccion);
 
-// ─── Test ──────────────────────────────────────────────────
+// ======================= Test ==========================
 router.post("/secciones/:id/preguntas", crearPregunta);
 router.put("/preguntas/:id", actualizarPregunta);
 router.delete("/preguntas/:id", eliminarPregunta);
 
-// ─── Inscripciones ─────────────────────────────────────────
+// ================== Inscripciones ====================
 router.get("/inscripciones/mis-cursos", misCursos);
 router.post("/inscripciones", inscribirseACurso);
 router.delete("/inscripciones", cancelarInscripcion);
@@ -104,12 +104,12 @@ router.get("/cursos/:id/resultados", listarResultadosCurso);
 router.get("/cursos/:id/estudiantes/:id_usuario/historial", historialResultadosEstudiante);
 router.get("/intentos/:id_intento/resultado", obtenerResultadoIntento);
 
-// ─── Dashboard tutor ───────────────────────────────────────
+// ======================= Dashboard tutor =========================
 router.get("/estadisticas-tutor/niveles", nivelesPorCurso);
 router.get("/estadisticas-tutor", estadisticasTutor);
 router.get("/estadisticas-tutor/inscripciones", inscripcionesFiltradas);
 
-// ─── Dashboard estudiante ──────────────────────────────────
+// ====================== Dashboard estudiante ==========================
 router.get("/inscripciones/mis-cursos-resultados", misCursosConResultados);
 
 export default router;  

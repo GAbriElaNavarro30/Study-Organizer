@@ -6,7 +6,7 @@
     background-color: #e4eaf3;
 }
 
-/* columnas base */
+/* columnas base — las tres secciones ocupan el mismo ancho para centrar el eslogan */
 .logotipo-interno,
 .eslogan-interno,
 .info-usuario {
@@ -337,12 +337,6 @@
     }
 
     .eslogan-interno {
-        /*width: 100%;
-        order: 3;
-        font-size: 0.7rem;
-        margin-top: 6px;
-        white-space: normal;
-        text-align: center;*/
         display: none !important;
     }
 

@@ -1,4 +1,3 @@
-// src/pages/EditorCurso.jsx
 import { useState, useEffect, useRef, useCallback } from "react";
 import {
     IoArrowBackOutline, IoCloudUploadOutline, IoAddOutline, IoTrashOutline,
@@ -641,7 +640,7 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                         <div className="quiz-toggle-info">
                             <IoHelpCircleOutline size={14} />
                             <p className="subgroup-label">Cuestionario</p>
-                            {/* CAMBIO 1: badge actualizado — solo indica que no se pueden agregar preguntas */}
+                            {/* Indica que no se pueden agregar preguntas */}
                             {bloqueadoAgregarPregunta && sec.mostrarTest && (
                                 <span style={{
                                     display: "inline-flex", alignItems: "center", gap: 4,
@@ -674,8 +673,7 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                         </label>
                     </div>
 
-                    {/* CAMBIO 2: banner eliminado — ya no se muestra el aviso de "solo lectura".
-                        En su lugar, un aviso más preciso solo sobre agregar preguntas nuevas. */}
+                    {/* Se muestra un aviso más preciso solo sobre agregar preguntas nuevas. */}
                     {bloqueadoAgregarPregunta && sec.mostrarTest && (
                         <div style={{
                             display: "flex", alignItems: "flex-start", gap: 8,
@@ -697,7 +695,7 @@ const SeccionEditorPanel = ({ sec, index, onUpdate, showErrors, tieneInscritos }
                                 <p className="quiz-empty">Agrega preguntas para este cuestionario.</p>
                             )}
                             <div className="preguntas-grid">
-                                {/* CAMBIO 3: todas las preguntas usan QuestionCard (editable).
+                                {/* Todas las preguntas usan QuestionCard (editable).
                                     Solo se bloquea el botón eliminar en preguntas que ya existen en BD. */}
                                 {sec.preguntas.map((preg, pi) => (
                                     <QuestionCard
@@ -755,7 +753,7 @@ const StepSecciones = ({ secciones, onChange, showErrors, activaIdxExterno = 0, 
     const [activaIdx, setActivaIdx] = useState(activaIdxExterno);
     const [modalElimSec, setModalElimSec] = useState({ open: false, nombre: "", onConfirm: null });
 
-    useEffect(() => { setActivaIdx(activaIdxExterno); }, []); // eslint-disable-line
+    useEffect(() => { setActivaIdx(activaIdxExterno); }, []);
 
     const cambiarActiva = (idx) => { setActivaIdx(idx); onActivaChange?.(idx); };
     const updSec = (id, sec) => onChange(secciones.map((s) => s._id === id ? sec : s));

@@ -1,5 +1,3 @@
-# reglas/reglas_frase.py
-
 from experta import KnowledgeEngine, Rule, MATCH, TEST
 
 from hechos.hechos_frase import EstadoEmocional, TipoFrase

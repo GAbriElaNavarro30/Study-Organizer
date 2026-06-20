@@ -1,4 +1,3 @@
-// src/pages/CursoResultado.jsx
 import {   
     IoArrowBackOutline,
     IoTrophyOutline,

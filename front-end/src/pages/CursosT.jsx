@@ -1,4 +1,3 @@
-// src/pages/CursosT.jsx
 import { useState, useRef, useEffect } from "react";
 import {
     IoAdd, IoSearch, IoGridOutline, IoListOutline, IoCreateOutline,
@@ -91,7 +90,7 @@ const StatusBadge = ({ publicado, archivado }) => {
 };
 
 /* ─────────────────────────────────────────────────────────
-   MENÚ ⋯
+   MENÚ
 ───────────────────────────────────────────────────────── */
 const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }) => {
     const [abierto, setAbierto] = useState(false);
@@ -110,6 +109,7 @@ const MenuOpciones = ({ curso, onEdit, onTogglePublish, onArchivar, onEliminar }
         const desbordaAbajo = rect.bottom + DROPDOWN_H > window.innerHeight - 8;
         const top = desbordaAbajo ? rect.top - DROPDOWN_H : rect.bottom + 5;
         setPos({ top, left });
+        // RAF en loop para mantener la posición del dropdown sincronizada al hacer scroll
         rafRef.current = requestAnimationFrame(actualizarPos);
     };
 
@@ -366,7 +366,6 @@ const PanelFiltros = ({
 
             <div className="panel-filtros__sep" />
 
-            {/* ← nuevo wrapper para fila 2 en mobile */}
             <div className="panel-filtros__selects-row">
                 <div className="panel-filtros__header">
                     <span>Perfil VARK</span>

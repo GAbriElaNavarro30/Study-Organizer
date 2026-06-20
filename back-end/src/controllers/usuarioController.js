@@ -5,6 +5,12 @@ import jwt from "jsonwebtoken";
 import cloudinary from "../config/cloudinary.js";
 import { transporter } from "../config/mailer.js";
 
+const formatearFecha = (fecha) => {
+    if (!fecha) return null;
+    if (typeof fecha === "string") return fecha.split("T")[0]; // ya es string
+    return fecha.toISOString().split("T")[0]; // es objeto Date de MySQL
+};
+
 /* ====================================================
 --------------- FUNCIONES DE VALIDACIÓN ---------------
 =====================================================*/
@@ -213,10 +219,8 @@ export const verificarTelefono = async (req, res) => {
 // ============== CREAR USUARIO (REGISTRO) ==============
 export const crearUsuario = async (req, res) => {
     try {
-        // Convertir id_rol a número
         const data = { ...req.body, id_rol: Number(req.body.id_rol) };
 
-        // Validar cada campo antes de procesar la solicitud
         const errores = [];
         errores.push(...validarNombre(data.nombre));
         errores.push(...validarApellido(data.apellido));
@@ -231,14 +235,11 @@ export const crearUsuario = async (req, res) => {
         }
         errores.push(...validarFechaNacimiento(data.fecha_nacimiento));
 
-        // Si hay errores, se devuelven al cliente sin continuar
         if (errores.length > 0) return res.status(400).json({ errors: errores });
 
-        // Cifrar la contraseña antes de guardarla en la base de datos
         const salt = await bcrypt.genSalt(10);
         data.contrasena = await bcrypt.hash(data.contrasena, salt);
 
-        // Crear instancia del modelo y guardar en la base de datos
         const usuario = new Usuario(data);
         await usuario.save();
         res.status(201).json({ mensaje: "Usuario creado correctamente" });
@@ -318,8 +319,8 @@ export const me = async (req, res) => {
     try {
         const [rows] = await db.query(
             `SELECT id_usuario, nombre, apellido, correo_electronico, correo_alternativo,
-       id_rol, foto_perfil, foto_portada, telefono, contrasena, descripcion, genero, fecha_nacimiento
-       FROM Usuario WHERE id_usuario = ?`,
+            id_rol, foto_perfil, foto_portada, telefono, contrasena, descripcion, genero, fecha_nacimiento
+            FROM Usuario WHERE id_usuario = ?`,
             [req.usuario.id]
         );
         if (rows.length === 0) return res.status(401).json({ mensaje: "Usuario no válido" });
@@ -424,7 +425,11 @@ export const editarUsuario = async (req, res) => {
 export const obtenerUsuarios = async (req, res) => {
     try {
         const usuarios = await Usuario.getAll();
-        res.json(usuarios);
+        const usuariosFormateados = usuarios.map((u) => ({
+            ...u,
+            fecha_nacimiento: formatearFecha(u.fecha_nacimiento),
+        }));
+        res.json(usuariosFormateados);
     } catch (error) {
         res.status(500).json({ mensaje: "Error al obtener usuarios" });
     }
@@ -435,7 +440,11 @@ export const buscarUsuarios = async (req, res) => {
     try {
         const { q } = req.query;
         const rows = await Usuario.search(q);
-        res.json(rows);
+        const usuariosFormateados = rows.map((u) => ({
+            ...u,
+            fecha_nacimiento: formatearFecha(u.fecha_nacimiento),
+        }));
+        res.json(usuariosFormateados);
     } catch (error) {
         console.error("Error al buscar usuarios:", error);
         res.status(500).json({ message: "Error al buscar usuarios" });
@@ -525,12 +534,12 @@ export const actualizarPerfil = async (req, res) => {
         await db.query(`UPDATE Usuario SET ${campos.join(", ")} WHERE id_usuario = ?`, valores);
 
         const [rows] = await db.query(`
-      SELECT u.id_usuario AS id, u.nombre, u.apellido, u.correo_electronico AS correo,
-             u.correo_alternativo, u.telefono, u.descripcion, u.genero, u.fecha_nacimiento,
-             u.foto_perfil, u.foto_portada, u.id_rol AS rol, r.tipo_rol AS rol_texto
-      FROM Usuario u JOIN Rol r ON u.id_rol = r.id_rol
-      WHERE u.id_usuario = ?
-    `, [req.usuario.id]);
+        SELECT u.id_usuario AS id, u.nombre, u.apellido, u.correo_electronico AS correo,
+                u.correo_alternativo, u.telefono, u.descripcion, u.genero, u.fecha_nacimiento,
+                u.foto_perfil, u.foto_portada, u.id_rol AS rol, r.tipo_rol AS rol_texto
+        FROM Usuario u JOIN Rol r ON u.id_rol = r.id_rol
+        WHERE u.id_usuario = ?
+        `, [req.usuario.id]);
 
         const usuario = rows[0];
         const fechaNacimientoNormalizada = usuario.fecha_nacimiento
@@ -570,14 +579,14 @@ export const recuperarContrasena = async (req, res) => {
             to: correoNormalizado,
             subject: "Solicitud de recuperación de contraseña",
             html: `
-        <p>Estimado/a <strong>${usuario.nombre} ${usuario.apellido}</strong>,</p>
-        <p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta en <strong>Study Organizer</strong>.</p>
-        <p>Para continuar, haga clic en el siguiente enlace:</p>
-        <p><a href="${link}">${link}</a></p>
-        <p>Este enlace tiene una vigencia de <strong>15 minutos</strong>.</p>
-        <p>Si no realizó esta solicitud, puede ignorar este mensaje.</p>
-        <p>Atentamente,<br/><strong>Equipo de Soporte - Study Organizer</strong></p>
-      `,
+                <p>Estimado/a <strong>${usuario.nombre} ${usuario.apellido}</strong>,</p>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta en <strong>Study Organizer</strong>.</p>
+                <p>Para continuar, haga clic en el siguiente enlace:</p>
+                <p><a href="${link}">${link}</a></p>
+                <p>Este enlace tiene una vigencia de <strong>15 minutos</strong>.</p>
+                <p>Si no realizó esta solicitud, puede ignorar este mensaje.</p>
+                <p>Atentamente,<br/><strong>Equipo de Soporte - Study Organizer</strong></p>
+            `,
         });
 
         res.json({ mensaje: "Se ha enviado un enlace de recuperación a tu correo" });
@@ -667,14 +676,14 @@ export const recuperarConAlternativo = async (req, res) => {
             to: usuario.correo_alternativo,
             subject: "Recuperación de contraseña - Correo alternativo",
             html: `
-        <p>Estimado/a <strong>${usuario.nombre} ${usuario.apellido}</strong>,</p>
-        <p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta en <strong>Study Organizer</strong>.</p>
-        <p>Este enlace fue enviado a su correo alternativo registrado:</p>
-        <p><a href="${link}">${link}</a></p>
-        <p>Este enlace tiene una vigencia de <strong>15 minutos</strong>.</p>
-        <p>Si no realizó esta solicitud, puede ignorar este mensaje.</p>
-        <p>Atentamente,<br/><strong>Equipo de Soporte - Study Organizer</strong></p>
-      `,
+                <p>Estimado/a <strong>${usuario.nombre} ${usuario.apellido}</strong>,</p>
+                <p>Hemos recibido una solicitud para restablecer la contraseña de su cuenta en <strong>Study Organizer</strong>.</p>
+                <p>Este enlace fue enviado a su correo alternativo registrado:</p>
+                <p><a href="${link}">${link}</a></p>
+                <p>Este enlace tiene una vigencia de <strong>15 minutos</strong>.</p>
+                <p>Si no realizó esta solicitud, puede ignorar este mensaje.</p>
+                <p>Atentamente,<br/><strong>Equipo de Soporte - Study Organizer</strong></p>
+            `,
         });
 
         res.json({ mensaje: "Se ha enviado un enlace de recuperación a tu correo alternativo" });
@@ -686,7 +695,7 @@ export const recuperarConAlternativo = async (req, res) => {
 
 export const registrosDashboard = async (req, res) => {
     try {
-        // Verificar que sea administrador (id_rol === 1)
+        // Verificar que sea administrador
         if (req.usuario.id_rol !== 1) {
             return res.status(403).json({ mensaje: "Acceso denegado" });
         }

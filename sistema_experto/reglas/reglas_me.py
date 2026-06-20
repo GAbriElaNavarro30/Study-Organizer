@@ -13,7 +13,7 @@ NIVELES_POSITIVOS = ("muy_bueno", "excelente")
  
 class MotorMetodosEstudio(KnowledgeEngine):
 
-    # ── BLOQUE 1: Error específico por pregunta ──
+    # BLOQUE 1: Error específico por pregunta
     # Se dispara una vez por cada pregunta donde se detectó un hábito problemático.
     @Rule(
         PreguntaConError(
@@ -27,7 +27,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
         if mensaje:
             self.declare(ErrorDetectado(dimension=nombre, mensaje=mensaje))
 
-    # ── BLOQUE 2: Recomendaciones generales (deficiente, regular, bueno) ──
+    # BLOQUE 2: Recomendaciones generales (deficiente, regular, bueno)
     @Rule(
         PuntajeDimension(
             id_dimension=MATCH.id_dim,
@@ -45,7 +45,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
                 texto=texto,
             ))
 
-    # ── BLOQUE 3: Recomendaciones VARK (deficiente, regular, bueno) ──
+    # BLOQUE 3: Recomendaciones VARK (deficiente, regular, bueno)
     @Rule(
         PuntajeDimension(
             id_dimension=MATCH.id_dim,
@@ -66,7 +66,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
                     texto=texto,
                 ))
 
-    # ── BLOQUE 4: Refuerzo positivo (muy_bueno, excelente) ──
+    # BLOQUE 4: Refuerzo positivo (muy_bueno, excelente)
     @Rule(
         PuntajeDimension(
             id_dimension=MATCH.id_dim,
@@ -90,7 +90,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
             texto=mensaje,
         ))
 
-    # ── BLOQUE 5: Recomendaciones VARK para niveles positivos ──
+    # BLOQUE 5: Recomendaciones VARK para niveles positivos
     @Rule(
         PuntajeDimension(
             id_dimension=MATCH.id_dim,
@@ -113,7 +113,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
           
           
                 
-    # ── BLOQUE 6: Con perfil VARK conocido ──
+    # BLOQUE 6: Con perfil VARK conocido
     @Rule(PerfilVARK(perfil=MATCH.perfil), salience=1)
     def criterios_cursos_con_perfil(self, perfil):
         dimensiones_debiles = [
@@ -122,7 +122,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
             if isinstance(fact, PuntajeDimension)
             and fact["nivel"] in ("deficiente", "regular")
         ]
-        # Deducir perfiles afines igual que el motor EA
+        # Deducir perfiles afines
         afines = [
             p for p in TODOS_LOS_PERFILES
             if p != perfil and any(letra in p for letra in perfil)
@@ -133,7 +133,7 @@ class MotorMetodosEstudio(KnowledgeEngine):
             dimensiones=dimensiones_debiles,
         ))
 
-    # ── BLOQUE 7: Sin perfil VARK ──
+    # BLOQUE 7: Sin perfil VARK ──
     @Rule(NOT(PerfilVARK()), salience=1)
     def criterios_cursos_sin_perfil(self):
         self.declare(CriteriosCurso(

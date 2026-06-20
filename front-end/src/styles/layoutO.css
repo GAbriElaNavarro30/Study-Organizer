@@ -67,6 +67,7 @@
     color: white;
 }
 
+/* position absolute + translateX(-50%) para centrarlo independientemente del logo y los botones */
 .menu-eslogan-o {
     position: absolute;
     left: 50%;

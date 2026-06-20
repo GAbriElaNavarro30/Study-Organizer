@@ -44,8 +44,8 @@ function BarraSimple({ cfg, value, pct, animado }) {
     );
 }
 
-// ─── RADAR ────────────────────────────────────────────────────────────────────
-
+// ---- Gráfica SVG de radar para los cuatro ejes VARK. -----
+// Máximo posible por dimensión en el modelo VARK (16 preguntas)
 function RadarChart({ puntajes, primaryColor }) {
     const size = 260, cx = size / 2, cy = size / 2, r = 88;
     const datos = [
@@ -114,6 +114,7 @@ const VARK_COLORS_REC = {
 // ─── TARJETA DE CURSO ─────────────────────────────────────────────────────────
 
 function CursoRecomendadoCard({ curso, primaryColor }) {
+    // Genera un tono único por curso basado en la primera letra del título
     const hue = ((curso.titulo?.charCodeAt(0) || 65) * 7) % 360;
     const vark = VARK_COLORS_REC[curso.perfil_vark] || { bg: "#F1F5F9", text: "#64748B" };
 
@@ -262,7 +263,6 @@ export function ResultadosTestEA() {
                 </aside>
 
                 <main className="res-main">
-                    {/* CHIPS */}
                     <div className="res-banner">
                         {letras.map((l) => {
                             const cfg = PERFIL_CONFIG[l];
@@ -490,6 +490,7 @@ export function ResultadosTestEA() {
                                                         </td>
                                                         {["v", "a", "r", "k"].map((key) => {
                                                             const val = item[`puntaje_${key}`] || 0;
+                                                            // Porcentaje relativo al total del intento para escalar la mini barra
                                                             const pct = total > 0 ? Math.round((val / total) * 100) : 0;
                                                             const cfg = PERFIL_CONFIG[key.toUpperCase()];
                                                             return (

@@ -1,4 +1,3 @@
-// src/routes/estilosAprendizaje.js
 import { Router } from "express";
 import { verificarToken } from "../middlewares/auth.js";
 import {
@@ -6,15 +5,15 @@ import {
     responder,
     obtenerResultado, 
     obtenerResultadoGuardado,
-    obtenerHistorial, // funciones
+    obtenerHistorial
 } from "../controllers/estilosAprendizajeController.js";
  
-const router = Router(); // se crea el router donde estaran todas las rutas
+const router = Router();
 
-router.get("/preguntas", verificarToken, obtenerPreguntas); // si existe token accede a la ruta
+router.get("/preguntas", verificarToken, obtenerPreguntas);
 router.post("/responder", verificarToken, responder);
 router.get("/resultado", verificarToken, obtenerResultado);
 router.get("/resultado-guardado", verificarToken, obtenerResultadoGuardado);
 router.get("/historial", verificarToken, obtenerHistorial);
 
-export default router; // exporta las rutsd para que app las use 
+export default router;

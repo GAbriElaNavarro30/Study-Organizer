@@ -1,4 +1,3 @@
-// src/pages/CursoVisorTutor.jsx
 import { useState } from "react";
 import {
     IoArrowBackOutline, IoBookOutline, IoChevronDownOutline,
@@ -227,7 +226,7 @@ const TabContenido = ({ secciones }) => {
     );
 };
 
-/* ── Tab: Estudiantes — tabla en fila ────────────────────── */
+/* ── Tab: Estudiantes ────────────────────── */
 const TabEstudiantes = ({ idCurso }) => {
     const {
         estudiantes,

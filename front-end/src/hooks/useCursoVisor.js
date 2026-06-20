@@ -261,8 +261,8 @@ export function useCursoVisor() {
                         id_opcion: Number(id_opcion),
                     })),
                 });
-                // ← Se quitó la captura de retroalimentacion porque
-                //    ahora viene de marcarVisto cuando el curso se completa
+                // Se quitó la captura de retroalimentacion porque
+                // ahora viene de marcarVisto cuando el curso se completa
             } catch { }
         }
     };
@@ -288,7 +288,7 @@ export function useCursoVisor() {
             return;
         }
 
-        // Ir hacia atrás siempre permitido
+        // Ir hacia atrás siempre permitido; hacia adelante solo a la inmediata siguiente y si está desbloqueada
         if (si <= seccionIdx) {
             setSeccionIdx(si);
             setContenidoIdx(0);
@@ -308,14 +308,14 @@ export function useCursoVisor() {
         irASiguiente();
     };
 
-    // ── handleVerResultados — pasa retroalimentación al navegar ──  ← MODIFICADO
+    // ── handleVerResultados — pasa retroalimentación al navegar ── 
     const handleVerResultados = () => {
         if (siguienteBloqueado) return;
         marcarVisto(contenidoActual.id_contenido);
         navigate("/cursos/resultado", {
             state: {
                 id_curso: curso.id_curso,
-                retroalimentacion,          // ← viene del estado
+                retroalimentacion,
             }
         });
     };

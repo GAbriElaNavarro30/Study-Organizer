@@ -1,3 +1,4 @@
+// ======================== Módulo de Usuarios ========================
 import { db } from "../config/db.js";
 
 export class Rol {

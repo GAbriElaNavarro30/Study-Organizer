@@ -7,7 +7,6 @@ export function Footer() {
         <footer className="footer">
             <div className="footer-container">
 
-                {/* LOGO */}
                 <div className="footer-logo">
                     <img src={logo} alt="Study Organizer" />
                     <p>
@@ -16,7 +15,6 @@ export function Footer() {
                     </p>
                 </div>
 
-                {/* LINKS */}
                 <div className="footer-links">
                     <h4>Plataforma</h4>
                     <Link to="/">Inicio</Link>
@@ -32,7 +30,6 @@ export function Footer() {
                     </a>
                 </div>
 
-                {/* INFO */}
                 <div className="footer-info">
                     <h4>Study Organizer</h4>
                     <p>

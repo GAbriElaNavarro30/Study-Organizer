@@ -1,5 +1,5 @@
 /* ======================================================
-   BASE
+   BASE PRINCIPAL
 ====================================================== */
 .notes-app {
     max-width: 100%;
@@ -153,6 +153,7 @@
     border-top: 1px solid #e5e7eb;
 }
 
+/* margen negativo para alinear el ícono con el título de la nota */
 .icono-notas {
     width: 24px;
     height: 24px;

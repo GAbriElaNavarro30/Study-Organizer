@@ -1,14 +1,14 @@
 import "../styles/testea.css";
 import { ModalAbandonarTest } from "../components/ModalAbandonarTest";
 import { CustomAlert } from "../components/CustomAlert";
-import { 
+import {
     IoVolumeMuteOutline, IoMusicalNotesOutline,
     IoCheckmarkOutline, IoArrowForwardOutline, IoArrowBackOutline,
     IoTimeOutline, IoListOutline, IoArrowBackCircleOutline,
 } from "react-icons/io5";
 import logo from "../assets/imagenes/logotipo.png";
 import { useTestEA, PREGUNTAS, SELECTED_COLOR, SELECTED_BG, LETRAS } from "../hooks/useTestEA";
-  
+
 export function TestEA() {
     const {
         // Referencias
@@ -64,6 +64,7 @@ export function TestEA() {
                 />
             )}
 
+            {/* Bloque de música de fondo desactivado temporalmente */}
             {/*<iframe
                 ref={iframeRef}
                 src="https://www.youtube.com/embed/MNM4D5CxJaU?autoplay=1&loop=1&playlist=MNM4D5CxJaU&controls=0&mute=1"
@@ -110,7 +111,7 @@ export function TestEA() {
                     <nav className="test-sidebar-nav">
                         {PREGUNTAS.map((p, i) => {
                             const respondida = !!(respuestas[p.id]?.length > 0);
-                            const esActual   = i === actual;
+                            const esActual = i === actual;
                             return (
                                 <div
                                     key={p.id}

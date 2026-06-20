@@ -8,9 +8,6 @@ import {
 import "../styles/ContentImageUpload.css";
 import { useContentImageUpload, INITIAL_CROP } from "../hooks/useContentImageUpload";
 
-/* ════════════════════════════════════════════════════════
-   CROP MODAL — sin cambios
-════════════════════════════════════════════════════════ */
 function CropModal({ src, initialState, onApply, onCancel }) {
     const {
         cs,
@@ -90,11 +87,9 @@ function CropModal({ src, initialState, onApply, onCancel }) {
     );
 }
 
-/* ════════════════════════════════════════════════════════
-   CONTENT IMAGE UPLOAD
-   — recibe onRequestDeleteImagen del padre (SeccionEditorPanel)
-   — ya NO maneja su propio modal ni su propio ModalConfirmarEliminar
-════════════════════════════════════════════════════════ */
+/* con debe tener: imagen_file, imagen_preview, imagen_url,
+   imagen_crop, imagen_cropped_preview, imagen_cropped_file */
+
 export function ContentImageUpload({ con, onUpdate, onRequestDeleteImagen }) {
     const inputRef = useRef();
     const [drag, setDrag] = useState(false);
@@ -102,6 +97,7 @@ export function ContentImageUpload({ con, onUpdate, onRequestDeleteImagen }) {
 
     const hasSrc = !!(con.imagen_preview || con.imagen_url || con.imagen_cropped_preview);
     const hasCropped = !!(con.imagen_cropped_preview);
+    // Prioridad: archivo nuevo > URL externa > preview cacheado
     const cropSrc = con.imagen_preview || con.imagen_url || con.imagen_cropped_preview || null;
 
     const processFile = (file) => {
@@ -169,11 +165,6 @@ export function ContentImageUpload({ con, onUpdate, onRequestDeleteImagen }) {
                             <button className="ciu-action-btn" onClick={() => inputRef.current.click()}>
                                 <IoCloudUploadOutline size={13} /> Cambiar
                             </button>
-                            {/*
-                              ── Delega al padre: SeccionEditorPanel abre su propio
-                                 ModalConfirmarEliminar y al confirmar limpia el estado
-                                 del contenido + envía eliminar_imagen:true al backend ──
-                            */}
                             <button
                                 className="ciu-action-btn danger"
                                 onClick={onRequestDeleteImagen}
@@ -199,7 +190,6 @@ export function ContentImageUpload({ con, onUpdate, onRequestDeleteImagen }) {
                     onCancel={() => setShowCrop(false)}
                 />
             )}
-            {/* ── Sin ModalConfirmarEliminar aquí — vive en SeccionEditorPanel ── */}
         </>
     );
 }

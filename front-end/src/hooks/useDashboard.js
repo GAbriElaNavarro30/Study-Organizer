@@ -39,6 +39,7 @@ export function useDashboard() {
     // ══ 2. DERIVACIONES ══
     const emocionHoy = historial.find(h => h.fecha === hoy) || null;
 
+    // emociones negativas criticas consecutivas activan la alerta de especialista
     const mostrarAlerta = (() => {
         const sorted = [...historial].sort((a, b) => a.fecha > b.fecha ? -1 : 1).slice(0, 3);
         return sorted.length >= 3 && sorted.every(h => h.clasif === "negativa");
@@ -206,6 +207,7 @@ export function useDashboard() {
             return manana - ahora;
         };
 
+        // Resetea el estado del día automáticamente a medianoche
         const timeout = setTimeout(() => {
             setHoy(new Date().toLocaleDateString("sv-SE", { timeZone: "America/Mexico_City" }));
             setEmocionSeleccionada(null);

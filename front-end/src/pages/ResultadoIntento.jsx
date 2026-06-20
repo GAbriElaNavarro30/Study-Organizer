@@ -1,4 +1,3 @@
-// src/pages/ResultadoIntento.jsx
 import {
     IoArrowBackOutline,
     IoTrophyOutline,

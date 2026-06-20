@@ -1,4 +1,3 @@
-// src/hooks/useCursoVisorTutor.js
 import { useState, useEffect, useMemo } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";

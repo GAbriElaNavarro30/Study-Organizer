@@ -14,8 +14,6 @@
   --r-sm:    12px;
 }
 
-
-
 .manual-page {
   
   background: var(--bg);
@@ -98,28 +96,16 @@
   animation: fadeUp 0.5s 0.1s ease both;
 }
 
-/* ═══════════════════════════════════════════════════
-   GRID PRINCIPAL  (> 900px)
-
-   Columna izquierda: video ocupa las 3 filas
-   Columna derecha:   pdf / quote / logo
-
-   El logo aparece solo cuando hay espacio suficiente
-   para que las alturas del video y la columna derecha
-   sean similares. Si el logo crea un hueco feo, se oculta.
-═══════════════════════════════════════════════════ */
 .manual-main-row {
   display: grid;
   grid-template-columns: 1fr 380px;
   grid-template-areas: "video  right";
   gap: 14px;
-  /* Ambas columnas se alinean al tope, sin estirarse */
   align-items: start;
 }
 
 .area-video { grid-area: video; }
 
-/* Columna derecha: flex column, gap natural entre tarjetas */
 .manual-right-col {
   grid-area: right;
   display: flex;
@@ -127,8 +113,6 @@
   gap: 14px;
 }
 
-.area-pdf   { /* dentro de .manual-right-col */ }
-.area-quote { /* dentro de .manual-right-col */ }
 .area-logo  { min-height: 80px; }
 
 /* ═══════════════════════════
@@ -396,7 +380,6 @@
 /* ═══════════════════════════
    LOGO
    Visible solo cuando hay espacio real (pantallas > 1100px).
-   En pantallas intermedias donde ya no cabe bien se oculta.
 ═══════════════════════════ */
 .logo-study {
   border-radius: var(--r-md);
@@ -407,7 +390,6 @@
   justify-content: center;
   padding: 16px;
   box-shadow: 0 2px 12px rgba(137,168,178,0.1);
-  /* min-height para que no colapse si el espacio sobrante es poco */
   min-height: 80px;
 }
 
@@ -433,8 +415,6 @@
 /* ════════════════════════════════════════════════════
    RESPONSIVE
 ════════════════════════════════════════════════════ */
-
-/* ─── 1200px: logo desaparece ─── */
 @media (max-width: 1200px) {
   .manual-header { padding: 0 48px; }
   .manual-body   { padding: 32px 48px 56px; }
@@ -442,7 +422,6 @@
   .area-logo { display: none; }
 }
 
-/* ─── 1024px ─── */
 @media (max-width: 1024px) {
   .manual-header { padding: 0 36px; }
   .manual-body   { padding: 28px 36px 52px; }
@@ -452,7 +431,6 @@
   .manual-pdf-card h2 { font-size: 1.35rem; }
 }
 
-/* ─── ≤ 900px: columna única ─── */
 @media (max-width: 900px) {
   .manual-header { padding: 0 28px; height: 64px; }
   .manual-body   { padding: 24px 28px 48px; }
@@ -464,7 +442,6 @@
     gap: 14px;
   }
 
-  /* Columna derecha: vuelve a stack vertical normal */
   .manual-right-col { gap: 14px; }
 
   .area-logo {

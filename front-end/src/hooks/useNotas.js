@@ -3,6 +3,8 @@ import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
 
 export function useNotas() {
+    const [generandoPDF, setGenerandoPDF] = useState(false);
+
     const navigate = useNavigate();
 
     // ── Notas ──
@@ -82,35 +84,36 @@ export function useNotas() {
     const construirHTMLNota = (nota) => {
         const bg = nota.background_color || "#ffffff";
         return `<!DOCTYPE html>
-<html lang="es">
-<head>
-    <meta charset="UTF-8">
-    <title>${nota.titulo}</title>
-    <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
-        @page {
-            size: Letter;
-            margin: 2.54cm;
-            background: ${bg};
-        }
-        body {
-            background-color: ${bg};
-            font-family: ${nota.font_family || "Arial"}, sans-serif;
-            font-size: ${nota.font_size || 16}px;
-            color: #111111;
-            line-height: 1.6;
-        }
-        ul { list-style-type: disc; padding-left: 2em; margin: 0.5em 0; }
-        ol { list-style-type: decimal; padding-left: 2em; margin: 0.5em 0; }
-        li { margin: 0.2em 0; display: list-item; }
-        ul ul { list-style-type: circle; }
-        ul ul ul { list-style-type: square; }
-    </style>
-</head>
-<body>
-    ${nota.contenido || "<p>Sin contenido</p>"}
-</body>
-</html>`;
+                <html lang="es">
+                <head>
+                    <meta charset="UTF-8">
+                    <title>${nota.titulo}</title>
+                    <style>
+                        * { margin: 0; padding: 0; box-sizing: border-box; }
+                        @page {
+                            size: Letter;
+                            margin: 2.54cm;
+                            background: ${bg};
+                        }
+                        body {
+                            background-color: ${bg};
+                            font-family: ${nota.font_family || "Arial"}, sans-serif;
+                            font-size: ${nota.font_size || 16}px;
+                            color: #111111;
+                            line-height: 1.6;
+                            padding: 2.54cm;
+                        }
+                        ul { list-style-type: disc; padding-left: 2em; margin: 0.5em 0; }
+                        ol { list-style-type: decimal; padding-left: 2em; margin: 0.5em 0; }
+                        li { margin: 0.2em 0; display: list-item; }
+                        ul ul { list-style-type: circle; }
+                        ul ul ul { list-style-type: square; }
+                    </style>
+                </head>
+                <body>
+                    ${nota.contenido || "<p>Sin contenido</p>"}
+                </body>
+                </html>`;
     };
 
     /* ────────────────────────────────────────────
@@ -179,19 +182,51 @@ export function useNotas() {
 
     const confirmarCompartirNota = async ({ tipo, email, chatId, telefono }) => {
         try {
-            const htmlCompleto = construirHTMLNota(notaACompartir);
+            const { default: html2pdf } = await import("html2pdf.js");
+
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;overflow:hidden;z-index:-1;";
+
+            const contenedor = document.createElement("div");
+            contenedor.style.cssText = `
+            background-color: ${notaACompartir.background_color || "#ffffff"};
+            font-family: ${notaACompartir.font_family || "Arial"}, sans-serif;
+            font-size: ${notaACompartir.font_size || 16}px;
+            color: #111111;
+            line-height: 1.6;
+            padding: 2.54cm;
+            width: 21.59cm;
+            min-height: 27.94cm;
+            box-sizing: border-box;
+        `;
+            contenedor.innerHTML = notaACompartir.contenido || "<p>Sin contenido</p>";
+
+            wrapper.appendChild(contenedor);
+            document.body.appendChild(wrapper);
+
+            const blob = await html2pdf()
+                .set({
+                    margin: 0,
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: notaACompartir.background_color || "#ffffff" },
+                    jsPDF: { unit: "cm", format: "letter", orientation: "portrait" }
+                })
+                .from(contenedor)
+                .outputPdf("blob");
+
+            document.body.removeChild(wrapper);
+
+            const pdfBase64 = await new Promise((resolve) => {
+                const reader = new FileReader();
+                reader.onloadend = () => resolve(reader.result.split(",")[1]);
+                reader.readAsDataURL(blob);
+            });
 
             if (tipo === "email") {
-                await api.post(`/notas/compartir-nota/${notaACompartir.id_nota}`, { email, html: htmlCompleto });
+                await api.post(`/notas/compartir-nota/${notaACompartir.id_nota}`, { email, pdfBase64 });
                 mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado a ${email}`);
-
             } else if (tipo === "telegram") {
-                await api.post(`/notas/compartir-telegram/${notaACompartir.id_nota}`, { chatId, html: htmlCompleto });
+                await api.post(`/notas/compartir-telegram/${notaACompartir.id_nota}`, { chatId, pdfBase64 });
                 mostrarAlerta("success", "¡Nota compartida!", "El PDF fue enviado por Telegram");
-
-            } else if (tipo === "whatsapp") {
-                await api.post(`/notas/compartir-whatsapp/${notaACompartir.id_nota}`, { telefono, html: htmlCompleto });
-                mostrarAlerta("success", "¡Nota compartida!", `El PDF fue enviado por WhatsApp a ${telefono}`);
             }
 
             cerrarModalCompartir();
@@ -230,29 +265,46 @@ export function useNotas() {
     ──────────────────────────────────────────── */
     const descargarPDF = async (nota) => {
         try {
-            mostrarAlerta("success", "Generando PDF...", "Por favor espera un momento.");
-            const htmlCompleto = construirHTMLNota(nota);
-            const response = await fetch(
-                `${import.meta.env.VITE_API_URL}/notas/exportar-pdf/${nota.id_nota}`,
-                {
-                    method: "POST",
-                    credentials: "include",
-                    headers: { "Content-Type": "application/json" },
-                    body: JSON.stringify({ html: htmlCompleto }),
-                }
-            );
-            if (!response.ok) throw new Error("Error al generar el PDF");
-            const blob = await response.blob();
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement("a");
-            a.href = url;
-            a.download = `${nota.titulo}.pdf`;
-            a.click();
-            URL.revokeObjectURL(url);
+            setGenerandoPDF(true);
+            const { default: html2pdf } = await import("html2pdf.js");
+
+            const wrapper = document.createElement("div");
+            wrapper.style.cssText = "position:fixed;top:0;left:0;width:0;height:0;overflow:hidden;z-index:-1;";
+
+            const contenedor = document.createElement("div");
+            contenedor.style.cssText = `
+            background-color: ${nota.background_color || "#ffffff"};
+            font-family: ${nota.font_family || "Arial"}, sans-serif;
+            font-size: ${nota.font_size || 16}px;
+            color: #111111;
+            line-height: 1.6;
+            padding: 2.54cm;
+            width: 21.59cm;
+            min-height: 27.94cm;
+            box-sizing: border-box;
+        `;
+            contenedor.innerHTML = nota.contenido || "<p>Sin contenido</p>";
+
+            wrapper.appendChild(contenedor);
+            document.body.appendChild(wrapper);
+
+            await html2pdf()
+                .set({
+                    margin: 0,
+                    filename: `${nota.titulo}.pdf`,
+                    html2canvas: { scale: 2, useCORS: true, backgroundColor: nota.background_color || "#ffffff" },
+                    jsPDF: { unit: "cm", format: "letter", orientation: "portrait" }
+                })
+                .from(contenedor)
+                .save();
+
+            document.body.removeChild(wrapper);
+            setGenerandoPDF(false);
             mostrarAlerta("success", "¡PDF descargado!", `El PDF de "${nota.titulo}" se ha descargado correctamente.`);
         } catch (error) {
             console.error("Error al descargar PDF:", error);
-            mostrarAlerta("error", "Error al generar PDF", "No se pudo generar el PDF. Por favor, intenta nuevamente.");
+            setGenerandoPDF(false);
+            mostrarAlerta("error", "Error al generar PDF", "No se pudo generar el PDF.");
         }
     };
 
@@ -263,9 +315,9 @@ export function useNotas() {
                 notaId: nota.id_nota,
                 titulo: nota.titulo,
                 contenido: nota.contenido,
-                backgroundColor: nota.background_color,  // ← antes: nota.color_fondo
-                fontFamily: nota.font_family,             // ← antes: nota.tipo_letra
-                fontSize: nota.font_size,                 // ← antes: nota.tamano_letra
+                backgroundColor: nota.background_color,
+                fontFamily: nota.font_family,
+                fontSize: nota.font_size,
             })
         );
         navigate("/editor-nota");
@@ -281,6 +333,7 @@ export function useNotas() {
         notas,
         loading,
         error,
+        generandoPDF,
         cargarNotas,
 
         // Búsqueda y paginación
@@ -326,4 +379,4 @@ export function useNotas() {
         editarNota,
         crearNuevaNota,
     };
-}
+} 

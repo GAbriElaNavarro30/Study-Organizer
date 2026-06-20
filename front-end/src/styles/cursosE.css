@@ -1345,9 +1345,7 @@
 .ce-table {
     width: 100%;
     border-collapse: collapse;
-    /* auto para que cada columna respete su contenido mínimo */
     table-layout: auto;
-    /* ancho mínimo total: suma de todos los min-width de columnas */
     min-width: 860px;
 }
 

@@ -1,7 +1,7 @@
-import mysql from "mysql2/promise";
 import dotenv from "dotenv";
-
 dotenv.config();
+
+import mysql from "mysql2/promise";
 
 export const db = mysql.createPool({
   host: process.env.DB_HOST,
@@ -11,14 +11,14 @@ export const db = mysql.createPool({
   waitForConnections: true,
   connectionLimit: 10,
   queueLimit: 0,
-  ssl: {
-    rejectUnauthorized: false
-  }
+  ssl: process.env.NODE_ENV === "production"
+    ? { rejectUnauthorized: true }
+    : false
 });
 
 try {
   const connection = await db.getConnection();
-  console.log("Base de datos conectada");
+  console.log("Conexión a la base de datos exitosa");
   connection.release();
 } catch (error) {
   console.error("Error conectando a la BD", error);

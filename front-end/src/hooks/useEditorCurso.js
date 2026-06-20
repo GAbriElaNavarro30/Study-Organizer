@@ -1,11 +1,7 @@
-// src/hooks/useEditorCurso.js
 import { useState, useEffect, useRef } from "react";
 import { useNavigate, useSearchParams } from "react-router-dom";
 import api from "../services/api";
 
-/* ─────────────────────────────────────────────────────────
-   CONSTANTS
-───────────────────────────────────────────────────────── */
 export const VARK_OPTIONS = [
     { value: "V", label: "Visual", letter: "V", accent: "#2563EB", bg: "#EFF6FF", border: "#BFDBFE" },
     { value: "A", label: "Auditivo", letter: "A", accent: "#0284C7", bg: "#F0F9FF", border: "#BAE6FD" },
@@ -36,14 +32,11 @@ export const PLACEHOLDER_PALETTES = [
 ];
 
 export const STEPS = [
-    { id: 1, label: "Curso", icon: null },   // los iconos se inyectan en la vista
+    { id: 1, label: "Curso", icon: null },
     { id: 2, label: "Contenido", icon: null },
     { id: 3, label: "Crear", icon: null },
 ];
 
-/* ─────────────────────────────────────────────────────────
-   HELPERS — uuid / factories
-───────────────────────────────────────────────────────── */
 export const uuid = () => crypto.randomUUID();
 
 export const crearContenidoVacio = () => ({
@@ -64,9 +57,6 @@ export const crearSeccionVacia = () => ({
     contenidos: [crearContenidoVacio()], preguntas: [], mostrarTest: false,
 });
 
-/* ─────────────────────────────────────────────────────────
-   HELPERS — utilidades
-───────────────────────────────────────────────────────── */
 export const clamp = (v, min, max) => Math.min(max, Math.max(min, v));
 
 export const getPlaceholderPalette = (titulo = "") => {
@@ -82,9 +72,7 @@ export const fmtDate = (iso) => {
     return new Date(iso).toLocaleDateString("es-MX", { day: "2-digit", month: "short", year: "numeric" });
 };
 
-/* ─────────────────────────────────────────────────────────
-   HELPERS — base64
-───────────────────────────────────────────────────────── */
+
 export const fileToBase64 = (file) =>
     new Promise((resolve, reject) => {
         const reader = new FileReader();
@@ -105,13 +93,12 @@ export const base64ToFile = (base64, filename = "imagen.jpg") => {
     } catch { return null; }
 };
 
-/* ─────────────────────────────────────────────────────────
-   LOCAL STORAGE — BORRADOR
-───────────────────────────────────────────────────────── */
+
 const STORAGE_KEY_INFO = "ec_infoCurso";
 const STORAGE_KEY_SECCIONES = "ec_secciones";
 const STORAGE_KEY_PASO = "ec_paso";
 const STORAGE_KEY_SECCION_ACTIVA = "ec_seccion_activa";
+// Claves separadas para crear vs editar, para no mezclar borradores
 const STORAGE_KEY_EDIT_PREFIX = "ec_edit_";
 
 export const getStorageKeys = (cursoId = null) => ({
@@ -127,6 +114,7 @@ export const guardarBorrador = async (info, secs, cursoId = null, paso = null, s
         const fotoPreviewGuardable = info.foto_preview?.startsWith("data:") ? info.foto_preview : null;
         const infoLimpia = { ...info, foto_file: null, foto_preview: fotoPreviewGuardable };
 
+        // Convierte imágenes a base64 para persistirlas en localStorage
         const seccionesLimpias = await Promise.all(
             secs.map(async (s) => ({
                 ...s,
@@ -225,7 +213,6 @@ export function useEditorCurso() {
     });
     const [secciones, setSecciones] = useState([crearSeccionVacia()]);
 
-    /* ── Carga inicial CREAR ── */
     useEffect(() => {
         if (!modoEdicion) {
             const { info, secciones: secsGuardadas, paso: pasoGuardado, seccionActiva } = cargarBorrador(null);
@@ -323,7 +310,7 @@ export function useEditorCurso() {
         if (skipNextDirty.current) { skipNextDirty.current = false; return; }
         guardarBorrador(infoCurso, secciones, modoEdicion ? id : null, paso, seccionActivaIdx);
         setIsDirty(true);
-    }, [infoCurso, secciones, paso, seccionActivaIdx]); // eslint-disable-line
+    }, [infoCurso, secciones, paso, seccionActivaIdx]);
 
     /* ── Dimensiones ── */
     useEffect(() => {
@@ -352,7 +339,6 @@ export function useEditorCurso() {
         navigate("/cursos-tutor");
     };
 
-    /* ── canAdvance ── */
     const canAdvance = () => {
         if (paso === 1)
             return infoCurso.titulo.trim().length >= 5 &&
@@ -405,7 +391,6 @@ export function useEditorCurso() {
 
     const handlePrev = () => setPaso((p) => p - 1);
 
-    /* ── buildContenidoPayload ── */
     const buildContenidoPayload = async (con, id_seccion, orden) => {
         if (con.imagen_cropped_file) {
             const fd = new FormData();
@@ -446,7 +431,6 @@ export function useEditorCurso() {
         };
     };
 
-    /* ── handleCrear ── */
     const handleCrear = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
@@ -494,7 +478,6 @@ export function useEditorCurso() {
         }
     };
 
-    /* ── handleEditar ── */
     const handleEditar = async () => {
         const fd = new FormData();
         fd.append("titulo", infoCurso.titulo.trim());
@@ -579,6 +562,7 @@ export function useEditorCurso() {
                                     opciones: preg.opciones.map((o) => ({ texto_opcion: o.texto_opcion, es_correcta: o.es_correcta })),
                                 });
                             }
+                        // Si hay estudiantes inscritos, solo se pueden editar/agregar preguntas, no eliminarlas
                         } else {
                             const { data: dp } = await api.post(`/cursos/secciones/${id_seccion}/preguntas`, {
                                 texto_pregunta: preg.texto_pregunta,
@@ -612,7 +596,7 @@ export function useEditorCurso() {
                             await api.put(`/cursos/preguntas/${preg.id_test}`, {
                                 texto_pregunta: preg.texto_pregunta,
                                 opciones: preg.opciones.map((o) => ({
-                                    id_opcion: o.id_opcion,   // ← necesario para que el backend detecte cambio de correcta
+                                    id_opcion: o.id_opcion,
                                     texto_opcion: o.texto_opcion,
                                     es_correcta: o.es_correcta,
                                 })),
@@ -633,7 +617,6 @@ export function useEditorCurso() {
         }
     };
 
-    /* ── handleGuardar ── */
     const handleGuardar = async () => {
         setGuardando(true);
         setError(null);
@@ -654,16 +637,12 @@ export function useEditorCurso() {
         }
     };
 
-    /* ── showErrors derivado ── */
     const showErrors = erroresPorPaso[paso] ?? false;
 
     return {
-        // Routing / modo
         id,
         modoEdicion,
         navigate,
-
-        // Estado de UI
         paso,
         setPaso,
         guardando,
@@ -671,8 +650,6 @@ export function useEditorCurso() {
         error,
         setError,
         showErrors,
-
-        // Datos
         infoCurso,
         setInfoCurso,
         secciones,
@@ -681,27 +658,19 @@ export function useEditorCurso() {
         tieneInscritos,
         seccionActivaIdx,
         setSeccionActivaIdx,
-
-        // Validación
         tituloDuplicado,
         setTituloDuplicado,
-
-        // Modales
         modalSalirOpen,
         setModalSalirOpen,
         modalElimPortada,
         setModalElimPortada,
         showSuccessAlert,
         setShowSuccessAlert,
-
-        // Handlers
         handleInfoChange,
         handleSalir,
         handleNext,
         handlePrev,
         handleGuardar,
-
-        // Utils expuestos para la vista
         limpiarBorrador,
     };
 }

@@ -1,9 +1,8 @@
-// estilos de aprendizaje - perfiles VARK
+// Módulo de Estilos de Aprendizaje
 import { db } from "../config/db.js";
 
 export class PerfilVARK {
 
-    // todos los perfiles
     static async getAll() {
         const [rows] = await db.query(
             `SELECT * FROM Perfil_VARK`
@@ -11,7 +10,6 @@ export class PerfilVARK {
         return rows;
     }
 
-    // un perfil específico
     static async getById(perfil_dominante) {
         const [rows] = await db.query(
             `SELECT * FROM Perfil_VARK WHERE perfil_dominante = ?`,

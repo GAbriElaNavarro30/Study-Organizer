@@ -1,4 +1,3 @@
-// src/hooks/useMetodosEstudioTest.js
 import { useState, useEffect, useRef } from "react";
 import { useNavigate } from "react-router-dom";
 import api from "../services/api.js";
@@ -38,7 +37,7 @@ export function useMetodosEstudioTest() {
         }
     };
 
-    // ── Toggle música de fondo ──
+    // ── música de fondo ──
     const toggleMute = () => {
         setMuted((prev) => {
             const next = !prev;
@@ -52,8 +51,8 @@ export function useMetodosEstudioTest() {
 
     /**
      * Toggle selection:
-     * - Si la opción ya está seleccionada → desmarcar (elimina la key)
-     * - Si es diferente             → seleccionar la nueva (solo 1 a la vez)
+     * - Si la opción ya está seleccionada -> desmarcar (elimina la key)
+     * - Si es diferente  -> seleccionar la nueva (solo 1 a la vez)
      */
     const seleccionarRespuesta = (id_pregunta, opcion) => {
         setRespuestas((prev) => {
@@ -131,7 +130,6 @@ export function useMetodosEstudioTest() {
     const preguntasRestantes = dim?.preguntas?.filter((p) => !respuestas[p.id_pregunta]).length || 0;
 
     return {
-        // Refs
         iframeRef,
         mainRef,
 
@@ -153,10 +151,8 @@ export function useMetodosEstudioTest() {
         progreso,
         preguntasRestantes,
 
-        // Setters que el componente necesita directamente
         setMostrarModal,
 
-        // Acciones
         toggleMute,
         seleccionarRespuesta,
         dimCompleta,

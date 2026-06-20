@@ -1,4 +1,4 @@
-// ===================== MÓDULO TELEGRAM DESTINATARIO ========================
+// ===================== MÓDULO DE NOTAS ========================
 import { db } from "../config/db.js";
 
 export class TelegramDestinatario {

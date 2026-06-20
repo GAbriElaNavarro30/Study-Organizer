@@ -1,5 +1,5 @@
 import React from "react";
-import "../styles/CustomAlert.css"; // estilos separados
+import "../styles/CustomAlert.css";
 
 export function CustomAlert({ type = "success", title, message, onClose, logo }) {
   return (

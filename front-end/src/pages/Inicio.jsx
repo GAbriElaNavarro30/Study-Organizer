@@ -192,7 +192,7 @@ export function Inicio() {
         </div>
       </section>
 
-      {/* ABOUT */}
+      {/* ACERCA DE */}
       <section className="about">
         <div className="about-inner">
           <div className="about-head">
@@ -293,7 +293,7 @@ export function Inicio() {
         </div>
       </section>
 
-      {/* BENEFITS */}
+      {/* BENEFICIOS */}
       <section className="benefits">
         <div className="benefits-inner">
           <div className="benefits-head">
@@ -319,7 +319,7 @@ export function Inicio() {
         </div>
       </section>
 
-      {/* STEPS */}
+      {/* PASOS */}
       <section className="steps">
         <div className="steps-inner">
           <div className="steps-head">

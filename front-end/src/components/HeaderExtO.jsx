@@ -5,7 +5,7 @@ export function HeaderExtO({ onAcceder, onInicio }) {
   return (
     <div className="header-externo-o">
       <div className="logo-o">
-        <img src={logo} alt="" className="logo-header-o"/>
+        <img src={logo} alt="" className="logo-header-o" />
       </div>
 
       <div className="menu-eslogan-o">
@@ -13,7 +13,6 @@ export function HeaderExtO({ onAcceder, onInicio }) {
       </div>
 
       <div className="espacio-login-o">
-        {/*<span>¿Ya tienes una cuenta?</span>*/}
         <button className="btn-inicio-o" onClick={onInicio}>
           Inicio
         </button>

@@ -256,7 +256,7 @@
     color: rgb(0, 0, 0);
 }
 
-/* ================== BOTONES FORM ================== */
+/* ================== BOTONES ================== */
 .fila-botones-usuario {
     display: flex;
     justify-content: flex-end;
@@ -383,6 +383,7 @@
     
 }
 
+/* overflow: visible para que la barra de ajuste con bottom negativo no se corte */
 .contenedor-perfil-usuario:has(.portada-modo-ajuste) {
     overflow: visible;
 }
@@ -518,7 +519,7 @@
     background: #2eb317;
 }
 
-/* ===================================== AJUSTE FOTO PERFIL INLINE ===================================== */
+/* ===================================== AJUSTE FOTO PERFIL ===================================== */
 
 .perfil-ajuste-wrapper {
     position: absolute;

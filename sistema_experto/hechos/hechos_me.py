@@ -38,9 +38,6 @@ DIMENSIONES_INFO = {
     9: "Uso de recursos de aprendizaje",
 }
 
-# Mensaje por pregunta específica
-# Las preguntas positivas generan error cuando se contesta Nunca(1) o Rara vez(2)
-# Las preguntas negativas generan error cuando se contesta Frecuentemente(3) o Siempre(4)
 ERRORES_POR_PREGUNTA = {
     # ── Dimensión 1: Actitud ante el estudio ──
     1:  "Estudias sin una meta definida, lo que disminuye tu motivación y dificulta encontrarle sentido a tus actividades.",

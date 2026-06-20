@@ -2,6 +2,7 @@ import { useState, useEffect, useRef, useCallback, useLayoutEffect } from "react
 import api from "../services/api";
 import "../styles/InscripcionesKPI.css";
 
+// La meta persiste en localStorage entre sesiones
 const META_KEY = "ikpi_inscripciones_meta";
 
 const VARK_ORDER = ['V', 'A', 'R', 'K', 'VA', 'VR', 'VK', 'AR', 'AK', 'RK', 'VAR', 'VAK', 'VRK', 'ARK', 'VARK'];
@@ -34,7 +35,6 @@ function dibujarGauge(svgEl, total, meta) {
         y: cy - rad * Math.sin(toRad(a)),
     });
 
-    // Arco fondo
     svgEl.appendChild(mk("path", {
         d: `M${cx - R} ${cy} A${R} ${R} 0 0 1 ${cx + R} ${cy} L${cx + r} ${cy} A${r} ${r} 0 0 0 ${cx - r} ${cy} Z`,
         fill: "#e2e8f0",
@@ -80,7 +80,6 @@ function dibujarGauge(svgEl, total, meta) {
         svgEl.appendChild(mt);
     }
 
-    // 👇 Primero la aguja
     const af = pt(angAct, R - 8), ab1 = pt(angAct + 90, 6), ab2 = pt(angAct - 90, 6);
     svgEl.appendChild(mk("polygon", {
         points: `${af.x},${af.y} ${ab1.x},${ab1.y} ${ab2.x},${ab2.y}`,
@@ -95,7 +94,6 @@ function dibujarGauge(svgEl, total, meta) {
     lMax.textContent = Math.round(maxVal);
     svgEl.appendChild(lMax);
 
-    // Luego el número (queda encima de la aguja)
     const vColor = meta ? (total >= meta ? "#16a34a" : "#0369a1") : "#0369a1";
     const vt = mk("text", {
         x: cx, y: cy - 20,
@@ -139,6 +137,7 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
         setFiltros(prev => ({
             ...prev,
             [k]: v,
+            // El mes solo aplica si hay un año seleccionado
             ...(k === "anio" ? { mes: "todos" } : {}),
         }));
 
@@ -159,6 +158,7 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
 
     useEffect(() => { fetchTotal(filtros); }, [filtros, fetchTotal]);
 
+    // useLayoutEffect evita el parpadeo del gauge al actualizar síncronamente antes del paint
     useLayoutEffect(() => {
         dibujarGauge(svgRef.current, total, meta);
     }, [total, meta]);
@@ -197,8 +197,8 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
             : `Faltan ${Math.abs(diff)} inscripciones para la meta`;
 
     const aniosDisponibles = Array.from(
-        { length: new Date().getFullYear() - 2022 },
-        (_, i) => 2023 + i
+        { length: new Date().getFullYear() - 2025 },
+        (_, i) => 2026 + i
     );
 
     return (
@@ -208,8 +208,6 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                 Filtra y establece una meta para monitorear el ritmo de inscripciones en tus cursos.
             </p>
 
-            {/* ── Filtros ─────────────────────────────────── */}
-            {/* Sin className en cada select — los estiliza .ikpi-filters select del CSS */}
             <div className="ikpi-filters">
                 <select
                     value={filtros.id_curso}
@@ -259,7 +257,6 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                 </select>
             </div>
 
-            {/* ── Meta ────────────────────────────────────── */}
             {!editando ? (
                 <div className="ikpi-meta-row">
                     {meta ? (
@@ -322,7 +319,7 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                 </div>
             )}
 
-            {/* ── Gauge — SIEMPRE montado ──────────────────── */}
+            {/* El SVG siempre está montado para que svgRef no sea null al dibujar*/}
             <div className="ikpi-gauge-wrap">
                 <svg ref={svgRef} viewBox="0 0 300 190" />
                 {cargando && (
@@ -332,12 +329,10 @@ export function InscripcionesKPI({ cursosTutor = [], dimensiones = [] }) {
                 )}
             </div>
 
-            {/* ── Badge ───────────────────────────────────── */}
             <div className="ikpi-badge-row">
                 <span className={badgeClass}>{badgeText}</span>
             </div>
 
-            {/* ── Totales ─────────────────────────────────── */}
             <div className="ikpi-totales">
                 <div className="ikpi-tot-item" style={{ "--tot-color": "#4A90D9" }}>
                     <span className="ikpi-tot-val">{total}</span>

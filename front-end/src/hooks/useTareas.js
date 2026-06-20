@@ -1,7 +1,6 @@
-// hooks/useTareas.js
 import { useState, useEffect } from "react";
 import api from "../services/api";
-
+ 
 export function useTareas() {
     // ===== ESTADOS =====
     const [tasks, setTasks] = useState([]);
@@ -150,16 +149,16 @@ export function useTareas() {
             }
 
             return {
-                id: t.id_tarea,                          // ← era id_recordatorio
+                id: t.id_tarea, 
                 title: t.titulo,
                 description: t.descripcion,
                 dueDate: fechaFormateada,
                 dueTime: horaFormateada,
-                dueDateOriginal: t.fecha_tarea,          // ← era t.fecha
-                dueTimeOriginal: t.hora_tarea,           // ← era t.hora
-                estado: t.estado_tarea,                  // ← era t.estado
+                dueDateOriginal: t.fecha_tarea,
+                dueTimeOriginal: t.hora_tarea,
+                estado: t.estado_tarea,
                 completed: t.estado_tarea === "completada",
-                activo: t.recordatorio_activo,           // ← era t.activo
+                activo: t.recordatorio_activo,
             };
         });
     };
@@ -266,7 +265,7 @@ export function useTareas() {
         };
     };
 
-    // ===== OBTENER TAREAS (polling cada 30s) =====
+    // ===== OBTENER TAREAS (cada 30s) =====
     useEffect(() => {
         const obtenerTareas = async () => {
             try {
@@ -278,7 +277,7 @@ export function useTareas() {
         };
 
         obtenerTareas();
-        const interval = setInterval(obtenerTareas, 39000); // ← era 1000ms, muy agresivo
+        const interval = setInterval(obtenerTareas, 39000);
         return () => clearInterval(interval);
     }, []);
 

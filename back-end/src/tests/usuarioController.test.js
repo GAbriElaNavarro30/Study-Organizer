@@ -43,7 +43,7 @@ jest.unstable_mockModule('../config/mailer.js', () => ({
 const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsuario } = await import('../controllers/usuarioController.js');
 
 // ============== PU ==============
-/*describe('PU-01 - Crear usuario con datos válidos', () => {
+describe('PU-01 - Crear usuario con datos válidos', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -87,17 +87,15 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await altaUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
-
         expect(res.status).toHaveBeenCalledWith(201);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({ mensaje: 'Usuario creado correctamente' })
         );
     });
 
-});*/
+});
 
-/*describe('PU-02 - Crear usuario sin nombre', () => {
+describe('PU-02 - Crear usuario sin nombre', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -139,7 +137,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         await altaUsuario(req, res);
 
         expect(res.status).toHaveBeenCalledWith(400);
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({
                 errors: expect.arrayContaining([
@@ -152,9 +149,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-03 - Crear usuario con correo duplicado', () => {
+describe('PU-03 - Crear usuario con correo duplicado', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -196,8 +193,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await altaUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
-
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -211,9 +206,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-04 - Crear usuario con teléfono duplicado', () => {
+describe('PU-04 - Crear usuario con teléfono duplicado', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -255,8 +250,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await altaUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
-
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -270,9 +263,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-06 - Consultar listado de usuarios', () => {
+describe('PU-06 - Consultar listado de usuarios', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -305,8 +298,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await obtenerUsuarios(req, res);
 
-        console.log('resultado:', JSON.stringify({ body: res.json.mock.calls[0][0] }));
-
         expect(res.json).toHaveBeenCalledWith(
             expect.arrayContaining([
                 expect.objectContaining({
@@ -317,9 +308,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-07 - Buscar usuario por nombre', () => {
+describe('PU-07 - Buscar usuario por nombre', () => {
 
     test('El sistema retorna los usuarios que coinciden con el criterio de búsqueda', async () => {
 
@@ -348,8 +339,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await buscarUsuarios(req, res);
 
-        console.log('resultado:', JSON.stringify({ body: res.json.mock.calls[0][0] }));
-
         expect(res.json).toHaveBeenCalledWith(
             expect.arrayContaining([
                 expect.objectContaining({
@@ -360,9 +349,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-08 - Búsqueda de usuario sin resultados', () => {
+describe('PU-08 - Búsqueda de usuario sin resultados', () => {
 
     test('El sistema retorna un arreglo vacío cuando no hay coincidencias', async () => {
 
@@ -379,14 +368,12 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await buscarUsuarios(req, res);
 
-        console.log('resultado:', JSON.stringify({ body: res.json.mock.calls[0][0] }));
-
         expect(res.json).toHaveBeenCalledWith([]);
     });
 
-});*/
+});
 
-/*describe('PU-09 - Actualizar usuario con datos válidos', () => {
+describe('PU-09 - Actualizar usuario con datos válidos', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -430,16 +417,14 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await editarUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status?.mock?.calls[0]?.[0] || 200, body: res.json.mock.calls[0][0] }));
-
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({ mensaje: 'Usuario actualizado correctamente' })
         );
     });
 
-});*/
+});
 
-/*describe('PU-10 - Actualizar usuario con correo duplicado', () => {
+describe('PU-10 - Actualizar usuario con correo duplicado', () => {
 
     beforeEach(() => {
         jest.clearAllMocks();
@@ -481,8 +466,6 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await editarUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status?.mock?.calls[0]?.[0], body: res.json.mock.calls[0][0] }));
-
         expect(res.status).toHaveBeenCalledWith(400);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({
@@ -496,9 +479,9 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
         );
     });
 
-});*/
+});
 
-/*describe('PU-11 - Eliminar usuario exitosamente', () => {
+describe('PU-11 - Eliminar usuario exitosamente', () => {
 
     test('El sistema elimina correctamente un usuario existente', async () => {
 
@@ -514,15 +497,13 @@ const { altaUsuario, obtenerUsuarios, buscarUsuarios, editarUsuario, eliminarUsu
 
         await eliminarUsuario(req, res);
 
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
-
         expect(res.status).toHaveBeenCalledWith(200);
         expect(res.json).toHaveBeenCalledWith(
             expect.objectContaining({ message: 'Usuario eliminado correctamente' })
         );
     });
 
-});*/
+});
 
 describe('PU-12 - Eliminar usuario que no existe', () => {
 
@@ -539,8 +520,6 @@ describe('PU-12 - Eliminar usuario que no existe', () => {
         };
 
         await eliminarUsuario(req, res);
-
-        console.log('resultado:', JSON.stringify({ status: res.status.mock.calls[0][0], body: res.json.mock.calls[0][0] }));
 
         expect(res.status).toHaveBeenCalledWith(404);
         expect(res.json).toHaveBeenCalledWith(
